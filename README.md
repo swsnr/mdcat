@@ -1,12 +1,14 @@
-# mdless [![Current release][crates-badge]][crates] ![Maintenance as is][maintenance-badge] [![Build status][travis-badge]][travis]
+# mdless
+
+[![Current release]( https://img.shields.io/crates/v/mdless.svg)][crates]
+![Maintenance as is](https://img.shields.io/badge/maintenace-as--is-yellow.svg)
+[![Build status](https://img.shields.io/travis/lunaryorn/mdless.rs/master.svg)][travis]
 
 Less for markdown.
 
 [crates-badge]: https://img.shields.io/crates/v/mdless.svg
 [crates]: https://crates.io/crates/mdless
-[travis-badge]: https://img.shields.io/travis/lunaryorn/mdless.rs/master.svg
 [travis]: https://travis-ci.org/lunaryorn/mdless.rs
-[maintenance-badge]: https://img.shields.io/badge/maintenace-as--is-yellow.svg
 
 ## License
 
