@@ -1,0 +1,22 @@
+sudo: false
+language: rust
+rust:
+  - '1.23.0' # base line for backwards compatibility
+  - stable # to stay up to date
+  - beta # because the Rust team appreciates it
+  - nightly
+script:
+  - cargo build --verbose
+  - cargo test --verbose
+cache: cargo
+# Check formatting before running tests
+stages:
+  - formatting
+  - test
+jobs:
+  include:
+    # Add an additional stage to check formatting
+    - stage: formatting
+      before_install: rustup component add rustfmt-preview
+      script: cargo fmt -- --write-mode=diff
+      rust: nightly
