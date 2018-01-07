@@ -15,3 +15,5 @@ travis-ci = { repository = "lunaryorn/mdless.rs" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
+structopt = "^0.1"
+structopt-derive = "^0.1"
