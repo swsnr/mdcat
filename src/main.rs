@@ -17,6 +17,9 @@ extern crate structopt;
 extern crate structopt_derive;
 
 use structopt::StructOpt;
+use std::io::prelude::*;
+use std::io::stdin;
+use std::fs::File;
 
 #[derive(StructOpt, Debug)]
 struct Arguments {
@@ -24,7 +27,31 @@ struct Arguments {
     filename: Option<String>,
 }
 
+fn read_input(filename: Option<String>) -> std::io::Result<String> {
+    let mut buffer = String::new();
+    match filename {
+        None => stdin().read_to_string(&mut buffer)?,
+        Some(ref filename) if filename == "-" => stdin().read_to_string(&mut buffer)?,
+        Some(ref filename) => {
+            let mut source = File::open(filename)?;
+            source.read_to_string(&mut buffer)?
+        }
+    };
+    Ok(buffer)
+}
+
+fn process_arguments(args: Arguments) -> std::io::Result<()> {
+    let input = read_input(args.filename)?;
+    std::io::stdout().write_all(&input.as_bytes())?;
+    Ok(())
+}
+
 fn main() {
-    let args = Arguments::from_args();
-    println!("Read from {:?}", args.filename);
+    match process_arguments(Arguments::from_args()) {
+        Ok(_) => std::process::exit(0),
+        Err(error) => {
+            eprintln!("Error: {}", error);
+            std::process::exit(1);
+        }
+    }
 }
