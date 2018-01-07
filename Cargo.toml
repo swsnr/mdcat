@@ -17,3 +17,5 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 structopt = "^0.1"
 structopt-derive = "^0.1"
+termion = "^1.5"
+pulldown-cmark = "^0.1"

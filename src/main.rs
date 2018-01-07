@@ -12,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+extern crate pulldown_cmark;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
+extern crate termion;
 
 use structopt::StructOpt;
 use std::io::prelude::*;
 use std::io::stdin;
 use std::fs::File;
+use pulldown_cmark::Parser;
+
+mod tty;
 
 #[derive(StructOpt, Debug)]
 struct Arguments {
@@ -42,8 +47,8 @@ fn read_input(filename: Option<String>) -> std::io::Result<String> {
 
 fn process_arguments(args: Arguments) -> std::io::Result<()> {
     let input = read_input(args.filename)?;
-    std::io::stdout().write_all(&input.as_bytes())?;
-    Ok(())
+    let parser = Parser::new(&input);
+    tty::push_tty(&mut std::io::stdout(), parser)
 }
 
 fn main() {
