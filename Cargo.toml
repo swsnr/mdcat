@@ -1,0 +1,6 @@
+[package]
+name = "mdless"
+version = "0.1.0"
+authors = ["Sebastian Wiesner"]
+
+[dependencies]
