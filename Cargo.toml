@@ -1,6 +1,16 @@
 [package]
 name = "mdless"
+description = "Less for markdown"
+readme = "README.md"
+homepage = "https://github.com/lunaryorn/mdless.rs"
+repository = "https://github.com/lunaryorn/mdless.rs"
+keywords = ["markdown", "less"]
 version = "0.1.0"
-authors = ["Sebastian Wiesner"]
+categories = ["command-line-utilities", "text-processing"]
+license = "Apache-2.0"
+authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
+
+[badges]
+maintenance = { status = "actively-developed" }
 
 [dependencies]
