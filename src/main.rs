@@ -28,6 +28,10 @@ mod tty;
 
 #[derive(StructOpt, Debug)]
 struct Arguments {
+    #[structopt(long = "columns", help = "Maximum number of columns.  Defaults to terminal width")]
+    columns: Option<u16>,
+    #[structopt(long = "dump-events", help = "Do not render, but just dump events")]
+    dump_events: bool,
     #[structopt(help = "Input file.  If absent or - read from standard input")]
     filename: Option<String>,
 }
@@ -48,7 +52,18 @@ fn read_input(filename: Option<String>) -> std::io::Result<String> {
 fn process_arguments(args: Arguments) -> std::io::Result<()> {
     let input = read_input(args.filename)?;
     let parser = Parser::new(&input);
-    tty::push_tty(&mut std::io::stdout(), parser)
+    if args.dump_events {
+        tty::dump_events(&mut std::io::stdout(), parser)
+    } else {
+        let columns = match args.columns {
+            Some(c) => Ok(c) as std::io::Result<u16>,
+            None => {
+                let (columns, _) = termion::terminal_size()?;
+                Ok(columns)
+            }
+        }?;
+        tty::push_tty(&mut std::io::stdout(), columns, parser)
+    }
 }
 
 fn main() {
