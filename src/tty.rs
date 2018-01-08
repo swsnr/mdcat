@@ -52,9 +52,16 @@ where
     Ok(())
 }
 
+/// The "level" the current event occurs at.
 #[derive(Debug, PartialEq)]
-enum BlockContext {
+enum BlockLevel {
+    /// The event occurs at block-level.
     Block,
+    /// The event occurs inside a list.
+    List,
+    /// The event occurs inside a list item.
+    ListItem,
+    /// The event occurs in inline text.
     Inline,
 }
 
@@ -74,7 +81,7 @@ struct Context<'b, W: Write + 'b> {
     /// The number of spaces to indent with.
     indent_level: usize,
     /// Whether we are at block-level or inline in a block.
-    block_context: BlockContext,
+    block_level: BlockLevel,
 }
 
 impl<'b, W: Write + 'b> Context<'b, W> {
@@ -86,7 +93,7 @@ impl<'b, W: Write + 'b> Context<'b, W> {
             emphasis_level: 0,
             indent_level: 0,
             // We start inline; blocks must be started explicitly
-            block_context: BlockContext::Inline,
+            block_level: BlockLevel::Inline,
         }
     }
 
@@ -95,11 +102,12 @@ impl<'b, W: Write + 'b> Context<'b, W> {
     /// Set `block_context` accordingly, and separate this block from the
     /// previous.
     fn start_block(&mut self) -> Result<()> {
-        if self.block_context == BlockContext::Block {
-            self.newline_and_indent()?;
-        };
+        match self.block_level {
+            BlockLevel::Block => self.newline_and_indent()?,
+            _ => (),
+        }
         // We are inline now
-        self.block_context = BlockContext::Inline;
+        self.block_level = BlockLevel::Inline;
         Ok(())
     }
 
@@ -108,10 +116,12 @@ impl<'b, W: Write + 'b> Context<'b, W> {
     /// Set `block_context` accordingly and end inline context—if present—with
     /// a line break.
     fn end_block(&mut self) -> Result<()> {
-        if self.block_context == BlockContext::Inline {
-            self.newline_and_indent()?;
+        match self.block_level {
+            BlockLevel::Inline => self.newline_and_indent()?,
+            _ => (),
         };
-        self.block_context = BlockContext::Block;
+        // We are back at blocks now
+        self.block_level = BlockLevel::Block;
         Ok(())
     }
 
@@ -120,16 +130,24 @@ impl<'b, W: Write + 'b> Context<'b, W> {
         write!(self.writer, "{}", self.active_styles.join(""))
     }
 
+    /// Write a newline.
+    ///
+    /// Restart all current styles after the newline.
+    fn newline(&mut self) -> Result<()> {
+        write!(self.writer, "{}\n", style::Reset)?;
+        self.flush_styles()
+    }
+
     /// Write a newline and indent.
     ///
     /// Reset formatting before the line break, and set all active styles again
     /// after the line break.
     fn newline_and_indent(&mut self) -> Result<()> {
-        write!(self.writer, "{}\n", style::Reset)?;
-        self.indent()?;
-        self.flush_styles()
+        self.newline()?;
+        self.indent()
     }
 
+    /// Indent according to the current indentation level.
     fn indent(&mut self) -> Result<()> {
         write!(self.writer, "{}", " ".repeat(self.indent_level))
     }
@@ -152,7 +170,9 @@ impl<'b, W: Write + 'b> Context<'b, W> {
         self.flush_styles()
     }
 
-    /// Enable
+    /// Enable emphasis.
+    ///
+    /// Enable italic or upright text according to the current emphasis level.
     fn enable_emphasis(&mut self) -> Result<()> {
         self.emphasis_level += 1;
         if self.emphasis_level % 2 == 1 {
@@ -201,12 +221,14 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.start_block()?;
             ctx.enable_style(color::Fg(color::Yellow))?
         }
-        List(_) => ctx.start_block()?,
+        List(_) => match ctx.block_level {
+            BlockLevel::ListItem => ctx.newline_and_indent()?,
+            _ => ctx.start_block()?,
+        },
         Item => {
             write!(ctx.writer, "\u{2022} ")?;
+            ctx.block_level = BlockLevel::ListItem;
             ctx.indent_level += 2;
-            // We are inline now
-            ctx.block_context = BlockContext::Inline;
         }
         FootnoteDefinition(_) => (),
         Table(_alignment) => (),
@@ -246,10 +268,12 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.reset_last_style()?;
             ctx.end_block()?
         }
-        List(_) => ctx.end_block()?,
+        List(_) => {
+            ctx.block_level = BlockLevel::Block;
+        }
         Item => {
             ctx.indent_level -= 2;
-            ctx.newline_and_indent()?
+            ctx.newline_and_indent()?;
         }
         FootnoteDefinition(_) => (),
         Table(_) => (),

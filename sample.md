@@ -44,9 +44,7 @@ Text with [reference][42] links, followed by a list
 * World
     * How are you?
     * Fine?
-    * Even with
-
-        paragraphs?
+    * Even with paragraphs?
 * So long
 
 ----
