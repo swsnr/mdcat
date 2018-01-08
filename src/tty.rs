@@ -52,32 +52,29 @@ where
     Ok(())
 }
 
-struct Block {
-    indent_level: usize,
-}
-
-struct Inline {
-    block: Block,
-}
-
-enum State {
-    Initial,
-    Block(Block),
-    Inline(Inline),
+#[derive(Debug, PartialEq)]
+enum BlockContext {
+    Block,
+    Inline,
 }
 
 /// Context for TTY rendering.
 struct Context<'b, W: Write + 'b> {
-    /// The writer to write to
+    /// The writer to write to.
     writer: &'b mut W,
-    /// The block/inline state
-    state: State,
-    /// The maximum number of columns to write
+    /// The maximum number of columns to write.
     columns: u16,
-    /// All styles applied to the current text
+    /// All styles applied to the current text.
     active_styles: Vec<String>,
-    /// Whether emphasis is active.
+    /// What level of emphasis we are currently at.
+    ///
+    /// We use this information to switch between italic and upright text for
+    /// emphasis.
     emphasis_level: usize,
+    /// The number of spaces to indent with.
+    indent_level: usize,
+    /// Whether we are at block-level or inline in a block.
+    block_context: BlockContext,
 }
 
 impl<'b, W: Write + 'b> Context<'b, W> {
@@ -85,63 +82,57 @@ impl<'b, W: Write + 'b> Context<'b, W> {
         Context {
             writer,
             columns,
-            state: State::Initial,
             active_styles: Vec::new(),
             emphasis_level: 0,
+            indent_level: 0,
+            // We start inline; blocks must be started explicitly
+            block_context: BlockContext::Inline,
         }
     }
 
+    /// Start a new block.
+    ///
+    /// Set `block_context` accordingly, and separate this block from the
+    /// previous.
     fn start_block(&mut self) -> Result<()> {
-        let next_state: Result<State> = match self.state {
-            State::Block(block) => {
-                self.newline()?;
-                Ok(State::Block(block))
-            }
-            State::Inline(ref inline) => Ok(State::Block(inline.block)),
-            State::Initial => Ok(State::Block(Block { indent_level: 0 })),
+        if self.block_context == BlockContext::Block {
+            self.newline_and_indent()?;
         };
-        self.state = next_state?;
+        // We are inline now
+        self.block_context = BlockContext::Inline;
         Ok(())
     }
 
+    /// End a block.
+    ///
+    /// Set `block_context` accordingly and end inline context—if present—with
+    /// a line break.
     fn end_block(&mut self) -> Result<()> {
-        match self.state {
-            State::Inline(inline) => {
-                self.state = State::Block(inline.block);
-                self.newline()?;
-                Ok(())
-            }
-            _ => Ok(()),
-        }
+        if self.block_context == BlockContext::Inline {
+            self.newline_and_indent()?;
+        };
+        self.block_context = BlockContext::Block;
+        Ok(())
     }
 
-    /// Set all active styles on the writer.
-    fn set_styles(&mut self) -> Result<()> {
+    /// Set all active styles on the underlying writer.
+    fn flush_styles(&mut self) -> Result<()> {
         write!(self.writer, "{}", self.active_styles.join(""))
     }
 
-    /// Write a newline.
+    /// Write a newline and indent.
     ///
     /// Reset formatting before the line break, and set all active styles again
     /// after the line break.
-    fn newline(&mut self) -> Result<()> {
+    fn newline_and_indent(&mut self) -> Result<()> {
         write!(self.writer, "{}\n", style::Reset)?;
         self.indent()?;
-        self.set_styles()
+        self.flush_styles()
     }
 
     fn indent(&mut self) -> Result<()> {
-        match self.state {
-            State::Block(block) => write!(self.writer, "{}", " ".repeat(block.indent_level)),
-            _ => Ok(()),
-        }
+        write!(self.writer, "{}", " ".repeat(self.indent_level))
     }
-
-    // fn start_block(&mut self) -> Result<()> {
-    //     match self.state {
-    //         Initi
-    //     }
-    // }
 
     /// Enable a style.
     ///
@@ -154,13 +145,14 @@ impl<'b, W: Write + 'b> Context<'b, W> {
         write!(self.writer, "{}", style)
     }
 
-    /// Remove the last style.
+    /// Remove the last style and flush styles on the TTY.
     fn reset_last_style(&mut self) -> Result<()> {
         self.active_styles.pop();
         write!(self.writer, "{}", style::Reset)?;
-        self.set_styles()
+        self.flush_styles()
     }
 
+    /// Enable
     fn enable_emphasis(&mut self) -> Result<()> {
         self.emphasis_level += 1;
         if self.emphasis_level % 2 == 1 {
@@ -174,7 +166,7 @@ impl<'b, W: Write + 'b> Context<'b, W> {
 /// Write a single `event` in the given context.
 fn write_event<'a, W: Write>(ctx: &mut Context<W>, event: Event<'a>) -> Result<()> {
     match event {
-        SoftBreak | HardBreak => ctx.newline()?,
+        SoftBreak | HardBreak => ctx.newline_and_indent()?,
         Text(text) => write!(ctx.writer, "{}", text)?,
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
@@ -200,7 +192,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             write!(ctx.writer, "{}", level_indicator)?
         }
         BlockQuote => {
-            // ctx. += 4;
+            ctx.indent_level += 4;
             ctx.start_block()?;
             ctx.enable_style(color::Fg(color::White))?;
             ctx.enable_emphasis()?
@@ -212,9 +204,9 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         List(_) => ctx.start_block()?,
         Item => {
             write!(ctx.writer, "\u{2022} ")?;
-            // ctx.indent_level += 2;
-
-            // ctx.is_first = true;
+            ctx.indent_level += 2;
+            // We are inline now
+            ctx.block_context = BlockContext::Inline;
         }
         FootnoteDefinition(_) => (),
         Table(_alignment) => (),
@@ -236,25 +228,28 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         Paragraph => ctx.end_block()?,
         Rule => {
             ctx.active_styles.pop();
-            ctx.newline()?
+            ctx.end_block()?
         }
         Header(_) => {
             ctx.active_styles.pop();
             ctx.active_styles.pop();
-            ctx.newline()?
+            ctx.end_block()?
         }
         BlockQuote => {
-            // ctx.indent_level -= 4;
-            ctx.active_styles.pop();
+            ctx.indent_level -= 4;
             ctx.emphasis_level -= 1;
+            ctx.active_styles.pop();
             ctx.reset_last_style()?;
             ctx.end_block()?
         }
-        CodeBlock(_) => ctx.reset_last_style()?,
+        CodeBlock(_) => {
+            ctx.reset_last_style()?;
+            ctx.end_block()?
+        }
         List(_) => ctx.end_block()?,
         Item => {
-            // ctx.indent_level -= 2;
-            ctx.newline()?
+            ctx.indent_level -= 2;
+            ctx.newline_and_indent()?
         }
         FootnoteDefinition(_) => (),
         Table(_) => (),
