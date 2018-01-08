@@ -57,10 +57,6 @@ where
 enum BlockLevel {
     /// The event occurs at block-level.
     Block,
-    /// The event occurs inside a list.
-    List,
-    /// The event occurs inside a list item.
-    ListItem,
     /// The event occurs in inline text.
     Inline,
 }
@@ -117,7 +113,7 @@ impl<'b, W: Write + 'b> Context<'b, W> {
     /// a line break.
     fn end_block(&mut self) -> Result<()> {
         match self.block_level {
-            BlockLevel::Inline => self.newline_and_indent()?,
+            BlockLevel::Inline => self.newline()?,
             _ => (),
         };
         // We are back at blocks now
@@ -221,13 +217,16 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.start_block()?;
             ctx.enable_style(color::Fg(color::Yellow))?
         }
-        List(_) => match ctx.block_level {
-            BlockLevel::ListItem => ctx.newline_and_indent()?,
-            _ => ctx.start_block()?,
-        },
+        List(_) => {
+            if ctx.block_level == BlockLevel::Inline {
+                ctx.newline()?;
+            }
+            ctx.start_block()?
+        }
         Item => {
+            ctx.indent()?;
             write!(ctx.writer, "\u{2022} ")?;
-            ctx.block_level = BlockLevel::ListItem;
+            ctx.block_level = BlockLevel::Inline;
             ctx.indent_level += 2;
         }
         FootnoteDefinition(_) => (),
@@ -268,12 +267,10 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.reset_last_style()?;
             ctx.end_block()?
         }
-        List(_) => {
-            ctx.block_level = BlockLevel::Block;
-        }
+        List(_) => ctx.end_block()?,
         Item => {
             ctx.indent_level -= 2;
-            ctx.newline_and_indent()?;
+            ctx.end_block()?
         }
         FootnoteDefinition(_) => (),
         Table(_) => (),
