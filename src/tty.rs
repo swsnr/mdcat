@@ -61,6 +61,15 @@ enum BlockLevel {
     Inline,
 }
 
+/// The kind of the current list item
+#[derive(Debug)]
+enum ListItemKind {
+    /// An unordered list item
+    Unordered,
+    /// An ordered list item with its current number
+    Ordered(usize),
+}
+
 /// Context for TTY rendering.
 struct Context<'b, W: Write + 'b> {
     /// The writer to write to.
@@ -78,6 +87,10 @@ struct Context<'b, W: Write + 'b> {
     indent_level: usize,
     /// Whether we are at block-level or inline in a block.
     block_level: BlockLevel,
+    /// The kind of the current list item.
+    ///
+    /// A stack of kinds to address nested lists.
+    list_item_kind: Vec<ListItemKind>,
 }
 
 impl<'b, W: Write + 'b> Context<'b, W> {
@@ -90,6 +103,7 @@ impl<'b, W: Write + 'b> Context<'b, W> {
             indent_level: 0,
             // We start inline; blocks must be started explicitly
             block_level: BlockLevel::Inline,
+            list_item_kind: Vec::new(),
         }
     }
 
@@ -217,14 +231,29 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.start_inline_text()?;
             ctx.enable_style(color::Fg(color::Yellow))?
         }
-        List(_) => {
+        List(kind) => {
+            ctx.list_item_kind.push(match kind {
+                Some(start) => ListItemKind::Ordered(start),
+                None => ListItemKind::Unordered,
+            });
             ctx.newline()?;
         }
         Item => {
             ctx.indent()?;
-            write!(ctx.writer, "\u{2022} ")?;
             ctx.block_level = BlockLevel::Inline;
-            ctx.indent_level += 2;
+            match ctx.list_item_kind.pop() {
+                Some(ListItemKind::Unordered) => {
+                    write!(ctx.writer, "\u{2022} ")?;
+                    ctx.indent_level += 2;
+                    ctx.list_item_kind.push(ListItemKind::Unordered);
+                }
+                Some(ListItemKind::Ordered(number)) => {
+                    write!(ctx.writer, "{:>2}. ", number)?;
+                    ctx.indent_level += 4;
+                    ctx.list_item_kind.push(ListItemKind::Ordered(number + 1));
+                }
+                None => panic!("List item without list item kind"),
+            }
         }
         FootnoteDefinition(_) => panic!("mdless does not support footnotes"),
         Table(_alignment) => panic!("mdless does not support tables"),
@@ -265,10 +294,17 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.end_inline_text_with_margin()?
         }
         List(_) => {
+            // End the current list
+            ctx.list_item_kind.pop();
             ctx.end_inline_text_with_margin()?;
         }
         Item => {
-            ctx.indent_level -= 2;
+            // Reset indent level according to list item kind
+            match ctx.list_item_kind.last() {
+                Some(&ListItemKind::Ordered(_)) => ctx.indent_level -= 4,
+                Some(&ListItemKind::Unordered) => ctx.indent_level -= 2,
+                None => (),
+            }
             ctx.end_inline_text_with_margin()?
         }
         FootnoteDefinition(_) => (),

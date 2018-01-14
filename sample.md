@@ -50,6 +50,18 @@ Ordered lists:
       And some text at the end
 3. consetetur sadipscing elitr
 
+And a mix of both:
+
+* Lorem impsum
+    1. Nested
+    2. Inline
+        * With
+        * Some
+        * Nested
+        * Bullets
+    3. Text
+* dolor sit amet
+
 ## Block level elements
 
 Block quotes
