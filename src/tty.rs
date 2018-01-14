@@ -218,10 +218,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.enable_style(color::Fg(color::Yellow))?
         }
         List(_) => {
-            if ctx.block_level == BlockLevel::Inline {
-                ctx.newline()?;
-            }
-            ctx.start_inline_text()?
+            ctx.newline()?;
         }
         Item => {
             ctx.indent()?;
@@ -267,7 +264,9 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.reset_last_style()?;
             ctx.end_inline_text_with_margin()?
         }
-        List(_) => ctx.end_inline_text_with_margin()?,
+        List(_) => {
+            ctx.end_inline_text_with_margin()?;
+        }
         Item => {
             ctx.indent_level -= 2;
             ctx.end_inline_text_with_margin()?
