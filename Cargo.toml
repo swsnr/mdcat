@@ -11,7 +11,7 @@ license = "Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 
 [badges]
-travis-ci = { repository = "lunaryorn/mdless.rs" }
+travis-ci = { repository = "lunaryorn/mdless" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
