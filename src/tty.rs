@@ -229,8 +229,8 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.block_level = BlockLevel::Inline;
             ctx.indent_level += 2;
         }
-        FootnoteDefinition(_) => (),
-        Table(_alignment) => (),
+        FootnoteDefinition(_) => panic!("mdless does not support footnotes"),
+        Table(_alignment) => panic!("mdless does not support tables"),
         TableHead => (),
         TableRow => (),
         TableCell => (),
