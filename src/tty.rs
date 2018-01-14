@@ -263,7 +263,9 @@ fn write_event<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, event: Event<'a>)
         }
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
-        event => eprintln!("Unknown event: {:?}", event),
+        Html(_) => panic!("mdless does not support HTML blocks"),
+        InlineHtml(_) => panic!("mdless does not support inline HTML"),
+        FootnoteReference(_) => panic!("mdless does not support footnotes"),
     };
     Ok(())
 }
@@ -323,14 +325,17 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         FootnoteDefinition(_) => panic!("mdless does not support footnotes"),
         Table(_alignment) => panic!("mdless does not support tables"),
-        TableHead => {}
-        TableRow => {}
-        TableCell => {}
+        TableHead => panic!("mdless does not support tables"),
+        TableRow => panic!("mdless does not support tables"),
+        TableCell => panic!("mdless does not support tables"),
         Emphasis => ctx.enable_emphasis()?,
         Strong => ctx.enable_style(style::Bold)?,
         Code => ctx.enable_style(color::Fg(color::Yellow))?,
-        Link(_, _) => {}
-        Image(_, _) => {}
+        Link(_, _) => {
+            // We do not need to do anything when opening links; we render the
+            // link reference when closing the link.
+        }
+        Image(_, _) => panic!("mdless does not support images"),
     };
     Ok(())
 }
