@@ -1,54 +1,100 @@
-# A first level header
+# CommonMark sample document
 
-Some content in between, with some inline formatting as in **bold text** or
-*italic text*, or even `inline code`.
+## Basic inline formatting
 
-## A second level header
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam **nonumy
+eirmod tempor invidunt** ut labore et *dolore magna aliquyam erat*, sed diam
+voluptua. `At vero eos et` accusam et
 
-Some content
-with soft breaks.
+## Links
 
 Another paragraph has an auto-link (see <https://www.example.com>) inside.
 
-We can also do block quotes:
+TK: More kinds of links
 
-> Hello world, also with *emphasis*, and **strong** text, and some `inline
-> code`.
+## Lists
 
-### A third level header
+Unordered lists:
 
-Some content\
-with hard\
-breaks and an \
-inline [link](http://example.com) within.
+* Lorem impsum
+    * Nested
+    * Inline
+    * Text
+* dolor sit amet
+    * Nested
 
-> Also, a block quote with paragraphs?
+    * With
+
+      Paragraphs and nested blocks:
+
+      > A quote
+
+      And some text at the end
+* consetetur sadipscing elitr
+
+Ordered lists:
+
+1. Lorem impsum
+    1. Nested
+    2. Inline
+    3. Text
+2. dolor sit amet
+    1. Nested
+
+    2. With
+
+      Paragraphs and nested blocks:
+
+      > A quote
+
+      And some text at the end
+3. consetetur sadipscing elitr
+
+## Block level elements
+
+Block quotes
+
+> Lorem ipsum dolor sit amet, *consetetur sadipscing elitr*, sed diam nonumy
+> eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam
+> voluptua.
 >
-> We have a new paragraph here.
->
-> —Some cool folks
+> Lorem ipsum dolor sit amet, **consetetur sadipscing elitr**, sed diam nonumy
+> eirmod tempor invidunt ut `labore et dolore magna` aliquyam erat, sed diam
+> voluptua.
 
-Or, code blocks:
-
-```rust
-fn main() {
-    println!("Hello world");
-}
-```
-
-## Back to second level
-
-Text with [reference][42] links, followed by a list
-
-* Hello
-* World
-    * How are you?
-    * Fine?
-      Even with paragraphs?
-* So long
+Before we continue, have a ruler:
 
 ----
 
-More text is beyond a ruler
+Code blocks without syntax highlighting:
 
-[42]: https://www.example.com
+```
+Some plain
+code block
+   fooo
+```
+
+Or with syntax highlighting, eg, Rust:
+
+```rust
+fn main() {
+    println!("Hello world")
+}
+```
+
+Or Haskell:
+
+```haskell
+main :: IO ()
+main = putStrLn "Hello World"
+```
+
+Or Scala:
+
+```scala
+object HelloWorld {
+  def main(args: Array[String]): Unit = {
+    println("Hello, world!")
+  }
+}
+```
