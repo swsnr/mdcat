@@ -4,13 +4,21 @@
 ![Maintenance as is](https://img.shields.io/badge/maintenace-as--is-yellow.svg)
 [![Build status](https://img.shields.io/travis/lunaryorn/mdless.rs/master.svg)][travis]
 
-Less for markdown.
+Less for [CommonMark][], a standardized variant of Markdown:
+
+```
+$ mdless sample.md
+```
 
 [crates-badge]: https://img.shields.io/crates/v/mdless.svg
 [crates]: https://crates.io/crates/mdless
 [travis]: https://travis-ci.org/lunaryorn/mdless.rs
+[CommonMark]: http://commonmark.org
 
 ## Status and future plans
+
+`mdless` supports all checked features in the list below.  For unsupported
+syntax mdless **panics**!
 
 - [x] Inline formatting, with proper nesting of emphasis
 - [x] Headings
