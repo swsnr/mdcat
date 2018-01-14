@@ -210,7 +210,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         BlockQuote => {
             ctx.indent_level += 4;
             ctx.start_block()?;
-            ctx.enable_style(color::Fg(color::White))?;
+            ctx.enable_style(color::Fg(color::LightBlack))?;
             ctx.enable_emphasis()?
         }
         CodeBlock(_) => {
