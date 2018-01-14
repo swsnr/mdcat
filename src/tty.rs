@@ -85,12 +85,16 @@ struct Link<'a> {
     title: Cow<'a, str>,
 }
 
-/// Context for TTY rendering.
-struct Context<'a, 'b, W: Write + 'b> {
+/// Context for TTY output.
+struct OutputContext<'a, W: Write + 'a> {
     /// The writer to write to.
-    writer: &'b mut W,
+    writer: &'a mut W,
     /// The maximum number of columns to write.
     columns: u16,
+}
+
+#[derive(Debug)]
+struct StyleContext {
     /// All styles applied to the current text.
     active_styles: Vec<String>,
     /// What level of emphasis we are currently at.
@@ -98,14 +102,19 @@ struct Context<'a, 'b, W: Write + 'b> {
     /// We use this information to switch between italic and upright text for
     /// emphasis.
     emphasis_level: usize,
+}
+
+#[derive(Debug)]
+struct BlockContext {
     /// The number of spaces to indent with.
     indent_level: usize,
     /// Whether we are at block-level or inline in a block.
-    block_level: BlockLevel,
-    /// The kind of the current list item.
-    ///
-    /// A stack of kinds to address nested lists.
-    list_item_kind: Vec<ListItemKind>,
+    level: BlockLevel,
+}
+
+/// Context to keep track of links.
+#[derive(Debug)]
+struct LinkContext<'a> {
     /// Pending links to be flushed.
     pending_links: VecDeque<Link<'a>>,
     /// The index the next link will get
@@ -118,20 +127,41 @@ struct Context<'a, 'b, W: Write + 'b> {
     last_text: Option<Cow<'a, str>>,
 }
 
+/// Context for TTY rendering.
+struct Context<'a, 'b, W: Write + 'b> {
+    /// Context for output.
+    output: OutputContext<'b, W>,
+    /// Context for styling
+    style: StyleContext,
+    /// Context for the current block.
+    block: BlockContext,
+    /// Context to keep track of links.
+    links: LinkContext<'a>,
+    /// The kind of the current list item.
+    ///
+    /// A stack of kinds to address nested lists.
+    list_item_kind: Vec<ListItemKind>,
+}
+
 impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
     fn new(writer: &'b mut W, columns: u16) -> Context<'a, 'b, W> {
         Context {
-            writer,
-            columns,
-            active_styles: Vec::new(),
-            emphasis_level: 0,
-            indent_level: 0,
-            // We start inline; blocks must be started explicitly
-            block_level: BlockLevel::Inline,
+            output: OutputContext { writer, columns },
+            style: StyleContext {
+                active_styles: Vec::new(),
+                emphasis_level: 0,
+            },
+            block: BlockContext {
+                indent_level: 0,
+                /// Whether we are at block-level or inline in a block.
+                level: BlockLevel::Inline,
+            },
+            links: LinkContext {
+                pending_links: VecDeque::new(),
+                next_link_index: 1,
+                last_text: None,
+            },
             list_item_kind: Vec::new(),
-            pending_links: VecDeque::new(),
-            next_link_index: 1,
-            last_text: None,
         }
     }
 
@@ -140,12 +170,12 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
     /// Set `block_context` accordingly, and separate this block from the
     /// previous.
     fn start_inline_text(&mut self) -> Result<()> {
-        match self.block_level {
+        match self.block.level {
             BlockLevel::Block => self.newline_and_indent()?,
             _ => (),
         }
         // We are inline now
-        self.block_level = BlockLevel::Inline;
+        self.block.level = BlockLevel::Inline;
         Ok(())
     }
 
@@ -154,25 +184,25 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
     /// Set `block_context` accordingly and end inline context—if present—with
     /// a line break.
     fn end_inline_text_with_margin(&mut self) -> Result<()> {
-        match self.block_level {
+        match self.block.level {
             BlockLevel::Inline => self.newline()?,
             _ => (),
         };
         // We are back at blocks now
-        self.block_level = BlockLevel::Block;
+        self.block.level = BlockLevel::Block;
         Ok(())
     }
 
     /// Set all active styles on the underlying writer.
     fn flush_styles(&mut self) -> Result<()> {
-        write!(self.writer, "{}", self.active_styles.join(""))
+        write!(self.output.writer, "{}", self.style.active_styles.join(""))
     }
 
     /// Write a newline.
     ///
     /// Restart all current styles after the newline.
     fn newline(&mut self) -> Result<()> {
-        write!(self.writer, "{}\n", style::Reset)?;
+        write!(self.output.writer, "{}\n", style::Reset)?;
         self.flush_styles()
     }
 
@@ -187,7 +217,11 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
 
     /// Indent according to the current indentation level.
     fn indent(&mut self) -> Result<()> {
-        write!(self.writer, "{}", " ".repeat(self.indent_level))
+        write!(
+            self.output.writer,
+            "{}",
+            " ".repeat(self.block.indent_level)
+        )
     }
 
     /// Enable a style.
@@ -197,14 +231,16 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
     /// To undo a style call `active_styles.pop()`, followed by `set_styles()`
     /// or `newline()`.
     fn enable_style<S: Display>(&mut self, style: S) -> Result<()> {
-        self.active_styles.push(format!("{}", style).to_owned());
-        write!(self.writer, "{}", style)
+        self.style
+            .active_styles
+            .push(format!("{}", style).to_owned());
+        write!(self.output.writer, "{}", style)
     }
 
     /// Remove the last style and flush styles on the TTY.
     fn reset_last_style(&mut self) -> Result<()> {
-        self.active_styles.pop();
-        write!(self.writer, "{}", style::Reset)?;
+        self.style.active_styles.pop();
+        write!(self.output.writer, "{}", style::Reset)?;
         self.flush_styles()
     }
 
@@ -212,8 +248,8 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
     ///
     /// Enable italic or upright text according to the current emphasis level.
     fn enable_emphasis(&mut self) -> Result<()> {
-        self.emphasis_level += 1;
-        if self.emphasis_level % 2 == 1 {
+        self.style.emphasis_level += 1;
+        if self.style.emphasis_level % 2 == 1 {
             self.enable_style(style::Italic)
         } else {
             self.enable_style(style::NoItalic)
@@ -224,9 +260,9 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
     ///
     /// Return the index of the link.
     fn add_link(&mut self, destination: Cow<'a, str>, title: Cow<'a, str>) -> usize {
-        let index = self.next_link_index;
-        self.next_link_index += 1;
-        self.pending_links.push_back(Link {
+        let index = self.links.next_link_index;
+        self.links.next_link_index += 1;
+        self.links.pending_links.push_back(Link {
             index,
             destination,
             title,
@@ -238,12 +274,12 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
     ///
     /// Empty all pending links afterwards.
     fn write_pending_links(&mut self) -> Result<()> {
-        if !self.pending_links.is_empty() {
+        if !self.links.pending_links.is_empty() {
             self.newline()?;
             self.enable_style(color::Fg(color::Blue))?;
-            while let Some(link) = self.pending_links.pop_front() {
+            while let Some(link) = self.links.pending_links.pop_front() {
                 write!(
-                    self.writer,
+                    self.output.writer,
                     "[{}]: {} {}",
                     link.index, link.destination, link.title
                 )?;
@@ -260,8 +296,8 @@ fn write_event<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, event: Event<'a>)
     match event {
         SoftBreak | HardBreak => ctx.newline_and_indent()?,
         Text(text) => {
-            write!(ctx.writer, "{}", text)?;
-            ctx.last_text = Some(text);
+            write!(ctx.output.writer, "{}", text)?;
+            ctx.links.last_text = Some(text);
         }
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
@@ -279,7 +315,11 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         Rule => {
             ctx.start_inline_text()?;
             ctx.enable_style(color::Fg(color::LightBlack))?;
-            write!(ctx.writer, "{}", "\u{2500}".repeat(ctx.columns as usize))?
+            write!(
+                ctx.output.writer,
+                "{}",
+                "\u{2500}".repeat(ctx.output.columns as usize)
+            )?
         }
         Header(level) => {
             // Before we start a new header, write all pending links to keep
@@ -289,10 +329,10 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             let level_indicator = "\u{2504}".repeat((level - 1) as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;
-            write!(ctx.writer, "{}", level_indicator)?
+            write!(ctx.output.writer, "{}", level_indicator)?
         }
         BlockQuote => {
-            ctx.indent_level += 4;
+            ctx.block.indent_level += 4;
             ctx.start_inline_text()?;
             ctx.enable_style(color::Fg(color::LightBlack))?;
             ctx.enable_emphasis()?
@@ -310,16 +350,16 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         Item => {
             ctx.indent()?;
-            ctx.block_level = BlockLevel::Inline;
+            ctx.block.level = BlockLevel::Inline;
             match ctx.list_item_kind.pop() {
                 Some(ListItemKind::Unordered) => {
-                    write!(ctx.writer, "\u{2022} ")?;
-                    ctx.indent_level += 2;
+                    write!(ctx.output.writer, "\u{2022} ")?;
+                    ctx.block.indent_level += 2;
                     ctx.list_item_kind.push(ListItemKind::Unordered);
                 }
                 Some(ListItemKind::Ordered(number)) => {
-                    write!(ctx.writer, "{:>2}. ", number)?;
-                    ctx.indent_level += 4;
+                    write!(ctx.output.writer, "{:>2}. ", number)?;
+                    ctx.block.indent_level += 4;
                     ctx.list_item_kind.push(ListItemKind::Ordered(number + 1));
                 }
                 None => panic!("List item without list item kind"),
@@ -347,18 +387,18 @@ fn end_tag<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, tag: Tag<'a>) -> Resu
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => {
-            ctx.active_styles.pop();
+            ctx.style.active_styles.pop();
             ctx.end_inline_text_with_margin()?
         }
         Header(_) => {
-            ctx.active_styles.pop();
-            ctx.active_styles.pop();
+            ctx.style.active_styles.pop();
+            ctx.style.active_styles.pop();
             ctx.end_inline_text_with_margin()?
         }
         BlockQuote => {
-            ctx.indent_level -= 4;
-            ctx.emphasis_level -= 1;
-            ctx.active_styles.pop();
+            ctx.block.indent_level -= 4;
+            ctx.style.emphasis_level -= 1;
+            ctx.style.active_styles.pop();
             ctx.reset_last_style()?;
             ctx.end_inline_text_with_margin()?
         }
@@ -374,8 +414,8 @@ fn end_tag<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, tag: Tag<'a>) -> Resu
         Item => {
             // Reset indent level according to list item kind
             match ctx.list_item_kind.last() {
-                Some(&ListItemKind::Ordered(_)) => ctx.indent_level -= 4,
-                Some(&ListItemKind::Unordered) => ctx.indent_level -= 2,
+                Some(&ListItemKind::Ordered(_)) => ctx.block.indent_level -= 4,
+                Some(&ListItemKind::Unordered) => ctx.block.indent_level -= 2,
                 None => (),
             }
             ctx.end_inline_text_with_margin()?
@@ -387,12 +427,12 @@ fn end_tag<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, tag: Tag<'a>) -> Resu
         TableCell => {}
         Emphasis => {
             ctx.reset_last_style()?;
-            ctx.emphasis_level -= 1;
+            ctx.style.emphasis_level -= 1;
             ()
         }
         Strong => ctx.reset_last_style()?,
         Code => ctx.reset_last_style()?,
-        Link(destination, title) => match ctx.last_text {
+        Link(destination, title) => match ctx.links.last_text {
             Some(ref text) if *text == destination => {
                 // Do nothing if the last printed text matches the destination
                 // of the link.  In this we likely looked at an inline autolink
@@ -402,7 +442,7 @@ fn end_tag<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, tag: Tag<'a>) -> Resu
                 let index = ctx.add_link(destination, title);
                 // Reference link
                 ctx.enable_style(color::Fg(color::Blue))?;
-                write!(ctx.writer, "[{}]", index)?;
+                write!(ctx.output.writer, "[{}]", index)?;
                 ctx.reset_last_style()?;
             }
         },
