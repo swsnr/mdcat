@@ -10,6 +10,25 @@ Less for markdown.
 [crates]: https://crates.io/crates/mdless
 [travis]: https://travis-ci.org/lunaryorn/mdless.rs
 
+## Status and future plans
+
+- [x] Inline formatting, with proper nesting of emphasis
+- [x] Headings
+- [x] Block quotes
+- [x] Code blocks
+- [x] Ordered lists
+- [x] Numbered lists
+- [x] Nested lists
+- [ ] Links
+- [ ] Syntax highlighting for code blocks
+- [ ] Show inline HTML and block HTML literally
+- [ ] iTerm2 integration: Set marks for headings to jump back and forth
+- [ ] iTerm2 integration: Show images inline
+- [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdless/issues/3)
+- [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdless/issues/1)
+- [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdless/issues/2)
+- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4](https://github.com/lunaryorn/mdless/issues/4)
+
 ## License
 
 Copyright 2018 Sebastian Wiesner <sebastian@swsnr.de>
