@@ -108,11 +108,13 @@ struct Context<'a, 'b, W: Write + 'b> {
     list_item_kind: Vec<ListItemKind>,
     /// Pending links to be flushed.
     pending_links: VecDeque<Link<'a>>,
-    /// The link index, ie, what number the next link will get.
+    /// The index the next link will get
     next_link_index: usize,
     /// The last text seen.
     ///
-    /// Used to handle autolinks.
+    /// We use this field to track the content of link tags, and omit a link
+    /// reference if the link text equals the link destination, ie, if the link
+    /// appears in text literally.
     last_text: Option<Cow<'a, str>>,
 }
 
