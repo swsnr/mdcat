@@ -5,7 +5,7 @@ readme = "README.md"
 homepage = "https://github.com/lunaryorn/mdless.rs"
 repository = "https://github.com/lunaryorn/mdless.rs"
 keywords = ["markdown", "less"]
-version = "0.1.0"
+version = "0.1.0-pre"
 categories = ["command-line-utilities", "text-processing"]
 license = "Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
@@ -19,3 +19,12 @@ structopt = "^0.1"
 structopt-derive = "^0.1"
 termion = "^1.5"
 pulldown-cmark = "^0.1"
+
+[package.metadata.release]
+sign-commit = true
+upload-doc = false
+dev-version-ext = "pre"
+pre-release-commit-message = "Release {{version}}"
+pro-release-commit-message = "Bump version to {{version}}"
+tag-message = "mdless {{version}}"
+tag-prefix = "mdless-"
