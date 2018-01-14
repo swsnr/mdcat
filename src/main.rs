@@ -63,14 +63,10 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
         tty::dump_events(&mut std::io::stdout(), parser)?;
         Ok(())
     } else {
-        let columns = match args.columns {
-            Some(c) => Ok(c) as std::io::Result<u16>,
-            None => {
-                let (columns, _) = termion::terminal_size()?;
-                Ok(columns)
-            }
-        }?;
-
+        let columns = args.columns.map_or_else::<std::io::Result<u16>, _, _>(
+            || termion::terminal_size().map(|s| s.0),
+            |c| Ok(c),
+        )?;
         let syntax_set = SyntaxSet::load_defaults_newlines();
         let themes = ThemeSet::load_defaults().themes;
         let theme = themes
