@@ -16,6 +16,8 @@
 
 use std::fmt::Display;
 use std::io::{Result, Write};
+use std::borrow::Cow;
+use std::collections::VecDeque;
 use pulldown_cmark::{Event, Tag};
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
@@ -49,6 +51,8 @@ where
     for event in events {
         write_event(&mut context, event)?;
     }
+    // At the end, print any remaining links
+    context.write_pending_links()?;
     Ok(())
 }
 
@@ -70,8 +74,19 @@ enum ListItemKind {
     Ordered(usize),
 }
 
+/// A link.
+#[derive(Debug)]
+struct Link<'a> {
+    /// The index of the link.
+    index: usize,
+    /// The link destination.
+    destination: Cow<'a, str>,
+    /// The link title.
+    title: Cow<'a, str>,
+}
+
 /// Context for TTY rendering.
-struct Context<'b, W: Write + 'b> {
+struct Context<'a, 'b, W: Write + 'b> {
     /// The writer to write to.
     writer: &'b mut W,
     /// The maximum number of columns to write.
@@ -91,10 +106,18 @@ struct Context<'b, W: Write + 'b> {
     ///
     /// A stack of kinds to address nested lists.
     list_item_kind: Vec<ListItemKind>,
+    /// Pending links to be flushed.
+    pending_links: VecDeque<Link<'a>>,
+    /// The link index, ie, what number the next link will get.
+    next_link_index: usize,
+    /// The last text seen.
+    ///
+    /// Used to handle autolinks.
+    last_text: Option<Cow<'a, str>>,
 }
 
-impl<'b, W: Write + 'b> Context<'b, W> {
-    fn new(writer: &'b mut W, columns: u16) -> Context<'b, W> {
+impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
+    fn new(writer: &'b mut W, columns: u16) -> Context<'a, 'b, W> {
         Context {
             writer,
             columns,
@@ -104,6 +127,9 @@ impl<'b, W: Write + 'b> Context<'b, W> {
             // We start inline; blocks must be started explicitly
             block_level: BlockLevel::Inline,
             list_item_kind: Vec::new(),
+            pending_links: VecDeque::new(),
+            next_link_index: 1,
+            last_text: None,
         }
     }
 
@@ -191,13 +217,50 @@ impl<'b, W: Write + 'b> Context<'b, W> {
             self.enable_style(style::NoItalic)
         }
     }
+
+    /// Add a link to the context.
+    ///
+    /// Return the index of the link.
+    fn add_link(&mut self, destination: Cow<'a, str>, title: Cow<'a, str>) -> usize {
+        let index = self.next_link_index;
+        self.next_link_index += 1;
+        self.pending_links.push_back(Link {
+            index,
+            destination,
+            title,
+        });
+        index
+    }
+
+    /// Write all pending links.
+    ///
+    /// Empty all pending links afterwards.
+    fn write_pending_links(&mut self) -> Result<()> {
+        if !self.pending_links.is_empty() {
+            self.newline()?;
+            self.enable_style(color::Fg(color::Blue))?;
+            while let Some(link) = self.pending_links.pop_front() {
+                write!(
+                    self.writer,
+                    "[{}]: {} {}",
+                    link.index, link.destination, link.title
+                )?;
+                self.newline()?;
+            }
+            self.reset_last_style()?;
+        };
+        Ok(())
+    }
 }
 
 /// Write a single `event` in the given context.
-fn write_event<'a, W: Write>(ctx: &mut Context<W>, event: Event<'a>) -> Result<()> {
+fn write_event<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, event: Event<'a>) -> Result<()> {
     match event {
         SoftBreak | HardBreak => ctx.newline_and_indent()?,
-        Text(text) => write!(ctx.writer, "{}", text)?,
+        Text(text) => {
+            write!(ctx.writer, "{}", text)?;
+            ctx.last_text = Some(text);
+        }
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
         event => eprintln!("Unknown event: {:?}", event),
@@ -215,6 +278,9 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             write!(ctx.writer, "{}", "\u{2500}".repeat(ctx.columns as usize))?
         }
         Header(level) => {
+            // Before we start a new header, write all pending links to keep
+            // them close to the text where they appeared in
+            ctx.write_pending_links()?;
             ctx.start_inline_text()?;
             let level_indicator = "\u{2504}".repeat((level - 1) as usize);
             ctx.enable_style(style::Bold)?;
@@ -257,20 +323,20 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         FootnoteDefinition(_) => panic!("mdless does not support footnotes"),
         Table(_alignment) => panic!("mdless does not support tables"),
-        TableHead => (),
-        TableRow => (),
-        TableCell => (),
+        TableHead => {}
+        TableRow => {}
+        TableCell => {}
         Emphasis => ctx.enable_emphasis()?,
         Strong => ctx.enable_style(style::Bold)?,
         Code => ctx.enable_style(color::Fg(color::Yellow))?,
-        Link(_, _) => (),
-        Image(_, _) => (),
+        Link(_, _) => {}
+        Image(_, _) => {}
     };
     Ok(())
 }
 
 /// Write the end of a `tag` in the given context.
-fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
+fn end_tag<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, tag: Tag<'a>) -> Result<()> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => {
@@ -307,11 +373,11 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             }
             ctx.end_inline_text_with_margin()?
         }
-        FootnoteDefinition(_) => (),
-        Table(_) => (),
-        TableHead => (),
-        TableRow => (),
-        TableCell => (),
+        FootnoteDefinition(_) => {}
+        Table(_) => {}
+        TableHead => {}
+        TableRow => {}
+        TableCell => {}
         Emphasis => {
             ctx.reset_last_style()?;
             ctx.emphasis_level -= 1;
@@ -319,8 +385,21 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         Strong => ctx.reset_last_style()?,
         Code => ctx.reset_last_style()?,
-        Link(_, _) => (),
-        Image(_, _) => (),
+        Link(destination, title) => match ctx.last_text {
+            Some(ref text) if *text == destination => {
+                // Do nothing if the last printed text matches the destination
+                // of the link.  In this we likely looked at an inline autolink
+                // and we should not repeat the link when it's already in text.
+            }
+            _ => {
+                let index = ctx.add_link(destination, title);
+                // Reference link
+                ctx.enable_style(color::Fg(color::Blue))?;
+                write!(ctx.writer, "[{}]", index)?;
+                ctx.reset_last_style()?;
+            }
+        },
+        Image(_, _) => {}
     };
     Ok(())
 }

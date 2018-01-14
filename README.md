@@ -19,7 +19,7 @@ Less for markdown.
 - [x] Ordered lists
 - [x] Numbered lists
 - [x] Nested lists
-- [ ] Links
+- [x] Links
 - [ ] Syntax highlighting for code blocks
 - [ ] Show inline HTML and block HTML literally
 - [ ] iTerm2 integration: Set marks for headings to jump back and forth
