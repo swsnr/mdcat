@@ -22,7 +22,8 @@ extern crate termion;
 use std::io::prelude::*;
 use std::io::stdin;
 use std::fs::File;
-use structopt::StructOpt;
+use std::error::Error;
+use structopt::{clap, StructOpt};
 use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::ThemeSet;
@@ -31,10 +32,12 @@ mod tty;
 
 #[derive(StructOpt, Debug)]
 struct Arguments {
+    #[structopt(long = "dump-events", help = "Dump events and exit .")] dump_events: bool,
     #[structopt(long = "columns", help = "Maximum number of columns.  Defaults to terminal width")]
     columns: Option<u16>,
-    #[structopt(long = "dump-events", help = "Do not render, but just dump events")]
-    dump_events: bool,
+    #[structopt(short = "l", long = "light",
+                help = "Use Solarized Light for syntax highlighting (default dark).")]
+    light: bool,
     #[structopt(help = "Input file.  If absent or - read from standard input")]
     filename: Option<String>,
 }
@@ -52,11 +55,13 @@ fn read_input(filename: Option<String>) -> std::io::Result<String> {
     Ok(buffer)
 }
 
-fn process_arguments(args: Arguments) -> std::io::Result<()> {
+fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
     let input = read_input(args.filename)?;
     let parser = Parser::new(&input);
+
     if args.dump_events {
-        tty::dump_events(&mut std::io::stdout(), parser)
+        tty::dump_events(&mut std::io::stdout(), parser)?;
+        Ok(())
     } else {
         let columns = match args.columns {
             Some(c) => Ok(c) as std::io::Result<u16>,
@@ -65,12 +70,18 @@ fn process_arguments(args: Arguments) -> std::io::Result<()> {
                 Ok(columns)
             }
         }?;
+
         let syntax_set = SyntaxSet::load_defaults_newlines();
         let themes = ThemeSet::load_defaults().themes;
         let theme = themes
-            .get("Solarized (light)")
-            .expect("Failed to get syntax highlighting theme");
-        tty::push_tty(&mut std::io::stdout(), columns, parser, syntax_set, &theme)
+            .get(if args.light {
+                "Solarized (light)"
+            } else {
+                "Solarized (dark)"
+            })
+            .unwrap();
+        tty::push_tty(&mut std::io::stdout(), columns, parser, syntax_set, theme)?;
+        Ok(())
     }
 }
 
