@@ -28,7 +28,8 @@ syntax mdless **panics**!
 - [x] Numbered lists
 - [x] Nested lists
 - [x] Links
-- [ ] Syntax highlighting for code blocks
+- [x] Syntax highlighting for code blocks
+- [ ] Automatically select highlight theme according to terminal background
 - [ ] Show inline HTML and block HTML literally
 - [ ] iTerm2 integration: Set marks for headings to jump back and forth
 - [ ] iTerm2 integration: Show images inline
