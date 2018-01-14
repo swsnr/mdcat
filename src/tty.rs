@@ -97,7 +97,7 @@ impl<'b, W: Write + 'b> Context<'b, W> {
     ///
     /// Set `block_context` accordingly, and separate this block from the
     /// previous.
-    fn start_block(&mut self) -> Result<()> {
+    fn start_inline_text(&mut self) -> Result<()> {
         match self.block_level {
             BlockLevel::Block => self.newline_and_indent()?,
             _ => (),
@@ -111,7 +111,7 @@ impl<'b, W: Write + 'b> Context<'b, W> {
     ///
     /// Set `block_context` accordingly and end inline context—if present—with
     /// a line break.
-    fn end_block(&mut self) -> Result<()> {
+    fn end_inline_text_with_margin(&mut self) -> Result<()> {
         match self.block_level {
             BlockLevel::Inline => self.newline()?,
             _ => (),
@@ -194,14 +194,14 @@ fn write_event<'a, W: Write>(ctx: &mut Context<W>, event: Event<'a>) -> Result<(
 /// Write the start of a `tag` in the given context.
 fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
     match tag {
-        Paragraph => ctx.start_block()?,
+        Paragraph => ctx.start_inline_text()?,
         Rule => {
-            ctx.start_block()?;
+            ctx.start_inline_text()?;
             ctx.enable_style(color::Fg(color::LightBlack))?;
             write!(ctx.writer, "{}", "\u{2500}".repeat(ctx.columns as usize))?
         }
         Header(level) => {
-            ctx.start_block()?;
+            ctx.start_inline_text()?;
             let level_indicator = "  ".repeat((level - 1) as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;
@@ -209,19 +209,19 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         BlockQuote => {
             ctx.indent_level += 4;
-            ctx.start_block()?;
+            ctx.start_inline_text()?;
             ctx.enable_style(color::Fg(color::LightBlack))?;
             ctx.enable_emphasis()?
         }
         CodeBlock(_) => {
-            ctx.start_block()?;
+            ctx.start_inline_text()?;
             ctx.enable_style(color::Fg(color::Yellow))?
         }
         List(_) => {
             if ctx.block_level == BlockLevel::Inline {
                 ctx.newline()?;
             }
-            ctx.start_block()?
+            ctx.start_inline_text()?
         }
         Item => {
             ctx.indent()?;
@@ -246,31 +246,31 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
 /// Write the end of a `tag` in the given context.
 fn end_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
     match tag {
-        Paragraph => ctx.end_block()?,
+        Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => {
             ctx.active_styles.pop();
-            ctx.end_block()?
+            ctx.end_inline_text_with_margin()?
         }
         Header(_) => {
             ctx.active_styles.pop();
             ctx.active_styles.pop();
-            ctx.end_block()?
+            ctx.end_inline_text_with_margin()?
         }
         BlockQuote => {
             ctx.indent_level -= 4;
             ctx.emphasis_level -= 1;
             ctx.active_styles.pop();
             ctx.reset_last_style()?;
-            ctx.end_block()?
+            ctx.end_inline_text_with_margin()?
         }
         CodeBlock(_) => {
             ctx.reset_last_style()?;
-            ctx.end_block()?
+            ctx.end_inline_text_with_margin()?
         }
-        List(_) => ctx.end_block()?,
+        List(_) => ctx.end_inline_text_with_margin()?,
         Item => {
             ctx.indent_level -= 2;
-            ctx.end_block()?
+            ctx.end_inline_text_with_margin()?
         }
         FootnoteDefinition(_) => (),
         Table(_) => (),
