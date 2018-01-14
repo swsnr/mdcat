@@ -18,6 +18,7 @@ maintenance = { status = "actively-developed" }
 structopt = "^0.1"
 structopt-derive = "^0.1"
 termion = "^1.5"
+syntect = "^2"
 pulldown-cmark = "^0.1"
 
 [package.metadata.release]

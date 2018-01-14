@@ -22,6 +22,10 @@ use pulldown_cmark::{Event, Tag};
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use termion::{color, style};
+use syntect::easy::HighlightLines;
+use syntect::parsing::SyntaxSet;
+use syntect::highlighting::Theme;
+use syntect::util::as_24_bit_terminal_escaped;
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
@@ -42,12 +46,18 @@ where
 ///
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
-pub fn push_tty<'a, W, I>(writer: &mut W, columns: u16, events: I) -> Result<()>
+pub fn push_tty<'a, 'b, W, I>(
+    writer: &mut W,
+    columns: u16,
+    events: I,
+    syntax_set: SyntaxSet,
+    theme: &'b Theme,
+) -> Result<()>
 where
     I: Iterator<Item = Event<'a>>,
     W: Write,
 {
-    let mut context = Context::new(writer, columns);
+    let mut context = Context::new(writer, columns, syntax_set, theme);
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -127,8 +137,23 @@ struct LinkContext<'a> {
     last_text: Option<Cow<'a, str>>,
 }
 
+struct CodeContext<'a> {
+    /// Available syntaxes
+    syntax_set: SyntaxSet,
+    /// The theme to use for highlighting
+    theme: &'a Theme,
+    /// The current highlighter.
+    ///
+    /// If set assume we are in a code block and highlight all text with this
+    /// highlighter.
+    ///
+    /// Otherwise we are either outside of a code block or in a code block we
+    /// cannot highlight.
+    current_highlighter: Option<HighlightLines<'a>>,
+}
+
 /// Context for TTY rendering.
-struct Context<'a, 'b, W: Write + 'b> {
+struct Context<'a, 'b, 'c, W: Write + 'b> {
     /// Context for output.
     output: OutputContext<'b, W>,
     /// Context for styling
@@ -137,14 +162,21 @@ struct Context<'a, 'b, W: Write + 'b> {
     block: BlockContext,
     /// Context to keep track of links.
     links: LinkContext<'a>,
+    /// Context for code blocks
+    code: CodeContext<'c>,
     /// The kind of the current list item.
     ///
     /// A stack of kinds to address nested lists.
     list_item_kind: Vec<ListItemKind>,
 }
 
-impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
-    fn new(writer: &'b mut W, columns: u16) -> Context<'a, 'b, W> {
+impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
+    fn new(
+        writer: &'b mut W,
+        columns: u16,
+        syntax_set: SyntaxSet,
+        theme: &'c Theme,
+    ) -> Context<'a, 'b, 'c, W> {
         Context {
             output: OutputContext { writer, columns },
             style: StyleContext {
@@ -160,6 +192,11 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
                 pending_links: VecDeque::new(),
                 next_link_index: 1,
                 last_text: None,
+            },
+            code: CodeContext {
+                syntax_set,
+                theme,
+                current_highlighter: None,
             },
             list_item_kind: Vec::new(),
         }
@@ -292,13 +329,26 @@ impl<'a, 'b, W: Write + 'b> Context<'a, 'b, W> {
 }
 
 /// Write a single `event` in the given context.
-fn write_event<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, event: Event<'a>) -> Result<()> {
+fn write_event<'a, 'b, 'c, W: Write>(
+    ctx: &mut Context<'a, 'b, 'c, W>,
+    event: Event<'a>,
+) -> Result<()> {
     match event {
         SoftBreak | HardBreak => ctx.newline_and_indent()?,
-        Text(text) => {
-            write!(ctx.output.writer, "{}", text)?;
-            ctx.links.last_text = Some(text);
-        }
+        Text(text) => match ctx.code.current_highlighter {
+            Some(ref mut highlighter) => {
+                let regions = highlighter.highlight(&text);
+                write!(
+                    ctx.output.writer,
+                    "{}",
+                    as_24_bit_terminal_escaped(&regions, true)
+                )?;
+            }
+            None => {
+                write!(ctx.output.writer, "{}", text)?;
+                ctx.links.last_text = Some(text);
+            }
+        },
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
         Html(_) => panic!("mdless does not support HTML blocks"),
@@ -337,9 +387,24 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.enable_style(color::Fg(color::LightBlack))?;
             ctx.enable_emphasis()?
         }
-        CodeBlock(_) => {
+        CodeBlock(name) => {
             ctx.start_inline_text()?;
-            ctx.enable_style(color::Fg(color::Yellow))?
+            if name.is_empty() {
+                ctx.enable_style(color::Fg(color::Yellow))?
+            } else {
+                if let Some(syntax) = ctx.code.syntax_set.find_syntax_by_token(&name) {
+                    ctx.code.current_highlighter =
+                        Some(HighlightLines::new(syntax, ctx.code.theme));
+                    // Give the highlighter a clear terminal with no prior
+                    // styles.
+                    write!(ctx.output.writer, "{}", style::Reset)?;
+                }
+                if ctx.code.current_highlighter.is_none() {
+                    // If we have no highlighter for the current block, fall
+                    // back to default style.
+                    ctx.enable_style(color::Fg(color::Yellow))?
+                }
+            }
         }
         List(kind) => {
             ctx.list_item_kind.push(match kind {
@@ -383,7 +448,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
 }
 
 /// Write the end of a `tag` in the given context.
-fn end_tag<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, tag: Tag<'a>) -> Result<()> {
+fn end_tag<'a, 'b, 'c, W: Write>(ctx: &mut Context<'a, 'b, 'c, W>, tag: Tag<'a>) -> Result<()> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => {
@@ -403,7 +468,17 @@ fn end_tag<'a, 'b, W: Write>(ctx: &mut Context<'a, 'b, W>, tag: Tag<'a>) -> Resu
             ctx.end_inline_text_with_margin()?
         }
         CodeBlock(_) => {
-            ctx.reset_last_style()?;
+            match ctx.code.current_highlighter {
+                None => ctx.reset_last_style()?,
+                Some(_) => {
+                    // Reset anything left over from the highlighter and
+                    // re-enable all current styles.
+                    write!(ctx.output.writer, "{}", style::Reset)?;
+                    ctx.flush_styles()?;
+                    ctx.code.current_highlighter = None;
+                }
+            }
+
             ctx.end_inline_text_with_margin()?
         }
         List(_) => {

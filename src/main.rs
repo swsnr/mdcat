@@ -16,13 +16,16 @@ extern crate pulldown_cmark;
 extern crate structopt;
 #[macro_use]
 extern crate structopt_derive;
+extern crate syntect;
 extern crate termion;
 
-use structopt::StructOpt;
 use std::io::prelude::*;
 use std::io::stdin;
 use std::fs::File;
+use structopt::StructOpt;
 use pulldown_cmark::Parser;
+use syntect::parsing::SyntaxSet;
+use syntect::highlighting::ThemeSet;
 
 mod tty;
 
@@ -62,7 +65,12 @@ fn process_arguments(args: Arguments) -> std::io::Result<()> {
                 Ok(columns)
             }
         }?;
-        tty::push_tty(&mut std::io::stdout(), columns, parser)
+        let syntax_set = SyntaxSet::load_defaults_newlines();
+        let themes = ThemeSet::load_defaults().themes;
+        let theme = themes
+            .get("Solarized (light)")
+            .expect("Failed to get syntax highlighting theme");
+        tty::push_tty(&mut std::io::stdout(), columns, parser, syntax_set, &theme)
     }
 }
 
