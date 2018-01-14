@@ -23,7 +23,7 @@ use std::io::prelude::*;
 use std::io::stdin;
 use std::fs::File;
 use std::error::Error;
-use structopt::{clap, StructOpt};
+use structopt::StructOpt;
 use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::ThemeSet;
