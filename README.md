@@ -29,7 +29,7 @@ syntax mdless **panics**!
 - [x] Nested lists
 - [x] Links
 - [x] Syntax highlighting for code blocks
-- [ ] Automatically select highlight theme according to terminal background
+- [ ] Automatically select highlight theme according to terminal background [GH-5](https://github.com/lunaryorn/mdless/issues/5)
 - [ ] Show inline HTML and block HTML literally
 - [ ] iTerm2 integration: Set marks for headings to jump back and forth
 - [ ] iTerm2 integration: Show images inline
