@@ -6,6 +6,16 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam **nonumy
 eirmod tempor invidunt** ut labore et *dolore magna aliquyam erat*, sed diam
 voluptua. `At vero eos et` accusam et
 
+## Headers
+
+### Level 3
+
+#### Level 4
+
+##### Level 5
+
+###### Level 6
+
 ## Links
 
 Another paragraph has an auto-link (see <https://www.example.com>) inside.

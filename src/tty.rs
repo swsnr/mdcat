@@ -216,7 +216,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         Header(level) => {
             ctx.start_inline_text()?;
-            let level_indicator = "  ".repeat((level - 1) as usize);
+            let level_indicator = "\u{2504}".repeat((level - 1) as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;
             write!(ctx.writer, "{}", level_indicator)?
