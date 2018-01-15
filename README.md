@@ -1,7 +1,7 @@
 # mdless
 
 [![Current release]( https://img.shields.io/crates/v/mdless.svg)][crates]
-![Maintenance as is](https://img.shields.io/badge/maintenace-as--is-yellow.svg)
+![Actively developer](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
 [![Build status](https://img.shields.io/travis/lunaryorn/mdless.rs/master.svg)][travis]
 
 Less for [CommonMark][], a standardized variant of Markdown:
