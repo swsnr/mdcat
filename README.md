@@ -20,6 +20,8 @@ $ mdless sample.md
 `mdless` supports all checked features in the list below.  For unsupported
 syntax mdless **panics**!
 
+### Version 1
+
 - [x] Inline formatting, with proper nesting of emphasis
 - [x] Headings
 - [x] Block quotes
@@ -29,11 +31,14 @@ syntax mdless **panics**!
 - [x] Nested lists
 - [x] Links
 - [x] Syntax highlighting for code blocks
-- [ ] Automatically select highlight theme according to terminal background [GH-5](https://github.com/lunaryorn/mdless/issues/5)
 - [ ] Show inline HTML and block HTML literally
 - [ ] iTerm2 integration: Set marks for headings to jump back and forth
 - [ ] iTerm2 integration: Show images inline
 - [ ] Feed output to less for paging
+
+### Future plans
+
+- [ ] Automatically select highlight theme according to terminal background [GH-5](https://github.com/lunaryorn/mdless/issues/5)
 - [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdless/issues/3)
 - [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdless/issues/1)
 - [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdless/issues/2)
