@@ -15,6 +15,23 @@ $ mdless sample.md
 [travis]: https://travis-ci.org/lunaryorn/mdless.rs
 [CommonMark]: http://commonmark.org
 
+## Installation and Requirements
+
+Install [Rust][1] and run `cargo install mdless`.
+
+To keep mdless up to date install [cargo-update][2] and run `cargo
+install-update mdless`.
+
+mdless needs a decent modern terminal with a good font; in particular mdless
+uses
+
+- 256 colours, and
+- italic text.
+
+[1]: https://www.rustup.rs
+[2]: https://github.com/nabijaczleweli/cargo-update
+[3]: https://www.iterm2.com
+
 ## Status and future plans
 
 `mdless` supports all checked features in the list below.  For unsupported
