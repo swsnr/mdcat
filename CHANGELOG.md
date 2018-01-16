@@ -8,6 +8,7 @@ This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.
 ### Added
 - Highlight code blocks with Solarized color theme (light or dark)
 - Naively show inline and block HTML
+- Set iTerm marks for headings
 
 ## [0.1.1] – 2018-01-14
 ### Fixed

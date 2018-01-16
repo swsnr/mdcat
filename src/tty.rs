@@ -388,6 +388,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // them close to the text where they appeared in
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
+            write!(ctx.output.writer, "\x1B]1337;SetMark\x07")?;
             let level_indicator = "\u{2504}".repeat((level - 1) as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;

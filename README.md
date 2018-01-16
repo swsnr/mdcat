@@ -25,8 +25,11 @@ install-update mdless`.
 mdless needs a decent modern terminal with a good font; in particular mdless
 uses
 
-- 256 colours, and
-- italic text.
+- 256 colours,
+- italic text, and
+- iTerm2 escape codes for marks.
+
+iTerm2 works; I do not know about other terminal emulators.
 
 [1]: https://www.rustup.rs
 [2]: https://github.com/nabijaczleweli/cargo-update
@@ -49,7 +52,7 @@ syntax mdless **panics**!
 - [x] Links
 - [x] Syntax highlighting for code blocks
 - [x] Show inline HTML and block HTML literally
-- [ ] iTerm2 integration: Set marks for headings to jump back and forth
+- [x] iTerm2 integration: Set marks for headings to jump back and forth
 - [ ] iTerm2 integration: Show images inline
 - [ ] Feed output to less for paging
 
