@@ -55,6 +55,32 @@ fn read_input(filename: Option<String>) -> std::io::Result<String> {
     Ok(buffer)
 }
 
+/// Get the number of columns for the terminal from `$COLUMNS`.
+///
+/// Return `None` if the variable is not set or does not contain a valid number.
+fn terminal_columns_from_env() -> Option<u16> {
+    std::env::var("COLUMNS")
+        .ok()
+        .and_then(|value| value.parse::<u16>().ok())
+}
+
+/// Get the number of columns from the TTY device.
+///
+/// Return `None` if TTY access fails.
+fn terminal_columns_from_tty() -> Option<u16> {
+    termion::terminal_size().map(|size| size.0).ok()
+}
+
+/// Make a best effort to get the number of columns for the terminal.
+///
+/// Try to get the terminal size from the TTY device, or from the `$COLUMNS`
+/// environment variable, and eventually assume a default of 80 for safety.
+fn terminal_columns() -> u16 {
+    terminal_columns_from_tty()
+        .or_else(terminal_columns_from_env)
+        .unwrap_or(80)
+}
+
 fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
     let input = read_input(args.filename)?;
     let parser = Parser::new(&input);
@@ -63,10 +89,7 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
         tty::dump_events(&mut std::io::stdout(), parser)?;
         Ok(())
     } else {
-        let columns = args.columns.map_or_else::<std::io::Result<u16>, _, _>(
-            || termion::terminal_size().map(|s| s.0),
-            |c| Ok(c),
-        )?;
+        let columns = args.columns.unwrap_or_else(terminal_columns);
         let syntax_set = SyntaxSet::load_defaults_newlines();
         let themes = ThemeSet::load_defaults().themes;
         let theme = themes
