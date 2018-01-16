@@ -422,7 +422,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             write!(
                 ctx.output.writer,
                 "{}",
-                "\u{2500}".repeat(ctx.output.columns as usize)
+                "\u{2550}".repeat(ctx.output.columns as usize)
             )?
         }
         Header(level) => {
@@ -431,7 +431,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
             ctx.set_iterm_mark()?;
-            let level_indicator = "\u{2504}".repeat((level - 1) as usize);
+            let level_indicator = "\u{2504}".repeat(level as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;
             write!(ctx.output.writer, "{}", level_indicator)?
@@ -444,6 +444,13 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         CodeBlock(name) => {
             ctx.start_inline_text()?;
+            ctx.enable_style(color::Fg(color::LightBlack))?;
+            write!(
+                ctx.output.writer,
+                "{}\n",
+                "\u{2500}".repeat(ctx.output.columns.min(20) as usize)
+            )?;
+            ctx.reset_last_style()?;
             if ctx.style.format != Format::NoColours {
                 if name.is_empty() {
                     ctx.enable_style(color::Fg(color::Yellow))?
@@ -530,11 +537,18 @@ fn end_tag<'a, 'b, 'c, W: Write>(ctx: &mut Context<'a, 'b, 'c, W>, tag: Tag<'a>)
                 Some(_) => {
                     // Reset anything left over from the highlighter and
                     // re-enable all current styles.
-                    write!(ctx.output.writer, "{}", style::Reset)?;
+                    write!(ctx.output.writer, "{}\n", style::Reset)?;
                     ctx.flush_styles()?;
                     ctx.code.current_highlighter = None;
                 }
             }
+            ctx.enable_style(color::Fg(color::LightBlack))?;
+            write!(
+                ctx.output.writer,
+                "{}\n",
+                "\u{2500}".repeat(ctx.output.columns.min(20) as usize)
+            )?;
+            ctx.reset_last_style()?;
             ctx.end_inline_text_with_margin()?
         }
         List(_) => {
