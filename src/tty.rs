@@ -351,7 +351,7 @@ fn write_event<'a, 'b, 'c, W: Write>(
         },
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
-        Html(content) =>  {
+        Html(content) => {
             ctx.newline()?;
             ctx.enable_style(color::Fg(color::LightBlack))?;
             for line in content.lines() {
