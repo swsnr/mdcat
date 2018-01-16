@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.0] – 2018-01-16
 ### Added
 - Highlight code blocks with Solarized color theme (light or dark).
 - Naively show inline and block HTML.
