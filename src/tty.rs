@@ -351,8 +351,20 @@ fn write_event<'a, 'b, 'c, W: Write>(
         },
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
-        Html(_) => panic!("mdless does not support HTML blocks"),
-        InlineHtml(_) => panic!("mdless does not support inline HTML"),
+        Html(content) =>  {
+            ctx.newline()?;
+            ctx.enable_style(color::Fg(color::LightBlack))?;
+            for line in content.lines() {
+                write!(ctx.output.writer, "{}", line)?;
+                ctx.newline()?;
+            }
+            ctx.reset_last_style()?;
+        }
+        InlineHtml(tag) => {
+            ctx.enable_style(color::Fg(color::LightBlack))?;
+            write!(ctx.output.writer, "{}", tag)?;
+            ctx.reset_last_style()?;
+        }
         FootnoteReference(_) => panic!("mdless does not support footnotes"),
     };
     Ok(())
@@ -478,7 +490,6 @@ fn end_tag<'a, 'b, 'c, W: Write>(ctx: &mut Context<'a, 'b, 'c, W>, tag: Tag<'a>)
                     ctx.code.current_highlighter = None;
                 }
             }
-
             ctx.end_inline_text_with_margin()?
         }
         List(_) => {
