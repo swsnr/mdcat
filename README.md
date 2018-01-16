@@ -62,6 +62,7 @@ syntax mdless **panics**!
 - [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdless/issues/3)
 - [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdless/issues/1)
 - [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdless/issues/2)
+- [ ] Use basic ANSI colour highlighting instead of 24 colours to better fit the terminal theme
 - [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4](https://github.com/lunaryorn/mdless/issues/4)
 
 ## License
