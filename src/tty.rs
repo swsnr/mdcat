@@ -39,6 +39,17 @@ where
     Ok(())
 }
 
+#[derive(Debug, PartialEq)]
+/// What kind of format to use.
+pub enum Format {
+    /// No colours and no styles.
+    NoColours,
+    /// Basic colours and styles.
+    Colours,
+    /// Colours and additional formatting for iTerm.
+    ITermColours,
+}
+
 /// Write markdown to a TTY.
 ///
 /// Iterate over Markdown AST `events`, format each event for TTY output and
@@ -50,6 +61,7 @@ pub fn push_tty<'a, 'b, W, I>(
     writer: &mut W,
     columns: u16,
     events: I,
+    format: Format,
     syntax_set: SyntaxSet,
     theme: &'b Theme,
 ) -> Result<()>
@@ -57,7 +69,7 @@ where
     I: Iterator<Item = Event<'a>>,
     W: Write,
 {
-    let mut context = Context::new(writer, columns, syntax_set, theme);
+    let mut context = Context::new(writer, columns, format, syntax_set, theme);
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -105,6 +117,8 @@ struct OutputContext<'a, W: Write + 'a> {
 
 #[derive(Debug)]
 struct StyleContext {
+    /// The format to use.
+    format: Format,
     /// All styles applied to the current text.
     active_styles: Vec<String>,
     /// What level of emphasis we are currently at.
@@ -174,6 +188,7 @@ impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
     fn new(
         writer: &'b mut W,
         columns: u16,
+        format: Format,
         syntax_set: SyntaxSet,
         theme: &'c Theme,
     ) -> Context<'a, 'b, 'c, W> {
@@ -182,6 +197,7 @@ impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
             style: StyleContext {
                 active_styles: Vec::new(),
                 emphasis_level: 0,
+                format,
             },
             block: BlockContext {
                 indent_level: 0,
@@ -232,20 +248,28 @@ impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
 
     /// Set all active styles on the underlying writer.
     fn flush_styles(&mut self) -> Result<()> {
-        write!(self.output.writer, "{}", self.style.active_styles.join(""))
+        match self.style.format {
+            Format::NoColours => Ok(()),
+            _ => write!(self.output.writer, "{}", self.style.active_styles.join("")),
+        }
     }
 
     /// Write a newline.
     ///
     /// Restart all current styles after the newline.
     fn newline(&mut self) -> Result<()> {
-        write!(self.output.writer, "{}\n", style::Reset)?;
-        self.flush_styles()
+        match self.style.format {
+            Format::NoColours => write!(self.output.writer, "\n"),
+            _ => {
+                write!(self.output.writer, "{}\n", style::Reset)?;
+                self.flush_styles()
+            }
+        }
     }
 
     /// Write a newline and indent.
     ///
-    /// Reset formatting before the line break, and set all active styles again
+    /// Reset format before the line break, and set all active styles again
     /// after the line break.
     fn newline_and_indent(&mut self) -> Result<()> {
         self.newline()?;
@@ -268,17 +292,27 @@ impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
     /// To undo a style call `active_styles.pop()`, followed by `set_styles()`
     /// or `newline()`.
     fn enable_style<S: Display>(&mut self, style: S) -> Result<()> {
-        self.style
-            .active_styles
-            .push(format!("{}", style).to_owned());
-        write!(self.output.writer, "{}", style)
+        match self.style.format {
+            Format::NoColours => Ok(()),
+            _ => {
+                self.style
+                    .active_styles
+                    .push(format!("{}", style).to_owned());
+                write!(self.output.writer, "{}", style)
+            }
+        }
     }
 
     /// Remove the last style and flush styles on the TTY.
     fn reset_last_style(&mut self) -> Result<()> {
-        self.style.active_styles.pop();
-        write!(self.output.writer, "{}", style::Reset)?;
-        self.flush_styles()
+        match self.style.format {
+            Format::NoColours => Ok(()),
+            _ => {
+                self.style.active_styles.pop();
+                write!(self.output.writer, "{}", style::Reset)?;
+                self.flush_styles()
+            }
+        }
     }
 
     /// Enable emphasis.
@@ -325,6 +359,14 @@ impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
             self.reset_last_style()?;
         };
         Ok(())
+    }
+
+    /// Set a mark for iTerm2.
+    fn set_iterm_mark(&mut self) -> Result<()> {
+        match self.style.format {
+            Format::ITermColours => write!(self.output.writer, "\x1B]1337;SetMark\x07"),
+            _ => Ok(()),
+        }
     }
 }
 
@@ -388,7 +430,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // them close to the text where they appeared in
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
-            write!(ctx.output.writer, "\x1B]1337;SetMark\x07")?;
+            ctx.set_iterm_mark()?;
             let level_indicator = "\u{2504}".repeat((level - 1) as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;
@@ -402,20 +444,22 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         CodeBlock(name) => {
             ctx.start_inline_text()?;
-            if name.is_empty() {
-                ctx.enable_style(color::Fg(color::Yellow))?
-            } else {
-                if let Some(syntax) = ctx.code.syntax_set.find_syntax_by_token(&name) {
-                    ctx.code.current_highlighter =
-                        Some(HighlightLines::new(syntax, ctx.code.theme));
-                    // Give the highlighter a clear terminal with no prior
-                    // styles.
-                    write!(ctx.output.writer, "{}", style::Reset)?;
-                }
-                if ctx.code.current_highlighter.is_none() {
-                    // If we have no highlighter for the current block, fall
-                    // back to default style.
+            if ctx.style.format != Format::NoColours {
+                if name.is_empty() {
                     ctx.enable_style(color::Fg(color::Yellow))?
+                } else {
+                    if let Some(syntax) = ctx.code.syntax_set.find_syntax_by_token(&name) {
+                        ctx.code.current_highlighter =
+                            Some(HighlightLines::new(syntax, ctx.code.theme));
+                        // Give the highlighter a clear terminal with no prior
+                        // styles.
+                        write!(ctx.output.writer, "{}", style::Reset)?;
+                    }
+                    if ctx.code.current_highlighter.is_none() {
+                        // If we have no highlighter for the current block, fall
+                        // back to default style.
+                        ctx.enable_style(color::Fg(color::Yellow))?
+                    }
                 }
             }
         }

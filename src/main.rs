@@ -20,15 +20,45 @@ extern crate syntect;
 extern crate termion;
 
 use std::io::prelude::*;
-use std::io::stdin;
+use std::io::{stdin, stdout};
 use std::fs::File;
 use std::error::Error;
+use std::str::FromStr;
 use structopt::StructOpt;
 use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::ThemeSet;
 
 mod tty;
+
+#[derive(Debug)]
+enum Colour {
+    Yes,
+    No,
+    Auto,
+}
+
+#[derive(Debug)]
+struct InvalidColour {}
+
+impl ToString for InvalidColour {
+    fn to_string(&self) -> String {
+        String::from("invalid colour setting")
+    }
+}
+
+impl FromStr for Colour {
+    type Err = InvalidColour;
+
+    fn from_str(value: &str) -> Result<Self, InvalidColour> {
+        match value.to_lowercase().as_str() {
+            "yes" => Ok(Colour::Yes),
+            "no" => Ok(Colour::No),
+            "auto" => Ok(Colour::Auto),
+            _ => Err(InvalidColour {}),
+        }
+    }
+}
 
 #[derive(StructOpt, Debug)]
 struct Arguments {
@@ -38,6 +68,9 @@ struct Arguments {
     #[structopt(short = "l", long = "light",
                 help = "Use Solarized Light for syntax highlighting (default dark).")]
     light: bool,
+    #[structopt(short = "c", long = "colour", help = "Whether to enable colours (default auto)",
+                default_value = "auto")]
+    colour: Colour,
     #[structopt(help = "Input file.  If absent or - read from standard input")]
     filename: Option<String>,
 }
@@ -81,6 +114,27 @@ fn terminal_columns() -> u16 {
         .unwrap_or(80)
 }
 
+/// Whether we run in an iTerm terminal.
+fn is_iterm() -> bool {
+    std::env::var("TERM_PROGRAM")
+        .map(|value| value.contains("iTerm.app"))
+        .unwrap_or(false)
+}
+
+/// Auto-detect the format to use.
+///
+/// If `force_colours` is true enforce colours, otherwise use colours if we run
+/// on a TTY.  If we run on a TTY and detect that we run within iTerm, enable
+/// additional formatting for iTerm.
+fn auto_detect_format(force_colours: bool) -> tty::Format {
+    match termion::is_tty(&stdout()) {
+        true if is_iterm() => tty::Format::ITermColours,
+        true => tty::Format::Colours,
+        _ if force_colours => tty::Format::Colours,
+        _ => tty::Format::NoColours,
+    }
+}
+
 fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
     let input = read_input(args.filename)?;
     let parser = Parser::new(&input);
@@ -99,7 +153,19 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
                 "Solarized (dark)"
             })
             .unwrap();
-        tty::push_tty(&mut std::io::stdout(), columns, parser, syntax_set, theme)?;
+        let format = match args.colour {
+            Colour::No => tty::Format::NoColours,
+            Colour::Yes => auto_detect_format(true),
+            Colour::Auto => auto_detect_format(false),
+        };
+        tty::push_tty(
+            &mut std::io::stdout(),
+            columns,
+            parser,
+            format,
+            syntax_set,
+            theme,
+        )?;
         Ok(())
     }
 }
