@@ -157,8 +157,8 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "mdless"
-version = "0.1.2-pre"
+name = "mdcat"
+version = "0.2.1-pre"
 dependencies = [
  "pulldown-cmark 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",

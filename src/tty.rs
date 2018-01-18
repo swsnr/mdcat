@@ -407,7 +407,7 @@ fn write_event<'a, 'b, 'c, W: Write>(
             write!(ctx.output.writer, "{}", tag)?;
             ctx.reset_last_style()?;
         }
-        FootnoteReference(_) => panic!("mdless does not support footnotes"),
+        FootnoteReference(_) => panic!("mdcat does not support footnotes"),
     };
     Ok(())
 }
@@ -494,11 +494,11 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
                 None => panic!("List item without list item kind"),
             }
         }
-        FootnoteDefinition(_) => panic!("mdless does not support footnotes"),
-        Table(_alignment) => panic!("mdless does not support tables"),
-        TableHead => panic!("mdless does not support tables"),
-        TableRow => panic!("mdless does not support tables"),
-        TableCell => panic!("mdless does not support tables"),
+        FootnoteDefinition(_) => panic!("mdcat does not support footnotes"),
+        Table(_alignment) => panic!("mdcat does not support tables"),
+        TableHead => panic!("mdcat does not support tables"),
+        TableRow => panic!("mdcat does not support tables"),
+        TableCell => panic!("mdcat does not support tables"),
         Emphasis => ctx.enable_emphasis()?,
         Strong => ctx.enable_style(style::Bold)?,
         Code => ctx.enable_style(color::Fg(color::Yellow))?,
@@ -506,7 +506,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // We do not need to do anything when opening links; we render the
             // link reference when closing the link.
         }
-        Image(_, _) => panic!("mdless does not support images"),
+        Image(_, _) => panic!("mdcat does not support images"),
     };
     Ok(())
 }

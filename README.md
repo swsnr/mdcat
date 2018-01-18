@@ -1,28 +1,29 @@
-# mdless
+# mdcat
 
-[![Current release]( https://img.shields.io/crates/v/mdless.svg)][crates]
+[![Current release]( https://img.shields.io/crates/v/mdcat.svg)][crates]
 ![Actively developer](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
-[![Build status](https://img.shields.io/travis/lunaryorn/mdless.rs/master.svg)][travis]
+[![Build status](https://img.shields.io/travis/lunaryorn/mdcat.rs/master.svg)][travis]
 
-Less for [CommonMark][], a standardized variant of Markdown:
+`cat` for [CommonMark][]: Show CommonMark (a standardized Markdown dialect)
+documents on text terminals.
 
 ```
-$ mdless sample.md
+$ mdcat sample.md
 ```
 
-[crates-badge]: https://img.shields.io/crates/v/mdless.svg
-[crates]: https://crates.io/crates/mdless
-[travis]: https://travis-ci.org/lunaryorn/mdless.rs
+[crates-badge]: https://img.shields.io/crates/v/mdcat.svg
+[crates]: https://crates.io/crates/mdcat
+[travis]: https://travis-ci.org/lunaryorn/mdcat
 [CommonMark]: http://commonmark.org
 
 ## Installation and Requirements
 
-Install [Rust][1] and run `cargo install mdless`.
+Install [Rust][1] and run `cargo install mdcat`.
 
-To keep mdless up to date install [cargo-update][2] and run `cargo
-install-update mdless`.
+To keep mdcat up to date install [cargo-update][2] and run `cargo
+install-update mdcat`.
 
-mdless needs a decent modern terminal with a good font; in particular mdless
+mdcat needs a decent modern terminal with a good font; in particular mdcat
 uses
 
 - 256 colours,
@@ -37,8 +38,8 @@ iTerm2 works; I do not know about other terminal emulators.
 
 ## Status and future plans
 
-`mdless` supports all checked features in the list below.  For unsupported
-syntax mdless **panics**!
+`mdcat` supports all checked features in the list below.  For unsupported
+syntax mdcat **panics**!
 
 ### Version 1
 
@@ -58,12 +59,12 @@ syntax mdless **panics**!
 
 ### Future plans
 
-- [ ] Automatically select highlight theme according to terminal background [GH-5](https://github.com/lunaryorn/mdless/issues/5)
-- [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdless/issues/3)
-- [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdless/issues/1)
-- [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdless/issues/2)
+- [ ] Automatically select highlight theme according to terminal background [GH-5](https://github.com/lunaryorn/mdcat/issues/5)
+- [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdcat/issues/3)
+- [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdcat/issues/1)
+- [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdcat/issues/2)
 - [ ] Use basic ANSI colour highlighting instead of 24 colours to better fit the terminal theme
-- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4](https://github.com/lunaryorn/mdless/issues/4)
+- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4](https://github.com/lunaryorn/mdcat/issues/4)
 
 ## License
 
