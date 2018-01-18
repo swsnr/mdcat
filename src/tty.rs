@@ -506,7 +506,9 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // We do not need to do anything when opening links; we render the
             // link reference when closing the link.
         }
-        Image(_, _) => panic!("mdcat does not support images"),
+        Image(_link, _title) => {
+            ctx.start_inline_text()?;
+        }
     };
     Ok(())
 }
@@ -591,7 +593,11 @@ fn end_tag<'a, 'b, 'c, W: Write>(ctx: &mut Context<'a, 'b, 'c, W>, tag: Tag<'a>)
                 ctx.reset_last_style()?;
             }
         },
-        Image(_, _) => {}
+        Image(link, _title) => {
+            ctx.enable_style(color::Fg(color::Blue))?;
+            write!(ctx.output.writer, "({})", link)?;
+            ctx.reset_last_style()?;
+        }
     };
     Ok(())
 }

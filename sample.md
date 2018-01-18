@@ -30,7 +30,11 @@ sea takimata sanctus est Lorem ipsum dolor sit amet.
 
 [1]: http://www.example.com/reference
 
+## Images
 
+Images as blocks:
+
+![The Rust logo](./rust-logo-128x128-blk.png)
 
 ## Lists
 
