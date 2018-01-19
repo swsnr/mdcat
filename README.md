@@ -55,7 +55,6 @@ syntax mdcat **panics**!
 - [x] Show inline HTML and block HTML literally
 - [x] iTerm2 integration: Set marks for headings to jump back and forth
 - [x] iTerm2 integration: Show images inline
-- [ ] Feed output to less for paging
 
 ### Future plans
 
