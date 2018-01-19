@@ -563,7 +563,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         Image(link, _title) => {
             if let Format::ITermColours = ctx.style.format {
-                if let Ok(_) = ctx.write_iterm_inline_image(Path::new(&*link)) {
+                if ctx.write_iterm_inline_image(Path::new(&*link)).is_ok() {
                     // If we could write an inline image, disable text output to
                     // suppress the image title.
                     ctx.image.inline_image = true;
