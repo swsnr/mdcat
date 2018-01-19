@@ -58,12 +58,13 @@ syntax mdcat **panics**!
 
 ### Future plans
 
-- [ ] Automatically select highlight theme according to terminal background [GH-5](https://github.com/lunaryorn/mdcat/issues/5)
-- [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdcat/issues/3)
-- [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdcat/issues/1)
-- [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdcat/issues/2)
-- [ ] Use basic ANSI colour highlighting instead of 24 colours to better fit the terminal theme
-- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4](https://github.com/lunaryorn/mdcat/issues/4)
+- [ ] Fetch remote images to show them inline.
+- [ ] Use basic ANSI colour highlighting instead of 24 colours to better fit the terminal theme.
+- [ ] Automatically select highlight theme according to terminal background [GH-5](https://github.com/lunaryorn/mdcat/issues/5).
+- [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdcat/issues/3).
+- [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdcat/issues/1).
+- [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdcat/issues/2).
+- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4](https://github.com/lunaryorn/mdcat/issues/4).
 
 ## License
 
