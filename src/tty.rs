@@ -654,7 +654,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
                 // If we could not write an inline image, write the image link
                 // after the image title.
                 ctx.enable_style(color::Fg(color::Blue))?;
-                write!(ctx.output.writer, "({})", link)?;
+                write!(ctx.output.writer, " ({})", link)?;
                 ctx.reset_last_style()?;
             }
             ctx.image.inline_image = false;
