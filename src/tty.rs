@@ -235,10 +235,9 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// Set `block_context` accordingly, and separate this block from the
     /// previous.
     fn start_inline_text(&mut self) -> Result<()> {
-        match self.block.level {
-            BlockLevel::Block => self.newline_and_indent()?,
-            _ => (),
-        }
+        if let BlockLevel::Block = self.block.level {
+            self.newline_and_indent()?
+        };
         // We are inline now
         self.block.level = BlockLevel::Inline;
         Ok(())
@@ -249,9 +248,8 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// Set `block_context` accordingly and end inline context—if present—with
     /// a line break.
     fn end_inline_text_with_margin(&mut self) -> Result<()> {
-        match self.block.level {
-            BlockLevel::Inline => self.newline()?,
-            _ => (),
+        if let BlockLevel::Inline = self.block.level {
+            self.newline()?
         };
         // We are back at blocks now
         self.block.level = BlockLevel::Block;
@@ -576,11 +574,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
             }
             ctx.end_inline_text_with_margin()?
         }
-        FootnoteDefinition(_) => {}
-        Table(_) => {}
-        TableHead => {}
-        TableRow => {}
-        TableCell => {}
+        FootnoteDefinition(_) | Table(_) | TableHead | TableRow | TableCell => {}
         Emphasis => {
             ctx.reset_last_style()?;
             ctx.style.emphasis_level -= 1;

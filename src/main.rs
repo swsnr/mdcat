@@ -139,11 +139,16 @@ fn is_iterm() -> bool {
 /// on a TTY.  If we run on a TTY and detect that we run within iTerm, enable
 /// additional formatting for iTerm.
 fn auto_detect_format(force_colours: bool) -> tty::Format {
-    match termion::is_tty(&stdout()) {
-        true if is_iterm() => tty::Format::ITermColours,
-        true => tty::Format::Colours,
-        _ if force_colours => tty::Format::Colours,
-        _ => tty::Format::NoColours,
+    if termion::is_tty(&stdout()) {
+        if is_iterm() {
+            tty::Format::ITermColours
+        } else {
+            tty::Format::Colours
+        }
+    } else if force_colours {
+        tty::Format::Colours
+    } else {
+        tty::Format::NoColours
     }
 }
 
@@ -158,13 +163,11 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
         let columns = args.columns.unwrap_or_else(terminal_columns);
         let syntax_set = SyntaxSet::load_defaults_newlines();
         let themes = ThemeSet::load_defaults().themes;
-        let theme = themes
-            .get(if args.light {
-                "Solarized (light)"
-            } else {
-                "Solarized (dark)"
-            })
-            .unwrap();
+        let theme = &themes[if args.light {
+                                "Solarized (light)"
+                            } else {
+                                "Solarized (dark)"
+                            }];
         let format = match args.colour {
             Colour::No => tty::Format::NoColours,
             Colour::Yes => auto_detect_format(true),
