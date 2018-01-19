@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![deny(warnings)]
+#![deny(missing_docs)]
+#![cfg_attr(feature = "cargo-clippy", deny(clippy))]
+
+//! Show CommonMark documents on TTYs.
+
 extern crate base64;
 extern crate pulldown_cmark;
 extern crate structopt;
