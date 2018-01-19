@@ -1,0 +1,2 @@
+# CommonMark is no rust identifier in our docs :)
+doc-valid-idents = ["CommonMark"]
