@@ -34,7 +34,7 @@ sea takimata sanctus est Lorem ipsum dolor sit amet.
 
 Images as blocks:
 
-![The Rust logo](./rust-logo-128x128-blk.png)
+![The Rust logo](./rust-logo-128x128.png)
 
 ## Lists
 
