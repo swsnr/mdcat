@@ -2,7 +2,7 @@
 
 [![Current release]( https://img.shields.io/crates/v/mdcat.svg)][crates]
 ![Actively developer](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
-[![Build status](https://img.shields.io/travis/lunaryorn/mdcat.rs/master.svg)][travis]
+[![Build status](https://img.shields.io/travis/lunaryorn/mdcat/master.svg)][travis]
 
 `cat` for [CommonMark][]: Show CommonMark (a standardized Markdown dialect)
 documents on text terminals.
