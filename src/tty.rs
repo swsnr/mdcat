@@ -364,9 +364,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
                 write!(
                     self.output.writer,
                     "[{}]: {} {}",
-                    link.index,
-                    link.destination,
-                    link.title
+                    link.index, link.destination, link.title
                 )?;
                 self.newline()?;
             }
