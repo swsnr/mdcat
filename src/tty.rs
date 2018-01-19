@@ -580,8 +580,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
             ctx.style.emphasis_level -= 1;
             ()
         }
-        Strong => ctx.reset_last_style()?,
-        Code => ctx.reset_last_style()?,
+        Strong | Code => ctx.reset_last_style()?,
         Link(destination, title) => match ctx.links.last_text {
             Some(ref text) if *text == destination => {
                 // Do nothing if the last printed text matches the destination
