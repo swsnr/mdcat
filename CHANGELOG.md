@@ -7,6 +7,7 @@ This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.
 ## [Unreleased]
 ### Added
 - Print image links
+- Show images inline on iTerm.
 
 ### Changed
 - Rename to `mdcat`; I have no plans to add paging to this tool.

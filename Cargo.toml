@@ -20,6 +20,7 @@ structopt-derive = "^0.1"
 termion = "^1.5"
 syntect = "^2"
 pulldown-cmark = "^0.1"
+base64 = "^0.9"
 
 [package.metadata.release]
 sign-commit = true

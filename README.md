@@ -54,7 +54,7 @@ syntax mdcat **panics**!
 - [x] Syntax highlighting for code blocks
 - [x] Show inline HTML and block HTML literally
 - [x] iTerm2 integration: Set marks for headings to jump back and forth
-- [ ] iTerm2 integration: Show images inline
+- [x] iTerm2 integration: Show images inline
 - [ ] Feed output to less for paging
 
 ### Future plans

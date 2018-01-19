@@ -17,6 +17,9 @@
 use std::path::Path;
 use std::fmt::Display;
 use std::io::{Result, Write};
+use std::io::prelude::*;
+use std::os::unix::ffi::OsStrExt;
+use std::fs::File;
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use pulldown_cmark::{Event, Tag};
@@ -27,6 +30,7 @@ use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::Theme;
 use syntect::util::as_24_bit_terminal_escaped;
+use base64;
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
@@ -174,6 +178,15 @@ struct CodeContext<'a> {
     current_highlighter: Option<HighlightLines<'a>>,
 }
 
+/// Context for images.
+#[derive(Debug)]
+struct ImageContext {
+    /// Whether we currently write an inline image.
+    ///
+    /// Suppresses all text output.
+    inline_image: bool,
+}
+
 /// Context for TTY rendering.
 struct Context<'a, W: Write + 'a> {
     /// Context for input.
@@ -188,6 +201,8 @@ struct Context<'a, W: Write + 'a> {
     links: LinkContext<'a>,
     /// Context for code blocks
     code: CodeContext<'a>,
+    /// Context for images.
+    image: ImageContext,
     /// The kind of the current list item.
     ///
     /// A stack of kinds to address nested lists.
@@ -225,6 +240,9 @@ impl<'a, W: Write + 'a> Context<'a, W> {
                 syntax_set,
                 theme,
                 current_highlighter: None,
+            },
+            image: ImageContext {
+                inline_image: false,
             },
             list_item_kind: Vec::new(),
         }
@@ -371,12 +389,48 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         Ok(())
     }
 
+    /// Write highlighted `text`.
+    ///
+    /// If the code context has a highlighter, use it to highlight `text` and
+    /// write it.  Otherwise write `text` without highlighting.
+    fn write_highlighted(&mut self, text: Cow<'a, str>) -> Result<()> {
+        match self.code.current_highlighter {
+            Some(ref mut highlighter) => {
+                let regions = highlighter.highlight(&text);
+                write!(
+                    self.output.writer,
+                    "{}",
+                    as_24_bit_terminal_escaped(&regions, true)
+                )?;
+            }
+            None => {
+                write!(self.output.writer, "{}", text)?;
+                self.links.last_text = Some(text);
+            }
+        }
+        Ok(())
+    }
+
     /// Set a mark for iTerm2.
     fn set_iterm_mark(&mut self) -> Result<()> {
-        match self.style.format {
-            Format::ITermColours => write!(self.output.writer, "\x1B]1337;SetMark\x07"),
-            _ => Ok(()),
-        }
+        if let Format::ITermColours = self.style.format {
+            write!(self.output.writer, "\x1B]1337;SetMark\x07")?;
+        };
+        Ok(())
+    }
+
+    /// Write an inline image for iTerm2.
+    fn write_iterm_inline_image(&mut self, path: &Path) -> Result<()> {
+        let mut source = File::open(self.input.base_dir.join(path))?;
+        let mut contents = Vec::new();
+        source.read_to_end(&mut contents)?;
+        let encoded_contents = base64::encode(&contents);
+        let encoded_filename = base64::encode(path.as_os_str().as_bytes());
+        write!(
+            self.output.writer,
+            "\x1B]1337;File=name={};inline=1:{}\x07",
+            encoded_filename, encoded_contents
+        )
     }
 }
 
@@ -384,20 +438,14 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Result<()> {
     match event {
         SoftBreak | HardBreak => ctx.newline_and_indent()?,
-        Text(text) => match ctx.code.current_highlighter {
-            Some(ref mut highlighter) => {
-                let regions = highlighter.highlight(&text);
-                write!(
-                    ctx.output.writer,
-                    "{}",
-                    as_24_bit_terminal_escaped(&regions, true)
-                )?;
+        Text(text) => {
+            // When we wrote an inline image suppress the text output, ie, the
+            // image title.  We do not need it if we can show the image on the
+            // terminal.
+            if !ctx.image.inline_image {
+                ctx.write_highlighted(text)?;
             }
-            None => {
-                write!(ctx.output.writer, "{}", text)?;
-                ctx.links.last_text = Some(text);
-            }
-        },
+        }
         Start(tag) => start_tag(ctx, tag)?,
         End(tag) => end_tag(ctx, tag)?,
         Html(content) => {
@@ -513,8 +561,14 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // We do not need to do anything when opening links; we render the
             // link reference when closing the link.
         }
-        Image(_link, _title) => {
-            ctx.start_inline_text()?;
+        Image(link, _title) => {
+            if let Format::ITermColours = ctx.style.format {
+                if let Ok(_) = ctx.write_iterm_inline_image(Path::new(&*link)) {
+                    // If we could write an inline image, disable text output to
+                    // suppress the image title.
+                    ctx.image.inline_image = true;
+                }
+            }
         }
     };
     Ok(())
@@ -596,9 +650,14 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
             }
         },
         Image(link, _title) => {
-            ctx.enable_style(color::Fg(color::Blue))?;
-            write!(ctx.output.writer, "({})", link)?;
-            ctx.reset_last_style()?;
+            if !ctx.image.inline_image {
+                // If we could not write an inline image, write the image link
+                // after the image title.
+                ctx.enable_style(color::Fg(color::Blue))?;
+                write!(ctx.output.writer, "({})", link)?;
+                ctx.reset_last_style()?;
+            }
+            ctx.image.inline_image = false;
         }
     };
     Ok(())
