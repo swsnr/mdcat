@@ -11,10 +11,32 @@ documents on text terminals.
 $ mdcat sample.md
 ```
 
+![mdcat showcase](./screenshot.png)
+
+The screenshot shows [iTerm2][] with the [PragmataPro font][pp] and the
+[Dracula][] color theme.
+
 [crates-badge]: https://img.shields.io/crates/v/mdcat.svg
 [crates]: https://crates.io/crates/mdcat
 [travis]: https://travis-ci.org/lunaryorn/mdcat
 [CommonMark]: http://commonmark.org
+[iterm2]: https://www.iterm2.com
+[pp]: https://www.fsd.it/shop/fonts/pragmatapro/
+[dracula]: https://draculatheme.com/iterm/
+
+## Features
+
+* All CommonMark syntax
+* Syntax highlighting for code blocks
+* Image support with [iTerm2][]
+* [iTerm2][] jump marks for headings: Jump forwards and backwards to headings
+  with <key>⇧⌘↓</key> and <key>⇧⌘↑</key> respectively.
+
+Not supported:
+
+* CommonMark extensions: Footnotes and Tables
+* Images from remote URLs
+* Re-filling paragraphs
 
 ## Installation and Requirements
 
@@ -23,38 +45,11 @@ Install [Rust][1] and run `cargo install mdcat`.
 To keep mdcat up to date install [cargo-update][2] and run `cargo
 install-update mdcat`.
 
-mdcat needs a decent modern terminal with a good font; in particular mdcat
-uses
-
-- 256 colours,
-- italic text, and
-- iTerm2 escape codes for marks.
-
-iTerm2 works; I do not know about other terminal emulators.
+`mdcat` works best with [iTerm2][] or a compatible terminal emulator, and a
+good terminal font which includes italic characters.
 
 [1]: https://www.rustup.rs
 [2]: https://github.com/nabijaczleweli/cargo-update
-[3]: https://www.iterm2.com
-
-## Status and future plans
-
-`mdcat` supports all checked features in the list below.  For unsupported
-syntax mdcat **panics**!
-
-### Version 1
-
-- [x] Inline formatting, with proper nesting of emphasis
-- [x] Headings
-- [x] Block quotes
-- [x] Code blocks
-- [x] Ordered lists
-- [x] Numbered lists
-- [x] Nested lists
-- [x] Links
-- [x] Syntax highlighting for code blocks
-- [x] Show inline HTML and block HTML literally
-- [x] iTerm2 integration: Set marks for headings to jump back and forth
-- [x] iTerm2 integration: Show images inline
 
 ### Future plans
 
