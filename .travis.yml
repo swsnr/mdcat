@@ -22,6 +22,6 @@ jobs:
       script: cargo fmt -- --write-mode=diff
       rust: beta
     - stage: lint
-      before_install: cargo install clippy
+      before_install: cargo install --force clippy
       script: cargo clippy
       rust: nightly
