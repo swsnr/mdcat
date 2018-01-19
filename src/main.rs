@@ -19,6 +19,7 @@ extern crate structopt_derive;
 extern crate syntect;
 extern crate termion;
 
+use std::path::PathBuf;
 use std::io::prelude::*;
 use std::io::{stdin, stdout};
 use std::fs::File;
@@ -75,17 +76,28 @@ struct Arguments {
     filename: Option<String>,
 }
 
-fn read_input(filename: Option<String>) -> std::io::Result<String> {
+fn read_input<T: AsRef<str>>(filename: Option<T>) -> std::io::Result<(PathBuf, String)> {
+    let cd = std::env::current_dir()?;
     let mut buffer = String::new();
     match filename {
-        None => stdin().read_to_string(&mut buffer)?,
-        Some(ref filename) if filename == "-" => stdin().read_to_string(&mut buffer)?,
-        Some(ref filename) => {
-            let mut source = File::open(filename)?;
-            source.read_to_string(&mut buffer)?
+        None => {
+            stdin().read_to_string(&mut buffer)?;
+            Ok((cd, buffer))
         }
-    };
-    Ok(buffer)
+        Some(ref filename) if filename.as_ref() == "-" => {
+            stdin().read_to_string(&mut buffer)?;
+            Ok((cd, buffer))
+        }
+        Some(filename) => {
+            let mut source = File::open(filename.as_ref())?;
+            source.read_to_string(&mut buffer)?;
+            let base_dir = cd.join(filename.as_ref())
+                .parent()
+                .map(|p| p.to_path_buf())
+                .unwrap_or(cd);
+            Ok((base_dir, buffer))
+        }
+    }
 }
 
 /// Get the number of columns for the terminal from `$COLUMNS`.
@@ -136,7 +148,7 @@ fn auto_detect_format(force_colours: bool) -> tty::Format {
 }
 
 fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
-    let input = read_input(args.filename)?;
+    let (base_dir, input) = read_input(args.filename)?;
     let parser = Parser::new(&input);
 
     if args.dump_events {
@@ -162,6 +174,7 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
             &mut std::io::stdout(),
             columns,
             parser,
+            &base_dir,
             format,
             syntax_set,
             theme,

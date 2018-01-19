@@ -14,6 +14,7 @@
 
 //! Write markdown to TTYs.
 
+use std::path::Path;
 use std::fmt::Display;
 use std::io::{Result, Write};
 use std::borrow::Cow;
@@ -57,19 +58,20 @@ pub enum Format {
 ///
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
-pub fn push_tty<'a, 'b, W, I>(
+pub fn push_tty<'a, W, I>(
     writer: &mut W,
     columns: u16,
     events: I,
+    base_dir: &'a Path,
     format: Format,
     syntax_set: SyntaxSet,
-    theme: &'b Theme,
+    theme: &'a Theme,
 ) -> Result<()>
 where
     I: Iterator<Item = Event<'a>>,
     W: Write,
 {
-    let mut context = Context::new(writer, columns, format, syntax_set, theme);
+    let mut context = Context::new(writer, columns, base_dir, format, syntax_set, theme);
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -105,6 +107,12 @@ struct Link<'a> {
     destination: Cow<'a, str>,
     /// The link title.
     title: Cow<'a, str>,
+}
+
+/// Input context.
+struct InputContext<'a> {
+    /// The base directory, to resolve relative paths
+    base_dir: &'a Path,
 }
 
 /// Context for TTY output.
@@ -167,9 +175,11 @@ struct CodeContext<'a> {
 }
 
 /// Context for TTY rendering.
-struct Context<'a, 'b, 'c, W: Write + 'b> {
+struct Context<'a, W: Write + 'a> {
+    /// Context for input.
+    input: InputContext<'a>,
     /// Context for output.
-    output: OutputContext<'b, W>,
+    output: OutputContext<'a, W>,
     /// Context for styling
     style: StyleContext,
     /// Context for the current block.
@@ -177,22 +187,24 @@ struct Context<'a, 'b, 'c, W: Write + 'b> {
     /// Context to keep track of links.
     links: LinkContext<'a>,
     /// Context for code blocks
-    code: CodeContext<'c>,
+    code: CodeContext<'a>,
     /// The kind of the current list item.
     ///
     /// A stack of kinds to address nested lists.
     list_item_kind: Vec<ListItemKind>,
 }
 
-impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
+impl<'a, W: Write + 'a> Context<'a, W> {
     fn new(
-        writer: &'b mut W,
+        writer: &'a mut W,
         columns: u16,
+        base_dir: &'a Path,
         format: Format,
         syntax_set: SyntaxSet,
-        theme: &'c Theme,
-    ) -> Context<'a, 'b, 'c, W> {
+        theme: &'a Theme,
+    ) -> Context<'a, W> {
         Context {
+            input: InputContext { base_dir },
             output: OutputContext { writer, columns },
             style: StyleContext {
                 active_styles: Vec::new(),
@@ -352,7 +364,9 @@ impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
                 write!(
                     self.output.writer,
                     "[{}]: {} {}",
-                    link.index, link.destination, link.title
+                    link.index,
+                    link.destination,
+                    link.title
                 )?;
                 self.newline()?;
             }
@@ -371,10 +385,7 @@ impl<'a, 'b, 'c, W: Write + 'b> Context<'a, 'b, 'c, W> {
 }
 
 /// Write a single `event` in the given context.
-fn write_event<'a, 'b, 'c, W: Write>(
-    ctx: &mut Context<'a, 'b, 'c, W>,
-    event: Event<'a>,
-) -> Result<()> {
+fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Result<()> {
     match event {
         SoftBreak | HardBreak => ctx.newline_and_indent()?,
         Text(text) => match ctx.code.current_highlighter {
@@ -514,7 +525,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
 }
 
 /// Write the end of a `tag` in the given context.
-fn end_tag<'a, 'b, 'c, W: Write>(ctx: &mut Context<'a, 'b, 'c, W>, tag: Tag<'a>) -> Result<()> {
+fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => {
