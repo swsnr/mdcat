@@ -13,6 +13,7 @@ cache: cargo
 stages:
   - formatting
   - test
+  - lint
 jobs:
   include:
     # Add an additional stage to check formatting
@@ -20,3 +21,7 @@ jobs:
       before_install: rustup component add rustfmt-preview
       script: cargo fmt -- --write-mode=diff
       rust: beta
+    - stage: lint
+      before_install: cargo install clippy
+      script: cargo clippy
+      rust: nightly
