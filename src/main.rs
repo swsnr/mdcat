@@ -37,6 +37,7 @@ use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 
 mod tty;
+mod highlighting;
 
 #[derive(Debug)]
 enum Colour {
