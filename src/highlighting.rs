@@ -40,22 +40,23 @@ pub fn write_as_ansi<W: Write>(writer: &mut W, regions: &[(Style, &str)]) -> Res
             (fg.r, fg.g, fg.b)
         };
         match rgb {
-            (0x00, 0x2b, 0x36) => write!(writer, "{}", color::Fg(color::Reset))?, // base03
-            (0x07, 0x36, 0x42) => write!(writer, "{}", color::Fg(color::Reset))?, // base02
-            (0x58, 0x6e, 0x75) => write!(writer, "{}", color::Fg(color::Reset))?, // base01
-            (0x65, 0x7b, 0x83) => write!(writer, "{}", color::Fg(color::Reset))?, // base00
-            (0x83, 0x94, 0x96) => write!(writer, "{}", color::Fg(color::Reset))?, // base0
-            (0x93, 0xa1, 0xa1) => write!(writer, "{}", color::Fg(color::Reset))?, // base1
-            (0xee, 0xe8, 0xd5) => write!(writer, "{}", color::Fg(color::Reset))?, // base2
-            (0xfd, 0xf6, 0xe3) => write!(writer, "{}", color::Fg(color::Reset))?, // base3
+            // base03, base02, base01, base00, base0, base1, base2, and base3
+            (0x00, 0x2b, 0x36)
+            | (0x07, 0x36, 0x42)
+            | (0x58, 0x6e, 0x75)
+            | (0x65, 0x7b, 0x83)
+            | (0x83, 0x94, 0x96)
+            | (0x93, 0xa1, 0xa1)
+            | (0xee, 0xe8, 0xd5)
+            | (0xfd, 0xf6, 0xe3) => write!(writer, "{}", color::Fg(color::Reset))?,
             (0xb5, 0x89, 0x00) => write!(writer, "{}", color::Fg(color::Yellow))?, // yellow
             (0xcb, 0x4b, 0x16) => write!(writer, "{}", color::Fg(color::LightRed))?, // orange
-            (0xdc, 0x32, 0x2f) => write!(writer, "{}", color::Fg(color::Red))?,   // red
+            (0xdc, 0x32, 0x2f) => write!(writer, "{}", color::Fg(color::Red))?,    // red
             (0xd3, 0x36, 0x82) => write!(writer, "{}", color::Fg(color::Magenta))?, // magenta
             (0x6c, 0x71, 0xc4) => write!(writer, "{}", color::Fg(color::LightMagenta))?, // violet
-            (0x26, 0x8b, 0xd2) => write!(writer, "{}", color::Fg(color::Blue))?,  // blue
-            (0x2a, 0xa1, 0x98) => write!(writer, "{}", color::Fg(color::Cyan))?,  // cyan
-            (0x85, 0x99, 0x00) => write!(writer, "{}", color::Fg(color::Green))?, // green
+            (0x26, 0x8b, 0xd2) => write!(writer, "{}", color::Fg(color::Blue))?,   // blue
+            (0x2a, 0xa1, 0x98) => write!(writer, "{}", color::Fg(color::Cyan))?,   // cyan
+            (0x85, 0x99, 0x00) => write!(writer, "{}", color::Fg(color::Green))?,  // green
             (r, g, b) => panic!("Unexpected RGB colour: #{:2>0x}{:2>0x}{:2>0x}", r, g, b),
         };
         let font = style.font_style;

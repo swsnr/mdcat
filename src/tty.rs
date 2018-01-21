@@ -75,7 +75,7 @@ where
     W: Write,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
-    let mut context = Context::new(writer, columns, base_dir, format, syntax_set, &theme);
+    let mut context = Context::new(writer, columns, base_dir, format, syntax_set, theme);
     for event in events {
         write_event(&mut context, event)?;
     }
