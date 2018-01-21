@@ -5,6 +5,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Use 8-bit ANSI colours for syntax highlighting to fit all kinds of terminal
+  colour themes.
+
+### Fixed
+- Remove excess space at the end of code blocks
+
+### Removed
+- Remove `--light` switch which became redundant due to better syntax
+  highlighting.
 
 ## [0.3.0] – 2018-01-19
 ### Added

@@ -28,8 +28,7 @@ use pulldown_cmark::Tag::*;
 use termion::{color, style};
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
-use syntect::highlighting::Theme;
-use syntect::util::as_24_bit_terminal_escaped;
+use syntect::highlighting::{FontStyle, Style, Theme, ThemeSet};
 use base64;
 
 /// Dump markdown events to a writer.
@@ -69,13 +68,13 @@ pub fn push_tty<'a, W, I>(
     base_dir: &'a Path,
     format: Format,
     syntax_set: SyntaxSet,
-    theme: &'a Theme,
 ) -> Result<()>
 where
     I: Iterator<Item = Event<'a>>,
     W: Write,
 {
-    let mut context = Context::new(writer, columns, base_dir, format, syntax_set, theme);
+    let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
+    let mut context = Context::new(writer, columns, base_dir, format, syntax_set, &theme);
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -389,6 +388,17 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         Ok(())
     }
 
+    /// Write a simple border.
+    fn write_border(&mut self) -> Result<()> {
+        self.enable_style(color::Fg(color::LightBlack))?;
+        write!(
+            self.output.writer,
+            "{}\n",
+            "\u{2500}".repeat(self.output.columns.min(20) as usize)
+        )?;
+        self.reset_last_style()
+    }
+
     /// Write highlighted `text`.
     ///
     /// If the code context has a highlighter, use it to highlight `text` and
@@ -397,11 +407,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         match self.code.current_highlighter {
             Some(ref mut highlighter) => {
                 let regions = highlighter.highlight(&text);
-                write!(
-                    self.output.writer,
-                    "{}",
-                    as_24_bit_terminal_escaped(&regions, true)
-                )?;
+                write_as_ansi(self.output.writer, &regions)?;
             }
             None => {
                 write!(self.output.writer, "{}", text)?;
@@ -432,6 +438,67 @@ impl<'a, W: Write + 'a> Context<'a, W> {
             encoded_filename, encoded_contents
         )
     }
+}
+
+/// Write regions as ANSI 8-bit coloured text.
+///
+/// We use this function to simplify syntax highlighting to 8-bit ANSI values
+/// which every theme provides.  Contrary to 24 bit colours this gives us a good
+/// guarantee that highlighting works with any terminal colour theme, whether
+/// light or dark, and saves us all the hassle of mismatching colours.
+///
+/// We assume Solarized colours here: Solarized cleanly maps to 8-bit ANSI
+/// colours so we can safely map its RGB colour values back to ANSI colours.  We
+/// do so for all accent colours, but leave "base*" colours alone: Base colours
+/// change depending on light or dark Solarized; to address both light and dark
+/// backgrounds we must map all base colours to the default terminal colours.
+///
+/// Furthermore we completely ignore any background colour settings, to avoid
+/// conflicts with the terminal colour theme.s
+fn write_as_ansi<W: Write>(writer: &mut W, regions: &[(Style, &str)]) -> Result<()> {
+    for &(style, text) in regions {
+        let rgb = {
+            let fg = style.foreground;
+            (fg.r, fg.g, fg.b)
+        };
+        match rgb {
+            (0x00, 0x2b, 0x36) => write!(writer, "{}", color::Fg(color::Reset))?, // base03
+            (0x07, 0x36, 0x42) => write!(writer, "{}", color::Fg(color::Reset))?, // base02
+            (0x58, 0x6e, 0x75) => write!(writer, "{}", color::Fg(color::Reset))?, // base01
+            (0x65, 0x7b, 0x83) => write!(writer, "{}", color::Fg(color::Reset))?, // base00
+            (0x83, 0x94, 0x96) => write!(writer, "{}", color::Fg(color::Reset))?, // base0
+            (0x93, 0xa1, 0xa1) => write!(writer, "{}", color::Fg(color::Reset))?, // base1
+            (0xee, 0xe8, 0xd5) => write!(writer, "{}", color::Fg(color::Reset))?, // base2
+            (0xfd, 0xf6, 0xe3) => write!(writer, "{}", color::Fg(color::Reset))?, // base3
+            (0xb5, 0x89, 0x00) => write!(writer, "{}", color::Fg(color::Yellow))?, // yellow
+            (0xcb, 0x4b, 0x16) => write!(writer, "{}", color::Fg(color::LightRed))?, // orange
+            (0xdc, 0x32, 0x2f) => write!(writer, "{}", color::Fg(color::Red))?,   // red
+            (0xd3, 0x36, 0x82) => write!(writer, "{}", color::Fg(color::Magenta))?, // magenta
+            (0x6c, 0x71, 0xc4) => write!(writer, "{}", color::Fg(color::LightMagenta))?, // violet
+            (0x26, 0x8b, 0xd2) => write!(writer, "{}", color::Fg(color::Blue))?,  // blue
+            (0x2a, 0xa1, 0x98) => write!(writer, "{}", color::Fg(color::Cyan))?,  // cyan
+            (0x85, 0x99, 0x00) => write!(writer, "{}", color::Fg(color::Green))?, // green
+            (r, g, b) => panic!("Unexpected RGB colour: #{:2>0x}{:2>0x}{:2>0x}", r, g, b),
+        };
+        let font = style.font_style;
+        if font.contains(FontStyle::BOLD) {
+            write!(writer, "{}", style::Bold)?;
+        } else {
+            write!(writer, "{}", style::NoBold)?;
+        }
+        if font.contains(FontStyle::ITALIC) {
+            write!(writer, "{}", style::Italic)?;
+        } else {
+            write!(writer, "{}", style::NoItalic)?;
+        }
+        if font.contains(FontStyle::UNDERLINE) {
+            write!(writer, "{}", style::Underline)?;
+        } else {
+            write!(writer, "{}", style::NoUnderline)?;
+        }
+        write!(writer, "{}{}", text, style::Reset)?;
+    }
+    Ok(())
 }
 
 /// Write a single `event` in the given context.
@@ -499,13 +566,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         }
         CodeBlock(name) => {
             ctx.start_inline_text()?;
-            ctx.enable_style(color::Fg(color::LightBlack))?;
-            write!(
-                ctx.output.writer,
-                "{}\n",
-                "\u{2500}".repeat(ctx.output.columns.min(20) as usize)
-            )?;
-            ctx.reset_last_style()?;
+            ctx.write_border()?;
             if ctx.style.format != Format::NoColours {
                 if name.is_empty() {
                     ctx.enable_style(color::Fg(color::Yellow))?
@@ -600,19 +661,16 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
                 Some(_) => {
                     // Reset anything left over from the highlighter and
                     // re-enable all current styles.
-                    write!(ctx.output.writer, "{}\n", style::Reset)?;
+                    write!(ctx.output.writer, "{}", style::Reset)?;
                     ctx.flush_styles()?;
                     ctx.code.current_highlighter = None;
                 }
             }
-            ctx.enable_style(color::Fg(color::LightBlack))?;
-            write!(
-                ctx.output.writer,
-                "{}\n",
-                "\u{2500}".repeat(ctx.output.columns.min(20) as usize)
-            )?;
-            ctx.reset_last_style()?;
-            ctx.end_inline_text_with_margin()?
+            ctx.write_border()?;
+            // Move back to block context, but do not add a dedicated margin
+            // because the bottom border we printed above already acts as
+            // margin.
+            ctx.block.level = BlockLevel::Block;
         }
         List(_) => {
             // End the current list

@@ -35,7 +35,6 @@ use std::str::FromStr;
 use structopt::StructOpt;
 use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
-use syntect::highlighting::ThemeSet;
 
 mod tty;
 
@@ -73,9 +72,6 @@ struct Arguments {
     #[structopt(long = "dump-events", help = "Dump events and exit .")] dump_events: bool,
     #[structopt(long = "columns", help = "Maximum number of columns.  Defaults to terminal width")]
     columns: Option<u16>,
-    #[structopt(short = "l", long = "light",
-                help = "Use Solarized Light for syntax highlighting (default dark).")]
-    light: bool,
     #[structopt(short = "c", long = "colour", help = "Whether to enable colours (default auto)",
                 default_value = "auto")]
     colour: Colour,
@@ -169,12 +165,7 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
     } else {
         let columns = args.columns.unwrap_or_else(terminal_columns);
         let syntax_set = SyntaxSet::load_defaults_newlines();
-        let themes = ThemeSet::load_defaults().themes;
-        let theme = &themes[if args.light {
-                                "Solarized (light)"
-                            } else {
-                                "Solarized (dark)"
-                            }];
+
         let format = match args.colour {
             Colour::No => tty::Format::NoColours,
             Colour::Yes => auto_detect_format(true),
@@ -187,7 +178,6 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
             &base_dir,
             format,
             syntax_set,
-            theme,
         )?;
         Ok(())
     }
