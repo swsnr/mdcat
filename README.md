@@ -11,18 +11,19 @@ documents on text terminals.
 $ mdcat sample.md
 ```
 
-![mdcat showcase](./screenshot.png)
+![mdcat showcase with different colour themes](screenshots/side-by-side.png)
 
-The screenshot shows [iTerm2][] with the [PragmataPro font][pp] and the
-[Dracula][] color theme.
+[Solarized][] Light, Dark, and [Dracula][] (from left to right), with
+[PragmataPro font][pp] in [iTerm2][].
 
 [crates-badge]: https://img.shields.io/crates/v/mdcat.svg
 [crates]: https://crates.io/crates/mdcat
 [travis]: https://travis-ci.org/lunaryorn/mdcat
 [CommonMark]: http://commonmark.org
+[Solarized]: http://ethanschoonover.com/solarized
+[dracula]: https://draculatheme.com/iterm/
 [iterm2]: https://www.iterm2.com
 [pp]: https://www.fsd.it/shop/fonts/pragmatapro/
-[dracula]: https://draculatheme.com/iterm/
 
 ## Features
 
