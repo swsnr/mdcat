@@ -122,7 +122,7 @@ struct Arguments {
 
 impl Arguments {
     /// Create command line arguments from matches.
-    fn from_matches<'a>(matches: clap::ArgMatches<'a>) -> clap::Result<Self> {
+    fn from_matches(matches: clap::ArgMatches) -> clap::Result<Self> {
         let format = match value_t!(matches, "colour", Colour)? {
             Colour::No => terminal::Format::NoColours,
             Colour::Yes => terminal::Format::auto_detect(true),
