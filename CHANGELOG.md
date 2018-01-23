@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Remove redundant default value from `--colour` help text, see [GH-10][]
+
+[GH-10]: https://github.com/lunaryorn/mdcat/pull/10
 
 ## [0.4.0] – 2018-01-21
 ### Changed
