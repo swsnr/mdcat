@@ -73,7 +73,7 @@ struct Arguments {
     #[structopt(long = "dump-events", help = "Dump events and exit .")] dump_events: bool,
     #[structopt(long = "columns", help = "Maximum number of columns.  Defaults to terminal width")]
     columns: Option<u16>,
-    #[structopt(short = "c", long = "colour", help = "Whether to enable colours (default auto)",
+    #[structopt(short = "c", long = "colour", help = "Whether to enable colours.",
                 default_value = "auto")]
     colour: Colour,
     #[structopt(help = "Input file.  If absent or - read from standard input")]
