@@ -15,8 +15,7 @@ travis-ci = { repository = "lunaryorn/mdcat" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-structopt = "^0.1"
-structopt-derive = "^0.1"
+clap = "^2.29"
 termion = "^1.5"
 syntect = "^2"
 pulldown-cmark = "^0.1"

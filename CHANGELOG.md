@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Improve `--help` output.
+
 ### Fixed
 - Remove redundant default value from `--colour` help text (see [GH-10][]).
 
