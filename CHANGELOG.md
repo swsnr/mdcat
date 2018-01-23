@@ -6,7 +6,7 @@ This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.
 
 ## [Unreleased]
 ### Fixed
-- Remove redundant default value from `--colour` help text, see [GH-10][]
+- Remove redundant default value from `--colour` help text (see [GH-10][]).
 
 [GH-10]: https://github.com/lunaryorn/mdcat/pull/10
 
