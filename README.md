@@ -27,34 +27,39 @@ $ mdcat sample.md
 
 ## Features
 
+`mdcat` works best with [iTerm2][] or a compatible terminal emulator, and a
+good terminal font which includes italic characters.  It supports:
+
 * All CommonMark syntax
 * Syntax highlighting for code blocks
-* Image support with [iTerm2][]
-* [iTerm2][] jump marks for headings: Jump forwards and backwards to headings
-  with <key>⇧⌘↓</key> and <key>⇧⌘↑</key> respectively.
+* In [iTerm2][]: Inline images like in the screenshot above
+* In [iTerm2][]: Jump marks for headings (jump forwards and backwards with
+  <key>⇧⌘↓</key> and <key>⇧⌘↑</key>)
 
 Not supported:
 
 * CommonMark extensions: Footnotes and Tables
 * Images from remote URLs
+* SVG images
 * Re-filling paragraphs
 
-## Installation and Requirements
+## Installation
 
-Install [Rust][1] and run `cargo install mdcat`.
+Install [Rust][rustup] and run `cargo install mdcat`.  To keep mdcat up to date
+install [cargo-update][] and run `cargo install-update mdcat`.
 
-To keep mdcat up to date install [cargo-update][2] and run `cargo
-install-update mdcat`.
+### 3rd party packages
 
-`mdcat` works best with [iTerm2][] or a compatible terminal emulator, and a
-good terminal font which includes italic characters.
+* Arch Linux: [mdcat in AUR][aur]
 
-[1]: https://www.rustup.rs
-[2]: https://github.com/nabijaczleweli/cargo-update
+[rustup]: https://www.rustup.rs
+[cargo-update]: https://github.com/nabijaczleweli/cargo-update
+[aur]: https://aur.archlinux.org/packages/mdcat/
 
 ### Future plans
 
 - [ ] Fetch remote images to show them inline.
+- [ ] Render SVG images.
 - [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdcat/issues/3).
 - [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdcat/issues/1).
 - [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdcat/issues/2).
