@@ -27,15 +27,16 @@ extern crate termion;
 
 use std::path::PathBuf;
 use std::io::prelude::*;
-use std::io::{stdin, stdout};
+use std::io::stdin;
 use std::fs::File;
 use std::error::Error;
 use std::str::FromStr;
 use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 
-mod tty;
+mod terminal;
 mod highlighting;
+mod tty;
 
 /// Colour options, for the --colour option.
 #[derive(Debug)]
@@ -110,63 +111,11 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
     }
 }
 
-/// Get the number of columns for the terminal from `$COLUMNS`.
-///
-/// Return `None` if the variable is not set or does not contain a valid number.
-fn terminal_columns_from_env() -> Option<u16> {
-    std::env::var("COLUMNS")
-        .ok()
-        .and_then(|value| value.parse::<u16>().ok())
-}
-
-/// Get the number of columns from the TTY device.
-///
-/// Return `None` if TTY access fails.
-fn terminal_columns_from_tty() -> Option<u16> {
-    termion::terminal_size().map(|size| size.0).ok()
-}
-
-/// Make a best effort to get the number of columns for the terminal.
-///
-/// Try to get the terminal size from the TTY device, or from the `$COLUMNS`
-/// environment variable, and eventually assume a default of 80 for safety.
-fn terminal_columns() -> u16 {
-    terminal_columns_from_tty()
-        .or_else(terminal_columns_from_env)
-        .unwrap_or(80)
-}
-
-/// Whether we run in an iTerm terminal.
-fn is_iterm() -> bool {
-    std::env::var("TERM_PROGRAM")
-        .map(|value| value.contains("iTerm.app"))
-        .unwrap_or(false)
-}
-
-/// Auto-detect the format to use.
-///
-/// If `force_colours` is true enforce colours, otherwise use colours if we run
-/// on a TTY.  If we run on a TTY and detect that we run within iTerm, enable
-/// additional formatting for iTerm.
-fn auto_detect_format(force_colours: bool) -> tty::Format {
-    if termion::is_tty(&stdout()) {
-        if is_iterm() {
-            tty::Format::ITermColours
-        } else {
-            tty::Format::Colours
-        }
-    } else if force_colours {
-        tty::Format::Colours
-    } else {
-        tty::Format::NoColours
-    }
-}
-
 /// Represent command line arguments.
 #[derive(Debug)]
 struct Arguments {
     filename: String,
-    format: tty::Format,
+    format: terminal::Format,
     columns: u16,
     dump_events: bool,
 }
@@ -175,9 +124,9 @@ impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches<'a>(matches: clap::ArgMatches<'a>) -> clap::Result<Self> {
         let format = match value_t!(matches, "colour", Colour)? {
-            Colour::No => tty::Format::NoColours,
-            Colour::Yes => auto_detect_format(true),
-            Colour::Auto => auto_detect_format(false),
+            Colour::No => terminal::Format::NoColours,
+            Colour::Yes => terminal::Format::auto_detect(true),
+            Colour::Auto => terminal::Format::auto_detect(false),
         };
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
@@ -194,7 +143,7 @@ impl Arguments {
 
 fn main() {
     use clap::*;
-    let columns = terminal_columns().to_string();
+    let columns = terminal::columns().to_string();
     let app = app_from_crate!()
         .setting(AppSettings::UnifiedHelpMessage)
         .arg(

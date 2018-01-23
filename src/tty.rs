@@ -31,6 +31,7 @@ use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
 use base64;
 use super::highlighting::write_as_ansi;
+use super::terminal::Format;
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
@@ -42,17 +43,6 @@ where
         write!(writer, "{:?}\n", event)?;
     }
     Ok(())
-}
-
-#[derive(Debug, PartialEq)]
-/// What kind of format to use.
-pub enum Format {
-    /// No colours and no styles.
-    NoColours,
-    /// Basic colours and styles.
-    Colours,
-    /// Colours and additional formatting for iTerm.
-    ITermColours,
 }
 
 /// Write markdown to a TTY.
@@ -276,22 +266,21 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 
     /// Set all active styles on the underlying writer.
     fn flush_styles(&mut self) -> Result<()> {
-        match self.style.format {
-            Format::NoColours => Ok(()),
-            _ => write!(self.output.writer, "{}", self.style.active_styles.join("")),
+        if self.style.format.enables_colours() {
+            write!(self.output.writer, "{}", self.style.active_styles.join(""))?;
         }
+        Ok(())
     }
 
     /// Write a newline.
     ///
     /// Restart all current styles after the newline.
     fn newline(&mut self) -> Result<()> {
-        match self.style.format {
-            Format::NoColours => write!(self.output.writer, "\n"),
-            _ => {
-                write!(self.output.writer, "{}\n", style::Reset)?;
-                self.flush_styles()
-            }
+        if self.style.format.enables_colours() {
+            write!(self.output.writer, "{}\n", style::Reset)?;
+            self.flush_styles()
+        } else {
+            write!(self.output.writer, "\n")
         }
     }
 
@@ -320,27 +309,23 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// To undo a style call `active_styles.pop()`, followed by `set_styles()`
     /// or `newline()`.
     fn enable_style<S: Display>(&mut self, style: S) -> Result<()> {
-        match self.style.format {
-            Format::NoColours => Ok(()),
-            _ => {
-                self.style
-                    .active_styles
-                    .push(format!("{}", style).to_owned());
-                write!(self.output.writer, "{}", style)
-            }
+        if self.style.format.enables_colours() {
+            self.style
+                .active_styles
+                .push(format!("{}", style).to_owned());
+            write!(self.output.writer, "{}", style)?;
         }
+        Ok(())
     }
 
     /// Remove the last style and flush styles on the TTY.
     fn reset_last_style(&mut self) -> Result<()> {
-        match self.style.format {
-            Format::NoColours => Ok(()),
-            _ => {
-                self.style.active_styles.pop();
-                write!(self.output.writer, "{}", style::Reset)?;
-                self.flush_styles()
-            }
+        if self.style.format.enables_colours() {
+            self.style.active_styles.pop();
+            write!(self.output.writer, "{}", style::Reset)?;
+            self.flush_styles()?;
         }
+        Ok(())
     }
 
     /// Enable emphasis.
@@ -420,7 +405,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 
     /// Set a mark for iTerm2.
     fn set_iterm_mark(&mut self) -> Result<()> {
-        if let Format::ITermColours = self.style.format {
+        if self.style.format.enables_marks() {
             write!(self.output.writer, "\x1B]1337;SetMark\x07")?;
         };
         Ok(())
@@ -507,7 +492,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         CodeBlock(name) => {
             ctx.start_inline_text()?;
             ctx.write_border()?;
-            if ctx.style.format != Format::NoColours {
+            if ctx.style.format.enables_colours() {
                 if name.is_empty() {
                     ctx.enable_style(color::Fg(color::Yellow))?
                 } else {
@@ -563,7 +548,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // link reference when closing the link.
         }
         Image(link, _title) => {
-            if let Format::ITermColours = ctx.style.format {
+            if ctx.style.format.enables_inline_images() {
                 if ctx.write_iterm_inline_image(Path::new(&*link)).is_ok() {
                     // If we could write an inline image, disable text output to
                     // suppress the image title.
