@@ -122,7 +122,7 @@ struct Arguments {
 
 impl Arguments {
     /// Create command line arguments from matches.
-    fn from_matches(matches: clap::ArgMatches) -> clap::Result<Self> {
+    fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
         let format = match value_t!(matches, "colour", Colour)? {
             Colour::No => terminal::Format::NoColours,
             Colour::Yes => terminal::Format::auto_detect(true),
@@ -172,7 +172,7 @@ fn main() {
         );
 
     let matches = app.get_matches();
-    let arguments = Arguments::from_matches(matches).unwrap_or_else(|e| e.exit());
+    let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
     match process_arguments(arguments) {
         Ok(_) => std::process::exit(0),
         Err(error) => {
