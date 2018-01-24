@@ -14,7 +14,7 @@ $ mdcat sample.md
 ![mdcat showcase with different colour themes](screenshots/side-by-side.png)
 
 [Solarized][] Light, Dark, and [Dracula][] (from left to right), with
-[PragmataPro font][pp] in [iTerm2][].
+[PragmataPro][pp] in [iTerm2][].
 
 [crates-badge]: https://img.shields.io/crates/v/mdcat.svg
 [crates]: https://crates.io/crates/mdcat
