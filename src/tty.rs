@@ -548,12 +548,12 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // link reference when closing the link.
         }
         Image(link, _title) => {
-            if ctx.style.format.enables_inline_images() {
-                if ctx.write_iterm_inline_image(Path::new(&*link)).is_ok() {
-                    // If we could write an inline image, disable text output to
-                    // suppress the image title.
-                    ctx.image.inline_image = true;
-                }
+            if ctx.style.format.enables_inline_images()
+                && ctx.write_iterm_inline_image(Path::new(&*link)).is_ok()
+            {
+                // If we could write an inline image, disable text output to
+                // suppress the image title.
+                ctx.image.inline_image = true;
             }
         }
     };
