@@ -136,7 +136,7 @@ pub struct OSC<'a> {
 }
 
 /// Create an OSC command for the terminal.
-pub fn osc<'a>(command: &'a str) -> OSC<'a> {
+pub fn osc(command: &str) -> OSC {
     OSC { command }
 }
 
