@@ -36,7 +36,7 @@ use syntect::parsing::SyntaxSet;
 
 mod terminal;
 mod highlighting;
-mod tty;
+mod commonmark;
 
 /// Colour options, for the --colour option.
 #[derive(Debug)]
@@ -95,11 +95,11 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
     let parser = Parser::new(&input);
 
     if args.dump_events {
-        tty::dump_events(&mut std::io::stdout(), parser)?;
+        commonmark::dump_events(&mut std::io::stdout(), parser)?;
         Ok(())
     } else {
         let syntax_set = SyntaxSet::load_defaults_newlines();
-        tty::push_tty(
+        commonmark::push_tty(
             &mut std::io::stdout(),
             args.columns,
             parser,
