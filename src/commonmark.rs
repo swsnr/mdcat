@@ -565,9 +565,8 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // or if the format doesn't support inline links, don't do anything
             // here; we will write a reference link when closing the link tag.
             if ctx.style.format.enables_inline_links() {
-                match Url::parse(&destination) {
-                    Ok(url) => ctx.start_inline_link(&url)?,
-                    _ => {}
+                if let Ok(url) = Url::parse(&destination) {
+                    ctx.start_inline_link(&url)?;
                 }
             }
         }
