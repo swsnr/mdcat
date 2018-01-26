@@ -31,7 +31,7 @@ use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
 use base64;
 use super::highlighting::write_as_ansi;
-use super::terminal::Format;
+use super::terminal::{osc, Format};
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
@@ -406,7 +406,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// Set a mark for iTerm2.
     fn set_iterm_mark(&mut self) -> Result<()> {
         if self.style.format.enables_marks() {
-            write!(self.output.writer, "\x1B]1337;SetMark\x07")?;
+            write!(self.output.writer, "{}", osc("1337;SetMark"))?;
         };
         Ok(())
     }
@@ -416,13 +416,12 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         let mut source = File::open(self.input.base_dir.join(path))?;
         let mut contents = Vec::new();
         source.read_to_end(&mut contents)?;
-        let encoded_contents = base64::encode(&contents);
-        let encoded_filename = base64::encode(path.as_os_str().as_bytes());
-        write!(
-            self.output.writer,
-            "\x1B]1337;File=name={};inline=1:{}\x07",
-            encoded_filename, encoded_contents
-        )
+        let command = format!(
+            "1337;File=name={};inline=1:{}",
+            base64::encode(path.as_os_str().as_bytes()),
+            base64::encode(&contents)
+        );
+        write!(self.output.writer, "{}", osc(&command))
     }
 }
 

@@ -17,6 +17,7 @@
 use termion;
 use std;
 use std::io::stdout;
+use std::fmt;
 
 /// Get the number of columns for the terminal from `$COLUMNS`.
 ///
@@ -117,5 +118,22 @@ impl Format {
             Format::ITermColours => true,
             _ => false,
         }
+    }
+}
+
+/// An OSC command for a terminal.
+#[derive(Debug, Copy, Clone)]
+pub struct OSC<'a> {
+    command: &'a str,
+}
+
+/// Create an OSC command for the terminal.
+pub fn osc<'a>(command: &'a str) -> OSC<'a> {
+    OSC { command }
+}
+
+impl<'a> fmt::Display for OSC<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "\x1B]{}\x07", self.command)
     }
 }
