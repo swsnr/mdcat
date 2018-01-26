@@ -24,6 +24,7 @@ extern crate clap;
 extern crate pulldown_cmark;
 extern crate syntect;
 extern crate termion;
+extern crate url;
 
 use std::path::PathBuf;
 use std::io::prelude::*;

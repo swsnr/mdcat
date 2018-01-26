@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Show links inline in iTerm2 (see [GH-8][]).
+
+[GH-8]: https://github.com/lunaryorn/mdcat/issues/8
+
 ### Changed
 - Improve `--help` output.
 

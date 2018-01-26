@@ -22,3 +22,5 @@ iTerm2 adds jump marks for headlines and images:
 ![A unicorn](./unicorn.png)
 
 Source: [Pixabay](https://pixabay.com/de/einhorn-regenbogen-magische-magie-2087450/), CC0
+
+Enjoy ❤️

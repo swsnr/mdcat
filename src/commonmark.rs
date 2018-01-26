@@ -30,6 +30,7 @@ use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
 use base64;
+use url::Url;
 use super::highlighting::write_as_ansi;
 use super::terminal::{osc, Format};
 
@@ -151,6 +152,8 @@ struct LinkContext<'a> {
     /// reference if the link text equals the link destination, ie, if the link
     /// appears in text literally.
     last_text: Option<Cow<'a, str>>,
+    /// Whether we are inside an inline link currently.
+    inside_inline_link: bool,
 }
 
 struct CodeContext<'a> {
@@ -225,6 +228,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
                 pending_links: VecDeque::new(),
                 next_link_index: 1,
                 last_text: None,
+                inside_inline_link: false,
             },
             code: CodeContext {
                 syntax_set,
@@ -403,6 +407,19 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         Ok(())
     }
 
+    /// Start an inline link to the given `destination`.
+    fn start_inline_link(&mut self, destination: &Url) -> Result<()> {
+        self.links.inside_inline_link = true;
+        let command = format!("8;;{}", destination);
+        write!(self.output.writer, "{}", osc(&command))
+    }
+
+    /// Close the current link by writing an empty link sequence.
+    fn close_inline_link(&mut self) -> Result<()> {
+        self.links.inside_inline_link = false;
+        write!(self.output.writer, "{}", osc("8;;"))
+    }
+
     /// Set a mark for iTerm2.
     fn set_iterm_mark(&mut self) -> Result<()> {
         if self.style.format.enables_marks() {
@@ -542,9 +559,17 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         Emphasis => ctx.enable_emphasis()?,
         Strong => ctx.enable_style(style::Bold)?,
         Code => ctx.enable_style(color::Fg(color::Yellow))?,
-        Link(_, _) => {
-            // We do not need to do anything when opening links; we render the
-            // link reference when closing the link.
+        Link(destination, _) => {
+            // Try to create an inline link, provided that the format supports
+            // those and we can parse the destination as valid URL.  If we can't
+            // or if the format doesn't support inline links, don't do anything
+            // here; we will write a reference link when closing the link tag.
+            if ctx.style.format.enables_inline_links() {
+                match Url::parse(&destination) {
+                    Ok(url) => ctx.start_inline_link(&url)?,
+                    _ => {}
+                }
+            }
         }
         Image(link, _title) => {
             if ctx.style.format.enables_inline_images()
@@ -617,18 +642,26 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
             ()
         }
         Strong | Code => ctx.reset_last_style()?,
-        Link(destination, title) => match ctx.links.last_text {
-            Some(ref text) if *text == destination => {
-                // Do nothing if the last printed text matches the destination
-                // of the link.  In this we likely looked at an inline autolink
-                // and we should not repeat the link when it's already in text.
-            }
-            _ => {
-                let index = ctx.add_link(destination, title);
-                // Reference link
-                ctx.enable_style(color::Fg(color::Blue))?;
-                write!(ctx.output.writer, "[{}]", index)?;
-                ctx.reset_last_style()?;
+        Link(destination, title) => if ctx.links.inside_inline_link {
+            ctx.close_inline_link()?
+        } else {
+            // When we did not write an inline link, create a normal reference
+            // link instead.  Even if the terminal supports inline links this
+            // can still happen for anything that's not a valid URL.
+            match ctx.links.last_text {
+                Some(ref text) if *text == destination => {
+                    // Do nothing if the last printed text matches the
+                    // destination of the link.  In this we likely looked at an
+                    // inline autolink and we should not repeat the link when
+                    // it's already in text.
+                }
+                _ => {
+                    let index = ctx.add_link(destination, title);
+                    // Reference link
+                    ctx.enable_style(color::Fg(color::Blue))?;
+                    write!(ctx.output.writer, "[{}]", index)?;
+                    ctx.reset_last_style()?;
+                }
             }
         },
         Image(link, _title) => {

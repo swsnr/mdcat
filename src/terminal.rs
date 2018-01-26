@@ -104,6 +104,14 @@ impl Format {
         }
     }
 
+    /// Whether this format enables inline links.
+    pub fn enables_inline_links(self) -> bool {
+        match self {
+            Format::ITermColours => true,
+            _ => false,
+        }
+    }
+
     /// Whether this format enables inline images.
     pub fn enables_inline_images(self) -> bool {
         match self {
