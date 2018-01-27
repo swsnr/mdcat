@@ -125,7 +125,7 @@ impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
         let format = match value_t!(matches, "colour", Colour)? {
-            Colour::No => terminal::Format::NoColours,
+            Colour::No => terminal::Format::empty(),
             Colour::Yes => terminal::Format::auto_detect(true),
             Colour::Auto => terminal::Format::auto_detect(false),
         };

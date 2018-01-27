@@ -48,8 +48,25 @@ pub fn columns() -> u16 {
 enum Terminal {
     /// iTerm2
     ITerm2,
+    /// A terminal based on a modern VTE version.
+    ///
+    /// We require 0.50 or newer; these versions support inline links.
+    VTE50,
     /// An unknown terminal application.
     Unknown,
+}
+
+/// Get the version of VTE underlying this terminal.
+///
+/// Return `(minor, patch)` if this terminal uses VTE, otherwise return `None`.
+fn get_vte_version() -> Option<(u8, u8)> {
+    std::env::var("VTE_VERSION").ok().and_then(|value| {
+        value[..2]
+            .parse::<u8>()
+            .into_iter()
+            .zip(value[2..4].parse::<u8>())
+            .next()
+    })
 }
 
 impl Terminal {
@@ -61,71 +78,91 @@ impl Terminal {
         {
             Terminal::ITerm2
         } else {
-            Terminal::Unknown
+            match get_vte_version() {
+                Some(version) if version >= (50, 0) => Terminal::VTE50,
+                _ => Terminal::Unknown,
+            }
         }
     }
 }
 
-#[derive(Debug, Copy, Clone)]
-/// What kind of format to use.
-pub enum Format {
-    /// No colours and no styles.
-    NoColours,
-    /// Basic colours and styles.
-    Colours,
-    /// Colours and additional formatting for iTerm.
-    ITermColours,
+#[derive(Debug)]
+pub struct Format {
+    /// Whether to enable basic colours.
+    basic_colours: bool,
+    /// Whether to enable inline links.
+    inline_links: bool,
+    /// Whether to render images inline.
+    inline_images: bool,
+    /// Whether to set iterm marks for headings.
+    iterm_marks: bool,
 }
 
 impl Format {
+    /// Create an empty format.
+    ///
+    /// This format enables no special formatting.
+    pub fn empty() -> Format {
+        Format {
+            basic_colours: false,
+            inline_links: false,
+            inline_images: false,
+            iterm_marks: false,
+        }
+    }
+
     /// Auto-detect the format to use.
     ///
     /// If `force_colours` is true enforce colours, otherwise use colours if we run
     /// on a TTY.  If we run on a TTY and detect that we run within iTerm, enable
     /// additional formatting for iTerm.
     pub fn auto_detect(force_colours: bool) -> Format {
+        let mut format = Format::empty();
         if termion::is_tty(&stdout()) {
+            format.basic_colours = true;
             match Terminal::detect() {
-                Terminal::ITerm2 => Format::ITermColours,
-                _ => Format::Colours,
+                Terminal::ITerm2 => Format {
+                    basic_colours: true,
+                    inline_links: true,
+                    inline_images: true,
+                    iterm_marks: true,
+                },
+                Terminal::VTE50 => Format {
+                    basic_colours: true,
+                    inline_links: true,
+                    ..Format::empty()
+                },
+                Terminal::Unknown => Format {
+                    basic_colours: true,
+                    ..Format::empty()
+                },
             }
-        } else if force_colours {
-            Format::Colours
         } else {
-            Format::NoColours
+            Format {
+                basic_colours: force_colours,
+                ..Format::empty()
+            }
         }
     }
 
     /// Whether this format enables colours.
-    pub fn enables_colours(self) -> bool {
-        match self {
-            Format::NoColours => false,
-            _ => true,
-        }
+    pub fn enables_colours(&self) -> bool {
+        self.basic_colours
     }
 
     /// Whether this format enables inline links.
-    pub fn enables_inline_links(self) -> bool {
-        match self {
-            Format::ITermColours => true,
-            _ => false,
-        }
+    pub fn enables_inline_links(&self) -> bool {
+        self.inline_links
     }
 
     /// Whether this format enables inline images.
-    pub fn enables_inline_images(self) -> bool {
-        match self {
-            Format::ITermColours => true,
-            _ => false,
-        }
+    pub fn enables_inline_images(&self) -> bool {
+        self.inline_images
     }
 
     /// Whether this format enables marks.
-    pub fn enables_marks(self) -> bool {
-        match self {
-            Format::ITermColours => true,
-            _ => false,
-        }
+    pub fn enables_iterm_marks(&self) -> bool {
+        self.iterm_marks
     }
 }
 

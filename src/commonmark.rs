@@ -422,7 +422,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 
     /// Set a mark for iTerm2.
     fn set_iterm_mark(&mut self) -> Result<()> {
-        if self.style.format.enables_marks() {
+        if self.style.format.enables_iterm_marks() {
             write!(self.output.writer, "{}", osc("1337;SetMark"))?;
         };
         Ok(())
