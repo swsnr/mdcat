@@ -567,12 +567,22 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             if ctx.style.format.enables_inline_links() {
                 if let Ok(url) = Url::parse(&destination) {
                     ctx.start_inline_link(&url)?;
+                } else {
+                    // If we failed to parse the URL assume that we look at a
+                    // path, and turn it into a file URL.
+                    let path = ctx.input.base_dir.join(destination.as_ref());
+                    let url = Url::parse("file:///")
+                        .expect("Failed to parse file root URL!")
+                        .join(&path.to_string_lossy())
+                        .expect(&format!("Failed to join root URL with {:?}", path));
+                    ctx.start_inline_link(&url)?;
                 }
             }
         }
         Image(link, _title) => {
             if ctx.style.format.enables_inline_images()
-                && ctx.write_iterm_inline_image(Path::new(&*link)).is_ok()
+                && ctx.write_iterm_inline_image(Path::new(link.as_ref()))
+                    .is_ok()
             {
                 // If we could write an inline image, disable text output to
                 // suppress the image title.

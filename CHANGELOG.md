@@ -7,9 +7,10 @@ This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.
 ## [Unreleased]
 ### Added
 - Show links inline in iTerm2 and terminals based on VTE 0.50 or newer (see
-  [GH-8][] and [GH-15][]).
+  [GH-8][], [GH-14][] and [GH-15][]).
 
 [GH-8]: https://github.com/lunaryorn/mdcat/issues/8
+[GH-14]: https://github.com/lunaryorn/mdcat/issues/14
 [GH-15]: https://github.com/lunaryorn/mdcat/issues/15
 
 ### Changed
