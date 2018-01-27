@@ -380,7 +380,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 
     /// Write a simple border.
     fn write_border(&mut self) -> Result<()> {
-        self.enable_style(color::Fg(color::LightBlack))?;
+        self.enable_style(color::Fg(color::Green))?;
         write!(
             self.output.writer,
             "{}\n",
@@ -458,7 +458,7 @@ fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Resu
         End(tag) => end_tag(ctx, tag)?,
         Html(content) => {
             ctx.newline()?;
-            ctx.enable_style(color::Fg(color::LightBlack))?;
+            ctx.enable_style(color::Fg(color::Green))?;
             for line in content.lines() {
                 write!(ctx.output.writer, "{}", line)?;
                 ctx.newline()?;
@@ -466,7 +466,7 @@ fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Resu
             ctx.reset_last_style()?;
         }
         InlineHtml(tag) => {
-            ctx.enable_style(color::Fg(color::LightBlack))?;
+            ctx.enable_style(color::Fg(color::Green))?;
             write!(ctx.output.writer, "{}", tag)?;
             ctx.reset_last_style()?;
         }
@@ -481,7 +481,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         Paragraph => ctx.start_inline_text()?,
         Rule => {
             ctx.start_inline_text()?;
-            ctx.enable_style(color::Fg(color::LightBlack))?;
+            ctx.enable_style(color::Fg(color::Green))?;
             write!(
                 ctx.output.writer,
                 "{}",
@@ -502,7 +502,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         BlockQuote => {
             ctx.block.indent_level += 4;
             ctx.start_inline_text()?;
-            ctx.enable_style(color::Fg(color::LightBlack))?;
+            ctx.enable_style(color::Fg(color::Green))?;
             ctx.enable_emphasis()?
         }
         CodeBlock(name) => {
