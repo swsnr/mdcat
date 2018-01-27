@@ -146,17 +146,28 @@ fn main() {
     use clap::*;
     let columns = terminal::columns().to_string();
     let app = app_from_crate!()
+        // Merge flags and options w/ arguments together, include args in usage
+        // string and show options in the order of declaration
         .setting(AppSettings::UnifiedHelpMessage)
-        .arg(
-            Arg::with_name("dump_events")
-                .long("dump-events")
-                .help("Dump Markdown parser events and exit"),
+        .setting(AppSettings::DontCollapseArgsInUsage)
+        .setting(AppSettings::DeriveDisplayOrder)
+        .after_help(
+            "mdcat uses the standardized CommonMark dialect.  It formats
+markdown documents for viewing in text terminals:
+
+• Colours for headings, block quotes, etc
+• Syntax highlighting for code blocks
+• In some terminals: Inline images and inline links
+• In iTerm2: Jump marks for headings
+
+Copyright (C) 2018 Sebastian Wiesner
+Licensed under the Apache License, Version 2.0
+Report issues to <https://github.com/lunaryorn/mdcat>.",
         )
         .arg(
-            Arg::with_name("columns")
-                .long("columns")
-                .help("Maximum number of columns to use for output")
-                .default_value(&columns),
+            Arg::with_name("filename")
+                .help("The file to read.  If - read from standard input instead")
+                .default_value("-")
         )
         .arg(
             Arg::with_name("colour")
@@ -164,12 +175,19 @@ fn main() {
                 .long("colour")
                 .help("Whether to enable colours.")
                 .possible_values(&["yes", "no", "auto"])
-                .default_value("auto"),
+                .default_value("auto")
         )
         .arg(
-            Arg::with_name("filename")
-                .help("The file to read.  If - read from standard input instead")
-                .default_value("-"),
+            Arg::with_name("columns")
+                .long("columns")
+                .help("Maximum number of columns to use for output")
+                .default_value(&columns)
+        )
+        .arg(
+            Arg::with_name("dump_events")
+                .long("dump-events")
+                .help("Dump Markdown parser events and exit")
+                .hidden(true)
         );
 
     let matches = app.get_matches();
