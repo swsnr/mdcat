@@ -11,7 +11,7 @@ documents on text terminals.
 $ mdcat sample.md
 ```
 
-![mdcat showcase with different colour themes](screenshots/side-by-side.png)
+![mdcat showcase with different colour themes][sxs]
 
 mdcat in [iTerm2][], with [Dracula][], and [Solarized][] Light and Dark (from
 left to right), and [PragmataPro][pp] as font.
@@ -24,6 +24,7 @@ left to right), and [PragmataPro][pp] as font.
 [dracula]: https://draculatheme.com/iterm/
 [iterm2]: https://www.iterm2.com
 [pp]: https://www.fsd.it/shop/fonts/pragmatapro/
+[sxs]: https://raw.githubusercontent.com/lunaryorn/mdcat/master/screenshots/side-by-side.png
 
 ## Features
 
