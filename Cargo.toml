@@ -1,6 +1,6 @@
 [package]
 name = "mdcat"
-description = "Less for markdown"
+description = "cat for markdown: Show markdown documents in terminals"
 readme = "README.md"
 homepage = "https://github.com/lunaryorn/mdcat"
 repository = "https://github.com/lunaryorn/mdcat"
