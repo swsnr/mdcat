@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.5.0] – 2018-01-27
 ### Added
 - Show links inline in iTerm2 and terminals based on VTE 0.50 or newer (see
   [GH-8][], [GH-14][] and [GH-15][]).
