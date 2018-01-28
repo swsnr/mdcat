@@ -80,12 +80,12 @@ impl<'a> Resource<'a> {
     /// Currently only supports local files; remote resources return a
     /// permission denied error.
     pub fn read(&self) -> Result<Vec<u8>> {
-        match self {
-            &Resource::Remote(_) => Err(Error::new(
+        match *self {
+            Resource::Remote(_) => Err(Error::new(
                 ErrorKind::PermissionDenied,
                 "Remote resources not allowed",
             )),
-            &Resource::LocalFile(ref path) => {
+            Resource::LocalFile(ref path) => {
                 let mut buffer = Vec::new();
                 let mut source = File::open(path)?;
                 source.read_to_end(&mut buffer)?;
