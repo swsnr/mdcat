@@ -46,9 +46,18 @@ pub fn columns() -> u16 {
 /// The terminal we use.
 #[derive(Debug)]
 enum Terminal {
-    /// iTerm2
+    /// iTerm2.
+    ///
+    /// iTerm2 is a powerful macOS terminal emulator with many formatting
+    /// features, including images and inline links.
+    ///
+    /// See <https://www.iterm2.com> for more information.
     ITerm2,
     /// A terminal based on a modern VTE version.
+    ///
+    /// VTE is Gnome library for terminal emulators.  It powers some notable
+    /// terminal emulators like Gnome Terminal, and embedded terminals in
+    /// applications like GEdit.
     ///
     /// We require 0.50 or newer; these versions support inline links.
     VTE50,
