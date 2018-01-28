@@ -15,12 +15,24 @@ travis-ci = { repository = "lunaryorn/mdcat" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-clap = "^2.29"
 termion = "^1.5"
-syntect = "^2"
-pulldown-cmark = "^0.1"
 base64 = "^0.9"
 url = "^1.6"
+
+[dependencies.clap]
+version = "^2.29"
+default-features = false
+features = ["wrap_help", "vec_map"]
+
+[dependencies.pulldown-cmark]
+version = "^0.1"
+default-features = false
+features = []
+
+[dependencies.syntect]
+version = "^2"
+default-features = false
+features = ["parsing", "assets", "dump-load"]
 
 [package.metadata.release]
 sign-commit = true
