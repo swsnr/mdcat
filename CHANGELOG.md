@@ -6,7 +6,8 @@ This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.
 
 ## [Unreleased]
 ### Changed
-- Improve `--help` output.
+- Improve `--help` output: Hide some redundant options, add a bug reporting URL
+  and explain the purpose of `mdcat`.
 
 ## [0.5.0] – 2018-01-27
 ### Added
