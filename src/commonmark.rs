@@ -26,9 +26,8 @@ use termion::{color, style};
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
-use url::Url;
 use super::highlighting::write_as_ansi;
-use super::terminal::{osc, Format, Size, iterm2};
+use super::terminal::{Size, Terminal, TerminalError};
 use super::resources::Resource;
 
 /// Dump markdown events to a writer.
@@ -52,10 +51,10 @@ where
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, W, I>(
     writer: &mut W,
+    terminal: Terminal,
     size: Size,
     events: I,
     base_dir: &'a Path,
-    format: Format,
     syntax_set: SyntaxSet,
 ) -> Result<()>
 where
@@ -63,7 +62,7 @@ where
     W: Write,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
-    let mut context = Context::new(writer, size, base_dir, format, syntax_set, theme);
+    let mut context = Context::new(writer, terminal, size, base_dir, syntax_set, theme);
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -120,12 +119,12 @@ struct OutputContext<'a, W: Write + 'a> {
     writer: &'a mut W,
     /// The terminal dimensions to limit output to.
     size: Size,
+    /// The target terminal.
+    terminal: Terminal,
 }
 
 #[derive(Debug)]
 struct StyleContext {
-    /// The format to use.
-    format: Format,
     /// All styles applied to the current text.
     active_styles: Vec<String>,
     /// What level of emphasis we are currently at.
@@ -209,19 +208,22 @@ struct Context<'a, W: Write + 'a> {
 impl<'a, W: Write + 'a> Context<'a, W> {
     fn new(
         writer: &'a mut W,
+        terminal: Terminal,
         size: Size,
         base_dir: &'a Path,
-        format: Format,
         syntax_set: SyntaxSet,
         theme: &'a Theme,
     ) -> Context<'a, W> {
         Context {
             input: InputContext { base_dir },
-            output: OutputContext { writer, size },
+            output: OutputContext {
+                writer,
+                size,
+                terminal,
+            },
             style: StyleContext {
                 active_styles: Vec::new(),
                 emphasis_level: 0,
-                format,
             },
             block: BlockContext {
                 indent_level: 0,
@@ -274,7 +276,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 
     /// Set all active styles on the underlying writer.
     fn flush_styles(&mut self) -> Result<()> {
-        if self.style.format.enables_colours() {
+        if self.output.terminal.supports_colours() {
             write!(self.output.writer, "{}", self.style.active_styles.join(""))?;
         }
         Ok(())
@@ -284,7 +286,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     ///
     /// Restart all current styles after the newline.
     fn newline(&mut self) -> Result<()> {
-        if self.style.format.enables_colours() {
+        if self.output.terminal.supports_colours() {
             write!(self.output.writer, "{}\n", style::Reset)?;
             self.flush_styles()
         } else {
@@ -317,7 +319,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// To undo a style call `active_styles.pop()`, followed by `set_styles()`
     /// or `newline()`.
     fn enable_style<S: Display>(&mut self, style: S) -> Result<()> {
-        if self.style.format.enables_colours() {
+        if self.output.terminal.supports_colours() {
             self.style
                 .active_styles
                 .push(format!("{}", style).to_owned());
@@ -328,7 +330,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 
     /// Remove the last style and flush styles on the TTY.
     fn reset_last_style(&mut self) -> Result<()> {
-        if self.style.format.enables_colours() {
+        if self.output.terminal.supports_colours() {
             self.style.active_styles.pop();
             write!(self.output.writer, "{}", style::Reset)?;
             self.flush_styles()?;
@@ -410,19 +412,6 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         }
         Ok(())
     }
-
-    /// Start an inline link to the given `destination`.
-    fn start_inline_link(&mut self, destination: &Url) -> Result<()> {
-        self.links.inside_inline_link = true;
-        let command = format!("8;;{}", destination);
-        write!(self.output.writer, "{}", osc(&command))
-    }
-
-    /// Close the current link by writing an empty link sequence.
-    fn close_inline_link(&mut self) -> Result<()> {
-        self.links.inside_inline_link = false;
-        write!(self.output.writer, "{}", osc("8;;"))
-    }
 }
 
 /// Write a single `event` in the given context.
@@ -476,9 +465,10 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // them close to the text where they appeared in
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
-            if ctx.style.format.enables_iterm_marks() {
-                iterm2::write_mark(ctx.output.writer)?;
-            }
+            ctx.output
+                .terminal
+                .set_mark(ctx.output.writer)
+                .or_else(TerminalError::to_io)?;
             let level_indicator = "\u{2504}".repeat(level as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;
@@ -493,7 +483,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
         CodeBlock(name) => {
             ctx.start_inline_text()?;
             ctx.write_border()?;
-            if ctx.style.format.enables_colours() {
+            if ctx.output.terminal.supports_colours() {
                 if name.is_empty() {
                     ctx.enable_style(color::Fg(color::Yellow))?
                 } else {
@@ -546,20 +536,25 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // those and we can parse the destination as valid URL.  If we can't
             // or if the format doesn't support inline links, don't do anything
             // here; we will write a reference link when closing the link tag.
-            if ctx.style.format.enables_inline_links() {
-                let url = ctx.input.resolve_reference(&destination).to_url();
-                ctx.start_inline_link(&url)?;
+            let url = ctx.input.resolve_reference(&destination).to_url();
+            if ctx.output
+                .terminal
+                .set_link(ctx.output.writer, url.as_str())
+                .is_ok()
+            {
+                ctx.links.inside_inline_link = true;
             }
         }
         Image(link, _title) => {
-            if ctx.style.format.enables_inline_images() {
-                let resource = ctx.input.resolve_reference(&link);
-                if let Ok(contents) = resource.read() {
-                    iterm2::write_inline_image(ctx.output.writer, link.as_ref(), &contents)?;
-                    // If we could write an inline image, disable text output to
-                    // suppress the image title.
-                    ctx.image.inline_image = true;
-                }
+            let resource = ctx.input.resolve_reference(&link);
+            if ctx.output
+                .terminal
+                .write_inline_image(ctx.output.writer, &resource)
+                .is_ok()
+            {
+                // If we could write an inline image, disable text output to
+                // suppress the image title.
+                ctx.image.inline_image = true;
             }
         }
     };
@@ -625,7 +620,11 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
         }
         Strong | Code => ctx.reset_last_style()?,
         Link(destination, title) => if ctx.links.inside_inline_link {
-            ctx.close_inline_link()?
+            ctx.output
+                .terminal
+                .set_link(ctx.output.writer, "")
+                .or_else(TerminalError::to_io)?;
+            ctx.links.inside_inline_link = false;
         } else {
             // When we did not write an inline link, create a normal reference
             // link instead.  Even if the terminal supports inline links this

@@ -16,11 +16,12 @@
 
 use termion;
 use std;
-use std::io::stdout;
+use std::io;
 use std::fmt;
 use term_size;
+use super::resources::Resource;
 
-pub mod iterm2;
+mod iterm2;
 
 /// Terminal size.
 #[derive(Debug, Copy, Clone)]
@@ -73,8 +74,8 @@ impl Size {
 }
 
 /// The terminal we use.
-#[derive(Debug)]
-enum Terminal {
+#[derive(Debug, Copy, Clone)]
+pub enum Terminal {
     /// iTerm2.
     ///
     /// iTerm2 is a powerful macOS terminal emulator with many formatting
@@ -82,17 +83,43 @@ enum Terminal {
     ///
     /// See <https://www.iterm2.com> for more information.
     ITerm2,
-    /// A terminal based on a modern VTE version.
+    /// A generic terminal based on a modern VTE version.
     ///
     /// VTE is Gnome library for terminal emulators.  It powers some notable
     /// terminal emulators like Gnome Terminal, and embedded terminals in
     /// applications like GEdit.
     ///
     /// We require 0.50 or newer; these versions support inline links.
-    VTE50,
-    /// An unknown terminal application.
-    Unknown,
+    GenericVTE50,
+    /// A terminal which supports basic ANSI sequences.
+    BasicAnsi,
+    /// A dumb terminal that supports no formatting.
+    Dumb,
 }
+
+/// A terminal error.
+#[derive(Debug)]
+pub enum TerminalError {
+    /// The terminal does not support this operation.
+    NotSupported,
+    /// An I/O error occured.
+    IoError(io::Error),
+}
+
+impl TerminalError {
+    /// Turn a terminal error into an IO result.
+    ///
+    /// Map `NotSupported` to `Ok(())`.
+    pub fn to_io(self) -> io::Result<()> {
+        match self {
+            TerminalError::NotSupported => Ok(()),
+            TerminalError::IoError(err) => Err(err),
+        }
+    }
+}
+
+/// The result of a terminal operation.
+pub type TerminalResult<T> = Result<T, TerminalError>;
 
 /// Get the version of VTE underlying this terminal.
 ///
@@ -109,98 +136,77 @@ fn get_vte_version() -> Option<(u8, u8)> {
 
 impl Terminal {
     /// Detect the underlying terminal application.
-    fn detect() -> Terminal {
-        if std::env::var("TERM_PROGRAM")
-            .map(|value| value.contains("iTerm.app"))
-            .unwrap_or(false)
-        {
-            Terminal::ITerm2
-        } else {
-            match get_vte_version() {
-                Some(version) if version >= (50, 0) => Terminal::VTE50,
-                _ => Terminal::Unknown,
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct Format {
-    /// Whether to enable basic colours.
-    basic_colours: bool,
-    /// Whether to enable inline links.
-    inline_links: bool,
-    /// Whether to render images inline.
-    inline_images: bool,
-    /// Whether to set iterm marks for headings.
-    iterm_marks: bool,
-}
-
-impl Format {
-    /// Create an empty format.
     ///
-    /// This format enables no special formatting.
-    pub fn empty() -> Format {
-        Format {
-            basic_colours: false,
-            inline_links: false,
-            inline_images: false,
-            iterm_marks: false,
-        }
-    }
-
-    /// Auto-detect the format to use.
+    /// If stdout links to a TTY find out what terminal emulator we run in.
     ///
-    /// If `force_colours` is true enforce colours, otherwise use colours if we run
-    /// on a TTY.  If we run on a TTY and detect that we run within iTerm, enable
-    /// additional formatting for iTerm.
-    pub fn auto_detect(force_colours: bool) -> Format {
-        let mut format = Format::empty();
-        if termion::is_tty(&stdout()) {
-            format.basic_colours = true;
-            match Terminal::detect() {
-                Terminal::ITerm2 => Format {
-                    basic_colours: true,
-                    inline_links: true,
-                    inline_images: true,
-                    iterm_marks: true,
-                },
-                Terminal::VTE50 => Format {
-                    basic_colours: true,
-                    inline_links: true,
-                    ..Format::empty()
-                },
-                Terminal::Unknown => Format {
-                    basic_colours: true,
-                    ..Format::empty()
-                },
+    /// Otherwise assume a dumb terminal that cannot format anything.
+    pub fn detect() -> Terminal {
+        if termion::is_tty(&io::stdout()) {
+            if std::env::var("TERM_PROGRAM")
+                .map(|value| value.contains("iTerm.app"))
+                .unwrap_or(false)
+            {
+                Terminal::ITerm2
+            } else {
+                match get_vte_version() {
+                    Some(version) if version >= (50, 0) => Terminal::GenericVTE50,
+                    _ => Terminal::BasicAnsi,
+                }
             }
         } else {
-            Format {
-                basic_colours: force_colours,
-                ..Format::empty()
-            }
+            Terminal::Dumb
         }
     }
 
-    /// Whether this format enables colours.
-    pub fn enables_colours(&self) -> bool {
-        self.basic_colours
+    /// Whether this terminal supports colours.
+    pub fn supports_colours(self) -> bool {
+        if let Terminal::Dumb = self {
+            false
+        } else {
+            true
+        }
     }
 
-    /// Whether this format enables inline links.
-    pub fn enables_inline_links(&self) -> bool {
-        self.inline_links
+    /// Write an inline image.
+    ///
+    /// Supported on iTerm2, all other terminal emulators return a not supported
+    /// error.
+    pub fn write_inline_image<W: io::Write>(
+        self,
+        writer: &mut W,
+        resource: &Resource,
+    ) -> TerminalResult<()> {
+        match self {
+            Terminal::ITerm2 => resource
+                .read()
+                .and_then(|contents| {
+                    iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
+                })
+                .map_err(|e| TerminalError::IoError(e)),
+            _ => Err(TerminalError::NotSupported),
+        }
     }
 
-    /// Whether this format enables inline images.
-    pub fn enables_inline_images(&self) -> bool {
-        self.inline_images
+    /// Set the link for the subsequent text.
+    ///
+    /// To stop a link write a link to an empty destination.
+    pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> TerminalResult<()> {
+        match self {
+            Terminal::ITerm2 | Terminal::GenericVTE50 => {
+                let command = format!("8;;{}", destination);
+                write!(writer, "{}", osc(&command)).map_err(|err| TerminalError::IoError(err))
+            }
+            _ => Err(TerminalError::NotSupported),
+        }
     }
 
-    /// Whether this format enables marks.
-    pub fn enables_iterm_marks(&self) -> bool {
-        self.iterm_marks
+    /// Set a mark in the current terminal.
+    pub fn set_mark<W: io::Write>(self, writer: &mut W) -> TerminalResult<()> {
+        if let Terminal::ITerm2 = self {
+            iterm2::write_mark(writer).map_err(|err| TerminalError::IoError(err))
+        } else {
+            Err(TerminalError::NotSupported)
+        }
     }
 }
 

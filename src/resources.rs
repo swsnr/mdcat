@@ -64,6 +64,21 @@ impl<'a> Resource<'a> {
         }
     }
 
+    /// Convert this resource to a string.
+    ///
+    /// For local resource return the lossy UTF-8 representation of the path,
+    /// for remote resource the string serialization of the URL.
+    pub fn as_str(&'a self) -> Cow<'a, str> {
+        match *self {
+            Resource::Remote(ref url) => Cow::Borrowed(url.as_str()),
+            Resource::LocalFile(ref path) => path.to_string_lossy(),
+        }
+    }
+
+    /// Read the contents of this resource.
+    ///
+    /// Currently only supports local files; remote resources return a
+    /// permission denied error.
     pub fn read(&self) -> Result<Vec<u8>> {
         match self {
             &Resource::Remote(_) => Err(Error::new(

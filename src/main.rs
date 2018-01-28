@@ -41,6 +41,8 @@ mod resources;
 mod highlighting;
 mod commonmark;
 
+use terminal::Terminal;
+
 /// Colour options, for the --colour option.
 #[derive(Debug)]
 enum Colour {
@@ -104,13 +106,13 @@ fn process_arguments(size: terminal::Size, args: Arguments) -> Result<(), Box<Er
         let syntax_set = SyntaxSet::load_defaults_newlines();
         commonmark::push_tty(
             &mut std::io::stdout(),
+            args.terminal,
             terminal::Size {
                 width: args.columns,
                 ..size
             },
             parser,
             &base_dir,
-            args.format,
             syntax_set,
         )?;
         Ok(())
@@ -121,7 +123,7 @@ fn process_arguments(size: terminal::Size, args: Arguments) -> Result<(), Box<Er
 #[derive(Debug)]
 struct Arguments {
     filename: String,
-    format: terminal::Format,
+    terminal: Terminal,
     columns: usize,
     dump_events: bool,
 }
@@ -129,10 +131,13 @@ struct Arguments {
 impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
-        let format = match value_t!(matches, "colour", Colour)? {
-            Colour::No => terminal::Format::empty(),
-            Colour::Yes => terminal::Format::auto_detect(true),
-            Colour::Auto => terminal::Format::auto_detect(false),
+        let terminal = match value_t!(matches, "colour", Colour)? {
+            Colour::No => Terminal::Dumb,
+            Colour::Yes => match Terminal::detect() {
+                Terminal::Dumb => Terminal::BasicAnsi,
+                other => other,
+            },
+            Colour::Auto => Terminal::detect(),
         };
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
@@ -142,7 +147,7 @@ impl Arguments {
             filename,
             columns,
             dump_events,
-            format,
+            terminal,
         })
     }
 }
