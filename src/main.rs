@@ -23,6 +23,7 @@ extern crate base64;
 extern crate clap;
 extern crate pulldown_cmark;
 extern crate syntect;
+extern crate term_size;
 extern crate termion;
 extern crate url;
 
@@ -92,7 +93,7 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     }
 }
 
-fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
+fn process_arguments(size: terminal::Size, args: Arguments) -> Result<(), Box<Error>> {
     let (base_dir, input) = read_input(args.filename)?;
     let parser = Parser::new(&input);
 
@@ -103,7 +104,10 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
         let syntax_set = SyntaxSet::load_defaults_newlines();
         commonmark::push_tty(
             &mut std::io::stdout(),
-            args.columns,
+            terminal::Size {
+                width: args.columns,
+                ..size
+            },
             parser,
             &base_dir,
             args.format,
@@ -118,7 +122,7 @@ fn process_arguments(args: Arguments) -> Result<(), Box<Error>> {
 struct Arguments {
     filename: String,
     format: terminal::Format,
-    columns: u16,
+    columns: usize,
     dump_events: bool,
 }
 
@@ -132,7 +136,7 @@ impl Arguments {
         };
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
-        let columns = value_t!(matches, "columns", u16)?;
+        let columns = value_t!(matches, "columns", usize)?;
 
         Ok(Arguments {
             filename,
@@ -145,7 +149,8 @@ impl Arguments {
 
 fn main() {
     use clap::*;
-    let columns = terminal::columns().to_string();
+    let size = terminal::Size::detect().unwrap_or_default();
+    let columns = size.width.to_string();
     let app = app_from_crate!()
         // Merge flags and options w/ arguments together, include args in usage
         // string and show options in the order of declaration
@@ -193,7 +198,7 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
 
     let matches = app.get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
-    match process_arguments(arguments) {
+    match process_arguments(size, arguments) {
         Ok(_) => std::process::exit(0),
         Err(error) => {
             eprintln!("Error: {}", error);

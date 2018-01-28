@@ -32,7 +32,7 @@ use syntect::highlighting::{Theme, ThemeSet};
 use base64;
 use url::Url;
 use super::highlighting::write_as_ansi;
-use super::terminal::{osc, Format};
+use super::terminal::{osc, Format, Size};
 use super::resources;
 
 /// Dump markdown events to a writer.
@@ -56,7 +56,7 @@ where
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, W, I>(
     writer: &mut W,
-    columns: u16,
+    size: Size,
     events: I,
     base_dir: &'a Path,
     format: Format,
@@ -67,7 +67,7 @@ where
     W: Write,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
-    let mut context = Context::new(writer, columns, base_dir, format, syntax_set, theme);
+    let mut context = Context::new(writer, size, base_dir, format, syntax_set, theme);
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -115,8 +115,8 @@ struct InputContext<'a> {
 struct OutputContext<'a, W: Write + 'a> {
     /// The writer to write to.
     writer: &'a mut W,
-    /// The maximum number of columns to write.
-    columns: u16,
+    /// The terminal dimensions to limit output to.
+    size: Size,
 }
 
 #[derive(Debug)]
@@ -206,7 +206,7 @@ struct Context<'a, W: Write + 'a> {
 impl<'a, W: Write + 'a> Context<'a, W> {
     fn new(
         writer: &'a mut W,
-        columns: u16,
+        size: Size,
         base_dir: &'a Path,
         format: Format,
         syntax_set: SyntaxSet,
@@ -214,7 +214,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     ) -> Context<'a, W> {
         Context {
             input: InputContext { base_dir },
-            output: OutputContext { writer, columns },
+            output: OutputContext { writer, size },
             style: StyleContext {
                 active_styles: Vec::new(),
                 emphasis_level: 0,
@@ -385,7 +385,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         write!(
             self.output.writer,
             "{}\n",
-            "\u{2500}".repeat(self.output.columns.min(20) as usize)
+            "\u{2500}".repeat(self.output.size.width.min(20))
         )?;
         self.reset_last_style()
     }
@@ -486,7 +486,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             write!(
                 ctx.output.writer,
                 "{}",
-                "\u{2550}".repeat(ctx.output.columns as usize)
+                "\u{2550}".repeat(ctx.output.size.width as usize)
             )?
         }
         Header(level) => {

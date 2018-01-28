@@ -18,29 +18,56 @@ use termion;
 use std;
 use std::io::stdout;
 use std::fmt;
+use term_size;
 
-/// Get the number of columns for the terminal from `$COLUMNS`.
-///
-/// Return `None` if the variable is not set or does not contain a valid number.
-fn columns_from_env() -> Option<u16> {
-    std::env::var("COLUMNS")
-        .ok()
-        .and_then(|value| value.parse::<u16>().ok())
+/// Terminal size.
+#[derive(Debug, Copy, Clone)]
+pub struct Size {
+    /// The terminal width, in characters.
+    pub width: usize,
+    /// The terminal height, in lines.
+    pub height: usize,
 }
 
-/// Get the number of columns from the TTY device.
-///
-/// Return `None` if TTY access fails.
-fn columns_from_tty() -> Option<u16> {
-    termion::terminal_size().map(|size| size.0).ok()
+impl Default for Size {
+    /// A default terminal size: 80x24
+    fn default() -> Size {
+        Size {
+            width: 80,
+            height: 24,
+        }
+    }
 }
 
-/// Make a best effort to get the number of columns for the terminal.
-///
-/// Try to get the terminal size from the TTY device, or from the `$COLUMNS`
-/// environment variable, and eventually assume a default of 80 for safety.
-pub fn columns() -> u16 {
-    columns_from_tty().or_else(columns_from_env).unwrap_or(80)
+impl Size {
+    fn new(width: usize, height: usize) -> Size {
+        Size { width, height }
+    }
+
+    /// Get terminal size from `$COLUMNS` and `$LINES`.
+    fn from_env() -> Option<Size> {
+        let columns = std::env::var("COLUMNS")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok());
+        let rows = std::env::var("LINES")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok());
+
+        match (columns, rows) {
+            (Some(columns), Some(rows)) => Some(Size::new(columns, rows)),
+            _ => None,
+        }
+    }
+
+    /// Detect the terminal size.
+    ///
+    /// Get the terminal size from the underlying TTY, and fallback to
+    /// `$COLUMNS` and `$LINES`.
+    pub fn detect() -> Option<Size> {
+        term_size::dimensions()
+            .map(|(w, h)| Size::new(w, h))
+            .or_else(Size::from_env)
+    }
 }
 
 /// The terminal we use.
