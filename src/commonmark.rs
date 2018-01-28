@@ -16,7 +16,7 @@
 
 use std::path::Path;
 use std::fmt::Display;
-use std::io::{Result, Write};
+use std::io::{Error, ErrorKind, Result, Write};
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use pulldown_cmark::{Event, Tag};
@@ -28,7 +28,7 @@ use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
 use url::Url;
 use super::highlighting::write_as_ansi;
-use super::terminal::{osc, Format, Size, iterm2};
+use super::terminal::{osc, terminology, Format, ImageFormat, Size, iterm2};
 use super::resources::Resource;
 
 /// Dump markdown events to a writer.
@@ -552,14 +552,31 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             }
         }
         Image(link, _title) => {
-            if ctx.style.format.enables_inline_images() {
-                let resource = ctx.input.resolve_reference(&link);
-                if let Ok(contents) = resource.read() {
-                    iterm2::write_inline_image(ctx.output.writer, link.as_ref(), &contents)?;
+            match ctx.style.format.enables_inline_images() {
+                Some(ImageFormat::ITerm2) => {
+                    let resource = ctx.input.resolve_reference(&link);
+                    if let Ok(contents) = resource.read() {
+                        iterm2::write_inline_image(ctx.output.writer, link.as_ref(), &contents)?;
+                        // If we could write an inline image, disable text
+                        // output to suppress the image title.
+                        ctx.image.inline_image = true;
+                    }
+                }
+                Some(ImageFormat::Terminology) => {
+                    let resource = ctx.input.resolve_reference(&link);
+                    terminology::write_inline_image(
+                        ctx.output.writer,
+                        ctx.output.size,
+                        resource
+                            .as_str()
+                            .ok_or(Into::<Error>::into(ErrorKind::InvalidData))?,
+                    )?;
+
                     // If we could write an inline image, disable text output to
                     // suppress the image title.
                     ctx.image.inline_image = true;
                 }
+                _ => (),
             }
         }
     };
