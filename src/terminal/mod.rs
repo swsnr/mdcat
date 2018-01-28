@@ -21,6 +21,7 @@ use std::fmt;
 use term_size;
 
 pub mod iterm2;
+pub mod terminology;
 
 /// Terminal size.
 #[derive(Debug, Copy, Clone)]
@@ -82,6 +83,13 @@ enum Terminal {
     ///
     /// See <https://www.iterm2.com> for more information.
     ITerm2,
+    /// Terminology
+    ///
+    /// Terminology is a terminal written for the Enlightenment window manager
+    /// using the powerful EFL libraries.
+    ///
+    /// See <http://terminolo.gy/> for more information.
+    Terminology,
     /// A terminal based on a modern VTE version.
     ///
     /// VTE is Gnome library for terminal emulators.  It powers some notable
@@ -115,6 +123,11 @@ impl Terminal {
             .unwrap_or(false)
         {
             Terminal::ITerm2
+        } else if std::env::var("TERMINOLOGY")
+            .map(|value| value.trim() == "1")
+            .unwrap_or(false)
+        {
+            Terminal::Terminology
         } else {
             match get_vte_version() {
                 Some(version) if version >= (50, 0) => Terminal::VTE50,
@@ -124,6 +137,15 @@ impl Terminal {
     }
 }
 
+/// Describes the escape sequence type used to show images.
+#[derive(Clone, Copy, Debug)]
+pub enum ImageFormat {
+    /// <https://www.iterm2.com/documentation-images.html>.
+    ITerm2,
+    /// <https://github.com/billiob/terminology/blob/master/README>.
+    Terminology,
+}
+
 #[derive(Debug)]
 pub struct Format {
     /// Whether to enable basic colours.
@@ -131,7 +153,7 @@ pub struct Format {
     /// Whether to enable inline links.
     inline_links: bool,
     /// Whether to render images inline.
-    inline_images: bool,
+    inline_images: Option<ImageFormat>,
     /// Whether to set iterm marks for headings.
     iterm_marks: bool,
 }
@@ -144,7 +166,7 @@ impl Format {
         Format {
             basic_colours: false,
             inline_links: false,
-            inline_images: false,
+            inline_images: None,
             iterm_marks: false,
         }
     }
@@ -162,8 +184,14 @@ impl Format {
                 Terminal::ITerm2 => Format {
                     basic_colours: true,
                     inline_links: true,
-                    inline_images: true,
+                    inline_images: Some(ImageFormat::ITerm2),
                     iterm_marks: true,
+                },
+                Terminal::Terminology => Format {
+                    basic_colours: true,
+                    inline_links: true,
+                    inline_images: Some(ImageFormat::Terminology),
+                    iterm_marks: false,
                 },
                 Terminal::VTE50 => Format {
                     basic_colours: true,
@@ -194,7 +222,7 @@ impl Format {
     }
 
     /// Whether this format enables inline images.
-    pub fn enables_inline_images(&self) -> bool {
+    pub fn enables_inline_images(&self) -> Option<ImageFormat> {
         self.inline_images
     }
 

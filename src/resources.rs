@@ -64,6 +64,14 @@ impl<'a> Resource<'a> {
         }
     }
 
+    /// Returns the internal representation as is.
+    pub fn as_str(&self) -> Option<&str> {
+        match *self {
+            Resource::Remote(ref url) => Some(url.as_str()),
+            Resource::LocalFile(ref path) => path.to_str(),
+        }
+    }
+
     pub fn read(&self) -> Result<Vec<u8>> {
         match self {
             &Resource::Remote(_) => Err(Error::new(
