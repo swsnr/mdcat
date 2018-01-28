@@ -36,6 +36,7 @@ use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 
 mod terminal;
+mod resources;
 mod highlighting;
 mod commonmark;
 

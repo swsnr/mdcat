@@ -33,6 +33,7 @@ use base64;
 use url::Url;
 use super::highlighting::write_as_ansi;
 use super::terminal::{osc, Format};
+use super::resources;
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
@@ -565,18 +566,8 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // or if the format doesn't support inline links, don't do anything
             // here; we will write a reference link when closing the link tag.
             if ctx.style.format.enables_inline_links() {
-                if let Ok(url) = Url::parse(&destination) {
-                    ctx.start_inline_link(&url)?;
-                } else {
-                    // If we failed to parse the URL assume that we look at a
-                    // path, and turn it into a file URL.
-                    let path = ctx.input.base_dir.join(destination.as_ref());
-                    let url = Url::parse("file:///")
-                        .expect("Failed to parse file root URL!")
-                        .join(&path.to_string_lossy())
-                        .expect(&format!("Failed to join root URL with {:?}", path));
-                    ctx.start_inline_link(&url)?;
-                }
+                let url = resources::url_from_path(ctx.input.base_dir, &destination);
+                ctx.start_inline_link(&url)?;
             }
         }
         Image(link, _title) => {
