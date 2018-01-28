@@ -553,10 +553,9 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             }
         }
         FootnoteDefinition(_) => panic!("mdcat does not support footnotes"),
-        Table(_alignment) => panic!("mdcat does not support tables"),
-        TableHead => panic!("mdcat does not support tables"),
-        TableRow => panic!("mdcat does not support tables"),
-        TableCell => panic!("mdcat does not support tables"),
+        Table(_) | TableHead | TableRow | TableCell => {
+            panic!("mdcat does not support tables")
+        }
         Emphasis => ctx.enable_emphasis()?,
         Strong => ctx.enable_style(style::Bold)?,
         Code => ctx.enable_style(color::Fg(color::Yellow))?,
