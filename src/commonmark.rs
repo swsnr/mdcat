@@ -17,9 +17,6 @@
 use std::path::Path;
 use std::fmt::Display;
 use std::io::{Result, Write};
-use std::io::prelude::*;
-use std::os::unix::ffi::OsStrExt;
-use std::fs::File;
 use std::borrow::Cow;
 use std::collections::VecDeque;
 use pulldown_cmark::{Event, Tag};
@@ -29,11 +26,10 @@ use termion::{color, style};
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
-use base64;
 use url::Url;
 use super::highlighting::write_as_ansi;
-use super::terminal::{osc, Format, Size};
-use super::resources;
+use super::terminal::{osc, Format, Size, iterm2};
+use super::resources::Resource;
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
@@ -109,6 +105,13 @@ struct Link<'a> {
 struct InputContext<'a> {
     /// The base directory, to resolve relative paths
     base_dir: &'a Path,
+}
+
+impl<'a> InputContext<'a> {
+    /// Resolve a reference in the input.
+    fn resolve_reference(&self, reference: &'a str) -> Resource {
+        Resource::from_reference(self.base_dir, reference)
+    }
 }
 
 /// Context for TTY output.
@@ -420,27 +423,6 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         self.links.inside_inline_link = false;
         write!(self.output.writer, "{}", osc("8;;"))
     }
-
-    /// Set a mark for iTerm2.
-    fn set_iterm_mark(&mut self) -> Result<()> {
-        if self.style.format.enables_iterm_marks() {
-            write!(self.output.writer, "{}", osc("1337;SetMark"))?;
-        };
-        Ok(())
-    }
-
-    /// Write an inline image for iTerm2.
-    fn write_iterm_inline_image(&mut self, path: &Path) -> Result<()> {
-        let mut source = File::open(self.input.base_dir.join(path))?;
-        let mut contents = Vec::new();
-        source.read_to_end(&mut contents)?;
-        let command = format!(
-            "1337;File=name={};inline=1:{}",
-            base64::encode(path.as_os_str().as_bytes()),
-            base64::encode(&contents)
-        );
-        write!(self.output.writer, "{}", osc(&command))
-    }
 }
 
 /// Write a single `event` in the given context.
@@ -494,7 +476,9 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // them close to the text where they appeared in
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
-            ctx.set_iterm_mark()?;
+            if ctx.style.format.enables_iterm_marks() {
+                iterm2::write_mark(ctx.output.writer)?;
+            }
             let level_indicator = "\u{2504}".repeat(level as usize);
             ctx.enable_style(style::Bold)?;
             ctx.enable_style(color::Fg(color::Blue))?;
@@ -553,9 +537,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             }
         }
         FootnoteDefinition(_) => panic!("mdcat does not support footnotes"),
-        Table(_) | TableHead | TableRow | TableCell => {
-            panic!("mdcat does not support tables")
-        }
+        Table(_) | TableHead | TableRow | TableCell => panic!("mdcat does not support tables"),
         Emphasis => ctx.enable_emphasis()?,
         Strong => ctx.enable_style(style::Bold)?,
         Code => ctx.enable_style(color::Fg(color::Yellow))?,
@@ -565,18 +547,19 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // or if the format doesn't support inline links, don't do anything
             // here; we will write a reference link when closing the link tag.
             if ctx.style.format.enables_inline_links() {
-                let url = resources::url_from_path(ctx.input.base_dir, &destination);
+                let url = ctx.input.resolve_reference(&destination).to_url();
                 ctx.start_inline_link(&url)?;
             }
         }
         Image(link, _title) => {
-            if ctx.style.format.enables_inline_images()
-                && ctx.write_iterm_inline_image(Path::new(link.as_ref()))
-                    .is_ok()
-            {
-                // If we could write an inline image, disable text output to
-                // suppress the image title.
-                ctx.image.inline_image = true;
+            if ctx.style.format.enables_inline_images() {
+                let resource = ctx.input.resolve_reference(&link);
+                if let Ok(contents) = resource.read() {
+                    iterm2::write_inline_image(ctx.output.writer, link.as_ref(), &contents)?;
+                    // If we could write an inline image, disable text output to
+                    // suppress the image title.
+                    ctx.image.inline_image = true;
+                }
             }
         }
     };

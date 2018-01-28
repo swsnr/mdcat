@@ -20,6 +20,8 @@ use std::io::stdout;
 use std::fmt;
 use term_size;
 
+pub mod iterm2;
+
 /// Terminal size.
 #[derive(Debug, Copy, Clone)]
 pub struct Size {
