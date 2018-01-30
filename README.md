@@ -53,6 +53,7 @@ install [cargo-update][] and run `cargo install-update mdcat`.
 ### 3rd party packages
 
 * Arch Linux: [mdcat in AUR][aur]
+* Void Linux: `xbps-install -S mdcat`
 
 [rustup]: https://www.rustup.rs
 [cargo-update]: https://github.com/nabijaczleweli/cargo-update
