@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Show inline images in [Terminology][] (see [GH-16][]).
+
+[Terminology]: http://terminolo.gy
+[GH-16]: https://github.com/lunaryorn/mdcat/pull/16
+
 ### Changed
 - Improve `--help` output: Hide some redundant options, add a bug reporting URL
   and explain the purpose of `mdcat`.

@@ -29,14 +29,22 @@ left to right), and [PragmataPro][pp] as font.
 ## Features
 
 `mdcat` works best with [iTerm2][] or a compatible terminal emulator, and a
-good terminal font which includes italic characters.  It supports:
+good terminal font which includes italic characters.  It supports
 
 * All CommonMark syntax
 * Syntax highlighting for code blocks
-* In [iTerm2][] and VTE-based terminals: Inline links, with dashed underline like in the screenshot above
-* In [iTerm2][]: Inline images like in the screenshot above
-* In [iTerm2][]: Jump marks for headings (jump forwards and backwards with
+* Inline links (note the dashed underline like in the screenshot above, in some
+  terminals)
+* Inline images like in the screenshot above (in some terminals)
+* Jump marks for headings (in iTerm2 jump forwards and backwards with
   <key>⇧⌘↓</key> and <key>⇧⌘↑</key>)
+
+| Terminal                |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
+| :---------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
+| Basic ANSI              | ✓             | ✓                   |       |        |            |
+| VTE 0.50 or newer based | ✓             | ✓                   | ✓     |        |            |
+| [Terminology][]         | ✓             | ✓                   | ✓     | ✓      |            |
+| [iTerm2][]              | ✓             | ✓                   | ✓     | ✓      | ✓          |
 
 Not supported:
 
@@ -44,6 +52,8 @@ Not supported:
 * Images from remote URLs
 * SVG images
 * Re-filling paragraphs
+
+[Terminology]: http://terminolo.gy
 
 ## Installation
 

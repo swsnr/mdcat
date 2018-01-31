@@ -21,6 +21,7 @@
 extern crate base64;
 #[macro_use]
 extern crate clap;
+extern crate immeta;
 extern crate pulldown_cmark;
 extern crate syntect;
 extern crate term_size;

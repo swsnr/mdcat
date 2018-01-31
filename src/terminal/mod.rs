@@ -22,6 +22,7 @@ use term_size;
 use super::resources::Resource;
 
 mod iterm2;
+mod terminology;
 
 /// Terminal size.
 #[derive(Debug, Copy, Clone)]
@@ -83,6 +84,13 @@ pub enum Terminal {
     ///
     /// See <https://www.iterm2.com> for more information.
     ITerm2,
+    /// Terminology.
+    ///
+    /// Terminology is a terminal written for the Enlightenment window manager
+    /// using the powerful EFL libraries.
+    ///
+    /// See <http://terminolo.gy/> for more information.
+    Terminology,
     /// A generic terminal based on a modern VTE version.
     ///
     /// VTE is Gnome library for terminal emulators.  It powers some notable
@@ -147,6 +155,11 @@ impl Terminal {
                 .unwrap_or(false)
             {
                 Terminal::ITerm2
+            } else if std::env::var("TERMINOLOGY")
+                .map(|value| value.trim() == "1")
+                .unwrap_or(false)
+            {
+                Terminal::Terminology
             } else {
                 match get_vte_version() {
                     Some(version) if version >= (50, 0) => Terminal::GenericVTE50,
@@ -174,6 +187,7 @@ impl Terminal {
     pub fn write_inline_image<W: io::Write>(
         self,
         writer: &mut W,
+        max_size: Size,
         resource: &Resource,
     ) -> TerminalResult<()> {
         match self {
@@ -183,6 +197,7 @@ impl Terminal {
                     iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                 })
                 .map_err(|e| TerminalError::IoError(e)),
+            Terminal::Terminology => terminology::write_inline_image(writer, max_size, resource),
             _ => Err(TerminalError::NotSupported),
         }
     }
@@ -192,7 +207,7 @@ impl Terminal {
     /// To stop a link write a link to an empty destination.
     pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> TerminalResult<()> {
         match self {
-            Terminal::ITerm2 | Terminal::GenericVTE50 => {
+            Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => {
                 let command = format!("8;;{}", destination);
                 write!(writer, "{}", osc(&command)).map_err(|err| TerminalError::IoError(err))
             }

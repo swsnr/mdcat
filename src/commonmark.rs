@@ -549,7 +549,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             let resource = ctx.input.resolve_reference(&link);
             if ctx.output
                 .terminal
-                .write_inline_image(ctx.output.writer, &resource)
+                .write_inline_image(ctx.output.writer, ctx.output.size, &resource)
                 .is_ok()
             {
                 // If we could write an inline image, disable text output to
