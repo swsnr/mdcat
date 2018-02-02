@@ -278,7 +278,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
             self.output
                 .terminal
                 .set_style(self.output.writer, *style)
-                .or_else(|err| err.into_io())?;
+                .or_else(TerminalError::into_io)?;
         }
         Ok(())
     }
@@ -324,7 +324,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         self.output
             .terminal
             .set_style(self.output.writer, style)
-            .or_else(|err| err.into_io())
+            .or_else(TerminalError::into_io)
     }
 
     /// Remove the last style and flush styles on the TTY.
@@ -333,7 +333,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         self.output
             .terminal
             .set_style(self.output.writer, AnsiStyle::Reset)
-            .or_else(|err| err.into_io())?;
+            .or_else(TerminalError::into_io)?;
         self.flush_styles()
     }
 
@@ -494,7 +494,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
                         ctx.output
                             .terminal
                             .set_style(ctx.output.writer, AnsiStyle::Reset)
-                            .or_else(|err| err.into_io())?;
+                            .or_else(TerminalError::into_io)?;
                     }
                     if ctx.code.current_highlighter.is_none() {
                         // If we have no highlighter for the current block, fall
@@ -592,7 +592,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
                     ctx.output
                         .terminal
                         .set_style(ctx.output.writer, AnsiStyle::Reset)
-                        .or_else(|err| err.into_io())?;
+                        .or_else(TerminalError::into_io)?;
                     ctx.flush_styles()?;
                     ctx.code.current_highlighter = None;
                 }

@@ -293,7 +293,7 @@ impl Terminal {
                 .and_then(|contents| {
                     iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                 })
-                .map_err(|e| TerminalError::IoError(e)),
+                .map_err(TerminalError::IoError),
             Terminal::Terminology => terminology::write_inline_image(writer, max_size, resource),
             _ => Err(TerminalError::NotSupported),
         }
@@ -306,7 +306,7 @@ impl Terminal {
         match self {
             Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => writer
                 .write_osc(&format!("8;;{}", destination))
-                .map_err(|err| TerminalError::IoError(err)),
+                .map_err(TerminalError::IoError),
             _ => Err(TerminalError::NotSupported),
         }
     }
@@ -314,7 +314,7 @@ impl Terminal {
     /// Set a mark in the current terminal.
     pub fn set_mark<W: io::Write>(self, writer: &mut W) -> TerminalResult<()> {
         if let Terminal::ITerm2 = self {
-            iterm2::write_mark(writer).map_err(|err| TerminalError::IoError(err))
+            iterm2::write_mark(writer).map_err(TerminalError::IoError)
         } else {
             Err(TerminalError::NotSupported)
         }
