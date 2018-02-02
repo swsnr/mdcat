@@ -14,7 +14,7 @@
 
 //! Terminal utilities.
 
-use termion;
+use atty;
 use std;
 use std::io;
 use std::io::prelude::*;
@@ -233,7 +233,7 @@ impl Terminal {
     ///
     /// Otherwise assume a dumb terminal that cannot format anything.
     pub fn detect() -> Terminal {
-        if termion::is_tty(&io::stdout()) {
+        if atty::is(atty::Stream::Stdout) {
             if std::env::var("TERM_PROGRAM")
                 .map(|value| value.contains("iTerm.app"))
                 .unwrap_or(false)
