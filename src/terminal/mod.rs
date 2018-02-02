@@ -17,7 +17,7 @@
 use termion;
 use std;
 use std::io;
-use std::fmt;
+use std::io::prelude::*;
 use term_size;
 use super::resources::Resource;
 
@@ -71,6 +71,90 @@ impl Size {
         term_size::dimensions()
             .map(|(w, h)| Size::new(w, h))
             .or_else(Size::from_env)
+    }
+}
+
+/// An ANSI colour.
+#[derive(Debug, Copy, Clone)]
+#[allow(dead_code)]
+pub enum AnsiColour {
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Cyan,
+    LightRed,
+    LightGreen,
+    LightYellow,
+    LightBlue,
+    LightMagenta,
+    LightCyan,
+}
+
+/// An ANSI style to enable on a terminal.
+#[derive(Debug, Copy, Clone)]
+#[allow(dead_code)]
+pub enum AnsiStyle {
+    Reset,
+    Bold,
+    Italic,
+    NoItalic,
+    Underline,
+    Foreground(AnsiColour),
+    DefaultForeground,
+}
+
+pub trait TerminalWrite {
+    /// Write a OSC `command`.
+    fn write_osc(&mut self, command: &str) -> io::Result<()>;
+
+    /// Write a CSI SGR `command`.
+    ///
+    /// See <https://en.wikipedia.org/wiki/ANSI_escape_code#CSI_sequences>.
+    fn write_sgr(&mut self, command: &str) -> io::Result<()>;
+
+    /// Write an ANSI style.
+    fn write_style(&mut self, style: AnsiStyle) -> io::Result<()> {
+        match style {
+            AnsiStyle::Reset => self.write_sgr(""),
+            AnsiStyle::Bold => self.write_sgr("1"),
+            AnsiStyle::Italic => self.write_sgr("3"),
+            AnsiStyle::Underline => self.write_sgr("4"),
+            AnsiStyle::NoItalic => self.write_sgr("23"),
+            AnsiStyle::Foreground(AnsiColour::Red) => self.write_sgr("31"),
+            AnsiStyle::Foreground(AnsiColour::Green) => self.write_sgr("32"),
+            AnsiStyle::Foreground(AnsiColour::Yellow) => self.write_sgr("33"),
+            AnsiStyle::Foreground(AnsiColour::Blue) => self.write_sgr("34"),
+            AnsiStyle::Foreground(AnsiColour::Magenta) => self.write_sgr("35"),
+            AnsiStyle::Foreground(AnsiColour::Cyan) => self.write_sgr("36"),
+            AnsiStyle::Foreground(AnsiColour::LightRed) => self.write_sgr("91"),
+            AnsiStyle::Foreground(AnsiColour::LightGreen) => self.write_sgr("92"),
+            AnsiStyle::Foreground(AnsiColour::LightYellow) => self.write_sgr("93"),
+            AnsiStyle::Foreground(AnsiColour::LightBlue) => self.write_sgr("94"),
+            AnsiStyle::Foreground(AnsiColour::LightMagenta) => self.write_sgr("95"),
+            AnsiStyle::Foreground(AnsiColour::LightCyan) => self.write_sgr("96"),
+            AnsiStyle::DefaultForeground => self.write_sgr("39"),
+        }
+    }
+}
+
+impl<T> TerminalWrite for T
+where
+    T: Write,
+{
+    fn write_osc(&mut self, command: &str) -> io::Result<()> {
+        self.write(&[0x1b, 0x5d])?;
+        self.write(command.as_bytes())?;
+        self.write(&[0x07])?;
+        Ok(())
+    }
+
+    fn write_sgr(&mut self, command: &str) -> io::Result<()> {
+        self.write(&[0x1b, 0x5b])?;
+        self.write(command.as_bytes())?;
+        self.write(&[0x6d])?;
+        Ok(())
     }
 }
 
@@ -180,6 +264,19 @@ impl Terminal {
         }
     }
 
+    /// Set a style on this terminal.
+    pub fn set_style<W: TerminalWrite>(
+        self,
+        writer: &mut W,
+        style: AnsiStyle,
+    ) -> TerminalResult<()> {
+        if self.supports_colours() {
+            writer.write_style(style).map_err(TerminalError::IoError)
+        } else {
+            Err(TerminalError::NotSupported)
+        }
+    }
+
     /// Write an inline image.
     ///
     /// Supported on iTerm2, all other terminal emulators return a not supported
@@ -207,10 +304,9 @@ impl Terminal {
     /// To stop a link write a link to an empty destination.
     pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> TerminalResult<()> {
         match self {
-            Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => {
-                let command = format!("8;;{}", destination);
-                write!(writer, "{}", osc(&command)).map_err(|err| TerminalError::IoError(err))
-            }
+            Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => writer
+                .write_osc(&format!("8;;{}", destination))
+                .map_err(|err| TerminalError::IoError(err)),
             _ => Err(TerminalError::NotSupported),
         }
     }
@@ -222,22 +318,5 @@ impl Terminal {
         } else {
             Err(TerminalError::NotSupported)
         }
-    }
-}
-
-/// An OSC command for a terminal.
-#[derive(Debug, Copy, Clone)]
-pub struct OSC<'a> {
-    command: &'a str,
-}
-
-/// Create an OSC command for the terminal.
-pub fn osc(command: &str) -> OSC {
-    OSC { command }
-}
-
-impl<'a> fmt::Display for OSC<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "\x1B]{}\x07", self.command)
     }
 }

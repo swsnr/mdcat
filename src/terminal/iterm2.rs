@@ -18,25 +18,24 @@ use std::io::{Result, Write};
 use base64;
 use std::ffi::OsStr;
 use std::os::unix::ffi::OsStrExt;
-use super::osc;
+use super::TerminalWrite;
 
 /// Write an iterm2 mark;
-pub fn write_mark<W: Write>(writer: &mut W) -> Result<()> {
-    write!(writer, "{}", osc("1337;SetMark"))
+pub fn write_mark<W: Write + TerminalWrite>(writer: &mut W) -> Result<()> {
+    writer.write_osc("1337;SetMark")
 }
 
 /// Write an iterm2 inline image.
 ///
 /// `name` is the file name of the image, and `contents` holds the image contents.
-pub fn write_inline_image<W: Write, S: AsRef<OsStr>>(
+pub fn write_inline_image<W: Write + TerminalWrite, S: AsRef<OsStr>>(
     writer: &mut W,
     name: S,
     contents: &[u8],
 ) -> Result<()> {
-    let command = format!(
+    writer.write_osc(&format!(
         "1337;File=name={};inline=1:{}",
         base64::encode(name.as_ref().as_bytes()),
         base64::encode(contents)
-    );
-    write!(writer, "{}", osc(&command))
+    ))
 }

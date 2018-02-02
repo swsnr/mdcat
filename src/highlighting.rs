@@ -16,7 +16,7 @@
 
 use std::io::{Result, Write};
 use syntect::highlighting::{FontStyle, Style};
-use termion::{color, style};
+use super::terminal::{AnsiColour, AnsiStyle, TerminalWrite};
 
 /// Write regions as ANSI 8-bit coloured text.
 ///
@@ -33,7 +33,10 @@ use termion::{color, style};
 ///
 /// Furthermore we completely ignore any background colour settings, to avoid
 /// conflicts with the terminal colour theme.s
-pub fn write_as_ansi<W: Write>(writer: &mut W, regions: &[(Style, &str)]) -> Result<()> {
+pub fn write_as_ansi<W: Write + TerminalWrite>(
+    writer: &mut W,
+    regions: &[(Style, &str)],
+) -> Result<()> {
     for &(style, text) in regions {
         let rgb = {
             let fg = style.foreground;
@@ -48,34 +51,32 @@ pub fn write_as_ansi<W: Write>(writer: &mut W, regions: &[(Style, &str)]) -> Res
             | (0x83, 0x94, 0x96)
             | (0x93, 0xa1, 0xa1)
             | (0xee, 0xe8, 0xd5)
-            | (0xfd, 0xf6, 0xe3) => write!(writer, "{}", color::Fg(color::Reset))?,
-            (0xb5, 0x89, 0x00) => write!(writer, "{}", color::Fg(color::Yellow))?, // yellow
-            (0xcb, 0x4b, 0x16) => write!(writer, "{}", color::Fg(color::LightRed))?, // orange
-            (0xdc, 0x32, 0x2f) => write!(writer, "{}", color::Fg(color::Red))?,    // red
-            (0xd3, 0x36, 0x82) => write!(writer, "{}", color::Fg(color::Magenta))?, // magenta
-            (0x6c, 0x71, 0xc4) => write!(writer, "{}", color::Fg(color::LightMagenta))?, // violet
-            (0x26, 0x8b, 0xd2) => write!(writer, "{}", color::Fg(color::Blue))?,   // blue
-            (0x2a, 0xa1, 0x98) => write!(writer, "{}", color::Fg(color::Cyan))?,   // cyan
-            (0x85, 0x99, 0x00) => write!(writer, "{}", color::Fg(color::Green))?,  // green
+            | (0xfd, 0xf6, 0xe3) => writer.write_style(AnsiStyle::DefaultForeground)?,
+            (0xb5, 0x89, 0x00) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Yellow))?, // yellow
+            (0xcb, 0x4b, 0x16) => writer.write_style(AnsiStyle::Foreground(AnsiColour::LightRed))?, // orange
+            (0xdc, 0x32, 0x2f) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Red))?, // red
+            (0xd3, 0x36, 0x82) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Magenta))?, // magenta
+            (0x6c, 0x71, 0xc4) => {
+                writer.write_style(AnsiStyle::Foreground(AnsiColour::LightMagenta))?
+            } // violet
+            (0x26, 0x8b, 0xd2) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Blue))?, // blue
+            (0x2a, 0xa1, 0x98) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Cyan))?, // cyan
+            (0x85, 0x99, 0x00) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Green))?, // green
             (r, g, b) => panic!("Unexpected RGB colour: #{:2>0x}{:2>0x}{:2>0x}", r, g, b),
         };
         let font = style.font_style;
         if font.contains(FontStyle::BOLD) {
-            write!(writer, "{}", style::Bold)?;
-        } else {
-            write!(writer, "{}", style::NoBold)?;
-        }
+            writer.write_style(AnsiStyle::Bold)?;
+        };
         if font.contains(FontStyle::ITALIC) {
-            write!(writer, "{}", style::Italic)?;
-        } else {
-            write!(writer, "{}", style::NoItalic)?;
-        }
+            writer.write_style(AnsiStyle::Italic)?;
+        };
         if font.contains(FontStyle::UNDERLINE) {
-            write!(writer, "{}", style::Underline)?;
-        } else {
-            write!(writer, "{}", style::NoUnderline)?;
-        }
-        write!(writer, "{}{}", text, style::Reset)?;
+            writer.write_style(AnsiStyle::Underline)?;
+        };
+        writer.write(text.as_bytes())?;
+        writer.write_style(AnsiStyle::Reset)?;
     }
+
     Ok(())
 }
