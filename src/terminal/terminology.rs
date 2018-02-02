@@ -50,7 +50,7 @@ pub fn write_inline_image<W: Write>(
         .and_then(|path| immeta::load_from_file(path).ok())
         .map(|m| {
             let d = m.dimensions();
-            let (w, h) = (d.width as f64, d.height as f64);
+            let (w, h) = (f64::from(d.width), f64::from(d.height));
             // We divide by 2 because terminal cursor/font most likely has a
             // 1:2 proportion
             (h * (columns / 2) as f64 / w) as usize
