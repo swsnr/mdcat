@@ -74,7 +74,7 @@ pub fn write_as_ansi<W: Write + TerminalWrite>(
         if font.contains(FontStyle::UNDERLINE) {
             writer.write_style(AnsiStyle::Underline)?;
         };
-        writer.write(text.as_bytes())?;
+        writer.write_all(text.as_bytes())?;
         writer.write_style(AnsiStyle::Reset)?;
     }
 

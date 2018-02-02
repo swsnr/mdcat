@@ -144,16 +144,16 @@ where
     T: Write,
 {
     fn write_osc(&mut self, command: &str) -> io::Result<()> {
-        self.write(&[0x1b, 0x5d])?;
-        self.write(command.as_bytes())?;
-        self.write(&[0x07])?;
+        self.write_all(&[0x1b, 0x5d])?;
+        self.write_all(command.as_bytes())?;
+        self.write_all(&[0x07])?;
         Ok(())
     }
 
     fn write_sgr(&mut self, command: &str) -> io::Result<()> {
-        self.write(&[0x1b, 0x5b])?;
-        self.write(command.as_bytes())?;
-        self.write(&[0x6d])?;
+        self.write_all(&[0x1b, 0x5b])?;
+        self.write_all(command.as_bytes())?;
+        self.write_all(&[0x6d])?;
         Ok(())
     }
 }
