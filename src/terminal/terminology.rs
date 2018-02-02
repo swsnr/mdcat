@@ -44,35 +44,28 @@ pub fn write_inline_image<W: Write>(
     // If we can't compute the image proportion (e.g. it's an external URL), we
     // fallback to a rectangle that is half of the screen.
 
-    if let Resource::LocalFile(ref path) = *resource {
-        let columns = max_size.width;
-        let lines = immeta::load_from_file(path)
-            .map(|m| {
-                let d = m.dimensions();
-                let (w, h) = (d.width as f64, d.height as f64);
-                // We divide by 2 because terminal cursor/font most likely has a
-                // 1:2 proportion
-                (h * (columns / 2) as f64 / w) as usize
-            })
-            .unwrap_or(max_size.height / 2);
+    let columns = max_size.width;
+    let lines = resource
+        .local_path()
+        .and_then(|path| immeta::load_from_file(path).ok())
+        .map(|m| {
+            let d = m.dimensions();
+            let (w, h) = (d.width as f64, d.height as f64);
+            // We divide by 2 because terminal cursor/font most likely has a
+            // 1:2 proportion
+            (h * (columns / 2) as f64 / w) as usize
+        })
+        .unwrap_or(max_size.height / 2);
 
-        let mut command = format!(
-            "\x1b}}ic#{};{};{}\x00",
-            columns,
-            lines,
-            path.to_string_lossy()
-        );
-        for _ in 0..lines {
-            command.push_str("\x1b}ib\x00");
-            for _ in 0..columns {
-                command.push('#');
-            }
-            command.push_str("\x1b}ie\x00\n");
+    let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, resource.as_str());
+    for _ in 0..lines {
+        command.push_str("\x1b}ib\x00");
+        for _ in 0..columns {
+            command.push('#');
         }
-        writer
-            .write_all(command.as_bytes())
-            .map_err(TerminalError::IoError)
-    } else {
-        Err(TerminalError::NotSupported)
+        command.push_str("\x1b}ie\x00\n");
     }
+    writer
+        .write_all(command.as_bytes())
+        .map_err(TerminalError::IoError)
 }

@@ -64,6 +64,20 @@ impl<'a> Resource<'a> {
         }
     }
 
+    /// Extract the local path from this resource.
+    ///
+    /// If the resource is a `LocalFile`, or a `file://` URL pointing to a local
+    /// file return the local path, otherwise return `None`.
+    pub fn local_path(&'a self) -> Option<Cow<'a, Path>> {
+        match *self {
+            Resource::Remote(ref url) if url.scheme() == "file" && url.host().is_none() => {
+                Some(Cow::Borrowed(Path::new(url.path())))
+            }
+            Resource::LocalFile(ref path) => Some(Cow::Borrowed(path)),
+            _ => None,
+        }
+    }
+
     /// Convert this resource to a string.
     ///
     /// For local resource return the lossy UTF-8 representation of the path,
