@@ -54,7 +54,7 @@ impl<'a> Resource<'a> {
     /// Convert this resource into a URL.
     ///
     /// Return a `Remote` resource as is, and a `LocalFile` as `file:` URL.
-    pub fn to_url(self) -> Url {
+    pub fn into_url(self) -> Url {
         match self {
             Resource::Remote(url) => url,
             Resource::LocalFile(path) => Url::parse("file:///")

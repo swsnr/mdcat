@@ -202,7 +202,7 @@ impl TerminalError {
     /// Turn a terminal error into an IO result.
     ///
     /// Map `NotSupported` to `Ok(())`.
-    pub fn to_io(self) -> io::Result<()> {
+    pub fn into_io(self) -> io::Result<()> {
         match self {
             TerminalError::NotSupported => Ok(()),
             TerminalError::IoError(err) => Err(err),

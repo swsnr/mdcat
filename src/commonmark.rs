@@ -278,7 +278,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
             self.output
                 .terminal
                 .set_style(self.output.writer, *style)
-                .or_else(|err| err.to_io())?;
+                .or_else(|err| err.into_io())?;
         }
         Ok(())
     }
@@ -290,7 +290,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         self.output
             .terminal
             .set_style(self.output.writer, AnsiStyle::Reset)
-            .or_else(TerminalError::to_io)?;
+            .or_else(TerminalError::into_io)?;
         write!(self.output.writer, "\n")?;
         self.flush_styles()
     }
@@ -324,7 +324,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         self.output
             .terminal
             .set_style(self.output.writer, style)
-            .or_else(|err| err.to_io())
+            .or_else(|err| err.into_io())
     }
 
     /// Remove the last style and flush styles on the TTY.
@@ -333,7 +333,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         self.output
             .terminal
             .set_style(self.output.writer, AnsiStyle::Reset)
-            .or_else(|err| err.to_io())?;
+            .or_else(|err| err.into_io())?;
         self.flush_styles()
     }
 
@@ -467,7 +467,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.output
                 .terminal
                 .set_mark(ctx.output.writer)
-                .or_else(TerminalError::to_io)?;
+                .or_else(TerminalError::into_io)?;
             let level_indicator = "\u{2504}".repeat(level as usize);
             ctx.enable_style(AnsiStyle::Bold)?;
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
@@ -494,7 +494,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
                         ctx.output
                             .terminal
                             .set_style(ctx.output.writer, AnsiStyle::Reset)
-                            .or_else(|err| err.to_io())?;
+                            .or_else(|err| err.into_io())?;
                     }
                     if ctx.code.current_highlighter.is_none() {
                         // If we have no highlighter for the current block, fall
@@ -538,7 +538,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             // those and we can parse the destination as valid URL.  If we can't
             // or if the format doesn't support inline links, don't do anything
             // here; we will write a reference link when closing the link tag.
-            let url = ctx.input.resolve_reference(&destination).to_url();
+            let url = ctx.input.resolve_reference(&destination).into_url();
             if ctx.output
                 .terminal
                 .set_link(ctx.output.writer, url.as_str())
@@ -592,7 +592,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
                     ctx.output
                         .terminal
                         .set_style(ctx.output.writer, AnsiStyle::Reset)
-                        .or_else(|err| err.to_io())?;
+                        .or_else(|err| err.into_io())?;
                     ctx.flush_styles()?;
                     ctx.code.current_highlighter = None;
                 }
@@ -628,7 +628,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
             ctx.output
                 .terminal
                 .set_link(ctx.output.writer, "")
-                .or_else(TerminalError::to_io)?;
+                .or_else(TerminalError::into_io)?;
             ctx.links.inside_inline_link = false;
         } else {
             // When we did not write an inline link, create a normal reference
