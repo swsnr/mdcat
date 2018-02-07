@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 ### Added
+- Show images from HTTP and HTTPS URLs inline in iTerm2.
 - Add `--local` flag to render only local images inline; for remote images, eg,
   HTTP URLs, show only the image title and the URL.
 - Expose `mdcat` as a library crate (see [GH-18][]), but with no guarantees
