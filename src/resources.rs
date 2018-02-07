@@ -60,12 +60,19 @@ impl<'a> Resource<'a> {
         }
     }
 
+    /// Whether this resource is local.
+    fn is_local(&self) -> bool {
+        match *self {
+            Resource::LocalFile(_) => true,
+            _ => false,
+        }
+    }
+
     /// Whether we may access this resource under the given access permissions.
     pub fn may_access(&self, access: ResourceAccess) -> bool {
-        match (access, self) {
-            (ResourceAccess::RemoteAllowed, _) => true,
-            (ResourceAccess::LocalOnly, &Resource::LocalFile(_)) => true,
-            _ => false,
+        match access {
+            ResourceAccess::RemoteAllowed => true,
+            ResourceAccess::LocalOnly => self.is_local(),
         }
     }
 
