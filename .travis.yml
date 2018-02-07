@@ -8,6 +8,8 @@ rust:
 script:
   - cargo build --verbose
   - cargo test --verbose
+  # Make sure that we can format w/o panic or error
+  - cargo run -- sample/common-mark.md
 cache: cargo
 # Check formatting before running tests
 stages:
