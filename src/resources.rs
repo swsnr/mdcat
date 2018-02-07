@@ -23,12 +23,15 @@ use url::Url;
 use failure::Error;
 use reqwest;
 
-/// What kind of resources we may access.
+/// What kind of resources mdcat may access when rendering.
+///
+/// This struct denotes whether mdcat shows inline images from remote URLs or
+/// just from local files.
 #[derive(Debug, Copy, Clone)]
 pub enum ResourceAccess {
-    /// We may only access local files.
+    /// Use only local files and do not allow remote resources.
     LocalOnly,
-    /// We may access remote resources like HTTP URLs.
+    /// Use local and remote resources alike.
     RemoteAllowed,
 }
 

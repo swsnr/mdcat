@@ -25,17 +25,17 @@ use super::resources::{Resource, ResourceAccess};
 mod iterm2;
 mod terminology;
 
-/// Terminal size.
+/// The size of a text terminal.
 #[derive(Debug, Copy, Clone)]
 pub struct Size {
-    /// The terminal width, in characters.
+    /// The width of the terminal, in characters aka columns.
     pub width: usize,
-    /// The terminal height, in lines.
+    /// The height of the terminal, in lines.
     pub height: usize,
 }
 
 impl Default for Size {
-    /// A default terminal size: 80x24
+    /// A good default size assumption for a terminal: 80x24.
     fn default() -> Size {
         Size {
             width: 80,
@@ -159,7 +159,11 @@ where
     }
 }
 
-/// The terminal we use.
+/// The terminal mdcat writes to.
+///
+/// The terminal denotes what features mdcat can use when rendering markdown.
+/// Features range from nothing at all on dumb terminals, to basic ANSI styling,
+/// to inline links and inline images in some select terminal emulators.
 #[derive(Debug, Copy, Clone)]
 pub enum Terminal {
     /// iTerm2.
@@ -172,7 +176,8 @@ pub enum Terminal {
     /// Terminology.
     ///
     /// Terminology is a terminal written for the Enlightenment window manager
-    /// using the powerful EFL libraries.
+    /// using the powerful EFL libraries.  It supports inline links and inline
+    /// images.
     ///
     /// See <http://terminolo.gy/> for more information.
     Terminology,
@@ -182,11 +187,18 @@ pub enum Terminal {
     /// terminal emulators like Gnome Terminal, and embedded terminals in
     /// applications like GEdit.
     ///
-    /// We require 0.50 or newer; these versions support inline links.
+    /// VTE 0.50 or newer support inline links.  Older versions do not; we
+    /// recognize these as `BasicAnsi`.
     GenericVTE50,
     /// A terminal which supports basic ANSI sequences.
+    ///
+    /// Most terminal emulators fall into this category.
     BasicAnsi,
     /// A dumb terminal that supports no formatting.
+    ///
+    /// With this terminal mdcat will render no special formatting at all. Use
+    /// when piping to other programs or when the terminal does not even support
+    /// ANSI codes.
     Dumb,
 }
 
@@ -239,9 +251,12 @@ fn get_vte_version() -> Option<(u8, u8)> {
 impl Terminal {
     /// Detect the underlying terminal application.
     ///
-    /// If stdout links to a TTY find out what terminal emulator we run in.
+    /// If stdout links to a TTY look at various pieces of information, in
+    /// particular environment variables set by terminal emulators, to figure
+    /// out what terminal emulator we run in.
     ///
-    /// Otherwise assume a dumb terminal that cannot format anything.
+    /// If stdout does not link to a TTY assume a `Dumb` terminal which cannot
+    /// format anything.
     pub fn detect() -> Terminal {
         if atty::is(atty::Stream::Stdout) {
             if std::env::var("TERM_PROGRAM")

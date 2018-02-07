@@ -78,7 +78,7 @@ where
 pub fn push_tty<'a, W, I>(
     writer: &mut W,
     terminal: Terminal,
-    size: Size,
+    size: TerminalSize,
     events: I,
     base_dir: &'a Path,
     resource_access: ResourceAccess,
