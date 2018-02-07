@@ -144,3 +144,106 @@ impl<'a> Resource<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::Resource::*;
+    use super::super::ResourceAccess::*;
+    use std::borrow::Cow::Borrowed;
+
+    mod may_access {
+        use super::*;
+
+        #[test]
+        fn local_resource() {
+            let resource = LocalFile(Borrowed(Path::new("/foo/bar")));
+            assert!(resource.may_access(LocalOnly));
+            assert!(resource.may_access(RemoteAllowed));
+        }
+
+        #[test]
+        fn remote_resource() {
+            let resource = Remote("http://example.com".parse().unwrap());
+            assert!(!resource.may_access(LocalOnly));
+            assert!(resource.may_access(RemoteAllowed));
+        }
+    }
+
+    mod into_url {
+        use super::*;
+
+        #[test]
+        fn local_resource() {
+            let resource = LocalFile(Borrowed(Path::new("/foo/bar")));
+            assert_eq!(resource.into_url(), "file:///foo/bar".parse().unwrap());
+        }
+
+        #[test]
+        fn remote_resource() {
+            let url = "https://www.example.com/with/path?and&query"
+                .parse::<Url>()
+                .unwrap();
+            assert_eq!(Remote(url.clone()).into_url(), url);
+        }
+    }
+
+    mod local_path {
+        use super::*;
+
+        #[test]
+        fn local_path_of_remote_resource() {
+            let resource = Resource::Remote("http://example.com".parse().unwrap());
+            assert_eq!(resource.local_path(), None);
+        }
+
+        #[test]
+        fn local_path_of_file_url() {
+            let resource = Resource::Remote("file:///spam/with/eggs".parse().unwrap());
+            let path = resource.local_path();
+            assert!(path.is_some());
+            assert_eq!(path.unwrap(), Path::new("/spam/with/eggs"));
+        }
+
+        #[test]
+        fn local_path_of_local_resource() {
+            let path = Path::new("/foo/bar");
+            let resource = Resource::LocalFile(Borrowed(path));
+            assert_eq!(resource.local_path().unwrap(), path);
+        }
+    }
+
+    mod read {
+        use super::*;
+
+        #[test]
+        fn remote_resource_fails_with_permission_denied_without_access() {
+            let resource = Resource::Remote(
+                "https://eu.httpbin.org/bytes/100"
+                    .parse()
+                    .expect("No valid URL"),
+            );
+
+            let result = resource.read(ResourceAccess::LocalOnly);
+            assert!(result.is_err(), "Unexpected success: {:?}", result);
+            let error = match result.unwrap_err().downcast::<io::Error>() {
+                Ok(e) => e,
+                Err(error) => panic!("Not an IO error: {:?}", error),
+            };
+
+            assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+            assert_eq!(error.description(), "Remote resources not allowed");
+        }
+
+        #[test]
+        fn remote_resource_fails_when_status_404() {
+            let resource = Resource::Remote(
+                "https://eu.httpbin.org/status/404"
+                    .parse()
+                    .expect("No valid URL"),
+            );
+            let result = resource.read(ResourceAccess::RemoteAllowed);
+            assert!(result.is_err(), "Unexpected success: {:?}", result);
+        }
+    }
+}
