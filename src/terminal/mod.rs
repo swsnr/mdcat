@@ -19,7 +19,7 @@ use std;
 use std::io;
 use std::io::prelude::*;
 use term_size;
-use super::resources::Resource;
+use super::resources::{Resource, ResourceAccess};
 
 mod iterm2;
 mod terminology;
@@ -286,6 +286,7 @@ impl Terminal {
         writer: &mut W,
         max_size: Size,
         resource: &Resource,
+        resource_access: ResourceAccess,
     ) -> TerminalResult<()> {
         match self {
             Terminal::ITerm2 => resource
@@ -294,7 +295,9 @@ impl Terminal {
                     iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                 })
                 .map_err(TerminalError::IoError),
-            Terminal::Terminology => terminology::write_inline_image(writer, max_size, resource),
+            Terminal::Terminology => {
+                terminology::write_inline_image(writer, max_size, resource, resource_access)
+            }
             _ => Err(TerminalError::NotSupported),
         }
     }

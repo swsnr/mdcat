@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Add `--local` flag to render only local images inline; for remote images, eg,
+  HTTP URLs, show only the image title and the URL.
 
 ## [0.6.0] – 2018-02-02
 ### Added

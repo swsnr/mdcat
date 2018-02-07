@@ -43,6 +43,7 @@ mod highlighting;
 mod commonmark;
 
 use terminal::Terminal;
+use resources::ResourceAccess;
 
 /// Colour options, for the --colour option.
 #[derive(Debug)]
@@ -114,6 +115,7 @@ fn process_arguments(size: terminal::Size, args: Arguments) -> Result<(), Box<Er
             },
             parser,
             &base_dir,
+            args.resource_access,
             syntax_set,
         )?;
         Ok(())
@@ -125,6 +127,7 @@ fn process_arguments(size: terminal::Size, args: Arguments) -> Result<(), Box<Er
 struct Arguments {
     filename: String,
     terminal: Terminal,
+    resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,
 }
@@ -143,10 +146,16 @@ impl Arguments {
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
         let columns = value_t!(matches, "columns", usize)?;
+        let resource_access = if matches.is_present("local_only") {
+            ResourceAccess::LocalOnly
+        } else {
+            ResourceAccess::RemoteAllowed
+        };
 
         Ok(Arguments {
             filename,
             columns,
+            resource_access,
             dump_events,
             terminal,
         })
@@ -194,6 +203,12 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
                 .long("columns")
                 .help("Maximum number of columns to use for output")
                 .default_value(&columns)
+        )
+        .arg(
+            Arg::with_name("local_only")
+            .short("l")
+            .long("local")
+            .help("Do not load remote resources like images")
         )
         .arg(
             Arg::with_name("dump_events")

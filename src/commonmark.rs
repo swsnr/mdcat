@@ -26,7 +26,7 @@ use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
 use super::highlighting::write_as_ansi;
 use super::terminal::*;
-use super::resources::Resource;
+use super::resources::{Resource, ResourceAccess};
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
@@ -53,6 +53,7 @@ pub fn push_tty<'a, W, I>(
     size: Size,
     events: I,
     base_dir: &'a Path,
+    resource_access: ResourceAccess,
     syntax_set: SyntaxSet,
 ) -> Result<()>
 where
@@ -60,7 +61,15 @@ where
     W: Write + TerminalWrite,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
-    let mut context = Context::new(writer, terminal, size, base_dir, syntax_set, theme);
+    let mut context = Context::new(
+        writer,
+        terminal,
+        size,
+        base_dir,
+        resource_access,
+        syntax_set,
+        theme,
+    );
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -100,8 +109,10 @@ struct Link<'a> {
 
 /// Input context.
 struct InputContext<'a> {
-    /// The base directory, to resolve relative paths
+    /// The base directory, to resolve relative paths.
     base_dir: &'a Path,
+    /// What resources we may access when processing markdown.
+    resource_access: ResourceAccess,
 }
 
 impl<'a> InputContext<'a> {
@@ -209,11 +220,15 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         terminal: Terminal,
         size: Size,
         base_dir: &'a Path,
+        resource_access: ResourceAccess,
         syntax_set: SyntaxSet,
         theme: &'a Theme,
     ) -> Context<'a, W> {
         Context {
-            input: InputContext { base_dir },
+            input: InputContext {
+                base_dir,
+                resource_access,
+            },
             output: OutputContext {
                 writer,
                 size,
@@ -551,7 +566,12 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             let resource = ctx.input.resolve_reference(&link);
             if ctx.output
                 .terminal
-                .write_inline_image(ctx.output.writer, ctx.output.size, &resource)
+                .write_inline_image(
+                    ctx.output.writer,
+                    ctx.output.size,
+                    &resource,
+                    ctx.input.resource_access,
+                )
                 .is_ok()
             {
                 // If we could write an inline image, disable text output to

@@ -21,6 +21,15 @@ use std::borrow::Cow;
 use std::path::Path;
 use url::Url;
 
+/// What kind of resources we may access.
+#[derive(Debug, Copy, Clone)]
+pub enum ResourceAccess {
+    /// We may only access local files.
+    LocalOnly,
+    /// We may access remote resources like HTTP URLs.
+    RemoteAllowed,
+}
+
 /// A resource referenced from a Markdown document.
 pub enum Resource<'a> {
     /// A local file, referenced by its *absolute* path.
@@ -48,6 +57,15 @@ impl<'a> Resource<'a> {
             } else {
                 Resource::LocalFile(Cow::Owned(base_dir.join(path)))
             }
+        }
+    }
+
+    /// Whether we may access this resource under the given access permissions.
+    pub fn may_access(&self, access: ResourceAccess) -> bool {
+        match (access, self) {
+            (ResourceAccess::RemoteAllowed, _) => true,
+            (ResourceAccess::LocalOnly, &Resource::LocalFile(_)) => true,
+            _ => false,
         }
     }
 

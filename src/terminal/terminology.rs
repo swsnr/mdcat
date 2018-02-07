@@ -16,10 +16,10 @@
 //!
 //! [Terminology]: http://terminolo.gy
 
-use std::io::Write;
+use std::io::{Error, ErrorKind, Write};
 use immeta;
 use super::*;
-use super::super::resources::Resource;
+use super::super::resources::{Resource, ResourceAccess};
 
 /// Write an inline image denoted by `resource` for Terminology.
 ///
@@ -30,6 +30,7 @@ pub fn write_inline_image<W: Write>(
     writer: &mut W,
     max_size: Size,
     resource: &Resource,
+    resource_access: ResourceAccess,
 ) -> TerminalResult<()> {
     // Terminology escape sequence is like: set texture to path, then draw a
     // rectangle of chosen character to be replaced by the given
@@ -44,28 +45,35 @@ pub fn write_inline_image<W: Write>(
     // If we can't compute the image proportion (e.g. it's an external URL), we
     // fallback to a rectangle that is half of the screen.
 
-    let columns = max_size.width;
-    let lines = resource
-        .local_path()
-        .and_then(|path| immeta::load_from_file(path).ok())
-        .map(|m| {
-            let d = m.dimensions();
-            let (w, h) = (f64::from(d.width), f64::from(d.height));
-            // We divide by 2 because terminal cursor/font most likely has a
-            // 1:2 proportion
-            (h * (columns / 2) as f64 / w) as usize
-        })
-        .unwrap_or(max_size.height / 2);
+    if resource.may_access(resource_access) {
+        let columns = max_size.width;
+        let lines = resource
+            .local_path()
+            .and_then(|path| immeta::load_from_file(path).ok())
+            .map(|m| {
+                let d = m.dimensions();
+                let (w, h) = (f64::from(d.width), f64::from(d.height));
+                // We divide by 2 because terminal cursor/font most likely has a
+                // 1:2 proportion
+                (h * (columns / 2) as f64 / w) as usize
+            })
+            .unwrap_or(max_size.height / 2);
 
-    let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, resource.as_str());
-    for _ in 0..lines {
-        command.push_str("\x1b}ib\x00");
-        for _ in 0..columns {
-            command.push('#');
+        let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, resource.as_str());
+        for _ in 0..lines {
+            command.push_str("\x1b}ib\x00");
+            for _ in 0..columns {
+                command.push('#');
+            }
+            command.push_str("\x1b}ie\x00\n");
         }
-        command.push_str("\x1b}ie\x00\n");
+        writer
+            .write_all(command.as_bytes())
+            .map_err(TerminalError::IoError)
+    } else {
+        Err(TerminalError::IoError(Error::new(
+            ErrorKind::PermissionDenied,
+            "Remote resources not allowed",
+        )))
     }
-    writer
-        .write_all(command.as_bytes())
-        .map_err(TerminalError::IoError)
 }
