@@ -62,3 +62,17 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Error> {
         }.into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mime;
+
+    #[test]
+    fn detect_mimetype_of_image() {
+        let data = include_bytes!("../sample/rust-logo-128x128.png");
+        let result = detect_mime_type(data);
+        assert!(result.is_ok(), "Unexpected error: {:?}", result);
+        assert_eq!(result.unwrap(), mime::IMAGE_PNG);
+    }
+}
