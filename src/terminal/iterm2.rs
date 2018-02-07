@@ -14,15 +14,31 @@
 
 //! Iterm2 specific functions
 
-use std::io::{Result, Write};
-use base64;
+use std::io;
+use std::io::Write;
 use std::ffi::OsStr;
+use base64;
 use std::os::unix::ffi::OsStrExt;
-use super::TerminalWrite;
+use failure::Error;
+use mime;
+use super::{NotSupportedError, TerminalWrite};
+use super::super::magic;
 
 /// Write an iterm2 mark;
-pub fn write_mark<W: Write + TerminalWrite>(writer: &mut W) -> Result<()> {
+pub fn write_mark<W: Write + TerminalWrite>(writer: &mut W) -> io::Result<()> {
     writer.write_osc("1337;SetMark")
+}
+
+fn write_image_contents<W: Write + TerminalWrite, S: AsRef<OsStr>>(
+    writer: &mut W,
+    name: S,
+    contents: &[u8],
+) -> io::Result<()> {
+    writer.write_osc(&format!(
+        "1337;File=name={};inline=1:{}",
+        base64::encode(name.as_ref().as_bytes()),
+        base64::encode(contents)
+    ))
 }
 
 /// Write an iterm2 inline image.
@@ -32,10 +48,17 @@ pub fn write_inline_image<W: Write + TerminalWrite, S: AsRef<OsStr>>(
     writer: &mut W,
     name: S,
     contents: &[u8],
-) -> Result<()> {
-    writer.write_osc(&format!(
-        "1337;File=name={};inline=1:{}",
-        base64::encode(name.as_ref().as_bytes()),
-        base64::encode(contents)
-    ))
+) -> Result<(), Error> {
+    let mime = magic::detect_mime_type(contents)?;
+    match (mime.type_(), mime.subtype()) {
+        (mime::IMAGE, mime::PNG)
+        | (mime::IMAGE, mime::GIF)
+        | (mime::IMAGE, mime::JPEG)
+        | (mime::IMAGE, mime::BMP) => {
+            write_image_contents(writer, name, contents).map_err(Into::into)
+        }
+        _ => Err(NotSupportedError {
+            what: "inline image with mimetype",
+        }.into()),
+    }
 }

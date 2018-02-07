@@ -30,6 +30,7 @@ extern crate reqwest;
 extern crate syntect;
 extern crate term_size;
 extern crate url;
+extern crate mime;
 
 use std::path::PathBuf;
 use std::io::prelude::*;
@@ -41,6 +42,7 @@ use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 
 mod terminal;
+mod magic;
 mod resources;
 mod highlighting;
 mod commonmark;
