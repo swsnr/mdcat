@@ -20,6 +20,7 @@ base64 = "^0.9"
 immeta = "^0.3.6"
 term_size = "^0.3"
 url = "^1.6"
+failure = "^0.1"
 
 [dependencies.clap]
 version = "^2.29"

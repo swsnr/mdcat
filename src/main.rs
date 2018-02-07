@@ -22,6 +22,8 @@ extern crate atty;
 extern crate base64;
 #[macro_use]
 extern crate clap;
+#[macro_use]
+extern crate failure;
 extern crate immeta;
 extern crate pulldown_cmark;
 extern crate syntect;

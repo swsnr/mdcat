@@ -19,6 +19,7 @@ use std;
 use std::io;
 use std::io::prelude::*;
 use term_size;
+use failure::Error;
 use super::resources::{Resource, ResourceAccess};
 
 mod iterm2;
@@ -189,29 +190,38 @@ pub enum Terminal {
     Dumb,
 }
 
-/// A terminal error.
-#[derive(Debug)]
-pub enum TerminalError {
-    /// The terminal does not support this operation.
-    NotSupported,
-    /// An I/O error occured.
-    IoError(io::Error),
+/// The terminal does not support something.
+#[derive(Debug, Fail)]
+#[fail(display = "This terminal does not support {}.", what)]
+pub struct NotSupportedError {
+    /// The operation which the terminal did not support.
+    pub what: &'static str,
 }
 
-impl TerminalError {
-    /// Turn a terminal error into an IO result.
-    ///
-    /// Map `NotSupported` to `Ok(())`.
-    pub fn into_io(self) -> io::Result<()> {
-        match self {
-            TerminalError::NotSupported => Ok(()),
-            TerminalError::IoError(err) => Err(err),
-        }
+/// Ignore a `NotSupportedError`.
+pub trait IgnoreNotSupported {
+    /// The type after ignoring `NotSupportedError`.
+    type R;
+
+    /// Elide a `NotSupportedError` from this value.
+    fn ignore_not_supported(self) -> Self::R;
+}
+
+impl IgnoreNotSupported for Error {
+    type R = Result<(), Error>;
+
+    fn ignore_not_supported(self) -> Self::R {
+        self.downcast::<NotSupportedError>().map(|_| ())
     }
 }
 
-/// The result of a terminal operation.
-pub type TerminalResult<T> = Result<T, TerminalError>;
+impl IgnoreNotSupported for Result<(), Error> {
+    type R = Result<(), Error>;
+
+    fn ignore_not_supported(self) -> Self::R {
+        self.or_else(|err| err.ignore_not_supported())
+    }
+}
 
 /// Get the version of VTE underlying this terminal.
 ///
@@ -269,11 +279,14 @@ impl Terminal {
         self,
         writer: &mut W,
         style: AnsiStyle,
-    ) -> TerminalResult<()> {
+    ) -> Result<(), Error> {
         if self.supports_colours() {
-            writer.write_style(style).map_err(TerminalError::IoError)
+            writer.write_style(style)?;
+            Ok(())
         } else {
-            Err(TerminalError::NotSupported)
+            Err(NotSupportedError {
+                what: "ANSI styles",
+            }.into())
         }
     }
 
@@ -287,39 +300,43 @@ impl Terminal {
         max_size: Size,
         resource: &Resource,
         resource_access: ResourceAccess,
-    ) -> TerminalResult<()> {
+    ) -> Result<(), Error> {
         match self {
-            Terminal::ITerm2 => resource
-                .read()
-                .and_then(|contents| {
-                    iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
-                })
-                .map_err(TerminalError::IoError),
+            Terminal::ITerm2 => resource.read().and_then(|contents| {
+                iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
+            })?,
             Terminal::Terminology => {
-                terminology::write_inline_image(writer, max_size, resource, resource_access)
+                terminology::write_inline_image(writer, max_size, resource, resource_access)?
             }
-            _ => Err(TerminalError::NotSupported),
+            _ => Err(NotSupportedError {
+                what: "inline images",
+            })?,
         }
+        Ok(())
     }
 
     /// Set the link for the subsequent text.
     ///
     /// To stop a link write a link to an empty destination.
-    pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> TerminalResult<()> {
+    pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> Result<(), Error> {
         match self {
-            Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => writer
-                .write_osc(&format!("8;;{}", destination))
-                .map_err(TerminalError::IoError),
-            _ => Err(TerminalError::NotSupported),
+            Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => {
+                writer.write_osc(&format!("8;;{}", destination))?
+            }
+            _ => Err(NotSupportedError {
+                what: "inline links",
+            })?,
         }
+        Ok(())
     }
 
     /// Set a mark in the current terminal.
-    pub fn set_mark<W: io::Write>(self, writer: &mut W) -> TerminalResult<()> {
+    pub fn set_mark<W: io::Write>(self, writer: &mut W) -> Result<(), Error> {
         if let Terminal::ITerm2 = self {
-            iterm2::write_mark(writer).map_err(TerminalError::IoError)
+            iterm2::write_mark(writer)?
         } else {
-            Err(TerminalError::NotSupported)
-        }
+            Err(NotSupportedError { what: "marks" })?
+        };
+        Ok(())
     }
 }

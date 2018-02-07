@@ -15,9 +15,10 @@
 //! Write markdown to TTYs.
 
 use std::path::Path;
-use std::io::{Result, Write};
+use std::io::Write;
 use std::borrow::Cow;
 use std::collections::VecDeque;
+use failure::Error;
 use pulldown_cmark::{Event, Tag};
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
@@ -29,7 +30,7 @@ use super::terminal::*;
 use super::resources::{Resource, ResourceAccess};
 
 /// Dump markdown events to a writer.
-pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<()>
+pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>
 where
     I: Iterator<Item = Event<'a>>,
     W: Write,
@@ -55,7 +56,7 @@ pub fn push_tty<'a, W, I>(
     base_dir: &'a Path,
     resource_access: ResourceAccess,
     syntax_set: SyntaxSet,
-) -> Result<()>
+) -> Result<(), Error>
 where
     I: Iterator<Item = Event<'a>>,
     W: Write + TerminalWrite,
@@ -265,7 +266,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     ///
     /// Set `block_context` accordingly, and separate this block from the
     /// previous.
-    fn start_inline_text(&mut self) -> Result<()> {
+    fn start_inline_text(&mut self) -> Result<(), Error> {
         if let BlockLevel::Block = self.block.level {
             self.newline_and_indent()?
         };
@@ -278,7 +279,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     ///
     /// Set `block_context` accordingly and end inline context—if present—with
     /// a line break.
-    fn end_inline_text_with_margin(&mut self) -> Result<()> {
+    fn end_inline_text_with_margin(&mut self) -> Result<(), Error> {
         if let BlockLevel::Inline = self.block.level {
             self.newline()?
         };
@@ -288,12 +289,12 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     }
 
     /// Set all active styles on the underlying writer.
-    fn flush_styles(&mut self) -> Result<()> {
+    fn flush_styles(&mut self) -> Result<(), Error> {
         for style in &self.style.active_styles {
             self.output
                 .terminal
                 .set_style(self.output.writer, *style)
-                .or_else(TerminalError::into_io)?;
+                .ignore_not_supported()?;
         }
         Ok(())
     }
@@ -301,11 +302,11 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// Write a newline.
     ///
     /// Restart all current styles after the newline.
-    fn newline(&mut self) -> Result<()> {
+    fn newline(&mut self) -> Result<(), Error> {
         self.output
             .terminal
             .set_style(self.output.writer, AnsiStyle::Reset)
-            .or_else(TerminalError::into_io)?;
+            .ignore_not_supported()?;
         write!(self.output.writer, "\n")?;
         self.flush_styles()
     }
@@ -314,18 +315,18 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     ///
     /// Reset format before the line break, and set all active styles again
     /// after the line break.
-    fn newline_and_indent(&mut self) -> Result<()> {
+    fn newline_and_indent(&mut self) -> Result<(), Error> {
         self.newline()?;
         self.indent()
     }
 
     /// Indent according to the current indentation level.
-    fn indent(&mut self) -> Result<()> {
+    fn indent(&mut self) -> Result<(), Error> {
         write!(
             self.output.writer,
             "{}",
             " ".repeat(self.block.indent_level)
-        )
+        ).map_err(Into::into)
     }
 
     /// Enable a style.
@@ -334,28 +335,28 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     ///
     /// To undo a style call `active_styles.pop()`, followed by `set_styles()`
     /// or `newline()`.
-    fn enable_style(&mut self, style: AnsiStyle) -> Result<()> {
+    fn enable_style(&mut self, style: AnsiStyle) -> Result<(), Error> {
         self.style.active_styles.push(style);
         self.output
             .terminal
             .set_style(self.output.writer, style)
-            .or_else(TerminalError::into_io)
+            .ignore_not_supported()
     }
 
     /// Remove the last style and flush styles on the TTY.
-    fn reset_last_style(&mut self) -> Result<()> {
+    fn reset_last_style(&mut self) -> Result<(), Error> {
         self.style.active_styles.pop();
         self.output
             .terminal
             .set_style(self.output.writer, AnsiStyle::Reset)
-            .or_else(TerminalError::into_io)?;
+            .ignore_not_supported()?;
         self.flush_styles()
     }
 
     /// Enable emphasis.
     ///
     /// Enable italic or upright text according to the current emphasis level.
-    fn enable_emphasis(&mut self) -> Result<()> {
+    fn enable_emphasis(&mut self) -> Result<(), Error> {
         self.style.emphasis_level += 1;
         if self.style.emphasis_level % 2 == 1 {
             self.enable_style(AnsiStyle::Italic)
@@ -381,7 +382,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// Write all pending links.
     ///
     /// Empty all pending links afterwards.
-    fn write_pending_links(&mut self) -> Result<()> {
+    fn write_pending_links(&mut self) -> Result<(), Error> {
         if !self.links.pending_links.is_empty() {
             self.newline()?;
             self.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
@@ -399,7 +400,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     }
 
     /// Write a simple border.
-    fn write_border(&mut self) -> Result<()> {
+    fn write_border(&mut self) -> Result<(), Error> {
         self.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
         write!(
             self.output.writer,
@@ -413,7 +414,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     ///
     /// If the code context has a highlighter, use it to highlight `text` and
     /// write it.  Otherwise write `text` without highlighting.
-    fn write_highlighted(&mut self, text: Cow<'a, str>) -> Result<()> {
+    fn write_highlighted(&mut self, text: Cow<'a, str>) -> Result<(), Error> {
         match self.code.current_highlighter {
             Some(ref mut highlighter) => {
                 let regions = highlighter.highlight(&text);
@@ -429,7 +430,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
 }
 
 /// Write a single `event` in the given context.
-fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Result<()> {
+fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Result<(), Error> {
     match event {
         SoftBreak | HardBreak => ctx.newline_and_indent()?,
         Text(text) => {
@@ -462,7 +463,7 @@ fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Resu
 }
 
 /// Write the start of a `tag` in the given context.
-fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
+fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Error> {
     match tag {
         Paragraph => ctx.start_inline_text()?,
         Rule => {
@@ -482,7 +483,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
             ctx.output
                 .terminal
                 .set_mark(ctx.output.writer)
-                .or_else(TerminalError::into_io)?;
+                .ignore_not_supported()?;
             let level_indicator = "\u{2504}".repeat(level as usize);
             ctx.enable_style(AnsiStyle::Bold)?;
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
@@ -508,8 +509,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
                         // styles.
                         ctx.output
                             .terminal
-                            .set_style(ctx.output.writer, AnsiStyle::Reset)
-                            .or_else(TerminalError::into_io)?;
+                            .set_style(ctx.output.writer, AnsiStyle::Reset)?;
                     }
                     if ctx.code.current_highlighter.is_none() {
                         // If we have no highlighter for the current block, fall
@@ -584,7 +584,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<()> {
 }
 
 /// Write the end of a `tag` in the given context.
-fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
+fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), Error> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => {
@@ -611,8 +611,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
                     // re-enable all current styles.
                     ctx.output
                         .terminal
-                        .set_style(ctx.output.writer, AnsiStyle::Reset)
-                        .or_else(TerminalError::into_io)?;
+                        .set_style(ctx.output.writer, AnsiStyle::Reset)?;
                     ctx.flush_styles()?;
                     ctx.code.current_highlighter = None;
                 }
@@ -645,10 +644,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<()> {
         }
         Strong | Code => ctx.reset_last_style()?,
         Link(destination, title) => if ctx.links.inside_inline_link {
-            ctx.output
-                .terminal
-                .set_link(ctx.output.writer, "")
-                .or_else(TerminalError::into_io)?;
+            ctx.output.terminal.set_link(ctx.output.writer, "")?;
             ctx.links.inside_inline_link = false;
         } else {
             // When we did not write an inline link, create a normal reference

@@ -16,8 +16,9 @@
 //!
 //! [Terminology]: http://terminolo.gy
 
-use std::io::{Error, ErrorKind, Write};
+use std::io::{ErrorKind, Write};
 use immeta;
+use failure::Error;
 use super::*;
 use super::super::resources::{Resource, ResourceAccess};
 
@@ -31,7 +32,7 @@ pub fn write_inline_image<W: Write>(
     max_size: Size,
     resource: &Resource,
     resource_access: ResourceAccess,
-) -> TerminalResult<()> {
+) -> Result<(), Error> {
     // Terminology escape sequence is like: set texture to path, then draw a
     // rectangle of chosen character to be replaced by the given
     // texture. Documentation gives the following C example:
@@ -67,13 +68,12 @@ pub fn write_inline_image<W: Write>(
             }
             command.push_str("\x1b}ie\x00\n");
         }
-        writer
-            .write_all(command.as_bytes())
-            .map_err(TerminalError::IoError)
+        writer.write_all(command.as_bytes())?;
+        Ok(())
     } else {
-        Err(TerminalError::IoError(Error::new(
+        Err(std::io::Error::new(
             ErrorKind::PermissionDenied,
             "Remote resources not allowed",
-        )))
+        ).into())
     }
 }
