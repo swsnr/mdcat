@@ -40,6 +40,16 @@ pub enum Resource<'a> {
     Remote(Url),
 }
 
+/// A non-200 status code from a HTTP request.
+#[derive(Debug, Fail)]
+#[fail(display = "Url {} failed with status code {}", url, status_code)]
+pub struct HttpStatusError {
+    /// The URL that was requested
+    url: Url,
+    /// The status code.
+    status_code: reqwest::StatusCode,
+}
+
 impl<'a> Resource<'a> {
     /// Obtain a resource from a markdown `reference`.
     ///
@@ -122,20 +132,28 @@ impl<'a> Resource<'a> {
     /// permissions.
     pub fn read(&self, access: ResourceAccess) -> Result<Vec<u8>, Error> {
         if self.may_access(access) {
-            let mut buffer = Vec::new();
-
             match *self {
                 Resource::Remote(ref url) => {
                     // We need to clone "Url" here because for some reason `get`
                     // claims ownership of Url which we don't have here.
-                    let mut source = reqwest::get(url.clone())?;
-                    source.read_to_end(&mut buffer)?;
+                    let mut response = reqwest::get(url.clone())?;
+                    if response.status().is_success() {
+                        let mut buffer = Vec::new();
+                        response.read_to_end(&mut buffer)?;
+                        Ok(buffer)
+                    } else {
+                        Err(HttpStatusError {
+                            url: url.clone(),
+                            status_code: response.status(),
+                        }.into())
+                    }
                 }
                 Resource::LocalFile(ref path) => {
+                    let mut buffer = Vec::new();
                     File::open(path)?.read_to_end(&mut buffer)?;
+                    Ok(buffer)
                 }
-            };
-            Ok(buffer)
+            }
         } else {
             Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
@@ -215,6 +233,7 @@ mod tests {
 
     mod read {
         use super::*;
+        use std::error::Error;
 
         #[test]
         fn remote_resource_fails_with_permission_denied_without_access() {
@@ -237,13 +256,18 @@ mod tests {
 
         #[test]
         fn remote_resource_fails_when_status_404() {
-            let resource = Resource::Remote(
-                "https://eu.httpbin.org/status/404"
-                    .parse()
-                    .expect("No valid URL"),
-            );
+            let url: Url = "https://eu.httpbin.org/status/404"
+                .parse()
+                .expect("No valid URL");
+            let resource = Resource::Remote(url.clone());
             let result = resource.read(ResourceAccess::RemoteAllowed);
             assert!(result.is_err(), "Unexpected success: {:?}", result);
+            let error = match result.unwrap_err().downcast::<HttpStatusError>() {
+                Ok(e) => e,
+                Err(error) => panic!("Not an IO error: {:?}", error),
+            };
+            assert_eq!(error.status_code, reqwest::StatusCode::NotFound);
+            assert_eq!(error.url, url);
         }
     }
 }
