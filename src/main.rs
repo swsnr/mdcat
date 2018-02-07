@@ -26,6 +26,7 @@ extern crate clap;
 extern crate failure;
 extern crate immeta;
 extern crate pulldown_cmark;
+extern crate reqwest;
 extern crate syntect;
 extern crate term_size;
 extern crate url;

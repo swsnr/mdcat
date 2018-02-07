@@ -36,6 +36,10 @@ Images as blocks:
 
 ![The Rust logo](./rust-logo-128x128.png)
 
+Even from remote locations:
+
+![The Rust logo](https://www.rust-lang.org/logos/rust-logo-128x128.png)
+
 ## Lists
 
 Unordered lists:

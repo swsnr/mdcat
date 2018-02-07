@@ -35,7 +35,8 @@ good terminal font which includes italic characters.  It supports
 * Syntax highlighting for code blocks
 * Inline links (note the dashed underline like in the screenshot above, in some
   terminals)
-* Inline images like in the screenshot above (in some terminals)
+* Inline images like in the screenshot above (in some terminals), even from
+  HTTP(S) URLs (use `--local` to disable remote images)
 * Jump marks for headings (in iTerm2 jump forwards and backwards with
   <key>⇧⌘↓</key> and <key>⇧⌘↑</key>)
 
@@ -49,7 +50,6 @@ good terminal font which includes italic characters.  It supports
 Not supported:
 
 * CommonMark extensions: Footnotes and Tables
-* Images from remote URLs
 * SVG images
 * Re-filling paragraphs
 
@@ -71,7 +71,6 @@ install [cargo-update][] and run `cargo install-update mdcat`.
 
 ### Future plans
 
-- [ ] Fetch remote images to show them inline.
 - [ ] Render SVG images.
 - [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdcat/issues/3).
 - [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdcat/issues/1).

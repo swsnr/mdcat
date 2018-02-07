@@ -302,8 +302,9 @@ impl Terminal {
         resource_access: ResourceAccess,
     ) -> Result<(), Error> {
         match self {
-            Terminal::ITerm2 => resource.read().and_then(|contents| {
+            Terminal::ITerm2 => resource.read(resource_access).and_then(|contents| {
                 iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
+                    .map_err(Into::into)
             })?,
             Terminal::Terminology => {
                 terminology::write_inline_image(writer, max_size, resource, resource_access)?

@@ -14,12 +14,14 @@
 
 //! Access to resources referenced from markdown documents.
 
-use std::io::{Error, ErrorKind, Result};
+use std::io;
 use std::io::prelude::*;
 use std::fs::File;
 use std::borrow::Cow;
 use std::path::Path;
 use url::Url;
+use failure::Error;
+use reqwest;
 
 /// What kind of resources we may access.
 #[derive(Debug, Copy, Clone)]
@@ -116,20 +118,29 @@ impl<'a> Resource<'a> {
 
     /// Read the contents of this resource.
     ///
-    /// Currently only supports local files; remote resources return a
-    /// permission denied error.
-    pub fn read(&self) -> Result<Vec<u8>> {
-        match *self {
-            Resource::Remote(_) => Err(Error::new(
-                ErrorKind::PermissionDenied,
+    /// Supports local files and HTTP(S) resources.  `access` denotes the access
+    /// permissions.
+    pub fn read(&self, access: ResourceAccess) -> Result<Vec<u8>, Error> {
+        if self.may_access(access) {
+            let mut buffer = Vec::new();
+
+            match *self {
+                Resource::Remote(ref url) => {
+                    // We need to clone "Url" here because for some reason `get`
+                    // claims ownership of Url which we don't have here.
+                    let mut source = reqwest::get(url.clone())?;
+                    source.read_to_end(&mut buffer)?;
+                }
+                Resource::LocalFile(ref path) => {
+                    File::open(path)?.read_to_end(&mut buffer)?;
+                }
+            };
+            Ok(buffer)
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
                 "Remote resources not allowed",
-            )),
-            Resource::LocalFile(ref path) => {
-                let mut buffer = Vec::new();
-                let mut source = File::open(path)?;
-                source.read_to_end(&mut buffer)?;
-                Ok(buffer)
-            }
+            ).into())
         }
     }
 }
