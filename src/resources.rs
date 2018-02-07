@@ -242,7 +242,6 @@ mod tests {
                     .parse()
                     .expect("No valid URL"),
             );
-
             let result = resource.read(ResourceAccess::LocalOnly);
             assert!(result.is_err(), "Unexpected success: {:?}", result);
             let error = match result.unwrap_err().downcast::<io::Error>() {
@@ -268,6 +267,18 @@ mod tests {
             };
             assert_eq!(error.status_code, reqwest::StatusCode::NotFound);
             assert_eq!(error.url, url);
+        }
+
+        #[test]
+        fn remote_resource_returns_content_when_status_200() {
+            let resource = Resource::Remote(
+                "https://eu.httpbin.org/bytes/100"
+                    .parse()
+                    .expect("No valid URL"),
+            );
+            let result = resource.read(ResourceAccess::RemoteAllowed);
+            assert!(result.is_ok(), "Unexpected error: {:?}", result);
+            assert_eq!(result.unwrap().len(), 100);
         }
     }
 }
