@@ -71,9 +71,6 @@ pub fn write_inline_image<W: Write>(
         writer.write_all(command.as_bytes())?;
         Ok(())
     } else {
-        Err(std::io::Error::new(
-            ErrorKind::PermissionDenied,
-            "Remote resources not allowed",
-        ).into())
+        Err(std::io::Error::new(ErrorKind::PermissionDenied, "Remote resources not allowed").into())
     }
 }
