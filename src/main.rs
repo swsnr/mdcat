@@ -13,24 +13,15 @@
 // limitations under the License.
 
 #![deny(warnings)]
-#![deny(missing_docs)]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy))]
 
 //! Show CommonMark documents on TTYs.
 
-extern crate atty;
-extern crate base64;
 #[macro_use]
 extern crate clap;
-#[macro_use]
-extern crate failure;
-extern crate immeta;
+extern crate mdcat;
 extern crate pulldown_cmark;
-extern crate reqwest;
 extern crate syntect;
-extern crate term_size;
-extern crate url;
-extern crate mime;
 
 use std::path::PathBuf;
 use std::io::prelude::*;
@@ -41,14 +32,7 @@ use std::str::FromStr;
 use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 
-mod terminal;
-mod magic;
-mod resources;
-mod highlighting;
-mod commonmark;
-
-use terminal::Terminal;
-use resources::ResourceAccess;
+use mdcat::{ResourceAccess, Terminal, TerminalSize};
 
 /// Colour options, for the --colour option.
 #[derive(Debug)]
@@ -102,19 +86,19 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     }
 }
 
-fn process_arguments(size: terminal::Size, args: Arguments) -> Result<(), Box<Error>> {
+fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Error>> {
     let (base_dir, input) = read_input(args.filename)?;
     let parser = Parser::new(&input);
 
     if args.dump_events {
-        commonmark::dump_events(&mut std::io::stdout(), parser)?;
+        mdcat::dump_events(&mut std::io::stdout(), parser)?;
         Ok(())
     } else {
         let syntax_set = SyntaxSet::load_defaults_newlines();
-        commonmark::push_tty(
+        mdcat::push_tty(
             &mut std::io::stdout(),
             args.terminal,
-            terminal::Size {
+            TerminalSize {
                 width: args.columns,
                 ..size
             },
@@ -169,7 +153,7 @@ impl Arguments {
 
 fn main() {
     use clap::*;
-    let size = terminal::Size::detect().unwrap_or_default();
+    let size = TerminalSize::detect().unwrap_or_default();
     let columns = size.width.to_string();
     let app = app_from_crate!()
         // Merge flags and options w/ arguments together, include args in usage

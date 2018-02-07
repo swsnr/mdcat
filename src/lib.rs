@@ -12,7 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![deny(warnings)]
+#![deny(missing_docs)]
+#![cfg_attr(feature = "cargo-clippy", deny(clippy))]
+
 //! Write markdown to TTYs.
+
+extern crate atty;
+extern crate base64;
+#[macro_use]
+extern crate failure;
+extern crate immeta;
+extern crate mime;
+extern crate pulldown_cmark;
+extern crate reqwest;
+extern crate syntect;
+extern crate term_size;
+extern crate url;
 
 use std::path::Path;
 use std::io::Write;
@@ -25,9 +41,20 @@ use pulldown_cmark::Tag::*;
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
-use super::highlighting::write_as_ansi;
-use super::terminal::*;
-use super::resources::{Resource, ResourceAccess};
+
+mod terminal;
+mod magic;
+mod resources;
+mod highlighting;
+
+use highlighting::write_as_ansi;
+use terminal::*;
+use resources::Resource;
+
+// Expose some select things for use in main
+pub use resources::ResourceAccess;
+pub use terminal::Terminal;
+pub use terminal::Size as TerminalSize;
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>

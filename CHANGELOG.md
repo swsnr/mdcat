@@ -2,13 +2,20 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
-This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 ### Added
 - Add `--local` flag to render only local images inline; for remote images, eg,
   HTTP URLs, show only the image title and the URL.
+- Expose `mdcat` as a library crate (see [GH-18][]), but with no guarantees
+  about a stable interface, as `mdcat` stays at version 0.x for now.
 - Show `--help` with colours.
+
+### Changed
+- Adhere to Semantic Versioning, but stay pre-1.0 so anything still goes.
+
+[GH-18]: https://github.com/lunaryorn/mdcat/issues/18
 
 ## [0.6.0] – 2018-02-02
 ### Added
