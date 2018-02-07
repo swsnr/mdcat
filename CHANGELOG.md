@@ -8,6 +8,7 @@ This project does not adhere to [Semantic Versioning](http://semver.org/spec/v2.
 ### Added
 - Add `--local` flag to render only local images inline; for remote images, eg,
   HTTP URLs, show only the image title and the URL.
+- Show `--help` with colours.
 
 ## [0.6.0] – 2018-02-02
 ### Added

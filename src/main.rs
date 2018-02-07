@@ -170,10 +170,12 @@ fn main() {
     let columns = size.width.to_string();
     let app = app_from_crate!()
         // Merge flags and options w/ arguments together, include args in usage
-        // string and show options in the order of declaration
+        // string and show options in the order of declaration.  And also:
+        // COLOURS <3
         .setting(AppSettings::UnifiedHelpMessage)
         .setting(AppSettings::DontCollapseArgsInUsage)
         .setting(AppSettings::DeriveDisplayOrder)
+        .setting(AppSettings::ColoredHelp)
         .after_help(
             "mdcat uses the standardized CommonMark dialect.  It formats
 markdown documents for viewing in text terminals:
