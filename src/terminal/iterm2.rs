@@ -23,6 +23,7 @@ use failure::Error;
 use mime;
 use super::{NotSupportedError, TerminalWrite};
 use super::super::magic;
+use super::super::svg;
 
 /// Write an iterm2 mark;
 pub fn write_mark<W: Write + TerminalWrite>(writer: &mut W) -> io::Result<()> {
@@ -56,6 +57,10 @@ pub fn write_inline_image<W: Write + TerminalWrite, S: AsRef<OsStr>>(
         | (mime::IMAGE, mime::JPEG)
         | (mime::IMAGE, mime::BMP) => {
             write_image_contents(writer, name, contents).map_err(Into::into)
+        }
+        (mime::IMAGE, subtype) if subtype.as_str() == "svg" => {
+            let png = svg::render_svg(contents)?;
+            write_image_contents(writer, name, &png).map_err(Into::into)
         }
         _ => Err(NotSupportedError {
             what: "inline image with mimetype",

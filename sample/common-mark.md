@@ -32,11 +32,15 @@ sea [takimata sanctus](./showcase.md) est Lorem ipsum dolor sit amet.
 
 ## Images
 
-Images as blocks:
+Pixel images as blocks:
 
 ![The Rust logo](./rust-logo-128x128.png)
 
-Even from remote locations:
+SVG images as blocks:
+
+![The Rust logo](./rust-logo.svg)
+
+Pixel images from remote locations:
 
 ![The Rust logo](https://www.rust-lang.org/logos/rust-logo-128x128.png)
 

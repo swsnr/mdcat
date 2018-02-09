@@ -60,6 +60,12 @@ Not supported:
 Install [Rust][rustup] and run `cargo install mdcat`.  To keep mdcat up to date
 install [cargo-update][] and run `cargo install-update mdcat`.
 
+### SVG support
+
+`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2][]; without it `mdcat` only shows the image title and URL for SVG images.  Install with `brew install librsvg`.
+
+[Terminology][] supports SVG out of the box and needs no additional tools.
+
 ### 3rd party packages
 
 * Arch Linux: [mdcat in AUR][aur]
@@ -71,7 +77,6 @@ install [cargo-update][] and run `cargo install-update mdcat`.
 
 ### Future plans
 
-- [ ] Render SVG images.
 - [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdcat/issues/3).
 - [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdcat/issues/1).
 - [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdcat/issues/2).

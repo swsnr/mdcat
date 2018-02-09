@@ -42,10 +42,12 @@ use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
 
-mod terminal;
-mod magic;
-mod resources;
 mod highlighting;
+mod magic;
+mod process;
+mod resources;
+mod svg;
+mod terminal;
 
 use highlighting::write_as_ansi;
 use terminal::*;

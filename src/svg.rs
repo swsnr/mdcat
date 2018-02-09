@@ -12,21 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Detect mime type with `file`.
+//! SVG "rendering" for mdcat.
 
-use failure::Error;
-use std::str;
 use std::io::prelude::*;
-use std::process::*;
-use mime::Mime;
-
+use std::process::{Command, Stdio};
+use failure::Error;
 use process::ProcessError;
 
-pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Error> {
-    let mut process = Command::new("file")
-        .arg("--brief")
-        .arg("--mime-type")
-        .arg("-")
+/// Render an SVG image to a PNG pixel graphic for display.
+pub fn render_svg(svg: &[u8]) -> Result<Vec<u8>, Error> {
+    render_svg_with_rsvg_convert(svg)
+}
+
+/// Render an SVG file with `rsvg-convert
+fn render_svg_with_rsvg_convert(svg: &[u8]) -> Result<Vec<u8>, Error> {
+    let mut process = Command::new("rsvg-convert")
+        .arg("--dpi-x=72")
+        .arg("--dpi-y=72")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -36,43 +38,17 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Error> {
         .stdin
         .as_mut()
         .expect("Forgot to pipe stdin?")
-        .write_all(buffer)?;
+        .write_all(svg)?;
 
     let output = process.wait_with_output()?;
+
     if output.status.success() {
-        str::from_utf8(&output.stdout)?
-            .trim()
-            .parse()
-            .map_err(Into::into)
+        Ok(output.stdout)
     } else {
         Err(ProcessError {
             command: "file --brief --mime-type".to_string(),
             status: output.status,
             error: String::from_utf8_lossy(&output.stderr).into_owned(),
         }.into())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use mime;
-
-    #[test]
-    fn detect_mimetype_of_png_image() {
-        let data = include_bytes!("../sample/rust-logo-128x128.png");
-        let result = detect_mime_type(data);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
-        assert_eq!(result.unwrap(), mime::IMAGE_PNG);
-    }
-
-    #[test]
-    fn detect_mimetype_of_svg_image() {
-        let data = include_bytes!("../sample/rust-logo.svg");
-        let result = detect_mime_type(data);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
-        let mime = result.unwrap();
-        assert_eq!(mime.type_(), mime::IMAGE);
-        assert_eq!(mime.subtype().as_str(), "svg");
     }
 }

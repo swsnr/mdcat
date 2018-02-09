@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Render SVG images in iTerm2 with `rsvg-convert` (requires `librsvg`).
 
 ## [0.7.0] – 2018-02-08
 ### Added
