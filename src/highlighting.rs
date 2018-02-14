@@ -32,7 +32,7 @@ use super::terminal::{AnsiColour, AnsiStyle, TerminalWrite};
 /// backgrounds we must map all base colours to the default terminal colours.
 ///
 /// Furthermore we completely ignore any background colour settings, to avoid
-/// conflicts with the terminal colour theme.s
+/// conflicts with the terminal colour themes.
 pub fn write_as_ansi<W: Write + TerminalWrite>(
     writer: &mut W,
     regions: &[(Style, &str)],
