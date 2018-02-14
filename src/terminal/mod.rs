@@ -106,6 +106,7 @@ pub enum AnsiStyle {
     DefaultForeground,
 }
 
+/// A trait to provide terminal escape code for any `Write` implementation
 pub trait TerminalWrite {
     /// Write a OSC `command`.
     fn write_osc(&mut self, command: &str) -> io::Result<()>;
