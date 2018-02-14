@@ -513,7 +513,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
                 .terminal
                 .set_mark(ctx.output.writer)
                 .ignore_not_supported()?;
-            let level_indicator = "\u{2504}".repeat(level as usize);
+            let level_indicator = "\u{2014}".repeat(level as usize);
             ctx.enable_style(AnsiStyle::Bold)?;
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
             write!(ctx.output.writer, "{}", level_indicator)?
