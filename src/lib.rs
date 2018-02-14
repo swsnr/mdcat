@@ -55,7 +55,7 @@ use resources::Resource;
 
 // Expose some select things for use in main
 pub use resources::ResourceAccess;
-pub use terminal::Terminal;
+pub use terminal::{Terminal, TerminalWrite};
 pub use terminal::Size as TerminalSize;
 
 /// Dump markdown events to a writer.
