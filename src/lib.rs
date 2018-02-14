@@ -516,7 +516,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             let level_indicator = "\u{2504}".repeat(level as usize);
             ctx.enable_style(AnsiStyle::Bold)?;
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
-            write!(ctx.output.writer, "{}", level_indicator)?
+            write!(ctx.output.writer, "{} ", level_indicator)?
         }
         BlockQuote => {
             ctx.block.indent_level += 4;
