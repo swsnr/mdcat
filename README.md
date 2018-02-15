@@ -62,7 +62,9 @@ install [cargo-update][] and run `cargo install-update mdcat`.
 
 ### SVG support
 
-`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2][]; without it `mdcat` only shows the image title and URL for SVG images.  Install with `brew install librsvg`.
+`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2][]; otherwise `mdcat`
+only shows the image title and URL for SVG images.  Install with `brew install
+librsvg`.
 
 [Terminology][] supports SVG out of the box and needs no additional tools.
 
