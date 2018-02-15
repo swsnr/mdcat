@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ## [Unreleased]
 ### Added
 - Render SVG images in iTerm2 with `rsvg-convert` (requires `librsvg`).
+- Expose `TerminalWrite` in `mdcat` crate (see [GH-20][]).
+
+[GH-20]: https://github.com/lunaryorn/mdcat/pull/20
 
 ## [0.7.0] – 2018-02-08
 ### Added
