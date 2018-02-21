@@ -50,7 +50,6 @@ good terminal font which includes italic characters.  It supports
 Not supported:
 
 * CommonMark extensions: Footnotes and Tables
-* SVG images
 * Re-filling paragraphs
 
 [Terminology]: http://terminolo.gy
