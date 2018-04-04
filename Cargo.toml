@@ -18,7 +18,7 @@ maintenance = { status = "actively-developed" }
 atty = "^0.2"
 base64 = "^0.9"
 failure = "^0.1"
-immeta = "^0.3.6"
+immeta = "^0.4"
 mime = "^0.3"
 reqwest = "^0.8"
 term_size = "^0.3"
