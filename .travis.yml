@@ -22,7 +22,7 @@ jobs:
     - stage: formatting
       before_install: rustup component add rustfmt-preview
       script: cargo fmt -- --write-mode=diff
-      rust: beta
+      rust: stable
     - stage: lint
       before_install: cargo install --force clippy
       script: cargo clippy
