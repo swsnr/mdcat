@@ -4,6 +4,7 @@ description = "cat for markdown: Show markdown documents in terminals"
 readme = "README.md"
 homepage = "https://github.com/lunaryorn/mdcat"
 repository = "https://github.com/lunaryorn/mdcat"
+documentation = "https://docs.rs/mdcat"
 keywords = ["markdown", "less"]
 version = "0.8.1-pre"
 categories = ["command-line-utilities", "text-processing"]
