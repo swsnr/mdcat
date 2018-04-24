@@ -65,7 +65,7 @@ where
     W: Write,
 {
     for event in events {
-        write!(writer, "{:?}\n", event)?;
+        writeln!(writer, "{:?}", event)?;
     }
     Ok(())
 }
@@ -336,7 +336,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
             .terminal
             .set_style(self.output.writer, AnsiStyle::Reset)
             .ignore_not_supported()?;
-        write!(self.output.writer, "\n")?;
+        writeln!(self.output.writer)?;
         self.flush_styles()
     }
 
@@ -431,9 +431,9 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// Write a simple border.
     fn write_border(&mut self) -> Result<(), Error> {
         self.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
-        write!(
+        writeln!(
             self.output.writer,
-            "{}\n",
+            "{}",
             "\u{2500}".repeat(self.output.size.width.min(20))
         )?;
         self.reset_last_style()
