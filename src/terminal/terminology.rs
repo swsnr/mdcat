@@ -16,11 +16,11 @@
 //!
 //! [Terminology]: http://terminolo.gy
 
-use std::io::{ErrorKind, Write};
-use immeta;
-use failure::Error;
-use super::*;
 use super::super::resources::{Resource, ResourceAccess};
+use super::*;
+use failure::Error;
+use immeta;
+use std::io::{ErrorKind, Write};
 
 /// Write an inline image denoted by `resource` for Terminology.
 ///

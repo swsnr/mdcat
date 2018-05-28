@@ -14,14 +14,14 @@
 
 //! Access to resources referenced from markdown documents.
 
-use std::io;
-use std::io::prelude::*;
-use std::fs::File;
-use std::borrow::Cow;
-use std::path::Path;
-use url::Url;
 use failure::Error;
 use reqwest;
+use std::borrow::Cow;
+use std::fs::File;
+use std::io;
+use std::io::prelude::*;
+use std::path::Path;
+use url::Url;
 
 /// What kind of resources mdcat may access when rendering.
 ///
@@ -168,9 +168,9 @@ impl<'a> Resource<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use super::Resource::*;
     use super::super::ResourceAccess::*;
+    use super::Resource::*;
+    use super::*;
     use std::borrow::Cow::Borrowed;
 
     mod may_access {

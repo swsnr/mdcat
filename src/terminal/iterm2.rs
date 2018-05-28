@@ -14,16 +14,16 @@
 
 //! Iterm2 specific functions
 
-use std::io;
-use std::io::Write;
-use std::ffi::OsStr;
-use base64;
-use std::os::unix::ffi::OsStrExt;
-use failure::Error;
-use mime;
-use super::{NotSupportedError, TerminalWrite};
 use super::super::magic;
 use super::super::svg;
+use super::{NotSupportedError, TerminalWrite};
+use base64;
+use failure::Error;
+use mime;
+use std::ffi::OsStr;
+use std::io;
+use std::io::Write;
+use std::os::unix::ffi::OsStrExt;
 
 /// Write an iterm2 mark;
 pub fn write_mark<W: Write + TerminalWrite>(writer: &mut W) -> io::Result<()> {

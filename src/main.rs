@@ -23,13 +23,13 @@ extern crate mdcat;
 extern crate pulldown_cmark;
 extern crate syntect;
 
-use std::path::PathBuf;
+use pulldown_cmark::Parser;
+use std::error::Error;
+use std::fs::File;
 use std::io::prelude::*;
 use std::io::stdin;
-use std::fs::File;
-use std::error::Error;
+use std::path::PathBuf;
 use std::str::FromStr;
-use pulldown_cmark::Parser;
 use syntect::parsing::SyntaxSet;
 
 use mdcat::{ResourceAccess, Terminal, TerminalSize};

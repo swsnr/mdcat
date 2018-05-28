@@ -14,10 +14,10 @@
 
 //! SVG "rendering" for mdcat.
 
-use std::io::prelude::*;
-use std::process::{Command, Stdio};
 use failure::Error;
 use process::ProcessError;
+use std::io::prelude::*;
+use std::process::{Command, Stdio};
 
 /// Render an SVG image to a PNG pixel graphic for display.
 pub fn render_svg(svg: &[u8]) -> Result<Vec<u8>, Error> {

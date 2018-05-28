@@ -30,17 +30,17 @@ extern crate syntect;
 extern crate term_size;
 extern crate url;
 
-use std::path::Path;
-use std::io::Write;
-use std::borrow::Cow;
-use std::collections::VecDeque;
 use failure::Error;
-use pulldown_cmark::{Event, Tag};
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
+use pulldown_cmark::{Event, Tag};
+use std::borrow::Cow;
+use std::collections::VecDeque;
+use std::io::Write;
+use std::path::Path;
 use syntect::easy::HighlightLines;
-use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{Theme, ThemeSet};
+use syntect::parsing::SyntaxSet;
 
 mod highlighting;
 mod magic;
@@ -50,13 +50,13 @@ mod svg;
 mod terminal;
 
 use highlighting::write_as_ansi;
-use terminal::*;
 use resources::Resource;
+use terminal::*;
 
 // Expose some select things for use in main
 pub use resources::ResourceAccess;
-pub use terminal::{Terminal, TerminalWrite};
 pub use terminal::Size as TerminalSize;
+pub use terminal::{Terminal, TerminalWrite};
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>

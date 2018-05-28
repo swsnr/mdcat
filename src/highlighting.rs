@@ -14,9 +14,9 @@
 
 //! Tools for syntax highlighting.
 
+use super::terminal::{AnsiColour, AnsiStyle, TerminalWrite};
 use std::io::{Result, Write};
 use syntect::highlighting::{FontStyle, Style};
-use super::terminal::{AnsiColour, AnsiStyle, TerminalWrite};
 
 /// Write regions as ANSI 8-bit coloured text.
 ///

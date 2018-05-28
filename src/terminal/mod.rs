@@ -14,13 +14,13 @@
 
 //! Terminal utilities.
 
+use super::resources::{Resource, ResourceAccess};
 use atty;
+use failure::Error;
 use std;
 use std::io;
 use std::io::prelude::*;
 use term_size;
-use failure::Error;
-use super::resources::{Resource, ResourceAccess};
 
 mod iterm2;
 mod terminology;

@@ -15,10 +15,10 @@
 //! Detect mime type with `file`.
 
 use failure::Error;
-use std::str;
+use mime::Mime;
 use std::io::prelude::*;
 use std::process::*;
-use mime::Mime;
+use std::str;
 
 use process::ProcessError;
 
