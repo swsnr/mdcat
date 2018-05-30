@@ -22,10 +22,10 @@ jobs:
   include:
       # Check formatting on rust stable before anything else
     - stage: formatting
-      before_install: rustup component add rustfmt-preview
-      script: cargo fmt -- --write-mode=diff
       os: linux
       rust: stable
+      before_install: rustup component add rustfmt-preview
+      script: cargo fmt -- --write-mode=diff
 
     # Base line for backwards compatibility
     - stage: test
@@ -46,26 +46,31 @@ jobs:
       os: linux
       rust: nightly
 
-    # Run clippy after testing
+    # Run clippy after testing, with a pinned clippy version and a compatible
+    # nightly snapshot
     - stage: lint
-      before_install: cargo install --force clippy
-      script: cargo clippy
       os: linux
-      rust: nightly
+      # Use a nightly version on which clippy builds successfully.
+      rust: nightly-2018-05-28
+      # Put clippy version in environment to make it appear in Travis CI UI and
+      # to invalidate build caches when we update the clippy version
+      env: CLIPPY_VERSION="0.0.206"
+      before_install: cargo install clippy --version "$CLIPPY_VERSION" || echo "clippy already installed"
+      script: cargo clippy
 
     # Deploy binary to GitHub
     - &deploy-settings
       stage: release
       # Our release tags start with "mdcat-", so we only build for such tags
       if: tag =~ ^mdcat-
+      os: linux
+      env: ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
+      rust: stable
       # Inhibit Travis’ default "cargo build --verbose" install step because we
       # make an explicit release build in the "script" phase
       install: ""
       script:
         - cargo build --release --verbose
-      os: linux
-      env: ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
-      rust: stable
       before_deploy:
         - echo "Building ${ARCHIVE_NAME}"
         - mkdir "/tmp/${ARCHIVE_NAME}"
