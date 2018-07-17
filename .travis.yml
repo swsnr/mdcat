@@ -50,12 +50,7 @@ jobs:
     # nightly snapshot
     - stage: lint
       os: linux
-      # Use a nightly version on which clippy builds successfully.
-      rust: nightly-2018-06-18
-      # Put clippy version in environment to make it appear in Travis CI UI and
-      # to invalidate build caches when we update the clippy version
-      env: CLIPPY_VERSION="0.0.209"
-      before_install: cargo install clippy --version "$CLIPPY_VERSION" || echo "clippy already installed"
+      before_install: rustup component add clippy-preview
       script: cargo clippy
 
     # Deploy binary to GitHub
