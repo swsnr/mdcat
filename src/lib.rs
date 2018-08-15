@@ -583,7 +583,8 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             // or if the format doesn't support inline links, don't do anything
             // here; we will write a reference link when closing the link tag.
             let url = ctx.input.resolve_reference(&destination).into_url();
-            if ctx.output
+            if ctx
+                .output
                 .terminal
                 .set_link(ctx.output.writer, url.as_str())
                 .is_ok()
@@ -593,7 +594,8 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
         }
         Image(link, _title) => {
             let resource = ctx.input.resolve_reference(&link);
-            if ctx.output
+            if ctx
+                .output
                 .terminal
                 .write_inline_image(
                     ctx.output.writer,

@@ -78,7 +78,8 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     } else {
         let mut source = File::open(filename.as_ref())?;
         source.read_to_string(&mut buffer)?;
-        let base_dir = cd.join(filename.as_ref())
+        let base_dir = cd
+            .join(filename.as_ref())
             .parent()
             .map(|p| p.to_path_buf())
             .unwrap_or(cd);
