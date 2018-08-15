@@ -25,7 +25,7 @@ jobs:
       os: linux
       rust: stable
       before_install: rustup component add rustfmt-preview
-      script: cargo fmt -- --write-mode=diff
+      script: cargo fmt -- --check
 
     # Base line for backwards compatibility
     - stage: test
