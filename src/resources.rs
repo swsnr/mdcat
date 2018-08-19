@@ -29,7 +29,7 @@ use url::Url;
 /// just from local files.
 #[derive(Debug, Copy, Clone)]
 pub enum ResourceAccess {
-    /// Use only local files and do not allow remote resources.
+    /// Use only local files and prohibit remote resources.
     LocalOnly,
     /// Use local and remote resources alike.
     RemoteAllowed,
@@ -100,7 +100,7 @@ impl<'a> Resource<'a> {
             Resource::LocalFile(path) => Url::parse("file:///")
                 .expect("Failed to parse file root URL!")
                 .join(&path.to_string_lossy())
-                .expect(&format!("Failed to join root URL with {:?}", path)),
+                .unwrap_or_else(|_| panic!(format!("Failed to join root URL with {:?}", path))),
         }
     }
 
