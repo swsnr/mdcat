@@ -6,7 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 ### Added
-- `mdcat` builds on Windows now.
+- `mdcat` builds on Windows now (see [GH-34][]).
+
+[GH-34]: https://github.com/lunaryorn/mdcat/pull/34
 
 ## [0.8.0] – 2018-02-15
 ### Added
