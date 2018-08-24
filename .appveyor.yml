@@ -1,0 +1,27 @@
+os: Visual Studio 2017
+# Build 64-bit MSVC binaries on stable, beta and nightly.  I prefer to use the
+# native toolchain, ie, MSVC, and 32-bit's dead anyway.
+environment:
+  target: x86_64-pc-windows-msvc
+  matrix:
+    - channel: stable
+    - channel: beta
+    - channel: nightly
+# Install Rust with rustup
+install:
+  - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - rustup-init -y --default-toolchain %channel% --default-host %target%
+  - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
+  - rustc -vV
+  - cargo -vV
+  # Make nmake available; required by onig-sys dependency (transitive via
+  # syntect)
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+build_script:
+  - cargo build --verbose
+test_script:
+  - cargo test --verbose
+  - cargo run -- sample/common-mark.md
+cache:
+  - '%USERPROFILE%\.cargo'
+  - '%APPVEYOR_BUILD_FOLDER%\target -> Cargo.lock'

@@ -3,6 +3,7 @@
 [![Current release]( https://img.shields.io/crates/v/mdcat.svg)][crates]
 ![Actively developer](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
 [![Build status](https://img.shields.io/travis/lunaryorn/mdcat/master.svg)][travis]
+[![Windows build status](https://img.shields.io/appveyor/ci/lunaryorn/mdcat/master.svg)][appveyor]
 
 `cat` for [CommonMark][]: Show CommonMark (a standardized Markdown dialect)
 documents on text terminals.
@@ -19,6 +20,7 @@ left to right), and [PragmataPro][pp] as font.
 [crates-badge]: https://img.shields.io/crates/v/mdcat.svg
 [crates]: https://crates.io/crates/mdcat
 [travis]: https://travis-ci.org/lunaryorn/mdcat
+[appveyor]: https://ci.appveyor.com/project/lunaryorn/mdcat
 [CommonMark]: http://commonmark.org
 [Solarized]: http://ethanschoonover.com/solarized
 [dracula]: https://draculatheme.com/iterm/
