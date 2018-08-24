@@ -313,6 +313,7 @@ impl Terminal {
     ///
     /// Only supported for some terminal emulators.
     #[cfg(unix)]
+    #[allow(unused_variables)]
     pub fn write_inline_image<W: io::Write>(
         self,
         writer: &mut W,
