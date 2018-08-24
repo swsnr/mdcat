@@ -22,6 +22,7 @@ use std::io;
 use std::io::prelude::*;
 use term_size;
 
+#[cfg(target_os = "macos")]
 mod iterm2;
 mod terminology;
 
@@ -260,9 +261,10 @@ impl Terminal {
     /// format anything.
     pub fn detect() -> Terminal {
         if atty::is(atty::Stream::Stdout) {
-            if std::env::var("TERM_PROGRAM")
-                .map(|value| value.contains("iTerm.app"))
-                .unwrap_or(false)
+            if cfg!(feature = "iterm")
+                && std::env::var("TERM_PROGRAM")
+                    .map(|value| value.contains("iTerm.app"))
+                    .unwrap_or(false)
             {
                 Terminal::ITerm2
             } else if std::env::var("TERMINOLOGY")
@@ -318,6 +320,7 @@ impl Terminal {
         resource_access: ResourceAccess,
     ) -> Result<(), Error> {
         match self {
+            #[cfg(target_os = "macos")]
             Terminal::ITerm2 => resource.read(resource_access).and_then(|contents| {
                 iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                     .map_err(Into::into)
@@ -337,7 +340,9 @@ impl Terminal {
     /// To stop a link write a link to an empty destination.
     pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> Result<(), Error> {
         match self {
-            Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => {
+            #[cfg(target_os = "macos")]
+            Terminal::ITerm2 => writer.write_osc(&format!("8;;{}", destination))?,
+            Terminal::Terminology | Terminal::GenericVTE50 => {
                 writer.write_osc(&format!("8;;{}", destination))?
             }
             _ => Err(NotSupportedError {
@@ -348,6 +353,7 @@ impl Terminal {
     }
 
     /// Set a mark in the current terminal.
+    #[cfg(target_os = "macos")]
     pub fn set_mark<W: io::Write>(self, writer: &mut W) -> Result<(), Error> {
         if let Terminal::ITerm2 = self {
             iterm2::write_mark(writer)?
@@ -355,5 +361,11 @@ impl Terminal {
             Err(NotSupportedError { what: "marks" })?
         };
         Ok(())
+    }
+
+    /// Set a mark in the current terminal.
+    #[cfg(not(target_os = "macos"))]
+    pub fn set_mark<W: io::Write>(self, _writer: &mut W) -> Result<(), Error> {
+        Err(NotSupportedError { what: "marks" })?
     }
 }
