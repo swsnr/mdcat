@@ -17,14 +17,18 @@
 #![cfg_attr(feature = "cargo-clippy", deny(clippy))]
 
 //! Write markdown to TTYs.
-//!
+
+// Used by iTerm support on macos
 #[cfg(target_os = "macos")]
 extern crate base64;
 #[cfg(target_os = "macos")]
 extern crate mime;
 
-extern crate atty;
+// Used by Terminology support
+#[cfg(all(unix, not(target_os = "macos")))]
 extern crate immeta;
+
+extern crate atty;
 #[macro_use]
 extern crate failure;
 extern crate pulldown_cmark;

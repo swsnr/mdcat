@@ -24,6 +24,7 @@ use term_size;
 
 #[cfg(target_os = "macos")]
 mod iterm2;
+#[cfg(all(unix, not(target_os = "macos")))]
 mod terminology;
 
 /// The size of a text terminal.
@@ -310,8 +311,8 @@ impl Terminal {
 
     /// Write an inline image.
     ///
-    /// Supported on iTerm2, all other terminal emulators return a not supported
-    /// error.
+    /// Only supported for some terminal emulators.
+    #[cfg(unix)]
     pub fn write_inline_image<W: io::Write>(
         self,
         writer: &mut W,
@@ -325,6 +326,7 @@ impl Terminal {
                 iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                     .map_err(Into::into)
             })?,
+            #[cfg(all(unix, not(target_os = "maxos")))]
             Terminal::Terminology => {
                 terminology::write_inline_image(writer, max_size, resource, resource_access)?
             }
@@ -333,6 +335,22 @@ impl Terminal {
             })?,
         }
         Ok(())
+    }
+
+    /// Write an inline image.
+    ///
+    /// Not supported on windows at all.
+    #[cfg(windows)]
+    pub fn write_inline_image<W: io::Write>(
+        self,
+        _writer: &mut W,
+        _max_size: Size,
+        _resource: &Resource,
+        _resource_access: ResourceAccess,
+    ) -> Result<(), Error> {
+        Err(NotSupportedError {
+            what: "inline images",
+        })?
     }
 
     /// Set the link for the subsequent text.
@@ -353,6 +371,8 @@ impl Terminal {
     }
 
     /// Set a mark in the current terminal.
+    ///
+    /// Only supported by iTerm2 currently.
     #[cfg(target_os = "macos")]
     pub fn set_mark<W: io::Write>(self, writer: &mut W) -> Result<(), Error> {
         if let Terminal::ITerm2 = self {
