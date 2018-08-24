@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- `mdcat` builds on Windows now (see [GH-34][]).
+
+[GH-34]: https://github.com/lunaryorn/mdcat/pull/34
 
 ## [0.8.0] – 2018-02-15
 ### Added

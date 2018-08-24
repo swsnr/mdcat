@@ -17,10 +17,7 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 atty = "^0.2"
-base64 = "^0.9"
 failure = "^0.1"
-immeta = "^0.4"
-mime = "^0.3"
 reqwest = "^0.8"
 term_size = "^0.3"
 url = "^1.6"
@@ -39,6 +36,13 @@ features = []
 version = "^2"
 default-features = false
 features = ["parsing", "assets", "dump-load"]
+
+[target.'cfg(target_os = "macos")'.dependencies]
+mime = "^0.3"
+base64 = "^0.9"
+
+[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
+immeta = "^0.4"
 
 [package.metadata.release]
 sign-commit = true

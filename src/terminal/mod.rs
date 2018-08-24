@@ -22,7 +22,9 @@ use std::io;
 use std::io::prelude::*;
 use term_size;
 
+#[cfg(target_os = "macos")]
 mod iterm2;
+#[cfg(all(unix, not(target_os = "macos")))]
 mod terminology;
 
 /// The size of a text terminal.
@@ -260,9 +262,10 @@ impl Terminal {
     /// format anything.
     pub fn detect() -> Terminal {
         if atty::is(atty::Stream::Stdout) {
-            if std::env::var("TERM_PROGRAM")
-                .map(|value| value.contains("iTerm.app"))
-                .unwrap_or(false)
+            if cfg!(feature = "iterm")
+                && std::env::var("TERM_PROGRAM")
+                    .map(|value| value.contains("iTerm.app"))
+                    .unwrap_or(false)
             {
                 Terminal::ITerm2
             } else if std::env::var("TERMINOLOGY")
@@ -308,8 +311,9 @@ impl Terminal {
 
     /// Write an inline image.
     ///
-    /// Supported on iTerm2, all other terminal emulators return a not supported
-    /// error.
+    /// Only supported for some terminal emulators.
+    #[cfg(unix)]
+    #[allow(unused_variables)]
     pub fn write_inline_image<W: io::Write>(
         self,
         writer: &mut W,
@@ -318,10 +322,12 @@ impl Terminal {
         resource_access: ResourceAccess,
     ) -> Result<(), Error> {
         match self {
+            #[cfg(target_os = "macos")]
             Terminal::ITerm2 => resource.read(resource_access).and_then(|contents| {
                 iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                     .map_err(Into::into)
             })?,
+            #[cfg(all(unix, not(target_os = "macos")))]
             Terminal::Terminology => {
                 terminology::write_inline_image(writer, max_size, resource, resource_access)?
             }
@@ -332,12 +338,30 @@ impl Terminal {
         Ok(())
     }
 
+    /// Write an inline image.
+    ///
+    /// Not supported on windows at all.
+    #[cfg(windows)]
+    pub fn write_inline_image<W: io::Write>(
+        self,
+        _writer: &mut W,
+        _max_size: Size,
+        _resource: &Resource,
+        _resource_access: ResourceAccess,
+    ) -> Result<(), Error> {
+        Err(NotSupportedError {
+            what: "inline images",
+        })?
+    }
+
     /// Set the link for the subsequent text.
     ///
     /// To stop a link write a link to an empty destination.
     pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> Result<(), Error> {
         match self {
-            Terminal::ITerm2 | Terminal::Terminology | Terminal::GenericVTE50 => {
+            #[cfg(target_os = "macos")]
+            Terminal::ITerm2 => writer.write_osc(&format!("8;;{}", destination))?,
+            Terminal::Terminology | Terminal::GenericVTE50 => {
                 writer.write_osc(&format!("8;;{}", destination))?
             }
             _ => Err(NotSupportedError {
@@ -348,6 +372,9 @@ impl Terminal {
     }
 
     /// Set a mark in the current terminal.
+    ///
+    /// Only supported by iTerm2 currently.
+    #[cfg(target_os = "macos")]
     pub fn set_mark<W: io::Write>(self, writer: &mut W) -> Result<(), Error> {
         if let Terminal::ITerm2 = self {
             iterm2::write_mark(writer)?
@@ -355,5 +382,11 @@ impl Terminal {
             Err(NotSupportedError { what: "marks" })?
         };
         Ok(())
+    }
+
+    /// Set a mark in the current terminal.
+    #[cfg(not(target_os = "macos"))]
+    pub fn set_mark<W: io::Write>(self, _writer: &mut W) -> Result<(), Error> {
+        Err(NotSupportedError { what: "marks" })?
     }
 }
