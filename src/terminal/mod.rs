@@ -326,7 +326,7 @@ impl Terminal {
                 iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                     .map_err(Into::into)
             })?,
-            #[cfg(all(unix, not(target_os = "maxos")))]
+            #[cfg(all(unix, not(target_os = "macos")))]
             Terminal::Terminology => {
                 terminology::write_inline_image(writer, max_size, resource, resource_access)?
             }
