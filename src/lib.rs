@@ -68,7 +68,7 @@ use terminal::*;
 // Expose some select things for use in main
 pub use resources::ResourceAccess;
 pub use terminal::Size as TerminalSize;
-pub use terminal::{Terminal, TerminalWrite};
+pub use terminal::{LegacyTerminal, TerminalWrite};
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>
@@ -91,7 +91,7 @@ where
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, W, I>(
     writer: &mut W,
-    terminal: Terminal,
+    terminal: LegacyTerminal,
     size: TerminalSize,
     events: I,
     base_dir: &'a Path,
@@ -171,7 +171,7 @@ struct OutputContext<'a, W: Write + 'a> {
     /// The terminal dimensions to limit output to.
     size: Size,
     /// The target terminal.
-    terminal: Terminal,
+    terminal: LegacyTerminal,
 }
 
 #[derive(Debug)]
@@ -259,7 +259,7 @@ struct Context<'a, W: Write + 'a> {
 impl<'a, W: Write + 'a> Context<'a, W> {
     fn new(
         writer: &'a mut W,
-        terminal: Terminal,
+        terminal: LegacyTerminal,
         size: Size,
         base_dir: &'a Path,
         resource_access: ResourceAccess,

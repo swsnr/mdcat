@@ -168,7 +168,7 @@ where
 /// Features range from nothing at all on dumb terminals, to basic ANSI styling,
 /// to inline links and inline images in some select terminal emulators.
 #[derive(Debug, Copy, Clone)]
-pub enum Terminal {
+pub enum LegacyTerminal {
     /// iTerm2.
     ///
     /// iTerm2 is a powerful macOS terminal emulator with many formatting
@@ -251,7 +251,7 @@ fn get_vte_version() -> Option<(u8, u8)> {
     })
 }
 
-impl Terminal {
+impl LegacyTerminal {
     /// Detect the underlying terminal application.
     ///
     /// If stdout links to a TTY look at various pieces of information, in
@@ -260,33 +260,33 @@ impl Terminal {
     ///
     /// If stdout does not link to a TTY assume a `Dumb` terminal which cannot
     /// format anything.
-    pub fn detect() -> Terminal {
+    pub fn detect() -> LegacyTerminal {
         if atty::is(atty::Stream::Stdout) {
             if cfg!(feature = "iterm")
                 && std::env::var("TERM_PROGRAM")
                     .map(|value| value.contains("iTerm.app"))
                     .unwrap_or(false)
             {
-                Terminal::ITerm2
+                LegacyTerminal::ITerm2
             } else if std::env::var("TERMINOLOGY")
                 .map(|value| value.trim() == "1")
                 .unwrap_or(false)
             {
-                Terminal::Terminology
+                LegacyTerminal::Terminology
             } else {
                 match get_vte_version() {
-                    Some(version) if version >= (50, 0) => Terminal::GenericVTE50,
-                    _ => Terminal::BasicAnsi,
+                    Some(version) if version >= (50, 0) => LegacyTerminal::GenericVTE50,
+                    _ => LegacyTerminal::BasicAnsi,
                 }
             }
         } else {
-            Terminal::Dumb
+            LegacyTerminal::Dumb
         }
     }
 
     /// Whether this terminal supports colours.
     pub fn supports_colours(self) -> bool {
-        if let Terminal::Dumb = self {
+        if let LegacyTerminal::Dumb = self {
             false
         } else {
             true
@@ -323,7 +323,7 @@ impl Terminal {
     ) -> Result<(), Error> {
         match self {
             #[cfg(target_os = "macos")]
-            Terminal::ITerm2 => resource.read(resource_access).and_then(|contents| {
+            LegacyTerminal::ITerm2 => resource.read(resource_access).and_then(|contents| {
                 iterm2::write_inline_image(writer, resource.as_str().as_ref(), &contents)
                     .map_err(Into::into)
             })?,
@@ -360,8 +360,8 @@ impl Terminal {
     pub fn set_link<W: io::Write>(self, writer: &mut W, destination: &str) -> Result<(), Error> {
         match self {
             #[cfg(target_os = "macos")]
-            Terminal::ITerm2 => writer.write_osc(&format!("8;;{}", destination))?,
-            Terminal::Terminology | Terminal::GenericVTE50 => {
+            LegacyTerminal::ITerm2 => writer.write_osc(&format!("8;;{}", destination))?,
+            LegacyTerminal::Terminology | LegacyTerminal::GenericVTE50 => {
                 writer.write_osc(&format!("8;;{}", destination))?
             }
             _ => Err(NotSupportedError {
@@ -376,7 +376,7 @@ impl Terminal {
     /// Only supported by iTerm2 currently.
     #[cfg(target_os = "macos")]
     pub fn set_mark<W: io::Write>(self, writer: &mut W) -> Result<(), Error> {
-        if let Terminal::ITerm2 = self {
+        if let LegacyTerminal::ITerm2 = self {
             iterm2::write_mark(writer)?
         } else {
             Err(NotSupportedError { what: "marks" })?

@@ -32,7 +32,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use syntect::parsing::SyntaxSet;
 
-use mdcat::{ResourceAccess, Terminal, TerminalSize};
+use mdcat::{LegacyTerminal, ResourceAccess, TerminalSize};
 
 /// Colour options, for the --colour option.
 #[derive(Debug)]
@@ -116,7 +116,7 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Erro
 #[derive(Debug)]
 struct Arguments {
     filename: String,
-    terminal: Terminal,
+    terminal: LegacyTerminal,
     resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,
@@ -126,12 +126,12 @@ impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
         let terminal = match value_t!(matches, "colour", Colour)? {
-            Colour::No => Terminal::Dumb,
-            Colour::Yes => match Terminal::detect() {
-                Terminal::Dumb => Terminal::BasicAnsi,
+            Colour::No => LegacyTerminal::Dumb,
+            Colour::Yes => match LegacyTerminal::detect() {
+                LegacyTerminal::Dumb => LegacyTerminal::BasicAnsi,
                 other => other,
             },
-            Colour::Auto => Terminal::detect(),
+            Colour::Auto => LegacyTerminal::detect(),
         };
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
