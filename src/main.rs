@@ -27,15 +27,15 @@ use pulldown_cmark::Parser;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::stdin;
+use std::io::{stdin, stdout, Stdout};
 use std::path::PathBuf;
 use std::str::FromStr;
 use syntect::parsing::SyntaxSet;
 
-use mdcat::{ResourceAccess, Terminal, TerminalSize};
+use mdcat::{detect_terminal, AnsiTerminal, DumbTerminal, ResourceAccess, Terminal, TerminalSize};
 
 /// Colour options, for the --colour option.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 enum Colour {
     Yes,
     No,
@@ -88,53 +88,61 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
 }
 
 fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Error>> {
-    let (base_dir, input) = read_input(args.filename)?;
-    let parser = Parser::new(&input);
-
-    if args.dump_events {
-        mdcat::dump_events(&mut std::io::stdout(), parser)?;
+    if args.detect_only {
+        println!("Terminal: {}", args.terminal.name());
         Ok(())
     } else {
-        let syntax_set = SyntaxSet::load_defaults_newlines();
-        mdcat::push_tty(
-            &mut std::io::stdout(),
-            args.terminal,
-            TerminalSize {
-                width: args.columns,
-                ..size
-            },
-            parser,
-            &base_dir,
-            args.resource_access,
-            syntax_set,
-        )?;
-        Ok(())
+        let (base_dir, input) = read_input(args.filename)?;
+        let parser = Parser::new(&input);
+
+        if args.dump_events {
+            mdcat::dump_events(&mut std::io::stdout(), parser)?;
+            Ok(())
+        } else {
+            let syntax_set = SyntaxSet::load_defaults_newlines();
+            mdcat::push_tty(
+                args.terminal,
+                TerminalSize {
+                    width: args.columns,
+                    ..size
+                },
+                parser,
+                &base_dir,
+                args.resource_access,
+                syntax_set,
+            )?;
+            Ok(())
+        }
     }
 }
 
 /// Represent command line arguments.
-#[derive(Debug)]
 struct Arguments {
     filename: String,
-    terminal: Terminal,
+    terminal: Box<Terminal<TerminalWrite = Stdout>>,
     resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,
+    detect_only: bool,
 }
 
 impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
-        let terminal = match value_t!(matches, "colour", Colour)? {
-            Colour::No => Terminal::Dumb,
-            Colour::Yes => match Terminal::detect() {
-                Terminal::Dumb => Terminal::BasicAnsi,
-                other => other,
-            },
-            Colour::Auto => Terminal::detect(),
+        let colour = value_t!(matches, "colour", Colour)?;
+        let terminal = if colour == Colour::No {
+            Box::new(DumbTerminal::new(stdout()))
+        } else {
+            let auto = detect_terminal();
+            if !auto.supports_styles() && colour == Colour::Yes {
+                Box::new(AnsiTerminal::new(stdout()))
+            } else {
+                auto
+            }
         };
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
+        let detect_only = matches.is_present("detect_only");
         let columns = value_t!(matches, "columns", usize)?;
         let resource_access = if matches.is_present("local_only") {
             ResourceAccess::LocalOnly
@@ -147,6 +155,7 @@ impl Arguments {
             columns,
             resource_access,
             dump_events,
+            detect_only,
             terminal,
         })
     }
@@ -207,6 +216,12 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
                 .long("dump-events")
                 .help("Dump Markdown parser events and exit")
                 .hidden(true)
+        )
+        .arg(
+            Arg::with_name("detect_only")
+            .long("detect-only")
+            .help("Only detect the terminal type and exit")
+            .hidden(true)
         );
 
     let matches = app.get_matches();

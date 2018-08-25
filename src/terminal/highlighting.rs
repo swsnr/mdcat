@@ -14,8 +14,10 @@
 
 //! Tools for syntax highlighting.
 
-use super::terminal::{AnsiColour, AnsiStyle, TerminalWrite};
-use std::io::{Result, Write};
+use super::types::{AnsiColour, AnsiStyle};
+use super::write::Terminal;
+use failure::Error;
+use std::io::Write;
 use syntect::highlighting::{FontStyle, Style};
 
 /// Write regions as ANSI 8-bit coloured text.
@@ -33,10 +35,10 @@ use syntect::highlighting::{FontStyle, Style};
 ///
 /// Furthermore we completely ignore any background colour settings, to avoid
 /// conflicts with the terminal colour themes.
-pub fn write_as_ansi<W: Write + TerminalWrite>(
-    writer: &mut W,
+pub fn write_as_ansi<W: Write>(
+    terminal: &mut Terminal<TerminalWrite = W>,
     regions: &[(Style, &str)],
-) -> Result<()> {
+) -> Result<(), Error> {
     for &(style, text) in regions {
         let rgb = {
             let fg = style.foreground;
@@ -51,31 +53,31 @@ pub fn write_as_ansi<W: Write + TerminalWrite>(
             | (0x83, 0x94, 0x96)
             | (0x93, 0xa1, 0xa1)
             | (0xee, 0xe8, 0xd5)
-            | (0xfd, 0xf6, 0xe3) => writer.write_style(AnsiStyle::DefaultForeground)?,
-            (0xb5, 0x89, 0x00) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Yellow))?, // yellow
-            (0xcb, 0x4b, 0x16) => writer.write_style(AnsiStyle::Foreground(AnsiColour::LightRed))?, // orange
-            (0xdc, 0x32, 0x2f) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Red))?, // red
-            (0xd3, 0x36, 0x82) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Magenta))?, // magenta
+            | (0xfd, 0xf6, 0xe3) => terminal.set_style(AnsiStyle::DefaultForeground)?,
+            (0xb5, 0x89, 0x00) => terminal.set_style(AnsiStyle::Foreground(AnsiColour::Yellow))?, // yellow
+            (0xcb, 0x4b, 0x16) => terminal.set_style(AnsiStyle::Foreground(AnsiColour::LightRed))?, // orange
+            (0xdc, 0x32, 0x2f) => terminal.set_style(AnsiStyle::Foreground(AnsiColour::Red))?, // red
+            (0xd3, 0x36, 0x82) => terminal.set_style(AnsiStyle::Foreground(AnsiColour::Magenta))?, // magenta
             (0x6c, 0x71, 0xc4) => {
-                writer.write_style(AnsiStyle::Foreground(AnsiColour::LightMagenta))?
+                terminal.set_style(AnsiStyle::Foreground(AnsiColour::LightMagenta))?
             } // violet
-            (0x26, 0x8b, 0xd2) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Blue))?, // blue
-            (0x2a, 0xa1, 0x98) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Cyan))?, // cyan
-            (0x85, 0x99, 0x00) => writer.write_style(AnsiStyle::Foreground(AnsiColour::Green))?, // green
+            (0x26, 0x8b, 0xd2) => terminal.set_style(AnsiStyle::Foreground(AnsiColour::Blue))?, // blue
+            (0x2a, 0xa1, 0x98) => terminal.set_style(AnsiStyle::Foreground(AnsiColour::Cyan))?, // cyan
+            (0x85, 0x99, 0x00) => terminal.set_style(AnsiStyle::Foreground(AnsiColour::Green))?, // green
             (r, g, b) => panic!("Unexpected RGB colour: #{:2>0x}{:2>0x}{:2>0x}", r, g, b),
         };
         let font = style.font_style;
         if font.contains(FontStyle::BOLD) {
-            writer.write_style(AnsiStyle::Bold)?;
+            terminal.set_style(AnsiStyle::Bold)?;
         };
         if font.contains(FontStyle::ITALIC) {
-            writer.write_style(AnsiStyle::Italic)?;
+            terminal.set_style(AnsiStyle::Italic)?;
         };
         if font.contains(FontStyle::UNDERLINE) {
-            writer.write_style(AnsiStyle::Underline)?;
+            terminal.set_style(AnsiStyle::Underline)?;
         };
-        writer.write_all(text.as_bytes())?;
-        writer.write_style(AnsiStyle::Reset)?;
+        terminal.write().write_all(text.as_bytes())?;
+        terminal.set_style(AnsiStyle::Reset)?;
     }
 
     Ok(())

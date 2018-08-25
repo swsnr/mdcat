@@ -8,6 +8,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ### Added
 - `mdcat` builds on Windows now (see [GH-34][]).
 
+### Changed
+- Refactor internal terminal representation, replacing the terminal enum with a
+  new `Terminal` trait and dynamic dispatch.
+- Only include terminal backends supported on the platform.
+
 [GH-34]: https://github.com/lunaryorn/mdcat/pull/34
 
 ## [0.8.0] – 2018-02-15

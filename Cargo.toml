@@ -10,10 +10,17 @@ version = "0.8.1-pre"
 categories = ["command-line-utilities", "text-processing"]
 license = "Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
+build = "build.rs"
 
 [badges]
 travis-ci = { repository = "lunaryorn/mdcat" }
 maintenance = { status = "actively-developed" }
+
+[features]
+default = []
+
+iterm2 = ["mime", "base64"]
+terminology = ["immeta"]
 
 [dependencies]
 atty = "^0.2"
@@ -21,6 +28,10 @@ failure = "^0.1"
 reqwest = "^0.8"
 term_size = "^0.3"
 url = "^1.6"
+
+mime = {version = "^0.3", optional = true}
+base64 = {version = "^0.9", optional = true}
+immeta = {version = "^0.4", optional = true}
 
 [dependencies.clap]
 version = "^2.29"
@@ -36,13 +47,6 @@ features = []
 version = "^2"
 default-features = false
 features = ["parsing", "assets", "dump-load"]
-
-[target.'cfg(target_os = "macos")'.dependencies]
-mime = "^0.3"
-base64 = "^0.9"
-
-[target.'cfg(all(unix, not(target_os = "macos")))'.dependencies]
-immeta = "^0.4"
 
 [package.metadata.release]
 sign-commit = true
