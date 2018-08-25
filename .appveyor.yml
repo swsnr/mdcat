@@ -20,7 +20,9 @@ install:
 build_script:
   - cargo build --release --verbose
 after_build:
-  - 7z a %APPVEYOR_REPO_TAG_NAME%-windows.zip %APPVEYOR_BUILD_FOLDER%\target\release\mdcat %APPVEYOR_BUILD_FOLDER%\README.md %APPVEYOR_BUILD_FOLDER%\CHANGELOG.md %APPVEYOR_BUILD_FOLDER%\LICENSE
+  # The leading '.\' is important to avoid a command error with -windows being
+  # interpreted as flag if APPVEYOR_REPO_TAG_NAME is empty.
+  - 7z a .\%APPVEYOR_REPO_TAG_NAME%-windows.zip %APPVEYOR_BUILD_FOLDER%\target\release\mdcat.exe %APPVEYOR_BUILD_FOLDER%\README.md %APPVEYOR_BUILD_FOLDER%\CHANGELOG.md %APPVEYOR_BUILD_FOLDER%\LICENSE
 test_script:
   - cargo test --verbose
   - cargo run -- sample/common-mark.md
