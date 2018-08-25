@@ -30,7 +30,7 @@ jobs:
     # Base line for backwards compatibility
     - stage: test
       os: linux
-      rust: '1.23.0'
+      rust: '1.27.2'
     # Our target Rust version
     - stage: test
       os: linux
