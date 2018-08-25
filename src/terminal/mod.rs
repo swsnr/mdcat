@@ -26,8 +26,11 @@ mod iterm2;
 #[cfg(all(unix, not(target_os = "macos")))]
 mod terminology;
 
+mod error;
 mod types;
 
+pub use self::error::IgnoreNotSupported;
+use self::error::NotSupportedError;
 pub use self::types::{AnsiColour, AnsiStyle, Size};
 
 /// A trait to provide terminal escape code for any `Write` implementation
@@ -125,39 +128,6 @@ pub enum LegacyTerminal {
     /// when piping to other programs or when the terminal does not even support
     /// ANSI codes.
     Dumb,
-}
-
-/// The terminal does not support something.
-#[derive(Debug, Fail)]
-#[fail(display = "This terminal does not support {}.", what)]
-pub struct NotSupportedError {
-    /// The operation which the terminal did not support.
-    pub what: &'static str,
-}
-
-/// Ignore a `NotSupportedError`.
-pub trait IgnoreNotSupported {
-    /// The type after ignoring `NotSupportedError`.
-    type R;
-
-    /// Elide a `NotSupportedError` from this value.
-    fn ignore_not_supported(self) -> Self::R;
-}
-
-impl IgnoreNotSupported for Error {
-    type R = Result<(), Error>;
-
-    fn ignore_not_supported(self) -> Self::R {
-        self.downcast::<NotSupportedError>().map(|_| ())
-    }
-}
-
-impl IgnoreNotSupported for Result<(), Error> {
-    type R = Result<(), Error>;
-
-    fn ignore_not_supported(self) -> Self::R {
-        self.or_else(|err| err.ignore_not_supported())
-    }
 }
 
 /// Get the version of VTE underlying this terminal.

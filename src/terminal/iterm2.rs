@@ -16,7 +16,8 @@
 
 use super::super::magic;
 use super::super::svg;
-use super::{NotSupportedError, TerminalWrite};
+use super::error::NotSupportedError;
+use super::TerminalWrite;
 use base64;
 use failure::Error;
 use mime;
