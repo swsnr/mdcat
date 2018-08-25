@@ -19,13 +19,13 @@
 //! Write markdown to TTYs.
 
 // Used by iTerm support on macos
-// #[cfg(target_os = "macos")]
+#[cfg(feature = "iterm2")]
 extern crate base64;
-// #[cfg(target_os = "macos")]
+#[cfg(feature = "iterm2")]
 extern crate mime;
 
 // Used by Terminology support
-// #[cfg(all(unix, not(target_os = "macos")))]
+#[cfg(feature = "terminology")]
 extern crate immeta;
 
 extern crate atty;
@@ -50,11 +50,11 @@ use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
 // These modules support iterm2; we do not need them if iterm2 is off.
-// #[cfg(target_os = "macos")]
+#[cfg(feature = "iterm2")]
 mod magic;
-// #[cfg(target_os = "macos")]
+#[cfg(feature = "iterm2")]
 mod process;
-// #[cfg(target_os = "macos")]
+#[cfg(feature = "iterm2")]
 mod svg;
 
 mod resources;

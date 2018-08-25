@@ -23,14 +23,18 @@ mod write;
 // Terminal implementations;
 mod ansi;
 mod dumb;
+#[cfg(feature = "iterm2")]
 mod iterm2;
+#[cfg(feature = "terminology")]
 mod terminology;
 mod vte50;
 
 use atty;
 use std::io;
 
+#[cfg(feature = "iterm2")]
 use self::iterm2::*;
+#[cfg(feature = "terminology")]
 use self::terminology::*;
 use self::vte50::*;
 
@@ -53,15 +57,21 @@ pub use self::write::Terminal;
 pub fn detect_terminal() -> Box<Terminal<TerminalWrite = io::Stdout>> {
     if atty::is(atty::Stream::Stdout) {
         let ansi = AnsiTerminal::new(io::stdout());
-        if iterm2::is_iterm2() {
-            Box::new(ITerm2::new(ansi))
-        } else if terminology::is_terminology() {
-            Box::new(Terminology::new(ansi))
-        } else {
-            match vte50::get_vte_version() {
+        match true {
+            #[cfg(feature = "iterm2")]
+            _ if iterm2::is_iterm2() =>
+            {
+                Box::new(ITerm2::new(ansi))
+            }
+            #[cfg(feature = "terminology")]
+            _ if terminology::is_terminology() =>
+            {
+                Box::new(Terminology::new(ansi))
+            }
+            _ => match vte50::get_vte_version() {
                 Some(version) if version >= (50, 0) => Box::new(VTE50Terminal::new(ansi)),
                 _ => Box::new(ansi),
-            }
+            },
         }
     } else {
         Box::new(DumbTerminal::new(io::stdout()))
