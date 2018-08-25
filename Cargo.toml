@@ -10,13 +10,14 @@ version = "0.8.1-pre"
 categories = ["command-line-utilities", "text-processing"]
 license = "Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
+build = "build.rs"
 
 [badges]
 travis-ci = { repository = "lunaryorn/mdcat" }
 maintenance = { status = "actively-developed" }
 
 [features]
-default = ["iterm2", "terminology"]
+default = []
 
 iterm2 = ["mime", "base64"]
 terminology = ["immeta"]
