@@ -58,6 +58,10 @@ impl<W: Write> VTE50Terminal<W> {
 impl<W: Write> Terminal for VTE50Terminal<W> {
     type TerminalWrite = W;
 
+    fn name(&self) -> &'static str {
+        "VTE 50"
+    }
+
     fn write(&mut self) -> &mut W {
         self.ansi.write()
     }

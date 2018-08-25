@@ -82,6 +82,10 @@ impl<W: Write> AnsiTerminal<W> {
 impl<W: Write> Terminal for AnsiTerminal<W> {
     type TerminalWrite = W;
 
+    fn name(&self) -> &'static str {
+        "ANSI"
+    }
+
     fn write(&mut self) -> &mut W {
         &mut self.writer
     }

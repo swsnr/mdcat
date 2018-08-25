@@ -97,6 +97,10 @@ impl<W: Write> ITerm2<W> {
 impl<W: Write> Terminal for ITerm2<W> {
     type TerminalWrite = W;
 
+    fn name(&self) -> &'static str {
+        "iTerm2"
+    }
+
     fn write(&mut self) -> &mut W {
         self.ansi.write()
     }

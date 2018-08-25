@@ -24,6 +24,9 @@ pub trait Terminal {
     /// The associated writer of this terminal.
     type TerminalWrite: Write;
 
+    /// Get a descriptive name for this terminal.
+    fn name(&self) -> &str;
+
     /// Get a writer for this terminal.
     fn write(&mut self) -> &mut Self::TerminalWrite;
 

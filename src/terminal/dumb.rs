@@ -41,6 +41,10 @@ impl<W: Write> DumbTerminal<W> {
 impl<W: Write> Terminal for DumbTerminal<W> {
     type TerminalWrite = W;
 
+    fn name(&self) -> &'static str {
+        "dumb"
+    }
+
     fn write(&mut self) -> &mut W {
         &mut self.writer
     }

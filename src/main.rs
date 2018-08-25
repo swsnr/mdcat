@@ -88,26 +88,31 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
 }
 
 fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Error>> {
-    let (base_dir, input) = read_input(args.filename)?;
-    let parser = Parser::new(&input);
-
-    if args.dump_events {
-        mdcat::dump_events(&mut std::io::stdout(), parser)?;
+    if args.detect_only {
+        println!("Terminal: {}", args.terminal.name());
         Ok(())
     } else {
-        let syntax_set = SyntaxSet::load_defaults_newlines();
-        mdcat::push_tty(
-            args.terminal,
-            TerminalSize {
-                width: args.columns,
-                ..size
-            },
-            parser,
-            &base_dir,
-            args.resource_access,
-            syntax_set,
-        )?;
-        Ok(())
+        let (base_dir, input) = read_input(args.filename)?;
+        let parser = Parser::new(&input);
+
+        if args.dump_events {
+            mdcat::dump_events(&mut std::io::stdout(), parser)?;
+            Ok(())
+        } else {
+            let syntax_set = SyntaxSet::load_defaults_newlines();
+            mdcat::push_tty(
+                args.terminal,
+                TerminalSize {
+                    width: args.columns,
+                    ..size
+                },
+                parser,
+                &base_dir,
+                args.resource_access,
+                syntax_set,
+            )?;
+            Ok(())
+        }
     }
 }
 
@@ -118,6 +123,7 @@ struct Arguments {
     resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,
+    detect_only: bool,
 }
 
 impl Arguments {
@@ -136,6 +142,7 @@ impl Arguments {
         };
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
+        let detect_only = matches.is_present("detect_only");
         let columns = value_t!(matches, "columns", usize)?;
         let resource_access = if matches.is_present("local_only") {
             ResourceAccess::LocalOnly
@@ -148,6 +155,7 @@ impl Arguments {
             columns,
             resource_access,
             dump_events,
+            detect_only,
             terminal,
         })
     }
@@ -208,6 +216,12 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
                 .long("dump-events")
                 .help("Dump Markdown parser events and exit")
                 .hidden(true)
+        )
+        .arg(
+            Arg::with_name("detect_only")
+            .long("detect-only")
+            .help("Only detect the terminal type and exit")
+            .hidden(true)
         );
 
     let matches = app.get_matches();

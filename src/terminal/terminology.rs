@@ -52,6 +52,10 @@ impl<W: Write> Terminology<W> {
 impl<W: Write> Terminal for Terminology<W> {
     type TerminalWrite = W;
 
+    fn name(&self) -> &'static str {
+        "Terminology"
+    }
+
     fn write(&mut self) -> &mut W {
         self.ansi.write()
     }
