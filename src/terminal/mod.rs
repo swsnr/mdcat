@@ -57,7 +57,11 @@ pub use self::write::Terminal;
 pub fn detect_terminal() -> Box<Terminal<TerminalWrite = io::Stdout>> {
     if atty::is(atty::Stream::Stdout) {
         let ansi = AnsiTerminal::new(io::stdout());
-        match true {
+        // Pattern matching lets use feature-switch branches, depending on
+        // enabled terminal support.  In an if chain we can't do this, so that's
+        // why we have this weird match here.  Note: Don't use true here because
+        // that makes clippy complain.
+        match 1 {
             #[cfg(feature = "iterm2")]
             _ if iterm2::is_iterm2() =>
             {
