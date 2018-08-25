@@ -14,6 +14,8 @@
 
 #![deny(warnings)]
 #![deny(missing_docs)]
+// Warn about deprecated trait object syntax
+#![deny(bare_trait_objects)]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy))]
 
 //! Write markdown to TTYs.
@@ -88,7 +90,7 @@ where
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, W, I>(
-    terminal: Box<Terminal<TerminalWrite = W>>,
+    terminal: Box<dyn Terminal<TerminalWrite = W>>,
     size: TerminalSize,
     events: I,
     base_dir: &'a Path,
@@ -158,7 +160,7 @@ struct OutputContext<W: Write> {
     /// The terminal dimensions to limit output to.
     size: Size,
     /// The target terminal.
-    terminal: Box<Terminal<TerminalWrite = W>>,
+    terminal: Box<dyn Terminal<TerminalWrite = W>>,
 }
 
 #[derive(Debug)]
@@ -245,7 +247,7 @@ struct Context<'a, W: Write + 'a> {
 
 impl<'a, W: Write> Context<'a, W> {
     fn new(
-        terminal: Box<Terminal<TerminalWrite = W>>,
+        terminal: Box<dyn Terminal<TerminalWrite = W>>,
         size: Size,
         base_dir: &'a Path,
         resource_access: ResourceAccess,

@@ -36,7 +36,7 @@ use syntect::highlighting::{FontStyle, Style};
 /// Furthermore we completely ignore any background colour settings, to avoid
 /// conflicts with the terminal colour themes.
 pub fn write_as_ansi<W: Write>(
-    terminal: &mut Terminal<TerminalWrite = W>,
+    terminal: &mut dyn Terminal<TerminalWrite = W>,
     regions: &[(Style, &str)],
 ) -> Result<(), Error> {
     for &(style, text) in regions {

@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #![deny(warnings)]
+// Warn about deprecated trait object syntax
+#![deny(bare_trait_objects)]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy))]
 
 //! Show CommonMark documents on TTYs.
@@ -87,7 +89,7 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     }
 }
 
-fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Error>> {
+fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn Error>> {
     if args.detect_only {
         println!("Terminal: {}", args.terminal.name());
         Ok(())
@@ -119,7 +121,7 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Erro
 /// Represent command line arguments.
 struct Arguments {
     filename: String,
-    terminal: Box<Terminal<TerminalWrite = Stdout>>,
+    terminal: Box<dyn Terminal<TerminalWrite = Stdout>>,
     resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,

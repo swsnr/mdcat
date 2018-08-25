@@ -54,7 +54,7 @@ pub use self::write::Terminal;
 ///
 /// If stdout does not link to a TTY assume a `Dumb` terminal which cannot
 /// format anything.
-pub fn detect_terminal() -> Box<Terminal<TerminalWrite = io::Stdout>> {
+pub fn detect_terminal() -> Box<dyn Terminal<TerminalWrite = io::Stdout>> {
     if atty::is(atty::Stream::Stdout) {
         let ansi = AnsiTerminal::new(io::stdout());
         // Pattern matching lets use feature-switch branches, depending on
