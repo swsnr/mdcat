@@ -5,8 +5,6 @@ environment:
   target: x86_64-pc-windows-msvc
   matrix:
     - channel: stable
-    - channel: beta
-    - channel: nightly
 # Install Rust with rustup
 install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
