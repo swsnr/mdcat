@@ -19,13 +19,13 @@
 //! Write markdown to TTYs.
 
 // Used by iTerm support on macos
-#[cfg(target_os = "macos")]
+// #[cfg(target_os = "macos")]
 extern crate base64;
-#[cfg(target_os = "macos")]
+// #[cfg(target_os = "macos")]
 extern crate mime;
 
 // Used by Terminology support
-#[cfg(all(unix, not(target_os = "macos")))]
+// #[cfg(all(unix, not(target_os = "macos")))]
 extern crate immeta;
 
 extern crate atty;
@@ -50,25 +50,23 @@ use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
 // These modules support iterm2; we do not need them if iterm2 is off.
-#[cfg(target_os = "macos")]
+// #[cfg(target_os = "macos")]
 mod magic;
-#[cfg(target_os = "macos")]
+// #[cfg(target_os = "macos")]
 mod process;
-#[cfg(target_os = "macos")]
+// #[cfg(target_os = "macos")]
 mod svg;
 
-mod highlighting;
 mod resources;
 mod terminal;
 
-use highlighting::write_as_ansi;
 use resources::Resource;
 use terminal::*;
 
 // Expose some select things for use in main
 pub use resources::ResourceAccess;
 pub use terminal::Size as TerminalSize;
-pub use terminal::{LegacyTerminal, TerminalWrite};
+pub use terminal::{detect_terminal, AnsiTerminal, DumbTerminal, Terminal};
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>
@@ -90,8 +88,7 @@ where
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, W, I>(
-    writer: &mut W,
-    terminal: LegacyTerminal,
+    terminal: Box<Terminal<TerminalWrite = W>>,
     size: TerminalSize,
     events: I,
     base_dir: &'a Path,
@@ -100,18 +97,10 @@ pub fn push_tty<'a, W, I>(
 ) -> Result<(), Error>
 where
     I: Iterator<Item = Event<'a>>,
-    W: Write + TerminalWrite,
+    W: Write,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
-    let mut context = Context::new(
-        writer,
-        terminal,
-        size,
-        base_dir,
-        resource_access,
-        syntax_set,
-        theme,
-    );
+    let mut context = Context::new(terminal, size, base_dir, resource_access, syntax_set, theme);
     for event in events {
         write_event(&mut context, event)?;
     }
@@ -165,13 +154,11 @@ impl<'a> InputContext<'a> {
 }
 
 /// Context for TTY output.
-struct OutputContext<'a, W: Write + 'a> {
-    /// The writer to write to.
-    writer: &'a mut W,
+struct OutputContext<W: Write> {
     /// The terminal dimensions to limit output to.
     size: Size,
     /// The target terminal.
-    terminal: LegacyTerminal,
+    terminal: Box<Terminal<TerminalWrite = W>>,
 }
 
 #[derive(Debug)]
@@ -239,7 +226,7 @@ struct Context<'a, W: Write + 'a> {
     /// Context for input.
     input: InputContext<'a>,
     /// Context for output.
-    output: OutputContext<'a, W>,
+    output: OutputContext<W>,
     /// Context for styling
     style: StyleContext,
     /// Context for the current block.
@@ -256,10 +243,9 @@ struct Context<'a, W: Write + 'a> {
     list_item_kind: Vec<ListItemKind>,
 }
 
-impl<'a, W: Write + 'a> Context<'a, W> {
+impl<'a, W: Write> Context<'a, W> {
     fn new(
-        writer: &'a mut W,
-        terminal: LegacyTerminal,
+        terminal: Box<Terminal<TerminalWrite = W>>,
         size: Size,
         base_dir: &'a Path,
         resource_access: ResourceAccess,
@@ -271,11 +257,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
                 base_dir,
                 resource_access,
             },
-            output: OutputContext {
-                writer,
-                size,
-                terminal,
-            },
+            output: OutputContext { size, terminal },
             style: StyleContext {
                 active_styles: Vec::new(),
                 emphasis_level: 0,
@@ -334,7 +316,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         for style in &self.style.active_styles {
             self.output
                 .terminal
-                .set_style(self.output.writer, *style)
+                .set_style(*style)
                 .ignore_not_supported()?;
         }
         Ok(())
@@ -346,9 +328,9 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     fn newline(&mut self) -> Result<(), Error> {
         self.output
             .terminal
-            .set_style(self.output.writer, AnsiStyle::Reset)
+            .set_style(AnsiStyle::Reset)
             .ignore_not_supported()?;
-        writeln!(self.output.writer)?;
+        writeln!(self.output.terminal.write())?;
         self.flush_styles()
     }
 
@@ -364,7 +346,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// Indent according to the current indentation level.
     fn indent(&mut self) -> Result<(), Error> {
         write!(
-            self.output.writer,
+            self.output.terminal.write(),
             "{}",
             " ".repeat(self.block.indent_level)
         ).map_err(Into::into)
@@ -378,10 +360,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     /// or `newline()`.
     fn enable_style(&mut self, style: AnsiStyle) -> Result<(), Error> {
         self.style.active_styles.push(style);
-        self.output
-            .terminal
-            .set_style(self.output.writer, style)
-            .ignore_not_supported()
+        self.output.terminal.set_style(style).ignore_not_supported()
     }
 
     /// Remove the last style and flush styles on the TTY.
@@ -389,7 +368,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         self.style.active_styles.pop();
         self.output
             .terminal
-            .set_style(self.output.writer, AnsiStyle::Reset)
+            .set_style(AnsiStyle::Reset)
             .ignore_not_supported()?;
         self.flush_styles()
     }
@@ -429,9 +408,11 @@ impl<'a, W: Write + 'a> Context<'a, W> {
             self.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
             while let Some(link) = self.links.pending_links.pop_front() {
                 write!(
-                    self.output.writer,
+                    self.output.terminal.write(),
                     "[{}]: {} {}",
-                    link.index, link.destination, link.title
+                    link.index,
+                    link.destination,
+                    link.title
                 )?;
                 self.newline()?;
             }
@@ -444,7 +425,7 @@ impl<'a, W: Write + 'a> Context<'a, W> {
     fn write_border(&mut self) -> Result<(), Error> {
         self.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
         writeln!(
-            self.output.writer,
+            self.output.terminal.write(),
             "{}",
             "\u{2500}".repeat(self.output.size.width.min(20))
         )?;
@@ -459,10 +440,10 @@ impl<'a, W: Write + 'a> Context<'a, W> {
         match self.code.current_highlighter {
             Some(ref mut highlighter) => {
                 let regions = highlighter.highlight(&text);
-                write_as_ansi(self.output.writer, &regions)?;
+                write_as_ansi(&mut *self.output.terminal, &regions)?;
             }
             None => {
-                write!(self.output.writer, "{}", text)?;
+                write!(self.output.terminal.write(), "{}", text)?;
                 self.links.last_text = Some(text);
             }
         }
@@ -488,14 +469,14 @@ fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Resu
             ctx.newline()?;
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
             for line in content.lines() {
-                write!(ctx.output.writer, "{}", line)?;
+                write!(ctx.output.terminal.write(), "{}", line)?;
                 ctx.newline()?;
             }
             ctx.reset_last_style()?;
         }
         InlineHtml(tag) => {
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
-            write!(ctx.output.writer, "{}", tag)?;
+            write!(ctx.output.terminal.write(), "{}", tag)?;
             ctx.reset_last_style()?;
         }
         FootnoteReference(_) => panic!("mdcat does not support footnotes"),
@@ -511,7 +492,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             ctx.start_inline_text()?;
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
             write!(
-                ctx.output.writer,
+                ctx.output.terminal.write(),
                 "{}",
                 "\u{2550}".repeat(ctx.output.size.width as usize)
             )?
@@ -521,14 +502,11 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             // them close to the text where they appeared in
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
-            ctx.output
-                .terminal
-                .set_mark(ctx.output.writer)
-                .ignore_not_supported()?;
+            ctx.output.terminal.set_mark().ignore_not_supported()?;
             let level_indicator = "\u{2504}".repeat(level as usize);
             ctx.enable_style(AnsiStyle::Bold)?;
             ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
-            write!(ctx.output.writer, "{}", level_indicator)?
+            write!(ctx.output.terminal.write(), "{}", level_indicator)?
         }
         BlockQuote => {
             ctx.block.indent_level += 4;
@@ -539,7 +517,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
         CodeBlock(name) => {
             ctx.start_inline_text()?;
             ctx.write_border()?;
-            if ctx.output.terminal.supports_colours() {
+            if ctx.output.terminal.supports_styles() {
                 if name.is_empty() {
                     ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Yellow))?
                 } else {
@@ -548,9 +526,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
                             Some(HighlightLines::new(syntax, ctx.code.theme));
                         // Give the highlighter a clear terminal with no prior
                         // styles.
-                        ctx.output
-                            .terminal
-                            .set_style(ctx.output.writer, AnsiStyle::Reset)?;
+                        ctx.output.terminal.set_style(AnsiStyle::Reset)?;
                     }
                     if ctx.code.current_highlighter.is_none() {
                         // If we have no highlighter for the current block, fall
@@ -572,12 +548,12 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             ctx.block.level = BlockLevel::Inline;
             match ctx.list_item_kind.pop() {
                 Some(ListItemKind::Unordered) => {
-                    write!(ctx.output.writer, "\u{2022} ")?;
+                    write!(ctx.output.terminal.write(), "\u{2022} ")?;
                     ctx.block.indent_level += 2;
                     ctx.list_item_kind.push(ListItemKind::Unordered);
                 }
                 Some(ListItemKind::Ordered(number)) => {
-                    write!(ctx.output.writer, "{:>2}. ", number)?;
+                    write!(ctx.output.terminal.write(), "{:>2}. ", number)?;
                     ctx.block.indent_level += 4;
                     ctx.list_item_kind.push(ListItemKind::Ordered(number + 1));
                 }
@@ -595,12 +571,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             // or if the format doesn't support inline links, don't do anything
             // here; we will write a reference link when closing the link tag.
             let url = ctx.input.resolve_reference(&destination).into_url();
-            if ctx
-                .output
-                .terminal
-                .set_link(ctx.output.writer, url.as_str())
-                .is_ok()
-            {
+            if ctx.output.terminal.set_link(url.as_str()).is_ok() {
                 ctx.links.inside_inline_link = true;
             }
         }
@@ -609,12 +580,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             if ctx
                 .output
                 .terminal
-                .write_inline_image(
-                    ctx.output.writer,
-                    ctx.output.size,
-                    &resource,
-                    ctx.input.resource_access,
-                )
+                .write_inline_image(ctx.output.size, &resource, ctx.input.resource_access)
                 .is_ok()
             {
                 // If we could write an inline image, disable text output to
@@ -652,9 +618,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
                 Some(_) => {
                     // Reset anything left over from the highlighter and
                     // re-enable all current styles.
-                    ctx.output
-                        .terminal
-                        .set_style(ctx.output.writer, AnsiStyle::Reset)?;
+                    ctx.output.terminal.set_style(AnsiStyle::Reset)?;
                     ctx.flush_styles()?;
                     ctx.code.current_highlighter = None;
                 }
@@ -687,7 +651,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
         }
         Strong | Code => ctx.reset_last_style()?,
         Link(destination, title) => if ctx.links.inside_inline_link {
-            ctx.output.terminal.set_link(ctx.output.writer, "")?;
+            ctx.output.terminal.set_link("")?;
             ctx.links.inside_inline_link = false;
         } else {
             // When we did not write an inline link, create a normal reference
@@ -704,7 +668,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
                     let index = ctx.add_link(destination, title);
                     // Reference link
                     ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
-                    write!(ctx.output.writer, "[{}]", index)?;
+                    write!(ctx.output.terminal.write(), "[{}]", index)?;
                     ctx.reset_last_style()?;
                 }
             }
@@ -714,7 +678,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
                 // If we could not write an inline image, write the image link
                 // after the image title.
                 ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
-                write!(ctx.output.writer, " ({})", link)?;
+                write!(ctx.output.terminal.write(), " ({})", link)?;
                 ctx.reset_last_style()?;
             }
             ctx.image.inline_image = false;

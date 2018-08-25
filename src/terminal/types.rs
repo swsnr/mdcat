@@ -42,7 +42,7 @@ impl Size {
     }
 
     /// Get terminal size from `$COLUMNS` and `$LINES`.
-    fn from_env() -> Option<Size> {
+    pub fn from_env() -> Option<Size> {
         let columns = std::env::var("COLUMNS")
             .ok()
             .and_then(|value| value.parse::<usize>().ok());

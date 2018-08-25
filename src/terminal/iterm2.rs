@@ -14,57 +14,121 @@
 
 //! Iterm2 specific functions
 
-use super::super::magic;
-use super::super::svg;
-use super::error::NotSupportedError;
-use super::TerminalWrite;
 use base64;
 use failure::Error;
 use mime;
+use std;
 use std::ffi::OsStr;
 use std::io;
 use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
 
-/// Write an iterm2 mark;
-pub fn write_mark<W: Write + TerminalWrite>(writer: &mut W) -> io::Result<()> {
-    writer.write_osc("1337;SetMark")
-}
+use super::super::magic;
+use super::super::resources::{Resource, ResourceAccess};
+use super::super::svg;
+use super::ansi::AnsiTerminal;
+use super::error::NotSupportedError;
+use super::types::{AnsiStyle, Size};
+use super::write::Terminal;
 
-fn write_image_contents<W: Write + TerminalWrite, S: AsRef<OsStr>>(
-    writer: &mut W,
-    name: S,
-    contents: &[u8],
-) -> io::Result<()> {
-    writer.write_osc(&format!(
-        "1337;File=name={};inline=1:{}",
-        base64::encode(name.as_ref().as_bytes()),
-        base64::encode(contents)
-    ))
-}
-
-/// Write an iterm2 inline image.
+/// The iTerm2 terminal.
 ///
-/// `name` is the file name of the image, and `contents` holds the image contents.
-pub fn write_inline_image<W: Write + TerminalWrite, S: AsRef<OsStr>>(
-    writer: &mut W,
-    name: S,
-    contents: &[u8],
-) -> Result<(), Error> {
-    let mime = magic::detect_mime_type(contents)?;
-    match (mime.type_(), mime.subtype()) {
-        (mime::IMAGE, mime::PNG)
-        | (mime::IMAGE, mime::GIF)
-        | (mime::IMAGE, mime::JPEG)
-        | (mime::IMAGE, mime::BMP) => {
-            write_image_contents(writer, name, contents).map_err(Into::into)
+/// iTerm2 is a powerful macOS terminal emulator with many formatting
+/// features, including images and inline links.
+///
+/// See <https://www.iterm2.com> for more information.
+pub struct ITerm2<W: Write> {
+    ansi: AnsiTerminal<W>,
+}
+
+/// Whether we run inside iTerm2 or not.
+pub fn is_iterm2() -> bool {
+    std::env::var("TERM_PROGRAM")
+        .map(|value| value.contains("iTerm.app"))
+        .unwrap_or(false)
+}
+
+impl<W: Write> ITerm2<W> {
+    /// Create an iTerm2 terminal over an underlying ANSI terminal.
+    pub fn new(ansi: AnsiTerminal<W>) -> ITerm2<W> {
+        ITerm2 { ansi }
+    }
+
+    fn write_image_contents<S: AsRef<OsStr>>(
+        &mut self,
+        name: S,
+        contents: &[u8],
+    ) -> io::Result<()> {
+        self.ansi.write_osc(&format!(
+            "1337;File=name={};inline=1:{}",
+            base64::encode(name.as_ref().as_bytes()),
+            base64::encode(contents)
+        ))
+    }
+
+    /// Write an iterm2 inline image.
+    ///
+    /// `name` is the file name of the image, and `contents` holds the image
+    /// contents.
+    pub fn write_inline_image<S: AsRef<OsStr>>(
+        &mut self,
+        name: S,
+        contents: &[u8],
+    ) -> Result<(), Error> {
+        let mime = magic::detect_mime_type(contents)?;
+        match (mime.type_(), mime.subtype()) {
+            (mime::IMAGE, mime::PNG)
+            | (mime::IMAGE, mime::GIF)
+            | (mime::IMAGE, mime::JPEG)
+            | (mime::IMAGE, mime::BMP) => self
+                .write_image_contents(name, contents)
+                .map_err(Into::into),
+            (mime::IMAGE, subtype) if subtype.as_str() == "svg" => {
+                let png = svg::render_svg(contents)?;
+                self.write_image_contents(name, &png).map_err(Into::into)
+            }
+            _ => Err(NotSupportedError {
+                what: "inline image with mimetype",
+            }.into()),
         }
-        (mime::IMAGE, subtype) if subtype.as_str() == "svg" => {
-            let png = svg::render_svg(contents)?;
-            write_image_contents(writer, name, &png).map_err(Into::into)
-        }
-        _ => Err(NotSupportedError {
-            what: "inline image with mimetype",
-        }.into()),
+    }
+}
+
+impl<W: Write> Terminal for ITerm2<W> {
+    type TerminalWrite = W;
+
+    fn write(&mut self) -> &mut W {
+        self.ansi.write()
+    }
+
+    fn supports_styles(&self) -> bool {
+        self.ansi.supports_styles()
+    }
+
+    fn set_style(&mut self, style: AnsiStyle) -> Result<(), Error> {
+        self.ansi.set_style(style)
+    }
+
+    fn set_link(&mut self, destination: &str) -> Result<(), Error> {
+        self.ansi.write_osc(&format!("8;;{}", destination))?;
+        Ok(())
+    }
+
+    fn set_mark(&mut self) -> Result<(), Error> {
+        self.ansi.write_osc("1337;SetMark")?;
+        Ok(())
+    }
+
+    fn write_inline_image(
+        &mut self,
+        _max_size: Size,
+        resource: &Resource,
+        access: ResourceAccess,
+    ) -> Result<(), Error> {
+        resource.read(access).and_then(|contents| {
+            self.write_inline_image(resource.as_str().as_ref(), &contents)
+                .map_err(Into::into)
+        })?;
+        Ok(())
     }
 }

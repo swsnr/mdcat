@@ -27,15 +27,15 @@ use pulldown_cmark::Parser;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::stdin;
+use std::io::{stdin, stdout, Stdout};
 use std::path::PathBuf;
 use std::str::FromStr;
 use syntect::parsing::SyntaxSet;
 
-use mdcat::{LegacyTerminal, ResourceAccess, TerminalSize};
+use mdcat::{detect_terminal, AnsiTerminal, DumbTerminal, ResourceAccess, Terminal, TerminalSize};
 
 /// Colour options, for the --colour option.
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 enum Colour {
     Yes,
     No,
@@ -97,7 +97,6 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Erro
     } else {
         let syntax_set = SyntaxSet::load_defaults_newlines();
         mdcat::push_tty(
-            &mut std::io::stdout(),
             args.terminal,
             TerminalSize {
                 width: args.columns,
@@ -113,10 +112,9 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<Erro
 }
 
 /// Represent command line arguments.
-#[derive(Debug)]
 struct Arguments {
     filename: String,
-    terminal: LegacyTerminal,
+    terminal: Box<Terminal<TerminalWrite = Stdout>>,
     resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,
@@ -125,13 +123,16 @@ struct Arguments {
 impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
-        let terminal = match value_t!(matches, "colour", Colour)? {
-            Colour::No => LegacyTerminal::Dumb,
-            Colour::Yes => match LegacyTerminal::detect() {
-                LegacyTerminal::Dumb => LegacyTerminal::BasicAnsi,
-                other => other,
-            },
-            Colour::Auto => LegacyTerminal::detect(),
+        let colour = value_t!(matches, "colour", Colour)?;
+        let terminal = if colour == Colour::No {
+            Box::new(DumbTerminal::new(stdout()))
+        } else {
+            let auto = detect_terminal();
+            if !auto.supports_styles() && colour == Colour::Yes {
+                Box::new(AnsiTerminal::new(stdout()))
+            } else {
+                auto
+            }
         };
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
