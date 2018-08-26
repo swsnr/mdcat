@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.9.2] – 2018-08-26
 ### Fixed
 - Do not falsely ignore deployments from Travis CI for Linux and macOS.
 
