@@ -61,6 +61,9 @@ Not supported:
 Install [Rust][rustup] and run `cargo install mdcat`.  To keep mdcat up to date
 install [cargo-update][] and run `cargo install-update mdcat`.
 
+**Note:** On Windows you likely need `--no-default-features` to make `mdcat`
+build.
+
 ### SVG support
 
 `mdcat` needs `rsvg-convert` to show SVG images in [iTerm2][]; otherwise `mdcat`

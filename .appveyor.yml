@@ -16,14 +16,14 @@ install:
   # syntect)
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 build_script:
-  - cargo build --release --verbose
+  - cargo build --no-default-features --release --verbose
 after_build:
   # The leading '.\' is important to avoid a command error with -windows being
   # interpreted as flag if APPVEYOR_REPO_TAG_NAME is empty.
   - 7z a .\%APPVEYOR_REPO_TAG_NAME%-windows.zip %APPVEYOR_BUILD_FOLDER%\target\release\mdcat.exe %APPVEYOR_BUILD_FOLDER%\README.md %APPVEYOR_BUILD_FOLDER%\CHANGELOG.md %APPVEYOR_BUILD_FOLDER%\LICENSE
 test_script:
-  - cargo test --verbose
-  - cargo run -- sample/common-mark.md
+  - cargo test --no-default-features --verbose
+  - cargo run --no-default-features -- sample/common-mark.md
 artifacts:
   - path: '*.zip'
 # Deploy tags to GitHub releases
