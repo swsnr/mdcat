@@ -66,7 +66,7 @@ jobs:
       # make an explicit release build in the "script" phase
       install: ""
       # Exclude iterm2 from release artifacts on Linux
-      script: cargo build --no-default-features --feature terminology --release --verbose
+      script: cargo build --no-default-features --features terminology --release --verbose
       before_deploy:
         - echo "Building ${ARCHIVE_NAME}"
         - mkdir "/tmp/${ARCHIVE_NAME}"
@@ -84,4 +84,4 @@ jobs:
     - <<: *deploy-settings
       os: osx
       # Only include iterm2 when building for macos
-      script: cargo build --no-default-features --feature iterm2 --release --verbose
+      script: cargo build --no-default-features --features iterm2 --release --verbose
