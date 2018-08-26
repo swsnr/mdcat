@@ -26,6 +26,16 @@ test_script:
   - cargo run -- sample/common-mark.md
 artifacts:
   - path: '*.zip'
+# Deploy tags to GitHub releases
+deploy:
+  description: 'Automatically deployed release'
+  artifact: /mdcat-.*\.zip/
+  auth_token:
+    secure: V6yAHPZRyD5C2LZaynvK1UhtoZeI3EvPSNbDGbN7TRjdFAY3pv4JdWYwf595jtwa
+  provider: GitHub
+  on:
+    channel: stable
+    appveyor_repo_tag: true
 cache:
   - '%USERPROFILE%\.cargo'
   - '%APPVEYOR_BUILD_FOLDER%\target -> Cargo.lock'
