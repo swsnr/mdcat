@@ -12,7 +12,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Refactor internal terminal representation, replacing the terminal enum with a
   new `Terminal` trait and dynamic dispatch (see [GH-35][]).
 - Only include terminal backends supported on the platform (see [GH-35][]).
-- Update minimum Rust version to 1.27
+- Update minimum Rust version to 1.27.
 
 [GH-33]: https://github.com/lunaryorn/mdcat/pull/33
 [GH-34]: https://github.com/lunaryorn/mdcat/pull/34
