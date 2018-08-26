@@ -85,6 +85,3 @@ jobs:
       os: osx
       # Only include iterm2 when building for macos
       script: cargo build --no-default-features --feature iterm2 --release --verbose
-
-notifications:
-  email: false
