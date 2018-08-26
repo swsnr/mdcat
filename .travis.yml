@@ -65,8 +65,8 @@ jobs:
       # Inhibit Travis’ default "cargo build --verbose" install step because we
       # make an explicit release build in the "script" phase
       install: ""
-      script:
-        - cargo build --release --verbose
+      # Exclude iterm2 from release artifacts on Linux
+      script: cargo build --no-default-features --feature terminology --release --verbose
       before_deploy:
         - echo "Building ${ARCHIVE_NAME}"
         - mkdir "/tmp/${ARCHIVE_NAME}"
@@ -83,6 +83,8 @@ jobs:
         file: /tmp/${ARCHIVE_NAME}.tar.gz
     - <<: *deploy-settings
       os: osx
+      # Only include iterm2 when building for macos
+      script: cargo build --no-default-features --feature iterm2 --release --verbose
 
 notifications:
   email: false
