@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Publish binaries for Linux, macOS and Windows (see [GH-28][]).
+
+### Fixed
+- Correctly build macOS and Linux binaries on Travis CI.
+
+[GH-28]: https://github.com/lunaryorn/mdcat/issues/28
 
 ## [0.9.0] – 2018-08-26
 ### Added
