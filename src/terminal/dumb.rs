@@ -19,7 +19,7 @@ use std::io::Write;
 
 use super::super::resources::{Resource, ResourceAccess};
 use super::error::NotSupportedError;
-use super::types::{AnsiStyle, Size};
+use super::size::Size;
 use super::write::Terminal;
 
 /// A dumb terminal with no style support.
@@ -51,12 +51,6 @@ impl<W: Write> Terminal for DumbTerminal<W> {
 
     fn supports_styles(&self) -> bool {
         false
-    }
-
-    fn set_style(&mut self, _style: AnsiStyle) -> Result<(), Error> {
-        Err(NotSupportedError {
-            what: "ANSI styles",
-        })?
     }
 
     fn set_link(&mut self, _destination: &str) -> Result<(), Error> {

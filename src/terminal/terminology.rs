@@ -64,10 +64,6 @@ impl<W: Write> Terminal for Terminology<W> {
         self.ansi.supports_styles()
     }
 
-    fn set_style(&mut self, style: AnsiStyle) -> Result<(), Error> {
-        self.ansi.set_style(style)
-    }
-
     fn set_link(&mut self, destination: &str) -> Result<(), Error> {
         self.ansi.write_osc(&format!("8;;{}", destination))?;
         Ok(())

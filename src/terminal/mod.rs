@@ -17,7 +17,7 @@
 // Support modules for terminal writing.
 mod error;
 mod highlighting;
-mod types;
+mod size;
 mod write;
 
 // Terminal implementations;
@@ -43,8 +43,8 @@ pub use self::ansi::AnsiTerminal;
 pub use self::dumb::DumbTerminal;
 pub use self::error::IgnoreNotSupported;
 pub use self::highlighting::write_as_ansi;
-pub use self::types::{AnsiColour, AnsiStyle, Size};
-pub use self::write::Terminal;
+pub use self::size::Size;
+pub use self::write::{write_styled, Terminal};
 
 /// Detect the terminal on stdout.
 ///

@@ -20,7 +20,7 @@ use std::io::Write;
 
 use super::super::resources::{Resource, ResourceAccess};
 use super::ansi::AnsiTerminal;
-use super::types::{AnsiStyle, Size};
+use super::size::Size;
 use super::write::Terminal;
 
 /// Get the version of VTE underlying this terminal.
@@ -68,10 +68,6 @@ impl<W: Write> Terminal for VTE50Terminal<W> {
 
     fn supports_styles(&self) -> bool {
         self.ansi.supports_styles()
-    }
-
-    fn set_style(&mut self, style: AnsiStyle) -> Result<(), Error> {
-        self.ansi.set_style(style)
     }
 
     fn set_link(&mut self, destination: &str) -> Result<(), Error> {

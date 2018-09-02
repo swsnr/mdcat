@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Basic terminal types
+//! Terminal size.
 
 use std;
 use term_size;
@@ -65,35 +65,4 @@ impl Size {
             .map(|(w, h)| Size::new(w, h))
             .or_else(Size::from_env)
     }
-}
-
-/// An ANSI colour.
-#[derive(Debug, Copy, Clone)]
-#[allow(dead_code)]
-pub enum AnsiColour {
-    Red,
-    Green,
-    Yellow,
-    Blue,
-    Magenta,
-    Cyan,
-    LightRed,
-    LightGreen,
-    LightYellow,
-    LightBlue,
-    LightMagenta,
-    LightCyan,
-}
-
-/// An ANSI style to enable on a terminal.
-#[derive(Debug, Copy, Clone)]
-#[allow(dead_code)]
-pub enum AnsiStyle {
-    Reset,
-    Bold,
-    Italic,
-    NoItalic,
-    Underline,
-    Foreground(AnsiColour),
-    DefaultForeground,
 }
