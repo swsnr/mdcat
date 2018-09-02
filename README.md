@@ -45,9 +45,12 @@ good terminal font which includes italic characters.  It supports
 | Terminal                |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
 | :---------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
 | Basic ANSI              | ✓             | ✓                   |       |        |            |
+| Windows 10 console¹     | ✓             | ✓                   |       |        |            |
 | VTE 0.50 or newer based | ✓             | ✓                   | ✓     |        |            |
 | [Terminology][]         | ✓             | ✓                   | ✓     | ✓      |            |
 | [iTerm2][]              | ✓             | ✓                   | ✓     | ✓      | ✓          |
+
+1: On Windows you need to install with `--no-default-features`.
 
 Not supported:
 
