@@ -147,9 +147,7 @@ impl Arguments {
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
         {
-            if let Err(code) = ansi_term::enable_ansi_support() {
-                eprintln!("Failed to enable ANSI support (error code {})", code);
-            }
+            ansi_term::enable_ansi_support().ok();
         }
 
         let filename = value_t!(matches, "filename", String)?;
