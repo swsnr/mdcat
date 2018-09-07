@@ -385,8 +385,8 @@ impl<'a, W: Write> Context<'a, W> {
         let is_italic = self.style.emphasis_level % 2 == 1;
         {
             let new_style = Style {
-                is_italic: is_italic,
-                ..self.style.current.clone()
+                is_italic,
+                ..self.style.current
             };
             self.set_style(new_style);
         }
