@@ -29,6 +29,7 @@ failure = "^0.1"
 reqwest = "^0.8"
 term_size = "^0.3"
 url = "^1.6"
+ansi_term = "^0.11"
 
 mime = {version = "^0.3", optional = true}
 base64 = {version = "^0.9", optional = true}

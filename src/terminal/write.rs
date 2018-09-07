@@ -15,7 +15,8 @@
 //! Writer for terminals.
 
 use super::super::resources::{Resource, ResourceAccess};
-use super::types::{AnsiStyle, Size};
+use super::size::Size;
+use ansi_term::Style;
 use failure::Error;
 use std::io::Write;
 
@@ -32,11 +33,6 @@ pub trait Terminal {
 
     /// Whether this terminal supports styles.
     fn supports_styles(&self) -> bool;
-
-    /// Active a style on the terminal.
-    ///
-    /// The default implementation errors with `NotSupportedError`.
-    fn set_style(&mut self, style: AnsiStyle) -> Result<(), Error>;
 
     /// Set a link to the given destination on the terminal.
     ///
@@ -59,4 +55,21 @@ pub trait Terminal {
         resource: &Resource,
         access: ResourceAccess,
     ) -> Result<(), Error>;
+}
+
+/// Write a styled text to a `terminal`.
+///
+/// If the terminal supports styles use `style` to paint `text`, otherwise just
+/// write `text` and ignore `style`.
+pub fn write_styled<W: Write, V: AsRef<str>>(
+    terminal: &mut dyn Terminal<TerminalWrite = W>,
+    style: &Style,
+    text: V,
+) -> Result<(), Error> {
+    if terminal.supports_styles() {
+        write!(terminal.write(), "{}", style.paint(text.as_ref()))?;
+    } else {
+        write!(terminal.write(), "{}", text.as_ref())?;
+    }
+    Ok(())
 }

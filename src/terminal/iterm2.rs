@@ -28,7 +28,7 @@ use super::super::resources::{Resource, ResourceAccess};
 use super::super::svg;
 use super::ansi::AnsiTerminal;
 use super::error::NotSupportedError;
-use super::types::{AnsiStyle, Size};
+use super::size::Size;
 use super::write::Terminal;
 
 /// The iTerm2 terminal.
@@ -107,10 +107,6 @@ impl<W: Write> Terminal for ITerm2<W> {
 
     fn supports_styles(&self) -> bool {
         self.ansi.supports_styles()
-    }
-
-    fn set_style(&mut self, style: AnsiStyle) -> Result<(), Error> {
-        self.ansi.set_style(style)
     }
 
     fn set_link(&mut self, destination: &str) -> Result<(), Error> {

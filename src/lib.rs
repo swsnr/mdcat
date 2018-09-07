@@ -34,12 +34,14 @@ extern crate immeta;
 extern crate atty;
 #[macro_use]
 extern crate failure;
+extern crate ansi_term;
 extern crate pulldown_cmark;
 extern crate reqwest;
 extern crate syntect;
 extern crate term_size;
 extern crate url;
 
+use ansi_term::{Colour, Style};
 use failure::Error;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
@@ -69,7 +71,7 @@ use terminal::*;
 // Expose some select things for use in main
 pub use resources::ResourceAccess;
 pub use terminal::Size as TerminalSize;
-pub use terminal::{detect_terminal, AnsiTerminal, DumbTerminal, Terminal};
+pub use terminal::{detect_terminal, write_styled, AnsiTerminal, DumbTerminal, Terminal};
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>
@@ -166,8 +168,13 @@ struct OutputContext<W: Write> {
 
 #[derive(Debug)]
 struct StyleContext {
-    /// All styles applied to the current text.
-    active_styles: Vec<AnsiStyle>,
+    /// The current style
+    current: Style,
+    /// Previous styles.
+    ///
+    /// Holds previous styles; whenever we disable the current style we restore
+    /// the last one from this list.
+    previous: Vec<Style>,
     /// What level of emphasis we are currently at.
     ///
     /// We use this information to switch between italic and upright text for
@@ -262,7 +269,8 @@ impl<'a, W: Write> Context<'a, W> {
             },
             output: OutputContext { size, terminal },
             style: StyleContext {
-                active_styles: Vec::new(),
+                current: Style::new(),
+                previous: Vec::new(),
                 emphasis_level: 0,
             },
             block: BlockContext {
@@ -314,27 +322,12 @@ impl<'a, W: Write> Context<'a, W> {
         Ok(())
     }
 
-    /// Set all active styles on the underlying writer.
-    fn flush_styles(&mut self) -> Result<(), Error> {
-        for style in &self.style.active_styles {
-            self.output
-                .terminal
-                .set_style(*style)
-                .ignore_not_supported()?;
-        }
-        Ok(())
-    }
-
     /// Write a newline.
     ///
     /// Restart all current styles after the newline.
     fn newline(&mut self) -> Result<(), Error> {
-        self.output
-            .terminal
-            .set_style(AnsiStyle::Reset)
-            .ignore_not_supported()?;
         writeln!(self.output.terminal.write())?;
-        self.flush_styles()
+        Ok(())
     }
 
     /// Write a newline and indent.
@@ -355,36 +348,47 @@ impl<'a, W: Write> Context<'a, W> {
         ).map_err(Into::into)
     }
 
-    /// Enable a style.
+    /// Push a new style.
     ///
-    /// Add the style to the stack of active styles and write it to the writer.
-    ///
-    /// To undo a style call `active_styles.pop()`, followed by `set_styles()`
-    /// or `newline()`.
-    fn enable_style(&mut self, style: AnsiStyle) -> Result<(), Error> {
-        self.style.active_styles.push(style);
-        self.output.terminal.set_style(style).ignore_not_supported()
+    /// Pass the current style to `f` and push the style it returns as the new
+    /// current style.
+    fn set_style(&mut self, style: Style) {
+        self.style.previous.push(self.style.current);
+        self.style.current = style;
     }
 
-    /// Remove the last style and flush styles on the TTY.
-    fn reset_last_style(&mut self) -> Result<(), Error> {
-        self.style.active_styles.pop();
-        self.output
-            .terminal
-            .set_style(AnsiStyle::Reset)
-            .ignore_not_supported()?;
-        self.flush_styles()
+    /// Drop the current style, and restore the previous one.
+    fn drop_style(&mut self) {
+        match self.style.previous.pop() {
+            Some(old) => self.style.current = old,
+            None => self.style.current = Style::new(),
+        };
+    }
+
+    /// Write `text` with the given `style`.
+    fn write_styled<S: AsRef<str>>(&mut self, style: &Style, text: S) -> Result<(), Error> {
+        write_styled(&mut *self.output.terminal, style, text)?;
+        Ok(())
+    }
+
+    /// Write `text` with current style.
+    fn write_styled_current<S: AsRef<str>>(&mut self, text: S) -> Result<(), Error> {
+        let style = self.style.current;
+        self.write_styled(&style, text)
     }
 
     /// Enable emphasis.
     ///
     /// Enable italic or upright text according to the current emphasis level.
-    fn enable_emphasis(&mut self) -> Result<(), Error> {
+    fn enable_emphasis(&mut self) {
         self.style.emphasis_level += 1;
-        if self.style.emphasis_level % 2 == 1 {
-            self.enable_style(AnsiStyle::Italic)
-        } else {
-            self.enable_style(AnsiStyle::NoItalic)
+        let is_italic = self.style.emphasis_level % 2 == 1;
+        {
+            let new_style = Style {
+                is_italic,
+                ..self.style.current
+            };
+            self.set_style(new_style);
         }
     }
 
@@ -408,31 +412,22 @@ impl<'a, W: Write> Context<'a, W> {
     fn write_pending_links(&mut self) -> Result<(), Error> {
         if !self.links.pending_links.is_empty() {
             self.newline()?;
-            self.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
+            let link_style = self.style.current.fg(Colour::Blue);
             while let Some(link) = self.links.pending_links.pop_front() {
-                write!(
-                    self.output.terminal.write(),
-                    "[{}]: {} {}",
-                    link.index,
-                    link.destination,
-                    link.title
-                )?;
-                self.newline()?;
+                let link_text = format!("[{}]: {} {}", link.index, link.destination, link.title);
+                self.write_styled(&link_style, link_text)?;
+                self.newline()?
             }
-            self.reset_last_style()?;
         };
         Ok(())
     }
 
     /// Write a simple border.
     fn write_border(&mut self) -> Result<(), Error> {
-        self.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
-        writeln!(
-            self.output.terminal.write(),
-            "{}",
-            "\u{2500}".repeat(self.output.size.width.min(20))
-        )?;
-        self.reset_last_style()
+        let separator = "\u{2500}".repeat(self.output.size.width.min(20));
+        let style = self.style.current.fg(Colour::Green);
+        self.write_styled(&style, separator)?;
+        self.newline()
     }
 
     /// Write highlighted `text`.
@@ -446,7 +441,7 @@ impl<'a, W: Write> Context<'a, W> {
                 write_as_ansi(&mut *self.output.terminal, &regions)?;
             }
             None => {
-                write!(self.output.terminal.write(), "{}", text)?;
+                self.write_styled_current(&text)?;
                 self.links.last_text = Some(text);
             }
         }
@@ -470,17 +465,15 @@ fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Resu
         End(tag) => end_tag(ctx, tag)?,
         Html(content) => {
             ctx.newline()?;
-            ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
+            let html_style = ctx.style.current.fg(Colour::Green);
             for line in content.lines() {
-                write!(ctx.output.terminal.write(), "{}", line)?;
+                ctx.write_styled(&html_style, line)?;
                 ctx.newline()?;
             }
-            ctx.reset_last_style()?;
         }
         InlineHtml(tag) => {
-            ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
-            write!(ctx.output.terminal.write(), "{}", tag)?;
-            ctx.reset_last_style()?;
+            let style = ctx.style.current.fg(Colour::Green);
+            ctx.write_styled(&style, tag)?;
         }
         FootnoteReference(_) => panic!("mdcat does not support footnotes"),
     };
@@ -493,12 +486,9 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
         Paragraph => ctx.start_inline_text()?,
         Rule => {
             ctx.start_inline_text()?;
-            ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
-            write!(
-                ctx.output.terminal.write(),
-                "{}",
-                "\u{2550}".repeat(ctx.output.size.width as usize)
-            )?
+            let rule = "\u{2550}".repeat(ctx.output.size.width as usize);
+            let style = ctx.style.current.fg(Colour::Green);
+            ctx.write_styled(&style, rule)?
         }
         Header(level) => {
             // Before we start a new header, write all pending links to keep
@@ -506,36 +496,39 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
             ctx.output.terminal.set_mark().ignore_not_supported()?;
-            let level_indicator = "\u{2504}".repeat(level as usize);
-            ctx.enable_style(AnsiStyle::Bold)?;
-            ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
-            write!(ctx.output.terminal.write(), "{}", level_indicator)?
+            ctx.set_style(Style::new().fg(Colour::Blue).bold());
+            ctx.write_styled_current("\u{2504}".repeat(level as usize))?
         }
         BlockQuote => {
             ctx.block.indent_level += 4;
             ctx.start_inline_text()?;
-            ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Green))?;
-            ctx.enable_emphasis()?
+            // Make emphasis style and add green colour.
+            ctx.enable_emphasis();
+            ctx.style.current = ctx.style.current.fg(Colour::Green);
         }
         CodeBlock(name) => {
             ctx.start_inline_text()?;
             ctx.write_border()?;
             if ctx.output.terminal.supports_styles() {
-                if name.is_empty() {
-                    ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Yellow))?
+                // Try to get a highlighter for the current code.
+                ctx.code.current_highlighter = if name.is_empty() {
+                    None
                 } else {
-                    if let Some(syntax) = ctx.code.syntax_set.find_syntax_by_token(&name) {
-                        ctx.code.current_highlighter =
-                            Some(HighlightLines::new(syntax, ctx.code.theme));
-                        // Give the highlighter a clear terminal with no prior
-                        // styles.
-                        ctx.output.terminal.set_style(AnsiStyle::Reset)?;
-                    }
-                    if ctx.code.current_highlighter.is_none() {
-                        // If we have no highlighter for the current block, fall
-                        // back to default style.
-                        ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Yellow))?
-                    }
+                    ctx.code
+                        .syntax_set
+                        .find_syntax_by_token(&name)
+                        .map(|syntax| HighlightLines::new(syntax, ctx.code.theme))
+                };
+                if ctx.code.current_highlighter.is_none() {
+                    // If we found no highlighter (code block had no language or
+                    // a language synctex doesn't support) we set a style to
+                    // highlight the code as generic fixed block.
+                    //
+                    // If we have a highlighter we set no style at all because
+                    // we pass the entire block contents through the highlighter
+                    // and directly write the result as ANSI.
+                    let style = ctx.style.current.fg(Colour::Yellow);
+                    ctx.set_style(style);
                 }
             }
         }
@@ -565,9 +558,15 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
         }
         FootnoteDefinition(_) => panic!("mdcat does not support footnotes"),
         Table(_) | TableHead | TableRow | TableCell => panic!("mdcat does not support tables"),
-        Emphasis => ctx.enable_emphasis()?,
-        Strong => ctx.enable_style(AnsiStyle::Bold)?,
-        Code => ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Yellow))?,
+        Emphasis => ctx.enable_emphasis(),
+        Strong => {
+            let style = ctx.style.current.bold();
+            ctx.set_style(style)
+        }
+        Code => {
+            let style = ctx.style.current.fg(Colour::Yellow);
+            ctx.set_style(style)
+        }
         Link(destination, _) => {
             // Try to create an inline link, provided that the format supports
             // those and we can parse the destination as valid URL.  If we can't
@@ -599,30 +598,25 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
 fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), Error> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
-        Rule => {
-            ctx.style.active_styles.pop();
-            ctx.end_inline_text_with_margin()?
-        }
+        Rule => ctx.end_inline_text_with_margin()?,
         Header(_) => {
-            ctx.style.active_styles.pop();
-            ctx.style.active_styles.pop();
+            ctx.drop_style();
             ctx.end_inline_text_with_margin()?
         }
         BlockQuote => {
             ctx.block.indent_level -= 4;
+            // Drop emphasis and current style
             ctx.style.emphasis_level -= 1;
-            ctx.style.active_styles.pop();
-            ctx.reset_last_style()?;
+            ctx.drop_style();
             ctx.end_inline_text_with_margin()?
         }
         CodeBlock(_) => {
             match ctx.code.current_highlighter {
-                None => ctx.reset_last_style()?,
+                None => ctx.drop_style(),
                 Some(_) => {
-                    // Reset anything left over from the highlighter and
-                    // re-enable all current styles.
-                    ctx.output.terminal.set_style(AnsiStyle::Reset)?;
-                    ctx.flush_styles()?;
+                    // If we had a highlighter we used `write_ansi` to write the
+                    // entire highlighted block and so don't need to reset the
+                    // current style here
                     ctx.code.current_highlighter = None;
                 }
             }
@@ -648,11 +642,10 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
         }
         FootnoteDefinition(_) | Table(_) | TableHead | TableRow | TableCell => {}
         Emphasis => {
-            ctx.reset_last_style()?;
+            ctx.drop_style();
             ctx.style.emphasis_level -= 1;
-            ()
         }
-        Strong | Code => ctx.reset_last_style()?,
+        Strong | Code => ctx.drop_style(),
         Link(destination, title) => if ctx.links.inside_inline_link {
             ctx.output.terminal.set_link("")?;
             ctx.links.inside_inline_link = false;
@@ -668,11 +661,10 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
                     // it's already in text.
                 }
                 _ => {
-                    let index = ctx.add_link(destination, title);
                     // Reference link
-                    ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
-                    write!(ctx.output.terminal.write(), "[{}]", index)?;
-                    ctx.reset_last_style()?;
+                    let index = ctx.add_link(destination, title);
+                    let style = ctx.style.current.fg(Colour::Blue);
+                    ctx.write_styled(&style, format!("[{}]", index))?
                 }
             }
         },
@@ -680,9 +672,8 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
             if !ctx.image.inline_image {
                 // If we could not write an inline image, write the image link
                 // after the image title.
-                ctx.enable_style(AnsiStyle::Foreground(AnsiColour::Blue))?;
-                write!(ctx.output.terminal.write(), " ({})", link)?;
-                ctx.reset_last_style()?;
+                let style = ctx.style.current.fg(Colour::Blue);
+                ctx.write_styled(&style, format!(" ({})", link))?
             }
             ctx.image.inline_image = false;
         }

@@ -22,6 +22,7 @@
 
 #[macro_use]
 extern crate clap;
+extern crate ansi_term;
 extern crate mdcat;
 extern crate pulldown_cmark;
 extern crate syntect;
@@ -143,6 +144,13 @@ impl Arguments {
                 auto
             }
         };
+
+        // On Windows 10 we need to enable ANSI term explicitly.
+        #[cfg(windows)]
+        {
+            ansi_term::enable_ansi_support().ok();
+        }
+
         let filename = value_t!(matches, "filename", String)?;
         let dump_events = matches.is_present("dump_events");
         let detect_only = matches.is_present("detect_only");
