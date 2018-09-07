@@ -15,7 +15,8 @@
 #![deny(warnings)]
 // Warn about deprecated trait object syntax
 #![deny(bare_trait_objects)]
-#![cfg_attr(feature = "cargo-clippy", deny(clippy))]
+#![cfg_attr(feature = "cargo-clippy", feature(tool_lints))]
+#![cfg_attr(feature = "cargo-clippy", deny(clippy::all))]
 
 //! Show CommonMark documents on TTYs.
 
