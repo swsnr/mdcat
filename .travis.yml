@@ -22,7 +22,6 @@ stages:
   - lint
   - release
 jobs:
-  fast_finish: true
   include:
       # Check formatting on rust stable before anything else
     - stage: formatting
