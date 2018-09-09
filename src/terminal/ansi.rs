@@ -18,8 +18,8 @@ use failure::Error;
 use std::io;
 use std::io::Write;
 
+use super::super::error::NotSupportedError;
 use super::super::resources::{Resource, ResourceAccess};
-use super::error::NotSupportedError;
 use super::size::Size;
 use super::write::Terminal;
 

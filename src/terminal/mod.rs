@@ -15,7 +15,6 @@
 //! Terminal utilities.
 
 // Support modules for terminal writing.
-mod error;
 mod highlighting;
 mod size;
 mod write;
@@ -41,10 +40,10 @@ use self::vte50::*;
 // Export types.
 pub use self::ansi::AnsiTerminal;
 pub use self::dumb::DumbTerminal;
-pub use self::error::IgnoreNotSupported;
 pub use self::highlighting::write_as_ansi;
 pub use self::size::Size;
 pub use self::write::{write_styled, Terminal};
+pub use super::error::IgnoreNotSupported;
 
 /// Detect the terminal on stdout.
 ///

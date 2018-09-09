@@ -23,11 +23,11 @@ use std::io;
 use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
 
+use super::super::error::NotSupportedError;
 use super::super::magic;
 use super::super::resources::{Resource, ResourceAccess};
 use super::super::svg;
 use super::ansi::AnsiTerminal;
-use super::error::NotSupportedError;
 use super::size::Size;
 use super::write::Terminal;
 

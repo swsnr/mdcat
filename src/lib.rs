@@ -62,6 +62,7 @@ mod process;
 #[cfg(feature = "iterm2")]
 mod svg;
 
+mod error;
 mod resources;
 mod terminal;
 
