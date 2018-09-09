@@ -255,7 +255,6 @@ mod tests {
         use super::*;
         use std::error::Error;
 
-        #[cfg(feature = "remote_resources")]
         #[test]
         fn remote_resource_fails_with_permission_denied_without_access() {
             let resource = Resource::Remote(
@@ -283,10 +282,10 @@ mod tests {
             let resource = Resource::Remote(url.clone());
             let result = resource.read(ResourceAccess::RemoteAllowed);
             assert!(result.is_err(), "Unexpected success: {:?}", result);
-            let error = match result.unwrap_err().downcast::<HttpStatusError>() {
-                Ok(e) => e,
-                Err(error) => panic!("Not an IO error: {:?}", error),
-            };
+            let error = result
+                .unwrap_err()
+                .downcast::<HttpStatusError>()
+                .expect("Not an IO error");
             assert_eq!(error.status_code, reqwest::StatusCode::NotFound);
             assert_eq!(error.url, url);
         }
@@ -302,6 +301,28 @@ mod tests {
             let result = resource.read(ResourceAccess::RemoteAllowed);
             assert!(result.is_ok(), "Unexpected error: {:?}", result);
             assert_eq!(result.unwrap().len(), 100);
+        }
+
+        #[cfg(not(feature = "remote_resources"))]
+        #[test]
+        fn remote_resource_returns_not_supported_if_feature_is_disabled() {
+            let resource = Resource::Remote(
+                "https://eu.httpbin.org/bytes/100"
+                    .parse()
+                    .expect("No valid URL"),
+            );
+            let result = resource.read(ResourceAccess::RemoteAllowed);
+            assert!(result.is_err(), "Unexpected success: {:?}", result);
+            let error = result
+                .unwrap_err()
+                .downcast::<NotSupportedError>()
+                .expect("Not a NotSupportedError!");
+            assert_eq!(
+                error,
+                NotSupportedError {
+                    what: "remote resources"
+                }
+            );
         }
     }
 }
