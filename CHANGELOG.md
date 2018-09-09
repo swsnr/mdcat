@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.10.0] – 2018-09-09
 ### Added
 - Support colours on Windows 10 console (see [GH-36][]).
 - Support musl target on Linux (see [GH-37][] and [GH-38][]).
