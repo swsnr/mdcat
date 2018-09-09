@@ -15,13 +15,18 @@
 //! Access to resources referenced from markdown documents.
 
 use failure::Error;
-use reqwest;
 use std::borrow::Cow;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::path::Path;
 use url::Url;
+
+// Required for remote resources
+#[cfg(not(feature = "remote_resources"))]
+use super::error::NotSupportedError;
+#[cfg(feature = "remote_resources")]
+use reqwest;
 
 /// What kind of resources mdcat may access when rendering.
 ///
@@ -46,6 +51,7 @@ pub enum Resource<'a> {
 /// A non-200 status code from a HTTP request.
 #[derive(Debug, Fail)]
 #[fail(display = "Url {} failed with status code {}", url, status_code)]
+#[cfg(feature = "remote_resources")]
 pub struct HttpStatusError {
     /// The URL that was requested
     url: Url,
@@ -136,21 +142,7 @@ impl<'a> Resource<'a> {
     pub fn read(&self, access: ResourceAccess) -> Result<Vec<u8>, Error> {
         if self.may_access(access) {
             match *self {
-                Resource::Remote(ref url) => {
-                    // We need to clone "Url" here because for some reason `get`
-                    // claims ownership of Url which we don't have here.
-                    let mut response = reqwest::get(url.clone())?;
-                    if response.status().is_success() {
-                        let mut buffer = Vec::new();
-                        response.read_to_end(&mut buffer)?;
-                        Ok(buffer)
-                    } else {
-                        Err(HttpStatusError {
-                            url: url.clone(),
-                            status_code: response.status(),
-                        }.into())
-                    }
-                }
+                Resource::Remote(ref url) => read_http(url),
                 Resource::LocalFile(ref path) => {
                     let mut buffer = Vec::new();
                     File::open(path)?.read_to_end(&mut buffer)?;
@@ -164,6 +156,31 @@ impl<'a> Resource<'a> {
             ).into())
         }
     }
+}
+
+/// Read a resource from HTTP(S).
+#[cfg(feature = "remote_resources")]
+fn read_http(url: &Url) -> Result<Vec<u8>, Error> {
+    // We need to clone "Url" here because for some reason `get`
+    // claims ownership of Url which we don't have here.
+    let mut response = reqwest::get(url.clone())?;
+    if response.status().is_success() {
+        let mut buffer = Vec::new();
+        response.read_to_end(&mut buffer)?;
+        Ok(buffer)
+    } else {
+        Err(HttpStatusError {
+            url: url.clone(),
+            status_code: response.status(),
+        }.into())
+    }
+}
+
+#[cfg(not(feature = "remote_resources"))]
+fn read_http(_url: &Url) -> Result<Vec<u8>, Error> {
+    Err(NotSupportedError {
+        what: "remote resources",
+    }.into())
 }
 
 #[cfg(test)]
@@ -238,6 +255,7 @@ mod tests {
         use super::*;
         use std::error::Error;
 
+        #[cfg(feature = "remote_resources")]
         #[test]
         fn remote_resource_fails_with_permission_denied_without_access() {
             let resource = Resource::Remote(
@@ -256,6 +274,7 @@ mod tests {
             assert_eq!(error.description(), "Remote resources not allowed");
         }
 
+        #[cfg(feature = "remote_resources")]
         #[test]
         fn remote_resource_fails_when_status_404() {
             let url: Url = "https://eu.httpbin.org/status/404"
@@ -272,6 +291,7 @@ mod tests {
             assert_eq!(error.url, url);
         }
 
+        #[cfg(feature = "remote_resources")]
         #[test]
         fn remote_resource_returns_content_when_status_200() {
             let resource = Resource::Remote(
