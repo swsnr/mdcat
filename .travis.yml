@@ -9,8 +9,6 @@ script:
   # Make sure that we can format w/o panic or error
   - cargo run -- sample/common-mark.md
 
-.deploy-settings:
-
 # Check formatting before running tests, and lint afterwards
 stages:
   - formatting
