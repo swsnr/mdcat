@@ -4,10 +4,10 @@ cache: cargo
 
 # Default script for test stage
 script:
-  - cargo build --verbose
-  - cargo test --verbose
+  - cargo build $CARGOFLAGS --verbose
+  - cargo test $CARGOFLAGS --verbose
   # Make sure that we can format w/o panic or error
-  - cargo run -- sample/common-mark.md
+  - cargo run $CARGOFLAGS -- sample/common-mark.md
 
 # Check formatting before running tests, and lint afterwards
 stages:
@@ -29,9 +29,22 @@ jobs:
     - stage: test
       os: linux
       rust: '1.27.2'
-    # Our target Rust version
+    # Our target Rust version.  We test:
+    #
+    # - A standard linux build
+    # - --no-default-features to make sure things build in other configurations
+    # - A static musl build
+    # - macOS
     - stage: test
       os: linux
+      rust: stable
+    - stage: test
+      os: linux
+      env: CARGOFLAGS='--no-default-features'
+      rust: stable
+    - stage: test
+      os: linux
+      env: CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
       rust: stable
     - stage: test
       os: osx
