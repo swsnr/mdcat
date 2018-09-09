@@ -63,11 +63,38 @@ Not supported:
 
 ## Installation
 
-Install [Rust][rustup] and run `cargo install mdcat`.  To keep mdcat up to date
-install [cargo-update][] and run `cargo install-update mdcat`.
+### Binaries
+
+The [Releases][] page provides pre-build binaries for Linux, macOS and Windows.
+Use these binaries to try `mdcat`, particularly on Windows.
+
+[Releases]: https://github.com/lunaryorn/mdcat/releases
+
+### 3rd party packages
+
+Some package managers include `mdcat`:
+
+* [Homebrew][]: `brew install mdcat`
+* Arch Linux: [mdcat in AUR][aur]
+* Void Linux: `xbps-install -S mdcat`
+
+While these packages may not always be up to date we generally recommend to use
+these to keep `mdcat` updated with the rest of the system.
+
+[Homebrew]: https://brew.sh
+[aur]: https://aur.archlinux.org/packages/mdcat/
+
+### Building with rustup
+
+You can also build `mdcat` manually with `cargo`.  Install [Rust][rustup] and
+run `cargo install mdcat`.  To keep mdcat up to date install [cargo-update][]
+and run `cargo install-update mdcat`.
 
 **Note:** On Windows you likely need `--no-default-features` to make `mdcat`
 build.
+
+[rustup]: https://www.rustup.rs
+[cargo-update]: https://github.com/nabijaczleweli/cargo-update
 
 ### SVG support
 
@@ -76,17 +103,6 @@ only shows the image title and URL for SVG images.  Install with `brew install
 librsvg`.
 
 [Terminology][] supports SVG out of the box and needs no additional tools.
-
-### 3rd party packages
-
-* [Homebrew][]: `brew install mdcat`
-* Arch Linux: [mdcat in AUR][aur]
-* Void Linux: `xbps-install -S mdcat`
-
-[rustup]: https://www.rustup.rs
-[cargo-update]: https://github.com/nabijaczleweli/cargo-update
-[Homebrew]: https://brew.sh
-[aur]: https://aur.archlinux.org/packages/mdcat/
 
 ### Future plans
 
