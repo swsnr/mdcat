@@ -50,8 +50,8 @@ jobs:
       rust: stable
     - stage: test
       os: linux
-      env: CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
       rust: stable
+      env: CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
       before_install: rustup target add x86_64-unknown-linux-musl
     - stage: test
       os: osx
@@ -82,14 +82,17 @@ jobs:
       # Our release tags start with "mdcat-", so we only build for such tags
       if: tag =~ ^mdcat-
       os: linux
-      env: ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
       rust: stable
+      env:
+        - CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
+      before_install: rustup target add x86_64-unknown-linux-musl
       # Inhibit Travis’ default "cargo build --verbose" install step because we
       # make an explicit release build in the "script" phase
       install: ""
       # Exclude iterm2 from release artifacts on Linux
-      script: cargo build --no-default-features --features terminology --release --verbose
+      script: cargo build $CARGOFLAGS --release --verbose
       before_deploy:
+        - export ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
         - echo "Building ${ARCHIVE_NAME}"
         - mkdir "/tmp/${ARCHIVE_NAME}"
         - cp README.md CHANGELOG.md LICENSE "/tmp/${ARCHIVE_NAME}"
@@ -107,6 +110,8 @@ jobs:
           tags: true
     - <<: *deploy-settings
       os: osx
-      # Only include iterm2 when building for macos, and also enable remote
-      # resources for iterm2
-      script: cargo build --no-default-features --features iterm2,remote_resources --release --verbose
+      before_install: ""
+      env:
+        # Only include iterm2 when building for macos, and also enable remote
+        # resources for iterm2
+        - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
