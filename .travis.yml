@@ -87,5 +87,6 @@ jobs:
           tags: true
     - <<: *deploy-settings
       os: osx
-      # Only include iterm2 when building for macos
-      script: cargo build --no-default-features --features iterm2 --release --verbose
+      # Only include iterm2 when building for macos, and also enable remote
+      # resources for iterm2
+      script: cargo build --no-default-features --features iterm2,remote_resources --release --verbose
