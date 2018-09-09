@@ -10,10 +10,10 @@ addons:
 
 # Default script for test stage
 script:
-  - cargo build $CARGOFLAGS --verbose
-  - cargo test $CARGOFLAGS --verbose
+  - cargo build --target $CARGOTARGET $CARGOFLAGS --verbose
+  - cargo test --target $CARGOTARGET $CARGOFLAGS --verbose
   # Make sure that we can format w/o panic or error
-  - cargo run $CARGOFLAGS -- sample/common-mark.md
+  - cargo run --target $CARGOTARGET $CARGOFLAGS -- sample/common-mark.md
 
 # Check formatting before running tests, and lint afterwards
 stages:
@@ -34,6 +34,8 @@ jobs:
     - stage: test
       os: linux
       rust: '1.27.2'
+      env:
+        - CARGOTARGET=x86_64-unknown-linux-gnu
     # Our target Rust version.  We test:
     #
     # - A standard linux build
@@ -43,25 +45,37 @@ jobs:
     - stage: test
       os: linux
       rust: stable
-    - stage: test
-      os: linux
-      env: CARGOFLAGS='--no-default-features'
-      rust: stable
+      env:
+        - CARGOTARGET=x86_64-unknown-linux-gnu
     - stage: test
       os: linux
       rust: stable
-      env: CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
+      env:
+        - CARGOTARGET=x86_64-unknown-linux-gnu
+        - CARGOFLAGS='--no-default-features'
+    - stage: test
+      os: linux
+      rust: stable
+      env:
+        - CARGOTARGET=x86_64-unknown-linux-musl
+        - CARGOFLAGS='--no-default-features --features terminology'
       before_install: rustup target add x86_64-unknown-linux-musl
     - stage: test
       os: osx
       rust: stable
+      env:
+        - CARGOTARGET=x86_64-apple-darwin
     # Catch regressions in beta and nightly
     - stage: test
       os: linux
       rust: beta
+      env:
+        - CARGOTARGET=x86_64-unknown-linux-gnu
     - stage: test
       os: linux
       rust: nightly
+      env:
+        - CARGOTARGET=x86_64-unknown-linux-gnu
 
     # Run clippy after testing, with and without features.  We pin the nightly
     # version to avoid clippy changes breaking pull requests.
@@ -82,20 +96,21 @@ jobs:
       if: tag =~ ^mdcat-
       os: linux
       rust: stable
-      env:
-        # Exclude iterm2 from release artifacts on Linux, and build against Musl
-        - CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
       before_install: rustup target add x86_64-unknown-linux-musl
+      env:
+        - CARGOTARGET=x86_64-unknown-linux-musl
+        # Exclude iterm2 from release artifacts on Linux, and build against Musl
+        - CARGOFLAGS='--no-default-features --features terminology'
       # Inhibit Travis’ default "cargo build --verbose" install step because we
       # make an explicit release build in the "script" phase
       install: ""
-      script: cargo build $CARGOFLAGS --release --verbose
+      script: cargo build --target "$CARGOTARGET" $CARGOFLAGS --release --verbose
       before_deploy:
-        - export ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
+        - export ARCHIVE_NAME="${TRAVIS_TAG}-${CARGOTARGET}"
         - echo "Building ${ARCHIVE_NAME}"
         - mkdir "/tmp/${ARCHIVE_NAME}"
         - cp README.md CHANGELOG.md LICENSE "/tmp/${ARCHIVE_NAME}"
-        - cp target/release/mdcat "/tmp/${ARCHIVE_NAME}"
+        - cp "target/${CARGOTARGET}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
         # Strip the binary to reduce its size
         - strip "/tmp/${ARCHIVE_NAME}/mdcat"
         - tar -czf "/tmp/${ARCHIVE_NAME}.tar.gz" -C /tmp/ "${ARCHIVE_NAME}"
@@ -111,6 +126,7 @@ jobs:
       os: osx
       before_install: ""
       env:
+        - CARGOTARGET=x86_64-apple-darwin
         # Only include iterm2 when building for macos, and also enable remote
         # resources for iterm2
         - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
