@@ -2,6 +2,12 @@ sudo: false
 language: rust
 cache: cargo
 
+addons:
+  apt:
+    packages:
+      # Install musl for some Linux builds
+      - musl-tools
+
 # Default script for test stage
 script:
   - cargo build $CARGOFLAGS --verbose
@@ -46,6 +52,7 @@ jobs:
       os: linux
       env: CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
       rust: stable
+      before_install: rustup target add x86_64-unknown-linux-musl
     - stage: test
       os: osx
       rust: stable
