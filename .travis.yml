@@ -83,12 +83,12 @@ jobs:
       os: linux
       rust: stable
       env:
+        # Exclude iterm2 from release artifacts on Linux, and build against Musl
         - CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
       before_install: rustup target add x86_64-unknown-linux-musl
       # Inhibit Travis’ default "cargo build --verbose" install step because we
       # make an explicit release build in the "script" phase
       install: ""
-      # Exclude iterm2 from release artifacts on Linux
       script: cargo build $CARGOFLAGS --release --verbose
       before_deploy:
         - export ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
