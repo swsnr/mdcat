@@ -17,7 +17,7 @@
 use failure::Error;
 
 /// The terminal does not support something.
-#[derive(Debug, Fail)]
+#[derive(PartialEq, Debug, Fail)]
 #[fail(display = "This terminal does not support {}.", what)]
 pub struct NotSupportedError {
     /// The operation which the terminal did not support.

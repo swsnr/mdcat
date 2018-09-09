@@ -16,21 +16,25 @@ travis-ci = { repository = "lunaryorn/mdcat" }
 maintenance = { status = "actively-developed" }
 
 [features]
-default = ["iterm2", "terminology"]
+default = ["iterm2", "terminology", "remote_resources"]
 
 # Enable special support for iTerm2.
 iterm2 = ["mime", "base64"]
+# Support for remote resources, eg, images.  Note some terminals, eg,
+# Terminology, support remote resources out of the box even if this feature is
+# not active.
+remote_resources = ["reqwest"]
 # Enable special support for Terminology.
 terminology = ["immeta"]
 
 [dependencies]
 atty = "^0.2"
 failure = "^0.1"
-reqwest = "^0.8"
 term_size = "^0.3"
 url = "^1.6"
 ansi_term = "^0.11"
 
+reqwest = {version = "^0.8", optional = true}
 mime = {version = "^0.3", optional = true}
 base64 = {version = "^0.9", optional = true}
 immeta = {version = "^0.4", optional = true}

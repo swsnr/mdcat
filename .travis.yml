@@ -2,14 +2,18 @@ sudo: false
 language: rust
 cache: cargo
 
+addons:
+  apt:
+    packages:
+      # Install musl for some Linux builds
+      - musl-tools
+
 # Default script for test stage
 script:
-  - cargo build --verbose
-  - cargo test --verbose
+  - cargo build $CARGOFLAGS --verbose
+  - cargo test $CARGOFLAGS --verbose
   # Make sure that we can format w/o panic or error
-  - cargo run -- sample/common-mark.md
-
-.deploy-settings:
+  - cargo run $CARGOFLAGS -- sample/common-mark.md
 
 # Check formatting before running tests, and lint afterwards
 stages:
@@ -18,7 +22,6 @@ stages:
   - lint
   - release
 jobs:
-  fast_finish: true
   include:
       # Check formatting on rust stable before anything else
     - stage: formatting
@@ -31,10 +34,24 @@ jobs:
     - stage: test
       os: linux
       rust: '1.27.2'
-    # Our target Rust version
+    # Our target Rust version.  We test:
+    #
+    # - A standard linux build
+    # - --no-default-features to make sure things build in other configurations
+    # - A static musl build
+    # - macOS
     - stage: test
       os: linux
       rust: stable
+    - stage: test
+      os: linux
+      env: CARGOFLAGS='--no-default-features'
+      rust: stable
+    - stage: test
+      os: linux
+      rust: stable
+      env: CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
+      before_install: rustup target add x86_64-unknown-linux-musl
     - stage: test
       os: osx
       rust: stable
@@ -46,13 +63,17 @@ jobs:
       os: linux
       rust: nightly
 
-    # Run clippy after testing, with a pinned clippy version and a compatible
-    # nightly snapshot
-    - stage: lint
+    # Run clippy after testing, with and without features.  We pin the nightly
+    # version to avoid clippy changes breaking pull requests.
+    - &lint-settings
+      stage: lint
       os: linux
       rust: nightly-2018-09-06
       before_install: rustup component add clippy-preview
-      script: cargo clippy
+      script: cargo clippy $CARGOFLAGS
+    - <<: *lint-settings
+      env:
+        - CARGOFLAGS=--no-default-features
 
     # Deploy binary to GitHub
     - &deploy-settings
@@ -60,14 +81,17 @@ jobs:
       # Our release tags start with "mdcat-", so we only build for such tags
       if: tag =~ ^mdcat-
       os: linux
-      env: ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
       rust: stable
+      env:
+        - CARGOFLAGS='--target x86_64-unknown-linux-musl --no-default-features --features terminology'
+      before_install: rustup target add x86_64-unknown-linux-musl
       # Inhibit Travis’ default "cargo build --verbose" install step because we
       # make an explicit release build in the "script" phase
       install: ""
       # Exclude iterm2 from release artifacts on Linux
-      script: cargo build --no-default-features --features terminology --release --verbose
+      script: cargo build $CARGOFLAGS --release --verbose
       before_deploy:
+        - export ARCHIVE_NAME=${TRAVIS_TAG}-${TRAVIS_OS_NAME}
         - echo "Building ${ARCHIVE_NAME}"
         - mkdir "/tmp/${ARCHIVE_NAME}"
         - cp README.md CHANGELOG.md LICENSE "/tmp/${ARCHIVE_NAME}"
@@ -85,5 +109,8 @@ jobs:
           tags: true
     - <<: *deploy-settings
       os: osx
-      # Only include iterm2 when building for macos
-      script: cargo build --no-default-features --features iterm2 --release --verbose
+      before_install: ""
+      env:
+        # Only include iterm2 when building for macos, and also enable remote
+        # resources for iterm2
+        - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'

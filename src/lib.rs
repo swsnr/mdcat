@@ -21,6 +21,10 @@
 
 //! Write markdown to TTYs.
 
+// Used by remote_resources to actually fetch remote resources over HTTP
+#[cfg(feature = "remote_resources")]
+extern crate reqwest;
+
 // Used by iTerm support on macos
 #[cfg(feature = "iterm2")]
 extern crate base64;
@@ -36,7 +40,6 @@ extern crate atty;
 extern crate failure;
 extern crate ansi_term;
 extern crate pulldown_cmark;
-extern crate reqwest;
 extern crate syntect;
 extern crate term_size;
 extern crate url;
@@ -62,6 +65,7 @@ mod process;
 #[cfg(feature = "iterm2")]
 mod svg;
 
+mod error;
 mod resources;
 mod terminal;
 
