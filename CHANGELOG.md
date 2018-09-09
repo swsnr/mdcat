@@ -7,8 +7,14 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ## [Unreleased]
 ### Added
 - Support colours on Windows 10 console (see [GH-36][]).
+- Support musl target on Linux (see [GH-37][] and [GH-38][]).
+- Published Linux binary statically links musl now, and has no runtime
+  dependencies (see [GH-29][] and [GH-38][]).
 
+[GH-29]: https://github.com/lunaryorn/mdcat/issues/29
 [GH-36]: https://github.com/lunaryorn/mdcat/pull/36
+[GH-37]: https://github.com/lunaryorn/mdcat/issues/37
+[GH-38]: https://github.com/lunaryorn/mdcat/pull/38
 
 ## [0.9.2] – 2018-08-26
 ### Fixed
