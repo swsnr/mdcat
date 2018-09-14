@@ -1,6 +1,8 @@
 sudo: false
 language: rust
-cache: cargo
+# We deliberately do NOT cache with `cache: cargo` because these caches grow to
+# gigabytes in size at which point downloading, unpacking and repacking takes
+# way longer than just building things fresh every time.
 
 addons:
   apt:
