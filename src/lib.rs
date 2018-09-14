@@ -16,8 +16,7 @@
 #![deny(missing_docs)]
 // Warn about deprecated trait object syntax
 #![deny(bare_trait_objects)]
-#![cfg_attr(feature = "cargo-clippy", feature(tool_lints))]
-#![cfg_attr(feature = "cargo-clippy", deny(clippy::all))]
+#![cfg_attr(feature = "cargo-clippy", deny(clippy))]
 
 //! Write markdown to TTYs.
 
