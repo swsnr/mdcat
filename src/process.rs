@@ -18,7 +18,12 @@ use std::process::ExitStatus;
 
 /// A process failed.
 #[derive(Debug, Fail)]
-#[fail(display = "Command {} failed with {}: {}", command, status, error)]
+#[fail(
+    display = "Command {} failed with {}: {}",
+    command,
+    status,
+    error
+)]
 pub struct ProcessError {
     /// The command that failed.
     pub command: String,

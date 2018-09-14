@@ -50,7 +50,11 @@ pub enum Resource<'a> {
 
 /// A non-200 status code from a HTTP request.
 #[derive(Debug, Fail)]
-#[fail(display = "Url {} failed with status code {}", url, status_code)]
+#[fail(
+    display = "Url {} failed with status code {}",
+    url,
+    status_code
+)]
 #[cfg(feature = "remote_resources")]
 pub struct HttpStatusError {
     /// The URL that was requested

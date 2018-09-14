@@ -102,8 +102,7 @@ impl<W: Write> Terminal for Terminology<W> {
                     // We divide by 2 because terminal cursor/font most likely has a
                     // 1:2 proportion
                     (h * (columns / 2) as f64 / w) as usize
-                })
-                .unwrap_or(max_size.height / 2);
+                }).unwrap_or(max_size.height / 2);
 
             let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, resource.as_str());
             for _ in 0..lines {
