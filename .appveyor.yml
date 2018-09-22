@@ -36,9 +36,6 @@ deploy:
   on:
     channel: stable
     appveyor_repo_tag: true
-cache:
-  - '%USERPROFILE%\.cargo'
-  - '%APPVEYOR_BUILD_FOLDER%\target -> Cargo.lock'
 notifications:
   - provider: Email
     to:
