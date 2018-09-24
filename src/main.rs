@@ -34,7 +34,7 @@ use std::io::{stdin, stdout, Stdout};
 use std::path::PathBuf;
 use syntect::parsing::SyntaxSet;
 
-use mdcat::{detect_terminal, DumbTerminal, ResourceAccess, Terminal, TerminalSize};
+use mdcat::{detect_terminal, AnsiTerminal, DumbTerminal, ResourceAccess, Terminal, TerminalSize};
 
 /// Read input for `filename`.
 ///
@@ -104,6 +104,8 @@ impl Arguments {
         let terminal = if matches.is_present("no_colour") {
             // If the user disabled colours assume a dumb terminal
             Box::new(DumbTerminal::new(stdout()))
+        } else if matches.is_present("ansi_only") {
+            Box::new(AnsiTerminal::new(stdout()))
         } else {
             detect_terminal()
         };
@@ -194,6 +196,13 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
             Arg::with_name("detect_only")
             .long("detect-only")
             .help("Only detect the terminal type and exit")
+            .hidden(true)
+        )
+        .arg(
+            Arg::with_name("ansi_only")
+            .long("ansi-only")
+            .help("Limit to standard ANSI formatting")
+            .conflicts_with("no_colour")
             .hidden(true)
         );
 
