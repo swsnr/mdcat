@@ -57,7 +57,10 @@ fn format_ansi_to_html(markdown: &str) -> String {
         .read_to_end(&mut buffer)
         .expect("Failed to read");
 
-    String::from_utf8(buffer).expect("Failed to convert from bytes")
+    String::from_utf8(buffer)
+        .expect("Failed to convert from bytes")
+        // Normalize line endings
+        .replace("\r\n", "\n")
 }
 
 macro_rules! test_compare_html(
