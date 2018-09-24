@@ -53,6 +53,9 @@ version = "^2"
 default-features = false
 features = ["parsing", "assets", "dump-load"]
 
+[dev-dependencies]
+pretty_assertions = "^0.5"
+
 [package.metadata.release]
 sign-commit = true
 upload-doc = false

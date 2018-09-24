@@ -11,6 +11,7 @@ addons:
       - musl-tools
 
 # Default script for test stage
+before_install: pip install ansi2html==1.4.2 # For formatting tests
 script:
   - cargo build --target $CARGOTARGET $CARGOFLAGS --verbose
   - cargo test --target $CARGOTARGET $CARGOFLAGS --verbose
