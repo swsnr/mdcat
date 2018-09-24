@@ -11,7 +11,9 @@ addons:
       - musl-tools
 
 # Default script for test stage
-before_install: pip install ansi2html==1.4.2 # For formatting tests
+before_install:
+  # For formatting tests
+  - pip install --user ansi2html==1.4.2
 script:
   - cargo build --target $CARGOTARGET $CARGOFLAGS --verbose
   - cargo test --target $CARGOTARGET $CARGOFLAGS --verbose
@@ -30,7 +32,7 @@ jobs:
     - stage: formatting
       os: linux
       rust: stable
-      before_install: rustup component add rustfmt-preview
+      before_script: rustup component add rustfmt-preview
       script: cargo fmt -- --check
 
     # Base line for backwards compatibility
@@ -62,7 +64,7 @@ jobs:
       env:
         - CARGOTARGET=x86_64-unknown-linux-musl
         - CARGOFLAGS='--no-default-features --features terminology'
-      before_install: rustup target add x86_64-unknown-linux-musl
+      before_script: rustup target add x86_64-unknown-linux-musl
     - stage: test
       os: osx
       rust: stable
@@ -85,7 +87,7 @@ jobs:
       stage: lint
       os: linux
       rust: stable
-      before_install: rustup component add clippy-preview
+      before_script: rustup component add clippy-preview
       script: cargo clippy $CARGOFLAGS
     - <<: *lint-settings
       env:
