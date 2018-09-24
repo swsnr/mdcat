@@ -64,34 +64,22 @@ fn format_ansi_to_html(markdown: &str) -> String {
 }
 
 macro_rules! test_compare_html(
-    ($testname:ident, $body:expr) => (
+    ($testname:ident) => (
         #[test]
         fn $testname() {
-            let result = format_ansi_to_html($body);
-            assert_eq!(result, include_str!(concat!("formatting/", stringify!($testname), ".html")));
+            assert_eq!(
+                format_ansi_to_html(include_str!(concat!("formatting/", stringify!($testname), ".md"))),
+                include_str!(concat!("formatting/", stringify!($testname), ".html"))
+            );
         }
     )
 );
 
-test_compare_html!(
-    just_a_line,
-    "This is a single simple line with no special thingythings."
-);
+test_compare_html!(just_a_line);
+test_compare_html!(headers_and_paragraphs);
+test_compare_html!(inline_formatting);
+test_compare_html!(links);
 
-test_compare_html!(
-    headers_and_paragraphs,
-    "# The heading
-
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore
-magna aliquyam erat, sed diam voluptua.
-
-## A sub-heading
-
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr,
-sed diam nonumy eirmod tempor invidunt ut labore et dolore
-magna aliquyam erat, sed diam voluptua.
-
-## Another heading
-
-Bye Bye"
-);
+// TODO: Lists
+// TODO: Block quotes
+// TODO: Code
