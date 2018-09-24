@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Always print colours regardless of whether stdout if a tty or not.
+- Replace `--colour` option with a `--no-colour` flag to turn off styled output.
 
 ## [0.10.1] – 2018-09-09
 ### Fixed

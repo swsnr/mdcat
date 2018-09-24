@@ -28,7 +28,6 @@ mod iterm2;
 mod terminology;
 mod vte50;
 
-use atty;
 use std::io;
 
 #[cfg(feature = "iterm2")]
@@ -45,38 +44,33 @@ pub use self::size::Size;
 pub use self::write::{write_styled, Terminal};
 pub use super::error::IgnoreNotSupported;
 
-/// Detect the terminal on stdout.
+/// Detect the terminal to use.
 ///
-/// If stdout links to a TTY look at different pieces of information, in
-/// particular environment variables set by terminal emulators, to figure
-/// out what terminal emulator we run in.
+/// Check for various environment variables that identify specific terminal
+/// emulators with more advanced formatting features.
 ///
-/// If stdout does not link to a TTY assume a `Dumb` terminal which cannot
-/// format anything.
+/// If we can't detect any such emulator assume only standard ANSI colour
+/// and formatting capabilities.
 pub fn detect_terminal() -> Box<dyn Terminal<TerminalWrite = io::Stdout>> {
-    if atty::is(atty::Stream::Stdout) {
-        let ansi = AnsiTerminal::new(io::stdout());
-        // Pattern matching lets use feature-switch branches, depending on
-        // enabled terminal support.  In an if chain we can't do this, so that's
-        // why we have this weird match here.  Note: Don't use true here because
-        // that makes clippy complain.
-        match 1 {
-            #[cfg(feature = "iterm2")]
-            _ if iterm2::is_iterm2() =>
-            {
-                Box::new(ITerm2::new(ansi))
-            }
-            #[cfg(feature = "terminology")]
-            _ if terminology::is_terminology() =>
-            {
-                Box::new(Terminology::new(ansi))
-            }
-            _ => match vte50::get_vte_version() {
-                Some(version) if version >= (50, 0) => Box::new(VTE50Terminal::new(ansi)),
-                _ => Box::new(ansi),
-            },
+    let ansi = AnsiTerminal::new(io::stdout());
+    // Pattern matching lets use feature-switch branches, depending on
+    // enabled terminal support.  In an if chain we can't do this, so that's
+    // why we have this weird match here.  Note: Don't use true here because
+    // that makes clippy complain.
+    match 1 {
+        #[cfg(feature = "iterm2")]
+        _ if iterm2::is_iterm2() =>
+        {
+            Box::new(ITerm2::new(ansi))
         }
-    } else {
-        Box::new(DumbTerminal::new(io::stdout()))
+        #[cfg(feature = "terminology")]
+        _ if terminology::is_terminology() =>
+        {
+            Box::new(Terminology::new(ansi))
+        }
+        _ => match vte50::get_vte_version() {
+            Some(version) if version >= (50, 0) => Box::new(VTE50Terminal::new(ansi)),
+            _ => Box::new(ansi),
+        },
     }
 }

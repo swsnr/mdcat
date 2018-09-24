@@ -32,40 +32,9 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::{stdin, stdout, Stdout};
 use std::path::PathBuf;
-use std::str::FromStr;
 use syntect::parsing::SyntaxSet;
 
-use mdcat::{detect_terminal, AnsiTerminal, DumbTerminal, ResourceAccess, Terminal, TerminalSize};
-
-/// Colour options, for the --colour option.
-#[derive(Debug, Clone, PartialEq)]
-enum Colour {
-    Yes,
-    No,
-    Auto,
-}
-
-#[derive(Debug)]
-struct InvalidColour {}
-
-impl ToString for InvalidColour {
-    fn to_string(&self) -> String {
-        String::from("invalid colour setting")
-    }
-}
-
-impl FromStr for Colour {
-    type Err = InvalidColour;
-
-    fn from_str(value: &str) -> Result<Self, InvalidColour> {
-        match value.to_lowercase().as_str() {
-            "yes" => Ok(Colour::Yes),
-            "no" => Ok(Colour::No),
-            "auto" => Ok(Colour::Auto),
-            _ => Err(InvalidColour {}),
-        }
-    }
-}
+use mdcat::{detect_terminal, DumbTerminal, ResourceAccess, Terminal, TerminalSize};
 
 /// Read input for `filename`.
 ///
@@ -132,16 +101,11 @@ struct Arguments {
 impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
-        let colour = value_t!(matches, "colour", Colour)?;
-        let terminal = if colour == Colour::No {
+        let terminal = if matches.is_present("no_colour") {
+            // If the user disabled colours assume a dumb terminal
             Box::new(DumbTerminal::new(stdout()))
         } else {
-            let auto = detect_terminal();
-            if !auto.supports_styles() && colour == Colour::Yes {
-                Box::new(AnsiTerminal::new(stdout()))
-            } else {
-                auto
-            }
+            detect_terminal()
         };
 
         // On Windows 10 we need to enable ANSI term explicitly.
@@ -202,12 +166,11 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
                 .default_value("-")
         )
         .arg(
-            Arg::with_name("colour")
+            Arg::with_name("no_colour")
                 .short("c")
-                .long("colour")
-                .help("Whether to enable colours.")
-                .possible_values(&["yes", "no", "auto"])
-                .default_value("auto")
+                .long("--no-colour")
+                .aliases(&["nocolour", "no-color", "nocolor"])
+                .help("Disable all colours and other styles.")
         )
         .arg(
             Arg::with_name("columns")

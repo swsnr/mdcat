@@ -34,7 +34,6 @@ extern crate mime;
 #[cfg(feature = "terminology")]
 extern crate immeta;
 
-extern crate atty;
 #[macro_use]
 extern crate failure;
 extern crate ansi_term;

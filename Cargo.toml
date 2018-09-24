@@ -28,7 +28,6 @@ remote_resources = ["reqwest"]
 terminology = ["immeta"]
 
 [dependencies]
-atty = "^0.2"
 failure = "^0.1"
 term_size = "^0.3"
 url = "^1.6"
