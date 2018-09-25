@@ -30,8 +30,6 @@ fn format_ansi_to_html(markdown: &str) -> String {
         .arg("--output-encoding")
         .arg("utf8")
         .arg("--markup-lines")
-        .arg("--partial")
-        .arg("--inline")
         .stdout(Stdio::piped())
         .stdin(Stdio::piped())
         .spawn()
