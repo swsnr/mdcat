@@ -10,10 +10,13 @@ addons:
       # Install musl for some Linux builds
       - musl-tools
 
-# Default script for test stage
+env:
+  global:
+    - ANSI2HTML_VERSION=1.4.2
 before_install:
   # For formatting tests
-  - pip install --user ansi2html==1.4.2
+  - pip install --user ansi2html==${ANSI2HTML_VERSION}
+# Default script for test stage
 script:
   - cargo build --target $CARGOTARGET $CARGOFLAGS --verbose
   - cargo test --target $CARGOTARGET $CARGOFLAGS --verbose
