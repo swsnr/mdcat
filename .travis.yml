@@ -68,6 +68,9 @@ jobs:
     - stage: test
       os: osx
       rust: stable
+      before_script:
+        # Add local Python scripts to path for ansi2html
+        - export PATH="$HOME/Library/Python/2.7/bin:$PATH"
       env:
         - CARGOTARGET=x86_64-apple-darwin
     # Catch regressions in beta and nightly
