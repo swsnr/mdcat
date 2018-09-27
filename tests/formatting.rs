@@ -19,7 +19,9 @@ extern crate syntect;
 extern crate pretty_assertions;
 
 use pulldown_cmark::Parser;
+use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
 use std::process::{Command, Stdio};
 use syntect::parsing::SyntaxSet;
 
@@ -65,10 +67,18 @@ macro_rules! test_compare_html(
     ($testname:ident) => (
         #[test]
         fn $testname() {
-            assert_eq!(
-                format_ansi_to_html(include_str!(concat!("formatting/", stringify!($testname), ".md"))),
-                include_str!(concat!("formatting/", stringify!($testname), ".html"))
-            );
+            let actual_html = format_ansi_to_html(include_str!(concat!("formatting/", stringify!($testname), ".md")));
+
+            // Write actual HTML to disk for debugging
+            let target = Path::new(file!())
+                .parent()
+                .expect("Failed to get parent directory")
+                .join("formatting")
+                .join(concat!(stringify!($testname), ".actual.html"));
+            File::create(target).and_then(|mut f| f.write_all(actual_html.as_bytes())).unwrap();
+
+            let expected_html = include_str!(concat!("formatting/", stringify!($testname), ".expected.html"));
+            assert_eq!(actual_html, expected_html, "Different format produced");
         }
     )
 );
