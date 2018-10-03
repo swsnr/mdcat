@@ -87,7 +87,7 @@ test_compare_html!(just_a_line);
 test_compare_html!(headers_and_paragraphs);
 test_compare_html!(inline_formatting);
 test_compare_html!(links);
+test_compare_html!(lists);
 
-// TODO: Lists
 // TODO: Block quotes
 // TODO: Code
