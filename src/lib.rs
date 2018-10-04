@@ -670,7 +670,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
                 }
             }
         },
-        Image(link, _title) => {
+        Image(link, _) => {
             if !ctx.image.inline_image {
                 // If we could not write an inline image, write the image link
                 // after the image title.
