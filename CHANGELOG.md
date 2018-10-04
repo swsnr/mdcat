@@ -8,6 +8,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ### Changed
 - Always print colours regardless of whether stdout if a tty or not.
 - Replace `--colour` option with a `--no-colour` flag to turn off styled output.
+- `mdcat::push_tty` no longer takes ownership of the `terminal` argument (see
+  [GH-41][]).
+
+[GH-41]: https://github.com/lunaryorn/mdcat/issues/41
 
 ## [0.10.1] – 2018-09-09
 ### Fixed

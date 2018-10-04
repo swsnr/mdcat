@@ -59,12 +59,12 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     }
 }
 
-fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn Error>> {
+fn process_arguments(size: TerminalSize, args: &mut Arguments) -> Result<(), Box<dyn Error>> {
     if args.detect_only {
         println!("Terminal: {}", args.terminal.name());
         Ok(())
     } else {
-        let (base_dir, input) = read_input(args.filename)?;
+        let (base_dir, input) = read_input(&args.filename)?;
         let parser = Parser::new(&input);
 
         if args.dump_events {
@@ -73,7 +73,7 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn 
         } else {
             let syntax_set = SyntaxSet::load_defaults_newlines();
             mdcat::push_tty(
-                args.terminal,
+                &mut (*args.terminal),
                 TerminalSize {
                     width: args.columns,
                     ..size
@@ -207,8 +207,8 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
         );
 
     let matches = app.get_matches();
-    let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
-    match process_arguments(size, arguments) {
+    let mut arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
+    match process_arguments(size, &mut arguments) {
         Ok(_) => std::process::exit(0),
         Err(error) => {
             eprintln!("Error: {}", error);

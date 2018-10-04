@@ -95,7 +95,7 @@ where
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, W, I>(
-    terminal: Box<dyn Terminal<TerminalWrite = W>>,
+    terminal: &'a mut dyn Terminal<TerminalWrite = W>,
     size: TerminalSize,
     events: I,
     base_dir: &'a Path,
@@ -161,11 +161,11 @@ impl<'a> InputContext<'a> {
 }
 
 /// Context for TTY output.
-struct OutputContext<W: Write> {
+struct OutputContext<'a, W: Write + 'a> {
     /// The terminal dimensions to limit output to.
     size: Size,
     /// The target terminal.
-    terminal: Box<dyn Terminal<TerminalWrite = W>>,
+    terminal: &'a mut dyn Terminal<TerminalWrite = W>,
 }
 
 #[derive(Debug)]
@@ -238,7 +238,7 @@ struct Context<'a, W: Write + 'a> {
     /// Context for input.
     input: InputContext<'a>,
     /// Context for output.
-    output: OutputContext<W>,
+    output: OutputContext<'a, W>,
     /// Context for styling
     style: StyleContext,
     /// Context for the current block.
@@ -257,7 +257,7 @@ struct Context<'a, W: Write + 'a> {
 
 impl<'a, W: Write> Context<'a, W> {
     fn new(
-        terminal: Box<dyn Terminal<TerminalWrite = W>>,
+        terminal: &'a mut dyn Terminal<TerminalWrite = W>,
         size: Size,
         base_dir: &'a Path,
         resource_access: ResourceAccess,

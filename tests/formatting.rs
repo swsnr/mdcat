@@ -41,8 +41,9 @@ fn format_ansi_to_html(markdown: &str) -> String {
         let syntax_set = SyntaxSet::load_defaults_newlines();
         let wd = std::env::current_dir().expect("No working directory");
         let parser = Parser::new(markdown);
+        let mut terminal = mdcat::AnsiTerminal::new(child.stdin.unwrap());
         mdcat::push_tty(
-            Box::new(mdcat::AnsiTerminal::new(child.stdin.unwrap())),
+            &mut terminal,
             size,
             parser,
             &wd,
