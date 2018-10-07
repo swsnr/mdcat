@@ -21,7 +21,7 @@ extern crate pretty_assertions;
 use pulldown_cmark::Parser;
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use syntect::parsing::SyntaxSet;
 
@@ -64,31 +64,54 @@ fn format_ansi_to_html(markdown: &str) -> String {
         .replace("\r\n", "\n")
 }
 
+fn test_directory() -> PathBuf {
+    Path::new(file!())
+        .parent()
+        .expect("Failed to get parent directory")
+        .join("formatting")
+}
+
+fn read_file(basename: &str, extension: &str) -> String {
+    let mut contents = String::new();
+    let path = test_directory().join(basename).with_extension(extension);
+    File::open(path)
+        .and_then(|mut source| source.read_to_string(&mut contents))
+        .expect("Failed to read test file");
+    contents
+}
+
+fn assert_formats_to_expected_html(basename: &str) {
+    let markdown = read_file(basename, "md");
+    let actual_html = format_ansi_to_html(&markdown);
+
+    let target = test_directory()
+        .join(basename)
+        .with_extension("actual.html");
+    File::create(target)
+        .and_then(|mut f| f.write_all(actual_html.as_bytes()))
+        .expect("Failed to write actual HTML");
+
+    let expected_html = read_file(basename, "expected.html");
+    assert_eq!(actual_html, expected_html, "Different format produced");
+}
+
 macro_rules! test_compare_html(
     ($testname:ident) => (
         #[test]
         fn $testname() {
-            let actual_html = format_ansi_to_html(include_str!(concat!("formatting/", stringify!($testname), ".md")));
-
-            // Write actual HTML to disk for debugging
-            let target = Path::new(file!())
-                .parent()
-                .expect("Failed to get parent directory")
-                .join("formatting")
-                .join(concat!(stringify!($testname), ".actual.html"));
-            File::create(target).and_then(|mut f| f.write_all(actual_html.as_bytes())).unwrap();
-
-            let expected_html = include_str!(concat!("formatting/", stringify!($testname), ".expected.html"));
-            assert_eq!(actual_html, expected_html, "Different format produced");
+            ::assert_formats_to_expected_html(stringify!($testname));
         }
     )
 );
 
-test_compare_html!(just_a_line);
-test_compare_html!(headers_and_paragraphs);
-test_compare_html!(inline_formatting);
-test_compare_html!(links);
-test_compare_html!(lists);
-
-// TODO: Block quotes
-// TODO: Code
+mod formatting {
+    mod html {
+        test_compare_html!(block_quote_and_ruler);
+        test_compare_html!(code_blocks);
+        test_compare_html!(headers_and_paragraphs);
+        test_compare_html!(inline_formatting);
+        test_compare_html!(just_a_line);
+        test_compare_html!(links);
+        test_compare_html!(lists);
+    }
+}
