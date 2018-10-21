@@ -50,6 +50,7 @@ jobs:
     # - --no-default-features to make sure things build in other configurations
     # - A static musl build
     # - macOS
+    # - Windows
     - stage: test
       os: linux
       rust: stable
@@ -76,6 +77,11 @@ jobs:
         - export PATH="$HOME/Library/Python/2.7/bin:$PATH"
       env:
         - CARGOTARGET=x86_64-apple-darwin
+    - stage: test
+      os: windows
+      rust: stable
+      env:
+        - CARGOTARGET=x86_64-pc-windows-msvc
     # Catch regressions in beta and nightly
     - stage: test
       os: linux
