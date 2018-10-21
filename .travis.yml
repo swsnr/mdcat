@@ -80,6 +80,8 @@ jobs:
     - stage: test
       os: windows
       rust: stable
+      before_install:
+        - python -m pip install --user ansi2html==${ANSI2HTML_VERSION}
       env:
         - CARGOTARGET=x86_64-pc-windows-msvc
         - CARGOFLAGS='--no-default-features'
