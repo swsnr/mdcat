@@ -82,6 +82,7 @@ jobs:
       rust: stable
       env:
         - CARGOTARGET=x86_64-pc-windows-msvc
+        - CARGOFLAGS='--no-default-features'
     # Catch regressions in beta and nightly
     - stage: test
       os: linux
