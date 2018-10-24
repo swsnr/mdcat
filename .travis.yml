@@ -80,8 +80,9 @@ jobs:
     - stage: test
       os: windows
       rust: stable
-      before_install:
-        - python -m pip install --user ansi2html==${ANSI2HTML_VERSION}
+      # Don't install ansi2html on Travis CI: Python isn’t readily available on
+      # Windows, so skip these tests
+      before_install: ''
       env:
         - CARGOTARGET=x86_64-pc-windows-msvc
         - CARGOFLAGS='--no-default-features'

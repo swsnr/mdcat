@@ -104,6 +104,7 @@ macro_rules! test_compare_html(
     )
 );
 
+#[cfg(unix)]
 mod formatting {
     mod html {
         test_compare_html!(block_quote_and_ruler);
