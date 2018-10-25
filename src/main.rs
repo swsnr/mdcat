@@ -161,49 +161,42 @@ markdown documents for viewing in text terminals:
 Copyright (C) 2018 Sebastian Wiesner
 Licensed under the Apache License, Version 2.0
 Report issues to <https://github.com/lunaryorn/mdcat>.",
-        )
-        .arg(
+        ).arg(
             Arg::with_name("filename")
                 .help("The file to read.  If - read from standard input instead")
-                .default_value("-")
-        )
-        .arg(
+                .default_value("-"),
+        ).arg(
             Arg::with_name("no_colour")
                 .short("c")
                 .long("--no-colour")
                 .aliases(&["nocolour", "no-color", "nocolor"])
-                .help("Disable all colours and other styles.")
-        )
-        .arg(
+                .help("Disable all colours and other styles."),
+        ).arg(
             Arg::with_name("columns")
                 .long("columns")
                 .help("Maximum number of columns to use for output")
-                .default_value(&columns)
-        )
-        .arg(
+                .default_value(&columns),
+        ).arg(
             Arg::with_name("local_only")
-            .short("l")
-            .long("local")
-            .help("Do not load remote resources like images")
-        )
-        .arg(
+                .short("l")
+                .long("local")
+                .help("Do not load remote resources like images"),
+        ).arg(
             Arg::with_name("dump_events")
                 .long("dump-events")
                 .help("Dump Markdown parser events and exit")
-                .hidden(true)
-        )
-        .arg(
+                .hidden(true),
+        ).arg(
             Arg::with_name("detect_only")
-            .long("detect-only")
-            .help("Only detect the terminal type and exit")
-            .hidden(true)
-        )
-        .arg(
+                .long("detect-only")
+                .help("Only detect the terminal type and exit")
+                .hidden(true),
+        ).arg(
             Arg::with_name("ansi_only")
-            .long("ansi-only")
-            .help("Limit to standard ANSI formatting")
-            .conflicts_with("no_colour")
-            .hidden(true)
+                .long("ansi-only")
+                .help("Limit to standard ANSI formatting")
+                .conflicts_with("no_colour")
+                .hidden(true),
         );
 
     let matches = app.get_matches();
