@@ -126,20 +126,23 @@ jobs:
       install: ""
       script: cargo build --target "$CARGOTARGET" $CARGOFLAGS --release --verbose
       before_deploy:
+        # Strip the binary to reduce its size
+        - strip "target/${CARGOTARGET}/release/mdcat"
+        # Put all the things into a dedicated directory, as usual with TAR files
         - export ARCHIVE_NAME="${TRAVIS_TAG}-${CARGOTARGET}"
         - echo "Building ${ARCHIVE_NAME}"
         - mkdir "/tmp/${ARCHIVE_NAME}"
         - cp README.md CHANGELOG.md LICENSE "/tmp/${ARCHIVE_NAME}"
         - cp "target/${CARGOTARGET}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
-        # Strip the binary to reduce its size
-        - strip "/tmp/${ARCHIVE_NAME}/mdcat"
-        - tar -czf "/tmp/${ARCHIVE_NAME}.tar.gz" -C /tmp/ "${ARCHIVE_NAME}"
+        # Pack the tarball
+        - export ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
+        - tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
       deploy:
         skip_cleanup: true
         provider: releases
         api_key:
           secure: evXKPmDHaIxS2DEx357DPHbA5LzMBzCwYos6IVQmqFC3L3/Iz3vBo9/DZ2ZO14b72JIqps/t3vTpXvCPSK/L+LUcCger3fQUpvCMusPzQbldJhifyOdaU5SfAAu7/SetEbalEN0Xzp289HWrQgcJAeoUePwXEYitbvz68HP3cPoAmDM/Mlp+7bdfivt99xTBAH2BVa42pmaUO1itmdnAGpj4IoBDpw8nsCjmWVTjhzsP7O5HPx+36JwdhKeGYO+cP9/Ja4rOaPe5vJNHJLlUcyosXCZyZ+9p/6EZN0TJJnXIuGnkugm6BHYP2PiOwadCKMnd4FQCqLPEAm59OSo7yTtDtJRGTpMlJz59s+GPIG2EiFxhPWD0tL8QVMRP9QUKHPqFBCTPDgcDOW10PzGJtkIE1fEUZ4primoQ6GsPtxEsHY9wSkZ2bL/teRF1i3E6X1aHVUp/7lNBdNqFyXbzfR4Av2pkw8cQrJjVesHDNiV3XkxZr4AMUh356BsemECnvcvurWJEElU86HoNg5VRFLjjHqp4EIck+QjH5WejW/nbg7SWdGvLK1gOPXPxznn5J7trCGj1ULyzwrTYlVw9O4A+yJmOis3BRxzuOS0pNKh/yRdsEF/f+DcoAqBTHQLGGcjNmBF0R5PbJGPO7bY9spjt/g57QT2iwQ03klbu/ns=
-        file: /tmp/${ARCHIVE_NAME}.tar.gz
+        file: "${ARCHIVE_FILE}"
         on:
           tags: true
     - <<: *deploy-settings
@@ -150,3 +153,17 @@ jobs:
         # Only include iterm2 when building for macos, and also enable remote
         # resources for iterm2
         - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
+    - <<: *deploy-settings
+      os: windows
+      before_install: ""
+      env:
+        - CARGOTARGET=x86_64-pc-windows-msvc
+        - CARGOFLAGS='--no-default-features'
+      before_deploy:
+        # Windows likes file extensions :)
+        - mv LICENSE LICENSE.txt
+        # and ZIP files
+        - export ARCHIVE_FILE="${TRAVIS_TAG}-${CARGOTARGET}.zip"
+        # The leading dots are important: They make 7z ignore the path part and
+        # add the file directly to the archive root.
+        - 7z a "${ARCHIVE_FILE}" "./target/${CARGOTARGET}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
