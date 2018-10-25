@@ -30,16 +30,16 @@ terminology = ["immeta"]
 [dependencies]
 failure = "^0.1"
 term_size = "^0.3"
-url = "^1.6"
+url = "^1.7"
 ansi_term = "^0.11"
 
-reqwest = {version = "^0.8", optional = true}
+reqwest = {version = "^0.9", optional = true}
 mime = {version = "^0.3", optional = true}
 base64 = {version = "^0.9", optional = true}
 immeta = {version = "^0.4", optional = true}
 
 [dependencies.clap]
-version = "^2.29"
+version = "^2.32"
 default-features = false
 features = ["color", "wrap_help"]
 
@@ -49,7 +49,7 @@ default-features = false
 features = []
 
 [dependencies.syntect]
-version = "^2"
+version = "^3"
 default-features = false
 features = ["parsing", "assets", "dump-load"]
 

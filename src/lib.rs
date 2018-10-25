@@ -439,7 +439,7 @@ impl<'a, W: Write> Context<'a, W> {
     fn write_highlighted(&mut self, text: Cow<'a, str>) -> Result<(), Error> {
         match self.code.current_highlighter {
             Some(ref mut highlighter) => {
-                let regions = highlighter.highlight(&text);
+                let regions = highlighter.highlight(&text, &self.code.syntax_set);
                 write_as_ansi(&mut *self.output.terminal, &regions)?;
             }
             None => {
