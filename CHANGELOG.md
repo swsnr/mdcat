@@ -12,6 +12,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Replace `--colour` option with a `--no-colour` flag to turn off styled output.
 - `mdcat::push_tty` no longer takes ownership of the `terminal` argument (see
   [GH-41][]).
+- Travis CI builds Windows binaries now.
+- Test formatting output.
 
 [GH-41]: https://github.com/lunaryorn/mdcat/issues/41
 
