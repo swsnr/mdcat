@@ -166,7 +166,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 [0.9.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.8.0...mdcat-0.9.0
 [0.9.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.0...mdcat-0.9.1
 [0.9.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.1...mdcat-0.9.2
-[0.10.0]: https://github.com/lunaryorn/mdcat/comparemdcat-0.9.2.../mdcat-0.10.0
+[0.10.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.2...mdcat-0.10.0
 [0.10.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.0...mdcat-0.10.1
 [0.11.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.1...mdcat-0.11.0
 [Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.11.0...HEAD
