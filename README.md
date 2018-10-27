@@ -13,8 +13,8 @@ $ mdcat sample.md
 
 ![mdcat showcase with different colour themes][sxs]
 
-mdcat in [iTerm2][], with [Dracula][], and [Solarized][] Light and Dark (from
-left to right), and [PragmataPro][pp] as font.
+mdcat in [iTerm2], with [Dracula], and [Solarized] Light and Dark (from left to
+right), and [PragmataPro] as font.
 
 [crates]: https://crates.io/crates/mdcat
 [license]: https://github.com/lunaryorn/mdcat/blob/master/LICENSE
@@ -23,13 +23,13 @@ left to right), and [PragmataPro][pp] as font.
 [Solarized]: http://ethanschoonover.com/solarized
 [dracula]: https://draculatheme.com/iterm/
 [iterm2]: https://www.iterm2.com
-[pp]: https://www.fsd.it/shop/fonts/pragmatapro/
+[PragmataPro]: https://www.fsd.it/shop/fonts/pragmatapro/
 [sxs]: https://raw.githubusercontent.com/lunaryorn/mdcat/master/screenshots/side-by-side.png
 
 ## Features
 
-`mdcat` works best with [iTerm2][] or a compatible terminal emulator, and a
-good terminal font which includes italic characters.  It supports
+`mdcat` works best with [iTerm2] or a compatible terminal emulator, and a good
+terminal font which includes italic characters.  It supports
 
 * All CommonMark syntax
 * Syntax highlighting for code blocks
@@ -63,7 +63,7 @@ Not supported:
 
 ### Binaries
 
-The [Releases][] page provides pre-build binaries for Linux, macOS and Windows.
+The [Releases] page provides pre-build binaries for Linux, macOS and Windows.
 Use these binaries to try `mdcat`, particularly on Windows.
 
 [Releases]: https://github.com/lunaryorn/mdcat/releases
@@ -72,7 +72,7 @@ Use these binaries to try `mdcat`, particularly on Windows.
 
 Some package managers include `mdcat`:
 
-* [Homebrew][]: `brew install mdcat`
+* [Homebrew]: `brew install mdcat`
 * Arch Linux: [mdcat in AUR][aur]
 * Void Linux: `xbps-install -S mdcat`
 
@@ -84,9 +84,9 @@ these to keep `mdcat` updated with the rest of the system.
 
 ### Building with rustup
 
-You can also build `mdcat` manually with `cargo`.  Install [Rust][rustup] and
-run `cargo install mdcat`.  To keep mdcat up to date install [cargo-update][]
-and run `cargo install-update mdcat`.
+You can also build `mdcat` manually with `cargo`.  Install Rust via [rustup] and
+run `cargo install mdcat`.  To keep mdcat up to date install [cargo-update] and
+run `cargo install-update mdcat`.
 
 **Note:** On Windows you likely need `--no-default-features` to make `mdcat`
 build.
@@ -96,18 +96,23 @@ build.
 
 ### SVG support
 
-`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2][]; otherwise `mdcat`
+`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2]; otherwise `mdcat`
 only shows the image title and URL for SVG images.  Install with `brew install
 librsvg`.
 
-[Terminology][] supports SVG out of the box and needs no additional tools.
+[Terminology] supports SVG out of the box and needs no additional tools.
 
 ### Future plans
 
-- [ ] Figure out a better way to show HTML [GH-3](https://github.com/lunaryorn/mdcat/issues/3).
-- [ ] CommonMark extensions: Footnotes [GH-1](https://github.com/lunaryorn/mdcat/issues/1).
-- [ ] CommonMark extensions: Tables [GH-2](https://github.com/lunaryorn/mdcat/issues/2).
-- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4](https://github.com/lunaryorn/mdcat/issues/4).
+- [ ] Figure out a better way to show HTML [GH-3].
+- [ ] CommonMark extensions: Footnotes [GH-1].
+- [ ] CommonMark extensions: Tables [GH-2].
+- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4].
+
+[GH-1]: https://github.com/lunaryorn/mdcat/issues/1
+[GH-2]: https://github.com/lunaryorn/mdcat/issues/2
+[GH-3]: https://github.com/lunaryorn/mdcat/issues/3
+[GH-4]: https://github.com/lunaryorn/mdcat/issues/4
 
 ## License
 

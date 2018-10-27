@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Always print colours regardless of whether stdout if a tty or not.
 - Replace `--colour` option with a `--no-colour` flag to turn off styled output.
 - `mdcat::push_tty` no longer takes ownership of the `terminal` argument (see
-  [GH-41][]).
+  [GH-41]).
 - Travis CI builds Windows binaries now.
 - Test formatting output.
 
@@ -23,10 +23,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [0.10.0] – 2018-09-09
 ### Added
-- Support colours on Windows 10 console (see [GH-36][]).
-- Support musl target on Linux (see [GH-37][] and [GH-38][]).
+- Support colours on Windows 10 console (see [GH-36]).
+- Support musl target on Linux (see [GH-37] and [GH-38]).
 - Published Linux binary statically links musl now, and has no runtime
-  dependencies (see [GH-29][] and [GH-38][]).
+  dependencies (see [GH-29] and [GH-38]).
 
 [GH-29]: https://github.com/lunaryorn/mdcat/issues/29
 [GH-36]: https://github.com/lunaryorn/mdcat/pull/36
@@ -39,7 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [0.9.1] – 2018-08-26
 ### Added
-- Publish binaries for Linux, macOS and Windows (see [GH-28][]).
+- Publish binaries for Linux, macOS and Windows (see [GH-28]).
 
 ### Fixed
 - Correctly build macOS and Linux binaries on Travis CI.
@@ -48,12 +48,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [0.9.0] – 2018-08-26
 ### Added
-- `mdcat` builds on Windows now (see [GH-33][] and [GH-34][]).
+- `mdcat` builds on Windows now (see [GH-33] and [GH-34]).
 
 ### Changed
 - Refactor internal terminal representation, replacing the terminal enum with a
-  new `Terminal` trait and dynamic dispatch (see [GH-35][]).
-- Allow to disable specific terminal backends (see [GH-35][]).
+  new `Terminal` trait and dynamic dispatch (see [GH-35]).
+- Allow to disable specific terminal backends (see [GH-35]).
 - Update minimum Rust version to 1.27.
 
 [GH-33]: https://github.com/lunaryorn/mdcat/pull/33
@@ -63,7 +63,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ## [0.8.0] – 2018-02-15
 ### Added
 - Render SVG images in iTerm2 with `rsvg-convert` (requires `librsvg`).
-- Expose `TerminalWrite` in `mdcat` crate (see [GH-20][]).
+- Expose `TerminalWrite` in `mdcat` crate (see [GH-20]).
 
 [GH-20]: https://github.com/lunaryorn/mdcat/pull/20
 
@@ -72,7 +72,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Show images from HTTP and HTTPS URLs inline in iTerm2.
 - Add `--local` flag to render only local images inline; for remote images, eg,
   HTTP URLs, show only the image title and the URL.
-- Expose `mdcat` as a library crate (see [GH-18][]), but with no guarantees
+- Expose `mdcat` as a library crate (see [GH-18]), but with no guarantees
   about a stable interface, as `mdcat` stays at version 0.x for now.
 - Show `--help` with colours.
 
@@ -83,7 +83,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [0.6.0] – 2018-02-02
 ### Added
-- Show inline images in [Terminology][] (see [GH-16][]).
+- Show inline images in [Terminology] (see [GH-16).
 
 [Terminology]: http://terminolo.gy
 [GH-16]: https://github.com/lunaryorn/mdcat/pull/16
@@ -96,7 +96,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ## [0.5.0] – 2018-01-27
 ### Added
 - Show links inline in iTerm2 and terminals based on VTE 0.50 or newer (see
-  [GH-8][], [GH-14][] and [GH-15][]).
+  [GH-8], [GH-14] and [GH-15]).
 
 [GH-8]: https://github.com/lunaryorn/mdcat/issues/8
 [GH-14]: https://github.com/lunaryorn/mdcat/issues/14
@@ -106,7 +106,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Improve `--help` output.
 
 ### Fixed
-- Remove redundant default value from `--colour` help text (see [GH-10][]).
+- Remove redundant default value from `--colour` help text (see [GH-10]).
 - Replace light black with green; the former doesn't work with Solarized Dark.
 
 [GH-10]: https://github.com/lunaryorn/mdcat/pull/10
