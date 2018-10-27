@@ -35,13 +35,19 @@ def update_changelog(version):
     with open(CHANGELOG) as source:
         changelog = source.read()
 
+    substitutions = [
+        (r'## \[Unreleased\]\n',
+         "## [Unreleased]\n\n## [{version}] – {today}\n"),
+        (r"\[Unreleased\]: https://(.*)/compare/(.*)\.\.\.HEAD",
+         "[{version}]: https://\\1/compare/\\2...mdcat-{version}\n[Unreleased]: https://\\1/compare/mdcat-{version}...HEAD"),
+    ]
+
     today = date.today().isoformat()
-    with_new_version = re.sub(
-        r'## \[Unreleased\]\n',
-        "## [Unreleased]\n\n## [{0}] – {1}\n".format(version, today),
-        changelog)
+    for (pattern, substitution) in substitutions:
+        changelog = re.sub(pattern, substitution.format(
+            version=version, today=today), changelog)
     with open(CHANGELOG, 'w') as sink:
-        sink.write(with_new_version)
+        sink.write(changelog)
 
     # Add the changelog to Git index, for cargo release to commit it
     check_call(['git', 'add', CHANGELOG])

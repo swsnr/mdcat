@@ -143,7 +143,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Fix Travis CI badge on crates.io.
 - Fix license layout in README.
 
-## [0.1] – 2018-01-14
+## [0.1.0] – 2018-01-14
 ### Added
 
 - Support inline formatting.
@@ -151,3 +151,20 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Support code blocks and block quotes.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
+
+[0.1.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.0
+[0.1.1]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.0...mdless-0.1.1
+[0.2.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.1...mdless-0.2.0
+[0.3.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.2.0...mdcat-0.3.0
+[0.4.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.3.0...mdcat-0.4.0
+[0.5.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.4.0...mdcat-0.5.0
+[0.6.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.5.0...mdcat-0.6.0
+[0.7.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.6.0...mdcat-0.7.0
+[0.8.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.7.0...mdcat-0.8.0
+[0.9.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.8.0...mdcat-0.9.0
+[0.9.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.0...mdcat-0.9.1
+[0.9.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.1...mdcat-0.9.2
+[0.10.0]: https://github.com/lunaryorn/mdcat/comparemdcat-0.9.2.../mdcat-0.10.0
+[0.10.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.0...mdcat-0.10.1
+[0.11.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.1...mdcat-0.11.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.11.0...HEAD
