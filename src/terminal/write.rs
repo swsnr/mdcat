@@ -14,9 +14,9 @@
 
 //! Writer for terminals.
 
-use super::super::resources::{Resource, ResourceAccess};
-use super::size::Size;
 use ansi_term::Style;
+use crate::resources::{Resource, ResourceAccess};
+use crate::terminal::size::Size;
 use failure::Error;
 use std::io::Write;
 

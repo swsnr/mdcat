@@ -42,7 +42,7 @@ pub use self::dumb::DumbTerminal;
 pub use self::highlighting::write_as_ansi;
 pub use self::size::Size;
 pub use self::write::{write_styled, Terminal};
-pub use super::error::IgnoreNotSupported;
+pub use crate::error::IgnoreNotSupported;
 
 /// Detect the terminal to use.
 ///

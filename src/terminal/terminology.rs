@@ -17,12 +17,10 @@
 //! [Terminology]: http://terminolo.gy
 
 use failure::Error;
-use immeta;
-use std;
 use std::io::{ErrorKind, Write};
 
-use super::super::resources::{Resource, ResourceAccess};
-use super::*;
+use crate::resources::{Resource, ResourceAccess};
+use crate::terminal::*;
 
 /// Whether we run in terminology or not.
 pub fn is_terminology() -> bool {

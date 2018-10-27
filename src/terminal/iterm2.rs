@@ -23,13 +23,13 @@ use std::io;
 use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
 
-use super::super::error::NotSupportedError;
-use super::super::magic;
-use super::super::resources::{Resource, ResourceAccess};
-use super::super::svg;
-use super::ansi::AnsiTerminal;
-use super::size::Size;
-use super::write::Terminal;
+use crate::error::NotSupportedError;
+use crate::magic;
+use crate::resources::{Resource, ResourceAccess};
+use crate::svg;
+use crate::terminal::ansi::AnsiTerminal;
+use crate::terminal::size::Size;
+use crate::terminal::write::Terminal;
 
 /// The iTerm2 terminal.
 ///

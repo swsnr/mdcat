@@ -17,10 +17,10 @@
 use failure::Error;
 use std::io::Write;
 
-use super::super::error::NotSupportedError;
-use super::super::resources::{Resource, ResourceAccess};
-use super::size::Size;
-use super::write::Terminal;
+use crate::error::NotSupportedError;
+use crate::resources::{Resource, ResourceAccess};
+use crate::terminal::size::Size;
+use crate::terminal::write::Terminal;
 
 /// A dumb terminal with no style support.
 ///

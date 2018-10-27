@@ -38,12 +38,6 @@ jobs:
       before_script: rustup component add rustfmt-preview
       script: cargo fmt -- --check
 
-    # Base line for backwards compatibility
-    - stage: test
-      os: linux
-      rust: '1.27.2'
-      env:
-        - CARGOTARGET=x86_64-unknown-linux-gnu
     # Our target Rust version.  We test:
     #
     # - A standard linux build

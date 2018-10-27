@@ -14,9 +14,6 @@
 
 //! Terminal size.
 
-use std;
-use term_size;
-
 /// The size of a text terminal.
 #[derive(Debug, Copy, Clone)]
 pub struct Size {

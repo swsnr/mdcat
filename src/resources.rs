@@ -24,7 +24,7 @@ use url::Url;
 
 // Required for remote resources
 #[cfg(not(feature = "remote_resources"))]
-use super::error::NotSupportedError;
+use crate::error::NotSupportedError;
 #[cfg(feature = "remote_resources")]
 use reqwest;
 
@@ -189,8 +189,8 @@ fn read_http(_url: &Url) -> Result<Vec<u8>, Error> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::ResourceAccess::*;
     use super::Resource::*;
+    use super::ResourceAccess::*;
     use super::*;
     use std::borrow::Cow::Borrowed;
 

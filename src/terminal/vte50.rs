@@ -15,13 +15,12 @@
 //! VTE newer than 50.
 
 use failure::Error;
-use std;
 use std::io::Write;
 
-use super::super::resources::{Resource, ResourceAccess};
-use super::ansi::AnsiTerminal;
-use super::size::Size;
-use super::write::Terminal;
+use crate::resources::{Resource, ResourceAccess};
+use crate::terminal::ansi::AnsiTerminal;
+use crate::terminal::size::Size;
+use crate::terminal::write::Terminal;
 
 /// Get the version of VTE underlying this terminal.
 ///

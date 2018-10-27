@@ -14,9 +14,8 @@
 
 //! Tools for syntax highlighting.
 
-use super::write::{write_styled, Terminal};
-use ansi_term;
 use ansi_term::Colour;
+use crate::terminal::write::{write_styled, Terminal};
 use failure::Error;
 use std::io::Write;
 use syntect::highlighting::{FontStyle, Style};
