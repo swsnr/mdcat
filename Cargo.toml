@@ -13,7 +13,6 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 
 [badges]
 travis-ci = { repository = "lunaryorn/mdcat" }
-maintenance = { status = "actively-developed" }
 
 [features]
 default = ["iterm2", "terminology", "remote_resources"]
