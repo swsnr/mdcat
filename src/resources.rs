@@ -290,7 +290,7 @@ mod tests {
                 .unwrap_err()
                 .downcast::<HttpStatusError>()
                 .expect("Not an IO error");
-            assert_eq!(error.status_code, reqwest::StatusCode::NotFound);
+            assert_eq!(error.status_code, reqwest::StatusCode::NOT_FOUND);
             assert_eq!(error.url, url);
         }
 
