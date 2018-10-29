@@ -15,7 +15,7 @@
 //! Detect mime type with `file`.
 
 use failure::Error;
-use mime::Mime;
+// use mime::Mime;
 use std::io::prelude::*;
 use std::process::*;
 use std::str;
