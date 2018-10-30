@@ -278,8 +278,10 @@ impl<'a, W: Write> Context<'a, W> {
     ) -> Context<'a, W> {
         #[cfg(not(feature = "resources"))]
         {
-            drop(base_dir);
-            drop(resource_access)
+            // Mark variables as used if resources are disabled to keep public
+            // interface stable but avoid compiler warnings
+            let _ = base_dir;
+            let _ = resource_access;
         }
         Context {
             #[cfg(feature = "resources")]
@@ -610,7 +612,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
                 }
                 LinkCapability::None => {
                     // Just mark destination as used
-                    drop(destination);
+                    let _ = destination;
                 }
             }
         }
@@ -633,7 +635,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             }
             ImageCapability::None => {
                 // Just to mark "link" as used
-                drop(link);
+                let _ = link;
             }
         },
     };
