@@ -14,6 +14,7 @@
 
 //! Access to resources referenced from markdown documents.
 
+#[cfg(feature = "resources")]
 use url::Url;
 
 /// What kind of resources mdcat may access when rendering.
@@ -28,9 +29,10 @@ pub enum ResourceAccess {
     RemoteAllowed,
 }
 
+#[cfg(feature = "resources")]
 impl ResourceAccess {
     /// Whether the resource access permits access to the given `url`.
-    pub fn permits(&self, url: &Url) -> bool {
+    pub fn permits(self, url: &Url) -> bool {
         match self {
             ResourceAccess::LocalOnly if is_local(url) => true,
             ResourceAccess::RemoteAllowed => true,
@@ -39,7 +41,8 @@ impl ResourceAccess {
     }
 }
 
-pub fn is_local(url: &Url) -> bool {
+#[cfg(feature = "resources")]
+fn is_local(url: &Url) -> bool {
     url.scheme() == "file" && url.to_file_path().is_ok()
 }
 

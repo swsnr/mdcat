@@ -18,9 +18,10 @@
 
 mod ansi;
 pub mod highlighting;
-mod osc;
 mod size;
 
+#[cfg(feature = "osc8_links")]
+mod osc;
 #[cfg(feature = "terminology")]
 mod terminology;
 

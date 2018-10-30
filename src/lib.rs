@@ -34,12 +34,14 @@
 #[cfg(feature = "terminology")]
 extern crate immeta;
 
+#[cfg(feature = "resources")]
+extern crate url;
+
 extern crate ansi_term;
 extern crate failure;
 extern crate pulldown_cmark;
 extern crate syntect;
 extern crate term_size;
-extern crate url;
 
 use ansi_term::{Colour, Style};
 use failure::Error;
@@ -53,6 +55,8 @@ use std::path::Path;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
+
+#[cfg(feature = "resources")]
 use url::Url;
 
 mod resources;
@@ -142,14 +146,16 @@ struct Link<'a> {
 }
 
 /// Input context.
-struct InputContext<'a> {
+#[cfg(feature = "resources")]
+struct ResourceContext<'a> {
     /// The base directory, to resolve relative paths.
     base_dir: &'a Path,
     /// What resources we may access when processing markdown.
     resource_access: ResourceAccess,
 }
 
-impl<'a> InputContext<'a> {
+#[cfg(feature = "resources")]
+impl<'a> ResourceContext<'a> {
     /// Resolve a reference in the input.
     ///
     /// If `reference` parses as URL return the parsed URL.  Otherwise assume
@@ -239,8 +245,9 @@ struct ImageContext {
 
 /// Context for TTY rendering.
 struct Context<'a, W: Write + 'a> {
+    #[cfg(feature = "resources")]
     /// Context for input.
-    input: InputContext<'a>,
+    resources: ResourceContext<'a>,
     /// Context for output.
     output: OutputContext<'a, W>,
     /// Context for styling
@@ -269,8 +276,14 @@ impl<'a, W: Write> Context<'a, W> {
         syntax_set: SyntaxSet,
         theme: &'a Theme,
     ) -> Context<'a, W> {
+        #[cfg(not(feature = "resources"))]
+        {
+            drop(base_dir);
+            drop(resource_access)
+        }
         Context {
-            input: InputContext {
+            #[cfg(feature = "resources")]
+            resources: ResourceContext {
                 base_dir,
                 resource_access,
             },
@@ -590,7 +603,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             match ctx.output.capabilities.links {
                 #[cfg(feature = "osc8_links")]
                 LinkCapability::OSC8(ref osc8) => {
-                    if let Some(url) = ctx.input.resolve_reference(&destination) {
+                    if let Some(url) = ctx.resources.resolve_reference(&destination) {
                         osc8.set_link(ctx.output.writer, url.as_str())?;
                         ctx.links.inside_inline_link = true;
                     }
@@ -604,9 +617,9 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
         Image(link, _title) => match ctx.output.capabilities.image {
             #[cfg(feature = "terminology")]
             ImageCapability::Terminology(ref mut terminology) => {
-                let access = ctx.input.resource_access;
+                let access = ctx.resources.resource_access;
                 if let Some(url) = ctx
-                    .input
+                    .resources
                     .resolve_reference(&link)
                     .filter(|url| access.permits(url))
                 {
@@ -685,7 +698,7 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
                 LinkCapability::OSC8(ref osc8) => {
                     osc8.clear_link(ctx.output.writer)?;
                 }
-                _ => {}
+                LinkCapability::None => {}
             }
             ctx.links.inside_inline_link = false;
         } else {

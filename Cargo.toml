@@ -17,20 +17,22 @@ travis-ci = { repository = "lunaryorn/mdcat" }
 [features]
 default = ["vte50", "iterm2", "terminology"]
 
+resources = ["url"]
+
 # Special terminal features
-osc8_links = []
+osc8_links = ["resources"]
 
 # Terminal emulators
-iterm2 = ["osc8_links", "mime", "base64"]
-terminology = ["osc8_links", "immeta"]
+iterm2 = ["osc8_links", "resources", "mime", "base64"]
+terminology = ["osc8_links", "resources", "immeta"]
 vte50 = ["osc8_links"]
 
 [dependencies]
 failure = "^0.1"
 term_size = "^0.3"
-url = "^1.7"
 ansi_term = "^0.11"
 
+url = {version = "^1.7", optional = true}
 reqwest = {version = "^0.9", optional = true}
 mime = {version = "^0.3", optional = true}
 base64 = {version = "^0.9", optional = true}
