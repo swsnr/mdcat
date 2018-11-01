@@ -16,8 +16,7 @@
 
 use super::ansi::AnsiStyle;
 use ansi_term::Colour;
-use failure::Error;
-use std::io::Write;
+use std::io::{Result, Write};
 use syntect::highlighting::{FontStyle, Style};
 
 /// Write regions as ANSI 8-bit coloured text.
@@ -39,7 +38,7 @@ pub fn write_as_ansi<W: Write>(
     writer: &mut W,
     ansi: &AnsiStyle,
     regions: &[(Style, &str)],
-) -> Result<(), Error> {
+) -> Result<()> {
     for &(style, text) in regions {
         let rgb = {
             let fg = style.foreground;

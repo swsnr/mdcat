@@ -327,7 +327,7 @@ impl<'a, W: Write> Context<'a, W> {
     ///
     /// Set `block_context` accordingly, and separate this block from the
     /// previous.
-    fn start_inline_text(&mut self) -> Result<(), Error> {
+    fn start_inline_text(&mut self) -> io::Result<()> {
         if let BlockLevel::Block = self.block.level {
             self.newline_and_indent()?
         };
@@ -340,9 +340,9 @@ impl<'a, W: Write> Context<'a, W> {
     ///
     /// Set `block_context` accordingly and end inline context—if present—with
     /// a line break.
-    fn end_inline_text_with_margin(&mut self) -> Result<(), Error> {
+    fn end_inline_text_with_margin(&mut self) -> io::Result<()> {
         if let BlockLevel::Inline = self.block.level {
-            self.newline()?
+            self.newline()?;
         };
         // We are back at blocks now
         self.block.level = BlockLevel::Block;
@@ -352,22 +352,21 @@ impl<'a, W: Write> Context<'a, W> {
     /// Write a newline.
     ///
     /// Restart all current styles after the newline.
-    fn newline(&mut self) -> Result<(), Error> {
-        writeln!(self.output.writer)?;
-        Ok(())
+    fn newline(&mut self) -> io::Result<()> {
+        writeln!(self.output.writer)
     }
 
     /// Write a newline and indent.
     ///
     /// Reset format before the line break, and set all active styles again
     /// after the line break.
-    fn newline_and_indent(&mut self) -> Result<(), Error> {
+    fn newline_and_indent(&mut self) -> io::Result<()> {
         self.newline()?;
         self.indent()
     }
 
     /// Indent according to the current indentation level.
-    fn indent(&mut self) -> Result<(), Error> {
+    fn indent(&mut self) -> io::Result<()> {
         write!(
             self.output.writer,
             "{}",
@@ -393,7 +392,7 @@ impl<'a, W: Write> Context<'a, W> {
     }
 
     /// Write `text` with the given `style`.
-    fn write_styled<S: AsRef<str>>(&mut self, style: &Style, text: S) -> Result<(), Error> {
+    fn write_styled<S: AsRef<str>>(&mut self, style: &Style, text: S) -> io::Result<()> {
         match self.output.capabilities.style {
             StyleCapability::None => writeln!(self.output.writer, "{}", text.as_ref())?,
             StyleCapability::Ansi(ref ansi) => {
@@ -404,7 +403,7 @@ impl<'a, W: Write> Context<'a, W> {
     }
 
     /// Write `text` with current style.
-    fn write_styled_current<S: AsRef<str>>(&mut self, text: S) -> Result<(), Error> {
+    fn write_styled_current<S: AsRef<str>>(&mut self, text: S) -> io::Result<()> {
         let style = self.style.current;
         self.write_styled(&style, text)
     }
@@ -455,7 +454,7 @@ impl<'a, W: Write> Context<'a, W> {
     }
 
     /// Write a simple border.
-    fn write_border(&mut self) -> Result<(), Error> {
+    fn write_border(&mut self) -> io::Result<()> {
         let separator = "\u{2500}".repeat(self.output.size.width.min(20));
         let style = self.style.current.fg(Colour::Green);
         self.write_styled(&style, separator)?;
@@ -466,7 +465,7 @@ impl<'a, W: Write> Context<'a, W> {
     ///
     /// If the code context has a highlighter, use it to highlight `text` and
     /// write it.  Otherwise write `text` without highlighting.
-    fn write_highlighted(&mut self, text: Cow<'a, str>) -> Result<(), Error> {
+    fn write_highlighted(&mut self, text: Cow<'a, str>) -> io::Result<()> {
         let mut wrote_highlighted: bool = false;
         if let Some(ref mut highlighter) = self.code.current_highlighter {
             if let StyleCapability::Ansi(ref ansi) = self.output.capabilities.style {
