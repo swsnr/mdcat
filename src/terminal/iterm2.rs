@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 
-// 	http://www.apache.org/licenses/LICENSE-2.0
+//  http://www.apache.org/licenses/LICENSE-2.0
 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,20 +19,23 @@
 //!
 //! See <https://www.iterm2.com> for more information.
 
-use base64;
-use failure::Error;
-use mime;
-use std;
-use std::ffi::OsStr;
-use std::io;
-use std::io::Write;
-use std::os::unix::ffi::OsStrExt;
+use super::osc::write_osc;
+use std::io::{Result, Write};
 
 /// Whether we run inside iTerm2 or not.
 pub fn is_iterm2() -> bool {
     std::env::var("TERM_PROGRAM")
         .map(|value| value.contains("iTerm.app"))
         .unwrap_or(false)
+}
+
+pub struct Marks;
+
+impl Marks {
+    /// Write an iterm2 mark command to the given `writer`.
+    pub fn set_mark<W: Write>(&self, writer: &mut W) -> Result<()> {
+        write_osc(writer, "1337;SetMark")
+    }
 }
 
 // impl<W: Write> ITerm2<W> {
@@ -78,44 +81,5 @@ pub fn is_iterm2() -> bool {
 //                 what: "inline image with mimetype",
 //             }.into()),
 //         }
-//     }
-// }
-
-// impl<W: Write> Terminal for ITerm2<W> {
-//     type TerminalWrite = W;
-
-//     fn name(&self) -> &'static str {
-//         "iTerm2"
-//     }
-
-//     fn write(&mut self) -> &mut W {
-//         self.ansi.write()
-//     }
-
-//     fn supports_styles(&self) -> bool {
-//         self.ansi.supports_styles()
-//     }
-
-//     fn set_link(&mut self, destination: &str) -> Result<(), Error> {
-//         self.ansi.write_osc(&format!("8;;{}", destination))?;
-//         Ok(())
-//     }
-
-//     fn set_mark(&mut self) -> Result<(), Error> {
-//         self.ansi.write_osc("1337;SetMark")?;
-//         Ok(())
-//     }
-
-//     fn write_inline_image(
-//         &mut self,
-//         _max_size: Size,
-//         resource: &Resource,
-//         access: ResourceAccess,
-//     ) -> Result<(), Error> {
-//         resource.read(access).and_then(|contents| {
-//             self.write_inline_image(resource.as_str().as_ref(), &contents)
-//                 .map_err(Into::into)
-//         })?;
-//         Ok(())
 //     }
 // }

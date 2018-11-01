@@ -50,6 +50,7 @@ use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, Tag};
 use std::borrow::Cow;
 use std::collections::VecDeque;
+use std::io;
 use std::io::Write;
 use std::path::Path;
 use syntect::easy::HighlightLines;
@@ -480,6 +481,16 @@ impl<'a, W: Write> Context<'a, W> {
         }
         Ok(())
     }
+
+    /// Set a mark on the current position of the terminal if supported,
+    /// otherwise do nothing.
+    fn set_mark_if_supported(&mut self) -> io::Result<()> {
+        match self.output.capabilities.marks {
+            #[cfg(feature = "iterm2")]
+            MarkCapability::ITerm2(ref marks) => marks.set_mark(self.output.writer),
+            MarkCapability::None => Ok(()),
+        }
+    }
 }
 
 /// Write a single `event` in the given context.
@@ -528,7 +539,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
             // them close to the text where they appeared in
             ctx.write_pending_links()?;
             ctx.start_inline_text()?;
-            // ctx.output.terminal.set_mark().ignore_not_supported()?;
+            ctx.set_mark_if_supported()?;
             ctx.set_style(Style::new().fg(Colour::Blue).bold());
             ctx.write_styled_current("\u{2504}".repeat(level as usize))?
         }

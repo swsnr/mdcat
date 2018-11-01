@@ -20,7 +20,9 @@ mod ansi;
 pub mod highlighting;
 mod size;
 
-#[cfg(feature = "osc8_links")]
+#[cfg(feature = "iterm2")]
+mod iterm2;
+#[cfg(any(feature = "osc8_links", feature = "iterm2"))]
 mod osc;
 #[cfg(feature = "terminology")]
 mod terminology;
@@ -51,6 +53,9 @@ pub enum LinkCapability {
 pub enum MarkCapability {
     /// The terminal can't set marks.
     None,
+    /// The terminal supports iTerm2 jump marks.
+    #[cfg(feature = "iterm2")]
+    ITerm2(self::iterm2::Marks),
 }
 
 /// The capability of the terminal to write images inline.
@@ -106,11 +111,17 @@ impl TerminalCapabilities {
         // why we have this weird match here.  Note: Don't use true here because
         // that makes clippy complain.
         match 1 {
-            // #[cfg(feature = "iterm2")]
-            // _ if iterm2::is_iterm2() =>
-            // {
-            //     Box::new(ITerm2::new(ansi))
-            // }
+            #[cfg(feature = "iterm2")]
+            _ if self::iterm2::is_iterm2() =>
+            {
+                TerminalCapabilities {
+                    name: "iTerm2".to_string(),
+                    style: StyleCapability::Ansi(AnsiStyle),
+                    links: LinkCapability::OSC8(self::osc::OSC8Links),
+                    image: ImageCapability::None,
+                    marks: MarkCapability::ITerm2(self::iterm2::Marks),
+                }
+            }
             #[cfg(feature = "terminology")]
             _ if self::terminology::is_terminology() =>
             {
