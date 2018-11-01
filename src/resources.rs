@@ -185,7 +185,7 @@ fn is_local(url: &Url) -> bool {
 //     }.into())
 // }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "resources"))]
 mod tests {
     use super::*;
 
