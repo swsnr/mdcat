@@ -15,9 +15,10 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 travis-ci = { repository = "lunaryorn/mdcat" }
 
 [features]
-default = ["vte50", "iterm2", "terminology"]
+default = ["vte50", "iterm2", "terminology", "remote_resources"]
 
 resources = ["url"]
+remote_resources = ["reqwest", "resources"]
 
 # Special terminal features
 osc8_links = ["resources"]

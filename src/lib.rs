@@ -20,11 +20,19 @@
 
 //! Write markdown to TTYs.
 
-// Used by remote_resources to actually fetch remote resources over HTTP
-// #[cfg(feature = "remote_resources")]
-// extern crate reqwest;
+extern crate ansi_term;
+extern crate failure;
+extern crate pulldown_cmark;
+extern crate syntect;
+extern crate term_size;
 
-// Used by iTerm support on macos
+#[cfg(feature = "resources")]
+extern crate url;
+// Used by remote_resources to actually fetch remote resources over HTTP
+#[cfg(feature = "remote_resources")]
+extern crate reqwest;
+
+// Used by iTerm support
 #[cfg(feature = "iterm2")]
 extern crate base64;
 #[cfg(feature = "iterm2")]
@@ -34,14 +42,10 @@ extern crate mime;
 #[cfg(feature = "terminology")]
 extern crate immeta;
 
-#[cfg(feature = "resources")]
-extern crate url;
-
-extern crate ansi_term;
-extern crate failure;
-extern crate pulldown_cmark;
-extern crate syntect;
-extern crate term_size;
+// Pretty assertions for unit tests.
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
 
 use ansi_term::{Colour, Style};
 use failure::Error;
@@ -56,9 +60,6 @@ use std::path::Path;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
-
-#[cfg(feature = "resources")]
-use url::Url;
 
 mod resources;
 mod terminal;
@@ -162,7 +163,8 @@ impl<'a> ResourceContext<'a> {
     /// If `reference` parses as URL return the parsed URL.  Otherwise assume
     /// `reference` is a file path, resolve it against `base_dir` and turn it
     /// into a file:// URL.  If this also fails return `None`.
-    fn resolve_reference(&self, reference: &'a str) -> Option<Url> {
+    fn resolve_reference(&self, reference: &'a str) -> Option<url::Url> {
+        use url::Url;
         Url::parse(reference)
             .or_else(|_| Url::from_file_path(self.base_dir.join(reference)))
             .ok()
