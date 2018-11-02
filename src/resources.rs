@@ -41,9 +41,35 @@ impl ResourceAccess {
     }
 }
 
+/// Whether `url` is readable as local file:.
 #[cfg(feature = "resources")]
 fn is_local(url: &Url) -> bool {
     url.scheme() == "file" && url.to_file_path().is_ok()
+}
+
+#[cfg(feature = "resources")]
+pub fn read_url(url: &Url) -> std::io::Result<Vec<u8>> {
+    use std::fs::File;
+    use std::io::prelude::*;
+    use std::io::{Error, ErrorKind};
+
+    match url.scheme() {
+        "file" => match url.to_file_path() {
+            Ok(path) => {
+                let mut buffer = Vec::new();
+                File::open(path)?.read_to_end(&mut buffer)?;
+                Ok(buffer)
+            }
+            Err(_) => Err(Error::new(
+                ErrorKind::InvalidInput,
+                format!("Remote file: URL {} not supported", url),
+            )),
+        },
+        _ => Err(Error::new(
+            ErrorKind::InvalidInput,
+            format!("Protocol of URL {} not supported", url),
+        )),
+    }
 }
 
 // /// A non-200 status code from a HTTP request.
@@ -62,80 +88,6 @@ fn is_local(url: &Url) -> bool {
 // }
 
 // impl<'a> Resource<'a> {
-//     /// Obtain a resource from a markdown `reference`.
-//     ///
-//     /// Try to parse `reference` as a URL.  If this succeeds assume that
-//     /// `reference` refers to a remote resource and return a `Remote` resource.
-//     ///
-//     /// Otherwise assume that `reference` denotes a local file by its path and
-//     /// return a `LocalFile` resource.  If `reference` holds a relative path
-//     /// join it against `base_dir` first.
-//     pub fn from_reference(base_dir: &Path, reference: &'a str) -> Resource<'a> {
-//         if let Ok(url) = Url::parse(reference) {
-//             Resource::Remote(url)
-//         } else {
-//             let path = Path::new(reference);
-//             if path.is_absolute() {
-//                 Resource::LocalFile(Cow::Borrowed(path))
-//             } else {
-//                 Resource::LocalFile(Cow::Owned(base_dir.join(path)))
-//             }
-//         }
-//     }
-
-//     /// Whether this resource is local.
-//     fn is_local(&self) -> bool {
-//         match *self {
-//             Resource::LocalFile(_) => true,
-//             _ => false,
-//         }
-//     }
-
-//     /// Whether we may access this resource under the given access permissions.
-//     pub fn may_access(&self, access: ResourceAccess) -> bool {
-//         match access {
-//             ResourceAccess::RemoteAllowed => true,
-//             ResourceAccess::LocalOnly => self.is_local(),
-//         }
-//     }
-
-//     /// Convert this resource into a URL.
-//     ///
-//     /// Return a `Remote` resource as is, and a `LocalFile` as `file:` URL.
-//     pub fn into_url(self) -> Url {
-//         match self {
-//             Resource::Remote(url) => url,
-//             Resource::LocalFile(path) => Url::parse("file:///")
-//                 .expect("Failed to parse file root URL!")
-//                 .join(&path.to_string_lossy())
-//                 .unwrap_or_else(|_| panic!(format!("Failed to join root URL with {:?}", path))),
-//         }
-//     }
-
-//     /// Extract the local path from this resource.
-//     ///
-//     /// If the resource is a `LocalFile`, or a `file://` URL pointing to a local
-//     /// file return the local path, otherwise return `None`.
-//     pub fn local_path(&'a self) -> Option<Cow<'a, Path>> {
-//         match *self {
-//             Resource::Remote(ref url) if url.scheme() == "file" && url.host().is_none() => {
-//                 Some(Cow::Borrowed(Path::new(url.path())))
-//             }
-//             Resource::LocalFile(ref path) => Some(Cow::Borrowed(path)),
-//             _ => None,
-//         }
-//     }
-
-//     /// Convert this resource to a string.
-//     ///
-//     /// For local resource return the lossy UTF-8 representation of the path,
-//     /// for remote resource the string serialization of the URL.
-//     pub fn as_str(&'a self) -> Cow<'a, str> {
-//         match *self {
-//             Resource::Remote(ref url) => Cow::Borrowed(url.as_str()),
-//             Resource::LocalFile(ref path) => path.to_string_lossy(),
-//         }
-//     }
 
 //     /// Read the contents of this resource.
 //     ///

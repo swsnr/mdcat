@@ -14,18 +14,17 @@
 
 //! SVG "rendering" for mdcat.
 
-use failure::Error;
-use process::ProcessError;
 use std::io::prelude::*;
+use std::io::{Error, ErrorKind, Result};
 use std::process::{Command, Stdio};
 
 /// Render an SVG image to a PNG pixel graphic for display.
-pub fn render_svg(svg: &[u8]) -> Result<Vec<u8>, Error> {
+pub fn render_svg(svg: &[u8]) -> Result<Vec<u8>> {
     render_svg_with_rsvg_convert(svg)
 }
 
-/// Render an SVG file with `rsvg-convert
-fn render_svg_with_rsvg_convert(svg: &[u8]) -> Result<Vec<u8>, Error> {
+/// Render an SVG file with `rsvg-convert`.
+fn render_svg_with_rsvg_convert(svg: &[u8]) -> Result<Vec<u8>> {
     let mut process = Command::new("rsvg-convert")
         .arg("--dpi-x=72")
         .arg("--dpi-y=72")
@@ -45,10 +44,13 @@ fn render_svg_with_rsvg_convert(svg: &[u8]) -> Result<Vec<u8>, Error> {
     if output.status.success() {
         Ok(output.stdout)
     } else {
-        Err(ProcessError {
-            command: "file --brief --mime-type".to_string(),
-            status: output.status,
-            error: String::from_utf8_lossy(&output.stderr).into_owned(),
-        }.into())
+        Err(Error::new(
+            ErrorKind::Other,
+            format!(
+                "rsvg-convert failed with status {}: {}",
+                output.status,
+                String::from_utf8_lossy(&output.stderr)
+            ),
+        ))
     }
 }

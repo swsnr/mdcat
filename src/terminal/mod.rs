@@ -55,7 +55,7 @@ pub enum MarkCapability {
     None,
     /// The terminal supports iTerm2 jump marks.
     #[cfg(feature = "iterm2")]
-    ITerm2(self::iterm2::Marks),
+    ITerm2(self::iterm2::ITerm2Marks),
 }
 
 /// The capability of the terminal to write images inline.
@@ -64,7 +64,10 @@ pub enum ImageCapability {
     None,
     /// The terminal understands the terminology way of inline images.
     #[cfg(feature = "terminology")]
-    Terminology(terminology::TerminologyImages),
+    Terminology(self::terminology::TerminologyImages),
+    /// The terminal understands the iterm2 way of inline images.
+    #[cfg(feature = "iterm2")]
+    ITerm2(self::iterm2::ITerm2Images),
 }
 
 /// The capabilities of a terminal.
@@ -118,8 +121,8 @@ impl TerminalCapabilities {
                     name: "iTerm2".to_string(),
                     style: StyleCapability::Ansi(AnsiStyle),
                     links: LinkCapability::OSC8(self::osc::OSC8Links),
-                    image: ImageCapability::None,
-                    marks: MarkCapability::ITerm2(self::iterm2::Marks),
+                    image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
+                    marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
                 }
             }
             #[cfg(feature = "terminology")]

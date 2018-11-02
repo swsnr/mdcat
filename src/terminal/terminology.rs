@@ -33,7 +33,7 @@ pub struct TerminologyImages;
 impl TerminologyImages {
     /// Write an inline image for Terminology.
     pub fn write_inline_image<W: Write>(
-        &mut self,
+        &self,
         writer: &mut W,
         max_size: TerminalSize,
         url: &Url,

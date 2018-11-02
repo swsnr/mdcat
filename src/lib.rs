@@ -25,10 +25,10 @@
 // extern crate reqwest;
 
 // Used by iTerm support on macos
-// #[cfg(feature = "iterm2")]
-// extern crate base64;
-// #[cfg(feature = "iterm2")]
-// extern crate mime;
+#[cfg(feature = "iterm2")]
+extern crate base64;
+#[cfg(feature = "iterm2")]
+extern crate mime;
 
 // Used by Terminology support
 #[cfg(feature = "terminology")]
@@ -628,7 +628,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
         }
         Image(link, _title) => match ctx.output.capabilities.image {
             #[cfg(feature = "terminology")]
-            ImageCapability::Terminology(ref mut terminology) => {
+            ImageCapability::Terminology(ref terminology) => {
                 let access = ctx.resources.resource_access;
                 if let Some(url) = ctx
                     .resources
@@ -641,6 +641,20 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
                         &url,
                     )?;
                     ctx.image.inline_image = true;
+                }
+            }
+            #[cfg(feature = "iterm2")]
+            ImageCapability::ITerm2(ref iterm2) => {
+                let access = ctx.resources.resource_access;
+                if let Some(url) = ctx
+                    .resources
+                    .resolve_reference(&link)
+                    .filter(|url| access.permits(url))
+                {
+                    if let Ok(contents) = iterm2.read_and_render(&url) {
+                        iterm2.write_inline_image(ctx.output.writer, url.as_str(), &contents)?;
+                        ctx.image.inline_image = true;
+                    }
                 }
             }
             ImageCapability::None => {
