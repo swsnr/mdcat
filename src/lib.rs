@@ -45,6 +45,7 @@ extern crate immeta;
 // Pretty assertions for unit tests.
 #[cfg(test)]
 #[macro_use]
+#[allow(unused_imports)]
 extern crate pretty_assertions;
 
 use ansi_term::{Colour, Style};
