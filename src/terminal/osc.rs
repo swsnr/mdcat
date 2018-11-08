@@ -12,22 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Standard ANSI styling.
+//! OSC commands on terminals.
 
-use ansi_term::Style;
 use std::io::{Result, Write};
 
-/// Access to a terminal’s basic ANSI styling functionality.
-pub struct AnsiStyle;
+/// Write an OSC `command` to this terminal.
+pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> Result<()> {
+    writer.write_all(&[0x1b, 0x5d])?;
+    writer.write_all(command.as_bytes())?;
+    writer.write_all(&[0x07])?;
+    Ok(())
+}
 
-impl AnsiStyle {
-    /// Write styled text to the given writer.
-    pub fn write_styled<W: Write, V: AsRef<str>>(
-        &self,
-        write: &mut W,
-        style: &Style,
-        text: V,
-    ) -> Result<()> {
-        write!(write, "{}", style.paint(text.as_ref()))
+#[cfg(feature = "osc8_links")]
+pub struct OSC8Links;
+
+#[cfg(feature = "osc8_links")]
+impl OSC8Links {
+    pub fn set_link<W: Write>(&self, writer: &mut W, destination: &str) -> Result<()> {
+        write_osc(writer, &format!("8;;{}", destination))
+    }
+
+    pub fn clear_link<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.set_link(writer, "")
     }
 }

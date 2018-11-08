@@ -14,10 +14,9 @@
 
 //! Tools for syntax highlighting.
 
+use super::ansi::AnsiStyle;
 use ansi_term::Colour;
-use crate::terminal::write::{write_styled, Terminal};
-use failure::Error;
-use std::io::Write;
+use std::io::{Result, Write};
 use syntect::highlighting::{FontStyle, Style};
 
 /// Write regions as ANSI 8-bit coloured text.
@@ -36,9 +35,10 @@ use syntect::highlighting::{FontStyle, Style};
 /// Furthermore we completely ignore any background colour settings, to avoid
 /// conflicts with the terminal colour themes.
 pub fn write_as_ansi<W: Write>(
-    terminal: &mut dyn Terminal<TerminalWrite = W>,
+    writer: &mut W,
+    ansi: &AnsiStyle,
     regions: &[(Style, &str)],
-) -> Result<(), Error> {
+) -> Result<()> {
     for &(style, text) in regions {
         let rgb = {
             let fg = style.foreground;
@@ -69,7 +69,7 @@ pub fn write_as_ansi<W: Write>(
         ansi_style.is_bold = font.contains(FontStyle::BOLD);
         ansi_style.is_italic = font.contains(FontStyle::ITALIC);
         ansi_style.is_underline = font.contains(FontStyle::UNDERLINE);
-        write_styled(terminal, &ansi_style, text)?;
+        ansi.write_styled(writer, &ansi_style, text)?;
     }
 
     Ok(())

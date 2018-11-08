@@ -14,15 +14,12 @@
 
 //! Detect mime type with `file`.
 
-use failure::Error;
 use mime::Mime;
 use std::io::prelude::*;
+use std::io::{Error, ErrorKind};
 use std::process::*;
-use std::str;
 
-use process::ProcessError;
-
-pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Error> {
+pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, failure::Error> {
     let mut process = Command::new("file")
         .arg("--brief")
         .arg("--mime-type")
@@ -40,16 +37,19 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Error> {
 
     let output = process.wait_with_output()?;
     if output.status.success() {
-        str::from_utf8(&output.stdout)?
+        std::str::from_utf8(&output.stdout)?
             .trim()
             .parse()
             .map_err(Into::into)
     } else {
-        Err(ProcessError {
-            command: "file --brief --mime-type".to_string(),
-            status: output.status,
-            error: String::from_utf8_lossy(&output.stderr).into_owned(),
-        }.into())
+        Err(Error::new(
+            ErrorKind::Other,
+            format!(
+                "file --brief --mime-type failed with status {}: {}",
+                output.status,
+                String::from_utf8_lossy(&output.stderr)
+            ),
+        ).into())
     }
 }
 
@@ -59,7 +59,7 @@ mod tests {
 
     #[test]
     fn detect_mimetype_of_png_image() {
-        let data = include_bytes!("../sample/rust-logo-128x128.png");
+        let data = include_bytes!("../../../sample/rust-logo-128x128.png");
         let result = detect_mime_type(data);
         assert!(result.is_ok(), "Unexpected error: {:?}", result);
         assert_eq!(result.unwrap(), mime::IMAGE_PNG);
@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn detect_mimetype_of_svg_image() {
-        let data = include_bytes!("../sample/rust-logo.svg");
+        let data = include_bytes!("../../../sample/rust-logo.svg");
         let result = detect_mime_type(data);
         assert!(result.is_ok(), "Unexpected error: {:?}", result);
         let mime = result.unwrap();

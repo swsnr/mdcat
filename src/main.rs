@@ -30,11 +30,11 @@ use pulldown_cmark::Parser;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::{stdin, stdout, Stdout};
+use std::io::{stdin, stdout};
 use std::path::PathBuf;
 use syntect::parsing::SyntaxSet;
 
-use mdcat::{detect_terminal, AnsiTerminal, DumbTerminal, ResourceAccess, Terminal, TerminalSize};
+use mdcat::{ResourceAccess, TerminalCapabilities, TerminalSize};
 
 /// Read input for `filename`.
 ///
@@ -59,9 +59,9 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     }
 }
 
-fn process_arguments(size: TerminalSize, args: &mut Arguments) -> Result<(), Box<dyn Error>> {
+fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn Error>> {
     if args.detect_only {
-        println!("Terminal: {}", args.terminal.name());
+        println!("Terminal: {}", args.terminal_capabilities.name);
         Ok(())
     } else {
         let (base_dir, input) = read_input(&args.filename)?;
@@ -73,7 +73,8 @@ fn process_arguments(size: TerminalSize, args: &mut Arguments) -> Result<(), Box
         } else {
             let syntax_set = SyntaxSet::load_defaults_newlines();
             mdcat::push_tty(
-                &mut (*args.terminal),
+                &mut stdout(),
+                args.terminal_capabilities,
                 TerminalSize {
                     width: args.columns,
                     ..size
@@ -91,7 +92,7 @@ fn process_arguments(size: TerminalSize, args: &mut Arguments) -> Result<(), Box
 /// Represent command line arguments.
 struct Arguments {
     filename: String,
-    terminal: Box<dyn Terminal<TerminalWrite = Stdout>>,
+    terminal_capabilities: TerminalCapabilities,
     resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,
@@ -101,13 +102,13 @@ struct Arguments {
 impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
-        let terminal = if matches.is_present("no_colour") {
+        let terminal_capabilities = if matches.is_present("no_colour") {
             // If the user disabled colours assume a dumb terminal
-            Box::new(DumbTerminal::new(stdout()))
+            TerminalCapabilities::none()
         } else if matches.is_present("ansi_only") {
-            Box::new(AnsiTerminal::new(stdout()))
+            TerminalCapabilities::ansi()
         } else {
-            detect_terminal()
+            TerminalCapabilities::detect()
         };
 
         // On Windows 10 we need to enable ANSI term explicitly.
@@ -132,7 +133,7 @@ impl Arguments {
             resource_access,
             dump_events,
             detect_only,
-            terminal,
+            terminal_capabilities,
         })
     }
 }
@@ -200,8 +201,8 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
         );
 
     let matches = app.get_matches();
-    let mut arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
-    match process_arguments(size, &mut arguments) {
+    let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
+    match process_arguments(size, arguments) {
         Ok(_) => std::process::exit(0),
         Err(error) => {
             eprintln!("Error: {}", error);

@@ -15,23 +15,25 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 travis-ci = { repository = "lunaryorn/mdcat" }
 
 [features]
-default = ["iterm2", "terminology", "remote_resources"]
+default = ["vte50", "iterm2", "terminology", "remote_resources"]
 
-# Enable special support for iTerm2.
-iterm2 = ["mime", "base64"]
-# Support for remote resources, eg, images.  Note some terminals, eg,
-# Terminology, support remote resources out of the box even if this feature is
-# not active.
-remote_resources = ["reqwest"]
-# Enable special support for Terminology.
-terminology = ["immeta"]
+resources = ["url"]
+remote_resources = ["reqwest", "resources"]
+
+# Special terminal features
+osc8_links = ["resources"]
+
+# Terminal emulators
+iterm2 = ["osc8_links", "resources", "mime", "base64"]
+terminology = ["osc8_links", "resources", "immeta"]
+vte50 = ["osc8_links"]
 
 [dependencies]
 failure = "^0.1"
 term_size = "^0.3"
-url = "^1.7"
 ansi_term = "^0.11"
 
+url = {version = "^1.7", optional = true}
 reqwest = {version = "^0.9", optional = true}
 mime = {version = "^0.3", optional = true}
 base64 = {version = "^0.9", optional = true}
