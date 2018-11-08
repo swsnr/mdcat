@@ -5,10 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Add `TerminalCapability` struct as replacement for `mdcat::Terminal` trait to
+  remove dynamic dispatch and allow for more accurate and less complicated
+  conditional compilation of terminal support for different platforms (see
+  [GH-45]).
+
 ### Changed
 - Drop support for Rust 1.29 and older.
 - Do not test specific Rust on versions on Travis CI any longer; Rust stable
   becomes the lowest supported Rust version.
+
+### Removed
+- `mdcat::Terminal` trait and implementations (see [GH-45]).
+
+[GH-45]: https://github.com/lunaryorn/mdcat/pull/45
 
 ## [0.11.0] – 2018-10-25
 ### Changed
