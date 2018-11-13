@@ -26,6 +26,9 @@ extern crate pulldown_cmark;
 extern crate syntect;
 extern crate term_size;
 
+#[cfg(feature = "osc8_links")]
+extern crate libc;
+
 #[cfg(feature = "resources")]
 extern crate url;
 // Used by remote_resources to actually fetch remote resources over HTTP
@@ -619,7 +622,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Err
                 #[cfg(feature = "osc8_links")]
                 LinkCapability::OSC8(ref osc8) => {
                     if let Some(url) = ctx.resources.resolve_reference(&destination) {
-                        osc8.set_link(ctx.output.writer, url.as_str())?;
+                        osc8.set_link_url(ctx.output.writer, url)?;
                         ctx.links.inside_inline_link = true;
                     }
                 }

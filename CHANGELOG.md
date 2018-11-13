@@ -19,6 +19,14 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ### Removed
 - `mdcat::Terminal` trait and implementations (see [GH-45]).
 
+### Fixed
+- Set hostname to local hostname for inline links to `file://` URLs, which
+  should properly resolve `file://` URLs over SSH (see [OSC 8 file URLs],
+  [GH-42] and [GH-44]).
+
+[OSC 8 file URLs]: https://git.io/vd4ee#file-uris-and-the-hostname
+[GH-42]: https://github.com/lunaryorn/mdcat/pull/42
+[GH-44]: https://github.com/lunaryorn/mdcat/pull/44
 [GH-45]: https://github.com/lunaryorn/mdcat/pull/45
 
 ## [0.11.0] – 2018-10-25
