@@ -21,7 +21,7 @@ resources = ["url"]
 remote_resources = ["reqwest", "resources"]
 
 # Special terminal features
-osc8_links = ["resources"]
+osc8_links = ["resources", "libc"]
 
 # Terminal emulators
 iterm2 = ["osc8_links", "resources", "mime", "base64"]
@@ -38,6 +38,7 @@ reqwest = {version = "^0.9", optional = true}
 mime = {version = "^0.3", optional = true}
 base64 = {version = "^0.10", optional = true}
 immeta = {version = "^0.4", optional = true}
+libc = {version="^0.2", optional = true}
 
 [dependencies.clap]
 version = "^2.32"
