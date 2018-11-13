@@ -36,7 +36,7 @@ ansi_term = "^0.11"
 url = {version = "^1.7", optional = true}
 reqwest = {version = "^0.9", optional = true}
 mime = {version = "^0.3", optional = true}
-base64 = {version = "^0.9", optional = true}
+base64 = {version = "^0.10", optional = true}
 immeta = {version = "^0.4", optional = true}
 
 [dependencies.clap]
@@ -45,7 +45,7 @@ default-features = false
 features = ["color", "wrap_help"]
 
 [dependencies.pulldown-cmark]
-version = "^0.1"
+version = "^0.2"
 default-features = false
 features = []
 
