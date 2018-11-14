@@ -52,17 +52,15 @@ jobs:
       rust: stable
       env:
         - CARGOTARGET=x86_64-unknown-linux-gnu
-    - name: linux (musl)
+    - name: linux (musl, only terminology)
       stage: test
       os: linux
       rust: stable
       env:
         - CARGOTARGET=x86_64-unknown-linux-musl
-        # Don’t built iTerm: It depends on OpenSSL via reqwest, which doesn’t
-        # build with musl
         - CARGOFLAGS='--no-default-features --features terminology'
       before_script: rustup target add x86_64-unknown-linux-musl
-    - name: macos (all features)
+    - name: macOS (only iterm2)
       stage: test
       os: osx
       rust: stable
@@ -71,6 +69,7 @@ jobs:
         - export PATH="$HOME/Library/Python/2.7/bin:$PATH"
       env:
         - CARGOTARGET=x86_64-apple-darwin
+        - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
     - name: windows (no features)
       stage: test
       os: windows
@@ -110,7 +109,7 @@ jobs:
 
     # Deploy binary to GitHub
     - &deploy-settings
-      name: Linux binary (static with musl)
+      name: Linux binary (static with musl, only terminology)
       stage: release
       # Our release tags start with "mdcat-", so we only build for such tags
       if: tag =~ ^mdcat-
@@ -146,7 +145,7 @@ jobs:
         on:
           tags: true
     - <<: *deploy-settings
-      name: macOS binary
+      name: macOS binary (only iterm2)
       os: osx
       before_install: ""
       env:
@@ -155,7 +154,7 @@ jobs:
         # resources for iterm2
         - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
     - <<: *deploy-settings
-      name: Windows binary
+      name: Windows binary (no features)
       os: windows
       before_install: ""
       env:
