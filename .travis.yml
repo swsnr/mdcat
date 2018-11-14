@@ -31,8 +31,9 @@ stages:
   - release
 jobs:
   include:
-      # Check formatting on rust stable before anything else
-    - stage: formatting
+    # Check formatting on rust stable before anything else
+    - name: check rustfmt
+      stage: formatting
       os: linux
       rust: stable
       before_script: rustup component add rustfmt-preview
@@ -45,25 +46,31 @@ jobs:
     # - A static musl build
     # - macOS
     # - Windows
-    - stage: test
+    - name: linux (all features)
+      stage: test
       os: linux
       rust: stable
       env:
         - CARGOTARGET=x86_64-unknown-linux-gnu
-    - stage: test
+    - name: linux (no features)
+      stage: test
       os: linux
       rust: stable
       env:
         - CARGOTARGET=x86_64-unknown-linux-gnu
         - CARGOFLAGS='--no-default-features'
-    - stage: test
+    - name: linux (musl)
+      stage: test
       os: linux
       rust: stable
       env:
         - CARGOTARGET=x86_64-unknown-linux-musl
+        # Don’t built iTerm: It depends on OpenSSL via reqwest, which doesn’t
+        # build with musl
         - CARGOFLAGS='--no-default-features --features terminology'
       before_script: rustup target add x86_64-unknown-linux-musl
-    - stage: test
+    - name: macos (all features)
+      stage: test
       os: osx
       rust: stable
       before_script:
@@ -71,7 +78,8 @@ jobs:
         - export PATH="$HOME/Library/Python/2.7/bin:$PATH"
       env:
         - CARGOTARGET=x86_64-apple-darwin
-    - stage: test
+    - name: windows (no features)
+      stage: test
       os: windows
       rust: stable
       # Don't install ansi2html on Travis CI: Python isn’t readily available on
@@ -81,12 +89,14 @@ jobs:
         - CARGOTARGET=x86_64-pc-windows-msvc
         - CARGOFLAGS='--no-default-features'
     # Catch regressions in beta and nightly
-    - stage: test
+    - name: rust beta (all features)
+      stage: test
       os: linux
       rust: beta
       env:
         - CARGOTARGET=x86_64-unknown-linux-gnu
-    - stage: test
+    - name: rust nightly (all features)
+      stage: test
       os: linux
       rust: nightly
       env:
@@ -94,17 +104,20 @@ jobs:
 
     # Run clippy after testing, with and without features.
     - &lint-settings
+      name: clippy (all features)
       stage: lint
       os: linux
       rust: stable
       before_script: rustup component add clippy-preview
       script: cargo clippy $CARGOFLAGS
     - <<: *lint-settings
+      name: clippy (no features)
       env:
         - CARGOFLAGS=--no-default-features
 
     # Deploy binary to GitHub
     - &deploy-settings
+      name: Linux binary (static with musl)
       stage: release
       # Our release tags start with "mdcat-", so we only build for such tags
       if: tag =~ ^mdcat-
@@ -140,6 +153,7 @@ jobs:
         on:
           tags: true
     - <<: *deploy-settings
+      name: macOS binary
       os: osx
       before_install: ""
       env:
@@ -148,6 +162,7 @@ jobs:
         # resources for iterm2
         - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
     - <<: *deploy-settings
+      name: Windows binary
       os: windows
       before_install: ""
       env:
