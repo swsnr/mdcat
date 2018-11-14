@@ -52,13 +52,6 @@ jobs:
       rust: stable
       env:
         - CARGOTARGET=x86_64-unknown-linux-gnu
-    - name: linux (no features)
-      stage: test
-      os: linux
-      rust: stable
-      env:
-        - CARGOTARGET=x86_64-unknown-linux-gnu
-        - CARGOFLAGS='--no-default-features'
     - name: linux (musl)
       stage: test
       os: linux
