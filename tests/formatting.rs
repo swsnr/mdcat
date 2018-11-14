@@ -99,7 +99,7 @@ macro_rules! test_compare_html(
     ($testname:ident) => (
         #[test]
         fn $testname() {
-            ::assert_formats_to_expected_html(stringify!($testname));
+            crate::assert_formats_to_expected_html(stringify!($testname));
         }
     )
 );

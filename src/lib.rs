@@ -69,8 +69,8 @@ mod resources;
 mod terminal;
 
 // Expose some select things for use in main
-pub use resources::ResourceAccess;
-pub use terminal::*;
+pub use crate::resources::ResourceAccess;
+pub use crate::terminal::*;
 
 /// Dump markdown events to a writer.
 pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>
