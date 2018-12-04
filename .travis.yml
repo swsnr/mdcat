@@ -1,4 +1,3 @@
-sudo: false
 language: rust
 # We deliberately do NOT cache with `cache: cargo` because these caches grow to
 # gigabytes in size at which point downloading, unpacking and repacking takes
