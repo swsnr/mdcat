@@ -377,7 +377,8 @@ impl<'a, W: Write> Context<'a, W> {
             self.output.writer,
             "{}",
             " ".repeat(self.block.indent_level)
-        ).map_err(Into::into)
+        )
+        .map_err(Into::into)
     }
 
     /// Push a new style.
@@ -724,34 +725,36 @@ fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), E
             ctx.style.emphasis_level -= 1;
         }
         Strong | Code => ctx.drop_style(),
-        Link(destination, title) => if ctx.links.inside_inline_link {
-            match ctx.output.capabilities.links {
-                #[cfg(feature = "osc8_links")]
-                LinkCapability::OSC8(ref osc8) => {
-                    osc8.clear_link(ctx.output.writer)?;
+        Link(destination, title) => {
+            if ctx.links.inside_inline_link {
+                match ctx.output.capabilities.links {
+                    #[cfg(feature = "osc8_links")]
+                    LinkCapability::OSC8(ref osc8) => {
+                        osc8.clear_link(ctx.output.writer)?;
+                    }
+                    LinkCapability::None => {}
                 }
-                LinkCapability::None => {}
+                ctx.links.inside_inline_link = false;
+            } else {
+                // When we did not write an inline link, create a normal reference
+                // link instead.  Even if the terminal supports inline links this
+                // can still happen for anything that's not a valid URL.
+                match ctx.links.last_text {
+                    Some(ref text) if *text == destination => {
+                        // Do nothing if the last printed text matches the
+                        // destination of the link.  In this we likely looked at an
+                        // inline autolink and we should not repeat the link when
+                        // it's already in text.
+                    }
+                    _ => {
+                        // Reference link
+                        let index = ctx.add_link(destination, title);
+                        let style = ctx.style.current.fg(Colour::Blue);
+                        ctx.write_styled(&style, format!("[{}]", index))?
+                    }
+                }
             }
-            ctx.links.inside_inline_link = false;
-        } else {
-            // When we did not write an inline link, create a normal reference
-            // link instead.  Even if the terminal supports inline links this
-            // can still happen for anything that's not a valid URL.
-            match ctx.links.last_text {
-                Some(ref text) if *text == destination => {
-                    // Do nothing if the last printed text matches the
-                    // destination of the link.  In this we likely looked at an
-                    // inline autolink and we should not repeat the link when
-                    // it's already in text.
-                }
-                _ => {
-                    // Reference link
-                    let index = ctx.add_link(destination, title);
-                    let style = ctx.style.current.fg(Colour::Blue);
-                    ctx.write_styled(&style, format!("[{}]", index))?
-                }
-            }
-        },
+        }
         Image(link, _) => {
             if !ctx.image.inline_image {
                 // If we could not write an inline image, write the image link

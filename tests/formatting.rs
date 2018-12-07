@@ -49,7 +49,8 @@ fn format_ansi_to_html(markdown: &str) -> String {
             &wd,
             mdcat::ResourceAccess::LocalOnly,
             syntax_set,
-        ).expect("Formatting failed")
+        )
+        .expect("Formatting failed")
     }
     let mut buffer = Vec::new();
     child

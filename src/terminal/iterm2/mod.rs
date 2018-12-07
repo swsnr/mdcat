@@ -73,7 +73,8 @@ fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
             Err(_) => Err(Error::new(
                 ErrorKind::InvalidInput,
                 format!("Remote file: URL {} not supported", url),
-            ).into()),
+            )
+            .into()),
         },
         #[cfg(feature = "remote_resources")]
         "http" | "https" => {
@@ -86,13 +87,15 @@ fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
                 Err(Error::new(
                     ErrorKind::Other,
                     format!("HTTP error status {} by GET {}", response.status(), url),
-                ).into())
+                )
+                .into())
             }
         }
         _ => Err(Error::new(
             ErrorKind::InvalidInput,
             format!("Protocol of URL {} not supported", url),
-        ).into()),
+        )
+        .into()),
     }
 }
 

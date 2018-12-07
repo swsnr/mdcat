@@ -49,7 +49,8 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, failure::Error> {
                 output.status,
                 String::from_utf8_lossy(&output.stderr)
             ),
-        ).into())
+        )
+        .into())
     }
 }
 

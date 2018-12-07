@@ -115,38 +115,29 @@ impl TerminalCapabilities {
         // that makes clippy complain.
         match 1 {
             #[cfg(feature = "iterm2")]
-            _ if self::iterm2::is_iterm2() =>
-            {
-                TerminalCapabilities {
-                    name: "iTerm2".to_string(),
-                    style: StyleCapability::Ansi(AnsiStyle),
-                    links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
-                    image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
-                    marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
-                }
-            }
+            _ if self::iterm2::is_iterm2() => TerminalCapabilities {
+                name: "iTerm2".to_string(),
+                style: StyleCapability::Ansi(AnsiStyle),
+                links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+                image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
+                marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
+            },
             #[cfg(feature = "terminology")]
-            _ if self::terminology::is_terminology() =>
-            {
-                TerminalCapabilities {
-                    name: "Terminology".to_string(),
-                    style: StyleCapability::Ansi(AnsiStyle),
-                    links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
-                    image: ImageCapability::Terminology(self::terminology::TerminologyImages),
-                    marks: MarkCapability::None,
-                }
-            }
+            _ if self::terminology::is_terminology() => TerminalCapabilities {
+                name: "Terminology".to_string(),
+                style: StyleCapability::Ansi(AnsiStyle),
+                links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+                image: ImageCapability::Terminology(self::terminology::TerminologyImages),
+                marks: MarkCapability::None,
+            },
             #[cfg(feature = "vte50")]
-            _ if get_vte_version().filter(|&v| v >= (50, 0)).is_some() =>
-            {
-                TerminalCapabilities {
-                    name: "VTE 50".to_string(),
-                    style: StyleCapability::Ansi(AnsiStyle),
-                    links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
-                    image: ImageCapability::None,
-                    marks: MarkCapability::None,
-                }
-            }
+            _ if get_vte_version().filter(|&v| v >= (50, 0)).is_some() => TerminalCapabilities {
+                name: "VTE 50".to_string(),
+                style: StyleCapability::Ansi(AnsiStyle),
+                links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+                image: ImageCapability::None,
+                marks: MarkCapability::None,
+            },
             _ => TerminalCapabilities::ansi(),
         }
     }
