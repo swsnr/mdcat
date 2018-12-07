@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![deny(warnings, missing_docs, clippy::all)]
+// Warn about deprecated trait object syntax
+#![deny(bare_trait_objects)]
+
 use mdcat;
 
 #[macro_use]
