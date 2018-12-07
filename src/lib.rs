@@ -12,21 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![deny(warnings)]
-#![deny(missing_docs)]
+#![deny(warnings, missing_docs, clippy::all)]
 // Warn about deprecated trait object syntax
 #![deny(bare_trait_objects)]
-#![cfg_attr(feature = "cargo-clippy", deny(clippy))]
 
 //! Write markdown to TTYs.
 
 #[cfg(feature = "resources")]
 extern crate url;
-// Used by remote_resources to actually fetch remote resources over HTTP
-
-// Used by iTerm support
-
-// Used by Terminology support
 
 // Pretty assertions for unit tests.
 #[cfg(test)]

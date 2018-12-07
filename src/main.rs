@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![deny(warnings)]
+#![deny(warnings,clippy::all)]
 // Warn about deprecated trait object syntax
 #![deny(bare_trait_objects)]
-#![cfg_attr(feature = "cargo-clippy", deny(clippy))]
 
 //! Show CommonMark documents on TTYs.
 
