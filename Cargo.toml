@@ -34,12 +34,23 @@ failure = "^0.1"
 term_size = "^0.3"
 ansi_term = "^0.11"
 
+# URL type to parse URLs in markdown and reference external resources
 url = {version = "^1.7", optional = true}
-reqwest = {version = "^0.9", optional = true}
-mime = {version = "^0.3", optional = true}
-base64 = {version = "^0.10", optional = true}
-immeta = {version = "^0.4", optional = true}
+
+# For OSC8 links, to query the system hostname
 libc = {version="^0.2", optional = true}
+
+# Dependencies for iTerm2
+# Fetch images over HTTP for iTerm2
+reqwest = {version = "^0.9", optional = true}
+# Mime type definitions
+mime = {version = "^0.3", optional = true}
+# base64 encoding for image data
+base64 = {version = "^0.10", optional = true}
+
+# Dependencies for Terminology
+# Detect image dimensions to configure Terminology for image display
+immeta = {version = "^0.4", optional = true}
 
 [dependencies.clap]
 version = "^2.32"

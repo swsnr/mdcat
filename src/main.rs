@@ -21,10 +21,8 @@
 
 #[macro_use]
 extern crate clap;
-extern crate ansi_term;
-extern crate mdcat;
-extern crate pulldown_cmark;
-extern crate syntect;
+
+use mdcat;
 
 use pulldown_cmark::Parser;
 use std::error::Error;
@@ -101,7 +99,7 @@ struct Arguments {
 
 impl Arguments {
     /// Create command line arguments from matches.
-    fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
+    fn from_matches(matches: &clap::ArgMatches<'_>) -> clap::Result<Self> {
         let terminal_capabilities = if matches.is_present("no_colour") {
             // If the user disabled colours assume a dumb terminal
             TerminalCapabilities::none()

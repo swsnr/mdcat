@@ -20,30 +20,13 @@
 
 //! Write markdown to TTYs.
 
-extern crate ansi_term;
-extern crate failure;
-extern crate pulldown_cmark;
-extern crate syntect;
-extern crate term_size;
-
-#[cfg(feature = "osc8_links")]
-extern crate libc;
-
 #[cfg(feature = "resources")]
 extern crate url;
 // Used by remote_resources to actually fetch remote resources over HTTP
-#[cfg(feature = "remote_resources")]
-extern crate reqwest;
 
 // Used by iTerm support
-#[cfg(feature = "iterm2")]
-extern crate base64;
-#[cfg(feature = "iterm2")]
-extern crate mime;
 
 // Used by Terminology support
-#[cfg(feature = "terminology")]
-extern crate immeta;
 
 // Pretty assertions for unit tests.
 #[cfg(test)]
@@ -176,7 +159,7 @@ impl<'a> ResourceContext<'a> {
 }
 
 /// Context for TTY output.
-struct OutputContext<'a, W: Write + 'a> {
+struct OutputContext<'a, W: Write> {
     /// The terminal dimensions to limit output to.
     size: TerminalSize,
     /// A writer to the terminal.
@@ -251,7 +234,7 @@ struct ImageContext {
 }
 
 /// Context for TTY rendering.
-struct Context<'a, W: Write + 'a> {
+struct Context<'a, W: Write> {
     #[cfg(feature = "resources")]
     /// Context for input.
     resources: ResourceContext<'a>,
@@ -531,7 +514,7 @@ fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Resu
 }
 
 /// Write the start of a `tag` in the given context.
-fn start_tag<'a, W: Write>(ctx: &mut Context<W>, tag: Tag<'a>) -> Result<(), Error> {
+fn start_tag<'a, W: Write>(ctx: &mut Context<'_, W>, tag: Tag<'a>) -> Result<(), Error> {
     match tag {
         Paragraph => ctx.start_inline_text()?,
         Rule => {
