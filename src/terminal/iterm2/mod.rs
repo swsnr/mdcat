@@ -138,6 +138,7 @@ impl ITerm2Images {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn read_url_with_http_url_fails_when_status_404() {

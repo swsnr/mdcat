@@ -124,6 +124,7 @@ impl OSC8Links {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
     use std::process::*;
 
     #[test]
@@ -155,12 +156,10 @@ mod tests {
         for (url, expected) in checks.into_iter() {
             let parsed = super::Url::parse(url).unwrap();
             let needs_host = super::url_needs_explicit_host(&parsed);
-            assert!(
-                needs_host == *expected,
+            assert_eq!(
+                needs_host, *expected,
                 "{:?} needs host? {}, but got {}",
-                parsed,
-                expected,
-                needs_host
+                parsed, expected, needs_host
             );
         }
     }

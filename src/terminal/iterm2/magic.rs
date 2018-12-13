@@ -57,6 +57,7 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, failure::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn detect_mimetype_of_png_image() {

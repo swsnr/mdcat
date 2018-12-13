@@ -18,9 +18,7 @@
 
 use mdcat;
 
-#[macro_use]
-extern crate pretty_assertions;
-
+use pretty_assertions::assert_eq;
 use pulldown_cmark::Parser;
 use std::fs::File;
 use std::io::prelude::*;

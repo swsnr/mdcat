@@ -18,11 +18,9 @@
 
 //! Show CommonMark documents on TTYs.
 
-#[macro_use]
-extern crate clap;
-
 use mdcat;
 
+use clap::value_t;
 use pulldown_cmark::Parser;
 use std::error::Error;
 use std::fs::File;

@@ -19,13 +19,7 @@
 //! Write markdown to TTYs.
 
 #[cfg(feature = "resources")]
-extern crate url;
-
-// Pretty assertions for unit tests.
-#[cfg(test)]
-#[macro_use]
-#[allow(unused_imports)]
-extern crate pretty_assertions;
+use url;
 
 use ansi_term::{Colour, Style};
 use failure::Error;
