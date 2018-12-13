@@ -13,8 +13,6 @@
 // limitations under the License.
 
 #![deny(warnings, clippy::all)]
-// Warn about deprecated trait object syntax
-#![deny(bare_trait_objects)]
 
 //! Show CommonMark documents on TTYs.
 
