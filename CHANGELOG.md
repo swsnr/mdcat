@@ -10,7 +10,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
   remove dynamic dispatch and allow for more accurate and less complicated
   conditional compilation of terminal support for different platforms (see
   [GH-45]).
-- Move to Rust 2018, and raise minimum supported Rust version to 1.31.
+- Move to Rust 2018, and raise minimum supported Rust version to 1.31 (see
+  [GH-46]).
 
 ### Changed
 - Drop support for Rust 1.29 and older.
@@ -29,6 +30,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 [GH-42]: https://github.com/lunaryorn/mdcat/pull/42
 [GH-44]: https://github.com/lunaryorn/mdcat/pull/44
 [GH-45]: https://github.com/lunaryorn/mdcat/pull/45
+[GH-46]: https://github.com/lunaryorn/mdcat/issues/46
 
 ## [0.11.0] – 2018-10-25
 ### Changed
