@@ -13,6 +13,10 @@
 // limitations under the License.
 
 #![deny(warnings, missing_docs, clippy::all)]
+// Currently we only run formatting tests on Unix, because we rely on a Python
+// tool here, and I failed to setup Python properly on Travis CI' Windows
+// workers.
+#![cfg(unix)]
 
 use mdcat;
 
@@ -104,7 +108,6 @@ macro_rules! test_compare_html(
     )
 );
 
-#[cfg(unix)]
 mod formatting {
     mod html {
         test_compare_html!(block_quote_and_ruler);
