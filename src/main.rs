@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![deny(warnings,clippy::all)]
+#![deny(warnings, clippy::all)]
 // Warn about deprecated trait object syntax
 #![deny(bare_trait_objects)]
 
