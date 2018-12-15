@@ -63,7 +63,7 @@ pub fn push_tty<'a, W, I>(
     writer: &'a mut W,
     capabilities: TerminalCapabilities,
     size: TerminalSize,
-    events: I,
+    mut events: I,
     base_dir: &'a Path,
     resource_access: ResourceAccess,
     syntax_set: SyntaxSet,
@@ -73,20 +73,20 @@ where
     W: Write,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
-    let mut context = Context::new(
-        writer,
-        capabilities,
-        size,
-        base_dir,
-        resource_access,
-        syntax_set,
-        theme,
-    );
-    for event in events {
-        write_event(&mut context, event)?;
-    }
-    // At the end, print any remaining links
-    context.write_pending_links()?;
+    events
+        .try_fold(
+            Context::new(
+                writer,
+                capabilities,
+                size,
+                base_dir,
+                resource_access,
+                syntax_set,
+                theme,
+            ),
+            write_event,
+        )?
+        .write_pending_links()?;
     Ok(())
 }
 
@@ -469,11 +469,14 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
 
 /// Write a single `event` in the given context.
 fn write_event<'io, 'c, 'l, W: Write>(
-    ctx: &mut Context<'io, 'c, 'l, W>,
+    mut ctx: Context<'io, 'c, 'l, W>,
     event: Event<'l>,
-) -> Result<(), Error> {
+) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match event {
-        SoftBreak | HardBreak => ctx.newline_and_indent()?,
+        SoftBreak | HardBreak => {
+            ctx.newline_and_indent()?;
+            Ok(ctx)
+        }
         Text(text) => {
             // When we wrote an inline image suppress the text output, ie, the
             // image title.  We do not need it if we can show the image on the
@@ -481,9 +484,10 @@ fn write_event<'io, 'c, 'l, W: Write>(
             if !ctx.image.inline_image {
                 ctx.write_highlighted(text)?;
             }
+            Ok(ctx)
         }
-        Start(tag) => start_tag(ctx, tag)?,
-        End(tag) => end_tag(ctx, tag)?,
+        Start(tag) => start_tag(ctx, tag),
+        End(tag) => end_tag(ctx, tag),
         Html(content) => {
             ctx.newline()?;
             let html_style = ctx.style.current.fg(Colour::Green);
@@ -491,18 +495,22 @@ fn write_event<'io, 'c, 'l, W: Write>(
                 ctx.write_styled(&html_style, line)?;
                 ctx.newline()?;
             }
+            Ok(ctx)
         }
         InlineHtml(tag) => {
             let style = ctx.style.current.fg(Colour::Green);
             ctx.write_styled(&style, tag)?;
+            Ok(ctx)
         }
         FootnoteReference(_) => panic!("mdcat does not support footnotes"),
-    };
-    Ok(())
+    }
 }
 
 /// Write the start of a `tag` in the given context.
-fn start_tag<'l, W: Write>(ctx: &mut Context<'_, '_, 'l, W>, tag: Tag<'l>) -> Result<(), Error> {
+fn start_tag<'io, 'c, 'l, W: Write>(
+    mut ctx: Context<'io, 'c, 'l, W>,
+    tag: Tag<'l>,
+) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
         Paragraph => ctx.start_inline_text()?,
         Rule => {
@@ -641,11 +649,14 @@ fn start_tag<'l, W: Write>(ctx: &mut Context<'_, '_, 'l, W>, tag: Tag<'l>) -> Re
             }
         },
     };
-    Ok(())
+    Ok(ctx)
 }
 
 /// Write the end of a `tag` in the given context.
-fn end_tag<'l, W: Write>(ctx: &mut Context<'_, '_, 'l, W>, tag: Tag<'l>) -> Result<(), Error> {
+fn end_tag<'io, 'c, 'l, W: Write>(
+    mut ctx: Context<'io, 'c, 'l, W>,
+    tag: Tag<'l>,
+) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => ctx.end_inline_text_with_margin()?,
@@ -736,5 +747,5 @@ fn end_tag<'l, W: Write>(ctx: &mut Context<'_, '_, 'l, W>, tag: Tag<'l>) -> Resu
             ctx.image.inline_image = false;
         }
     };
-    Ok(())
+    Ok(ctx)
 }
