@@ -129,13 +129,13 @@ struct ResourceContext<'a> {
 }
 
 #[cfg(feature = "resources")]
-impl<'a> ResourceContext<'a> {
+impl ResourceContext<'_> {
     /// Resolve a reference in the input.
     ///
     /// If `reference` parses as URL return the parsed URL.  Otherwise assume
     /// `reference` is a file path, resolve it against `base_dir` and turn it
     /// into a file:// URL.  If this also fails return `None`.
-    fn resolve_reference(&self, reference: &'a str) -> Option<url::Url> {
+    fn resolve_reference(&self, reference: &str) -> Option<url::Url> {
         use url::Url;
         Url::parse(reference)
             .or_else(|_| Url::from_file_path(self.base_dir.join(reference)))
@@ -219,20 +219,20 @@ struct ImageContext {
 }
 
 /// Context for TTY rendering.
-struct Context<'a, W: Write> {
+struct Context<'io, 'c, 'l, W: Write> {
     #[cfg(feature = "resources")]
     /// Context for input.
-    resources: ResourceContext<'a>,
+    resources: ResourceContext<'io>,
     /// Context for output.
-    output: OutputContext<'a, W>,
+    output: OutputContext<'io, W>,
     /// Context for styling
     style: StyleContext,
     /// Context for the current block.
     block: BlockContext,
     /// Context to keep track of links.
-    links: LinkContext<'a>,
+    links: LinkContext<'l>,
     /// Context for code blocks
-    code: CodeContext<'a>,
+    code: CodeContext<'c>,
     /// Context for images.
     image: ImageContext,
     /// The kind of the current list item.
@@ -241,16 +241,16 @@ struct Context<'a, W: Write> {
     list_item_kind: Vec<ListItemKind>,
 }
 
-impl<'a, W: Write> Context<'a, W> {
+impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     fn new(
-        writer: &'a mut W,
+        writer: &'io mut W,
         capabilities: TerminalCapabilities,
         size: TerminalSize,
-        base_dir: &'a Path,
+        base_dir: &'io Path,
         resource_access: ResourceAccess,
         syntax_set: SyntaxSet,
-        theme: &'a Theme,
-    ) -> Context<'a, W> {
+        theme: &'c Theme,
+    ) -> Context<'io, 'c, 'l, W> {
         #[cfg(not(feature = "resources"))]
         {
             // Mark variables as used if resources are disabled to keep public
@@ -401,7 +401,7 @@ impl<'a, W: Write> Context<'a, W> {
     /// Add a link to the context.
     ///
     /// Return the index of the link.
-    fn add_link(&mut self, destination: Cow<'a, str>, title: Cow<'a, str>) -> usize {
+    fn add_link(&mut self, destination: Cow<'l, str>, title: Cow<'l, str>) -> usize {
         let index = self.links.next_link_index;
         self.links.next_link_index += 1;
         self.links.pending_links.push_back(Link {
@@ -440,7 +440,7 @@ impl<'a, W: Write> Context<'a, W> {
     ///
     /// If the code context has a highlighter, use it to highlight `text` and
     /// write it.  Otherwise write `text` without highlighting.
-    fn write_highlighted(&mut self, text: Cow<'a, str>) -> io::Result<()> {
+    fn write_highlighted(&mut self, text: Cow<'l, str>) -> io::Result<()> {
         let mut wrote_highlighted: bool = false;
         if let Some(ref mut highlighter) = self.code.current_highlighter {
             if let StyleCapability::Ansi(ref ansi) = self.output.capabilities.style {
@@ -468,7 +468,10 @@ impl<'a, W: Write> Context<'a, W> {
 }
 
 /// Write a single `event` in the given context.
-fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Result<(), Error> {
+fn write_event<'io, 'c, 'l, W: Write>(
+    ctx: &mut Context<'io, 'c, 'l, W>,
+    event: Event<'l>,
+) -> Result<(), Error> {
     match event {
         SoftBreak | HardBreak => ctx.newline_and_indent()?,
         Text(text) => {
@@ -499,7 +502,7 @@ fn write_event<'a, W: Write>(ctx: &mut Context<'a, W>, event: Event<'a>) -> Resu
 }
 
 /// Write the start of a `tag` in the given context.
-fn start_tag<'a, W: Write>(ctx: &mut Context<'_, W>, tag: Tag<'a>) -> Result<(), Error> {
+fn start_tag<'l, W: Write>(ctx: &mut Context<'_, '_, 'l, W>, tag: Tag<'l>) -> Result<(), Error> {
     match tag {
         Paragraph => ctx.start_inline_text()?,
         Rule => {
@@ -642,7 +645,7 @@ fn start_tag<'a, W: Write>(ctx: &mut Context<'_, W>, tag: Tag<'a>) -> Result<(),
 }
 
 /// Write the end of a `tag` in the given context.
-fn end_tag<'a, W: Write>(ctx: &mut Context<'a, W>, tag: Tag<'a>) -> Result<(), Error> {
+fn end_tag<'l, W: Write>(ctx: &mut Context<'_, '_, 'l, W>, tag: Tag<'l>) -> Result<(), Error> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => ctx.end_inline_text_with_margin()?,
