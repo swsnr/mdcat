@@ -59,7 +59,7 @@ where
 ///
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
-pub fn push_tty<'a, W, I>(
+pub fn push_tty<'a, 'e, W, I>(
     writer: &'a mut W,
     capabilities: TerminalCapabilities,
     size: TerminalSize,
@@ -69,7 +69,7 @@ pub fn push_tty<'a, W, I>(
     syntax_set: SyntaxSet,
 ) -> Result<(), Error>
 where
-    I: Iterator<Item = Event<'a>>,
+    I: Iterator<Item = Event<'e>>,
     W: Write,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
