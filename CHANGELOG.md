@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.12.1] – 2018-12-24
 ### Fixed
 - Do not add newline after inline text with styles disabled (see [GH-49]).
 
@@ -202,4 +204,5 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 [0.10.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.0...mdcat-0.10.1
 [0.11.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.1...mdcat-0.11.0
 [0.12.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.11.0...mdcat-0.12.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.0...HEAD
+[0.12.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.0...mdcat-0.12.1
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.1...HEAD
