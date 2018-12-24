@@ -369,7 +369,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// Write `text` with the given `style`.
     fn write_styled<S: AsRef<str>>(&mut self, style: &Style, text: S) -> io::Result<()> {
         match self.output.capabilities.style {
-            StyleCapability::None => writeln!(self.output.writer, "{}", text.as_ref())?,
+            StyleCapability::None => write!(self.output.writer, "{}", text.as_ref())?,
             StyleCapability::Ansi(ref ansi) => {
                 ansi.write_styled(self.output.writer, style, text)?
             }
@@ -748,4 +748,51 @@ fn end_tag<'io, 'c, 'l, W: Write>(
         }
     };
     Ok(ctx)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+    use pulldown_cmark::Parser;
+
+    fn render_string(
+        input: &str,
+        base_dir: &Path,
+        resource_access: ResourceAccess,
+        syntax_set: SyntaxSet,
+        capabilities: TerminalCapabilities,
+        size: TerminalSize,
+    ) -> Result<Vec<u8>, Error> {
+        let source = Parser::new(input);
+        let mut sink = Vec::new();
+        push_tty(
+            &mut sink,
+            capabilities,
+            size,
+            source,
+            base_dir,
+            resource_access,
+            syntax_set,
+        )?;
+        Ok(sink)
+    }
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn GH_49_format_no_colour_simple() {
+        let result = String::from_utf8(
+            render_string(
+                "_lorem_ **ipsum** dolor **sit** _amet_",
+                Path::new("/"),
+                ResourceAccess::LocalOnly,
+                SyntaxSet::default(),
+                TerminalCapabilities::none(),
+                TerminalSize::default(),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(result, "lorem ipsum dolor sit amet\n");
+    }
 }
