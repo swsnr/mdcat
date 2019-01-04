@@ -3,6 +3,7 @@
 [![Current release](https://img.shields.io/crates/v/mdcat.svg)][crates]
 [![License](https://img.shields.io/github/license/lunaryorn/mdcat.svg)][license]
 [![Build status](https://img.shields.io/travis/lunaryorn/mdcat/master.svg)][travis]
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=lunaryorn/mdcat)](https://dependabot.com)
 
 `cat` for [CommonMark][]: Show CommonMark (a standardized Markdown dialect)
 documents on text terminals.
