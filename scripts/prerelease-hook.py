@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
-# Copyright 2018 Sebastian Wiesner <sebastian@swsnr.de>
+# Copyright 2018-2019 Sebastian Wiesner <sebastian@swsnr.de>
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
