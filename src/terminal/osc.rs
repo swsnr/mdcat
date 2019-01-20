@@ -153,7 +153,7 @@ mod tests {
             ("file://[::1]/foo/bar", true),
         ];
 
-        for (url, expected) in checks.into_iter() {
+        for (url, expected) in checks.iter() {
             let parsed = super::Url::parse(url).unwrap();
             let needs_host = super::url_needs_explicit_host(&parsed);
             assert_eq!(
