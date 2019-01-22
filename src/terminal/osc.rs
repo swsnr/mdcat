@@ -72,7 +72,8 @@ impl OSC8Links {
     pub fn for_localhost() -> OSC8Links {
         use gethostname::gethostname;
         OSC8Links {
-            hostname: gethostname(),
+            // Hostnames should be ASCII only anyway
+            hostname: gethostname().to_string_lossy().into_owned(),
         }
     }
 
