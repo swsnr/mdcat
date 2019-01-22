@@ -22,7 +22,7 @@ resources = ["url"]
 remote_resources = ["reqwest", "resources"]
 
 # Special terminal features
-osc8_links = ["resources", "libc"]
+osc8_links = ["resources", "gethostname"]
 
 # Terminal emulators
 iterm2 = ["osc8_links", "resources", "mime", "base64"]
@@ -38,7 +38,7 @@ ansi_term = "^0.11"
 url = {version = "^1.7", optional = true}
 
 # For OSC8 links, to query the system hostname
-libc = {version="^0.2", optional = true}
+gethostname = {version="^0.2", optional = true}
 
 # Dependencies for iTerm2
 # Fetch images over HTTP for iTerm2

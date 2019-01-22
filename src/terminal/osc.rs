@@ -27,29 +27,6 @@ pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> Result<()> {
     Ok(())
 }
 
-/// Get the name of the local host.
-///
-/// Wraps [gethostname] in a safe interface.  The function doesn’t fail, because
-/// POSIX does not specify any errors for [gethostname].
-///
-/// It may panic! if the internal buffer for the hostname is too small, but we
-/// use a reasonably large buffer, so we consider any panics from this function
-/// as bug which you should report.
-#[cfg(all(unix, feature = "osc8_links"))]
-pub fn gethostname() -> String {
-    let mut buffer = vec![0 as u8; 256];
-    let returncode =
-        unsafe { libc::gethostname(buffer.as_mut_ptr() as *mut libc::c_char, buffer.len()) };
-    if returncode != 0 {
-        panic!("gethostname failed!  Please report an issue to <https://github.com/lunaryorn/mdcat/issues>!");
-    }
-    let end = buffer
-        .iter()
-        .position(|&b| b == 0)
-        .unwrap_or_else(|| buffer.len());
-    String::from_utf8_lossy(&buffer[0..end]).to_string()
-}
-
 #[cfg(feature = "osc8_links")]
 pub struct OSC8Links {
     hostname: String,
@@ -70,7 +47,7 @@ pub struct OSC8Links {
 /// * or a IPv4/IPv6 loopback address.
 ///
 /// [OSC 8]: https://git.io/vd4ee
-/// [gethostname]: http://pubs.opengroup.org/onlinepubs/009695399/functions/gethostname.html
+/// [gethostname]: https://github.com/lunaryorn/gethostname.rs
 #[cfg(feature = "osc8_links")]
 fn url_needs_explicit_host(url: &Url) -> bool {
     if url.scheme() == "file" {
@@ -93,6 +70,7 @@ impl OSC8Links {
     /// Queries and remembers the hostname of this system as per `gethostname()`
     /// to resolve local `file://` URLs.
     pub fn for_localhost() -> OSC8Links {
+        use gethostname::gethostname;
         OSC8Links {
             hostname: gethostname(),
         }
@@ -125,22 +103,6 @@ impl OSC8Links {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use std::process::*;
-
-    #[test]
-    #[cfg(all(unix, feature = "osc8_links"))]
-    fn gethostname() {
-        let output = Command::new("hostname")
-            .output()
-            .expect("failed to get hostname");
-        let hostname = String::from_utf8_lossy(&output.stdout);
-        // Convert both sides to lowercase; hostnames are case-insensitive
-        // anyway.
-        assert_eq!(
-            super::gethostname().to_lowercase(),
-            hostname.trim_end().to_lowercase()
-        );
-    }
 
     #[test]
     #[cfg(feature = "osc8_links")]
