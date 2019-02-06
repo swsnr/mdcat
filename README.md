@@ -29,16 +29,13 @@ right), and [PragmataPro] as font.
 ## Features
 
 `mdcat` works best with [iTerm2] or a compatible terminal emulator, and a good
-terminal font which includes italic characters.  It supports
+terminal font with italic characters.  Then it
 
-* All CommonMark syntax
-* Syntax highlighting for code blocks
-* Inline links (note the dashed underline like in the screenshot above, in some
-  terminals)
-* Inline images like in the screenshot above (in some terminals), even from
-  HTTP(S) URLs (use `--local` to disable remote images)
-* Jump marks for headings (in iTerm2 jump forwards and backwards with
-  <key>⇧⌘↓</key> and <key>⇧⌘↑</key>)
+* nicely renders all basic CommonMark syntax (no [tables][GH-2] or [footnotes][GH-1] though),
+* highlights code blocks with [syntect],
+* shows [links][osc8] and images inline in supported terminals (see above, where "Pixabay" is a clickable link!),
+* adds jump marks for headings in [iTerm2] (jump forwards and backwards with
+  <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
 
 | Terminal                |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
 | :---------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
@@ -53,9 +50,11 @@ terminal font which includes italic characters.  It supports
 
 Not supported:
 
-* CommonMark extensions: Footnotes and Tables
-* Re-filling paragraphs
+* CommonMark extensions: [Footnotes][GH-1] and [tables][GH-2]
+* [Re-filling paragraphs][GH-4]
 
+[syntect]: https://github.com/trishume/syntect
+[osc8]: https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 [Terminology]: http://terminolo.gy
 [ConEmu]: https://conemu.github.io
 
