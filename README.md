@@ -5,8 +5,7 @@
 [![Build status](https://img.shields.io/travis/lunaryorn/mdcat/master.svg)][travis]
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=lunaryorn/mdcat)](https://dependabot.com)
 
-`cat` for [CommonMark][]: Show CommonMark (a standardized Markdown dialect)
-documents on text terminals.
+`cat` for Markdown (that is, [CommonMark][]):
 
 ```
 $ mdcat sample.md
