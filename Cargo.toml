@@ -12,9 +12,6 @@ license = "Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2018"
 
-[badges]
-travis-ci = { repository = "lunaryorn/mdcat" }
-
 [features]
 default = ["vte50", "iterm2", "terminology", "remote_resources"]
 
