@@ -65,7 +65,7 @@ default-features = false
 features = ["parsing", "assets", "dump-load"]
 
 [dev-dependencies]
-pretty_assertions = "^0.5"
+pretty_assertions = "^0.6"
 
 [package.metadata.release]
 sign-commit = true
