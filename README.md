@@ -74,12 +74,15 @@ Some package managers include `mdcat`:
 * [Homebrew]: `brew install mdcat`
 * Arch Linux: [mdcat in AUR][aur]
 * Void Linux: `xbps-install -S mdcat`
+* OpenBSD: [port][epbsd_port] via [EPBSD][epbsd]
 
 While these packages may not always be up to date we generally recommend to use
 these to keep `mdcat` updated with the rest of the system.
 
 [Homebrew]: https://brew.sh
 [aur]: https://aur.archlinux.org/packages/mdcat/
+[epbsd]: https://epbsd.org/
+[epbsd_port]: https://gitlab.com/epbsd/ports/tree/master/textproc/mdcat
 
 ### Building with rustup
 
