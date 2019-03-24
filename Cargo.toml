@@ -55,7 +55,7 @@ default-features = false
 features = ["color", "wrap_help"]
 
 [dependencies.pulldown-cmark]
-version = "^0.3"
+version = "^0.4"
 default-features = false
 features = []
 
