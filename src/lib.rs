@@ -23,8 +23,7 @@ use ansi_term::{Colour, Style};
 use failure::Error;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
-use pulldown_cmark::{Event, Tag};
-use std::borrow::Cow;
+use pulldown_cmark::{CowStr, Event, Tag};
 use std::collections::VecDeque;
 use std::io;
 use std::io::Write;
@@ -114,9 +113,9 @@ struct Link<'a> {
     /// The index of the link.
     index: usize,
     /// The link destination.
-    destination: Cow<'a, str>,
+    destination: CowStr<'a>,
     /// The link title.
-    title: Cow<'a, str>,
+    title: CowStr<'a>,
 }
 
 /// Input context.
@@ -189,7 +188,7 @@ struct LinkContext<'a> {
     /// We use this field to track the content of link tags, and omit a link
     /// reference if the link text equals the link destination, ie, if the link
     /// appears in text literally.
-    last_text: Option<Cow<'a, str>>,
+    last_text: Option<CowStr<'a>>,
     /// Whether we are inside an inline link currently.
     inside_inline_link: bool,
 }
@@ -401,7 +400,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// Add a link to the context.
     ///
     /// Return the index of the link.
-    fn add_link(&mut self, destination: Cow<'l, str>, title: Cow<'l, str>) -> usize {
+    fn add_link(&mut self, destination: CowStr<'l>, title: CowStr<'l>) -> usize {
         let index = self.links.next_link_index;
         self.links.next_link_index += 1;
         self.links.pending_links.push_back(Link {
@@ -440,7 +439,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     ///
     /// If the code context has a highlighter, use it to highlight `text` and
     /// write it.  Otherwise write `text` without highlighting.
-    fn write_highlighted(&mut self, text: Cow<'l, str>) -> io::Result<()> {
+    fn write_highlighted(&mut self, text: CowStr<'l>) -> io::Result<()> {
         let mut wrote_highlighted: bool = false;
         if let Some(ref mut highlighter) = self.code.current_highlighter {
             if let StyleCapability::Ansi(ref ansi) = self.output.capabilities.style {
@@ -594,13 +593,14 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             let style = ctx.style.current.fg(Colour::Yellow);
             ctx.set_style(style)
         }
-        Link(destination, _) => {
-            // Do nothing if the terminal doesn’t support inline links of if
-            // `destination` is no valid URL:  We will write a reference link
-            // when closing the link tag.
+        Link(_, destination, _) => {
+            // Do nothing if the terminal doesn’t support inline links of if `destination` is no
+            // valid URL:  We will write a reference link when closing the link tag.
             match ctx.output.capabilities.links {
                 #[cfg(feature = "osc8_links")]
                 LinkCapability::OSC8(ref osc8) => {
+                    // TODO: check link type (first tuple element) to write proper mailto link for
+                    // emails
                     if let Some(url) = ctx.resources.resolve_reference(&destination) {
                         osc8.set_link_url(ctx.output.writer, url)?;
                         ctx.links.inside_inline_link = true;
@@ -612,7 +612,7 @@ fn start_tag<'io, 'c, 'l, W: Write>(
                 }
             }
         }
-        Image(link, _title) => match ctx.output.capabilities.image {
+        Image(_, link, _title) => match ctx.output.capabilities.image {
             #[cfg(feature = "terminology")]
             ImageCapability::Terminology(ref terminology) => {
                 let access = ctx.resources.resource_access;
@@ -707,7 +707,7 @@ fn end_tag<'io, 'c, 'l, W: Write>(
             ctx.style.emphasis_level -= 1;
         }
         Strong | Code => ctx.drop_style(),
-        Link(destination, title) => {
+        Link(_, destination, title) => {
             if ctx.links.inside_inline_link {
                 match ctx.output.capabilities.links {
                     #[cfg(feature = "osc8_links")]
@@ -723,10 +723,9 @@ fn end_tag<'io, 'c, 'l, W: Write>(
                 // can still happen for anything that's not a valid URL.
                 match ctx.links.last_text {
                     Some(ref text) if *text == destination => {
-                        // Do nothing if the last printed text matches the
-                        // destination of the link.  In this we likely looked at an
-                        // inline autolink and we should not repeat the link when
-                        // it's already in text.
+                        // Do nothing if the last printed text matches the destination of the link.
+                        // In this case we likely looked at an inline autolink and we should not
+                        // repeat the link when it's already in text.
                     }
                     _ => {
                         // Reference link
@@ -737,7 +736,7 @@ fn end_tag<'io, 'c, 'l, W: Write>(
                 }
             }
         }
-        Image(link, _) => {
+        Image(_, link, _) => {
             if !ctx.image.inline_image {
                 // If we could not write an inline image, write the image link
                 // after the image title.
