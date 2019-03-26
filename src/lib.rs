@@ -489,7 +489,6 @@ fn write_event<'io, 'c, 'l, W: Write>(
         Start(tag) => start_tag(ctx, tag),
         End(tag) => end_tag(ctx, tag),
         Html(content) => {
-            ctx.newline()?;
             let html_style = ctx.style.current.fg(Colour::Green);
             for line in content.lines() {
                 ctx.write_styled(&html_style, line)?;
@@ -512,7 +511,7 @@ fn start_tag<'io, 'c, 'l, W: Write>(
     tag: Tag<'l>,
 ) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
-        HtmlBlock => panic!("mdcat does not support HTML blocks"),
+        HtmlBlock => ctx.newline()?,
         Paragraph => ctx.start_inline_text()?,
         Rule => {
             ctx.start_inline_text()?;
@@ -661,7 +660,7 @@ fn end_tag<'io, 'c, 'l, W: Write>(
     tag: Tag<'l>,
 ) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
-        HtmlBlock => panic!("mdcat does not support HTML blocks"),
+        HtmlBlock => {}
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => ctx.end_inline_text_with_margin()?,
         Header(_) => {
