@@ -485,6 +485,7 @@ fn write_event<'io, 'c, 'l, W: Write>(
             }
             Ok(ctx)
         }
+        TaskListMarker(_) => panic!("mdcat does not support task lists"),
         Start(tag) => start_tag(ctx, tag),
         End(tag) => end_tag(ctx, tag),
         Html(content) => {
@@ -511,6 +512,7 @@ fn start_tag<'io, 'c, 'l, W: Write>(
     tag: Tag<'l>,
 ) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
+        HtmlBlock => panic!("mdcat does not support HTML blocks"),
         Paragraph => ctx.start_inline_text()?,
         Rule => {
             ctx.start_inline_text()?;
@@ -584,6 +586,7 @@ fn start_tag<'io, 'c, 'l, W: Write>(
         }
         FootnoteDefinition(_) => panic!("mdcat does not support footnotes"),
         Table(_) | TableHead | TableRow | TableCell => panic!("mdcat does not support tables"),
+        Strikethrough => panic!("mdcat does not support strikethrough"),
         Emphasis => ctx.enable_emphasis(),
         Strong => {
             let style = ctx.style.current.bold();
@@ -658,6 +661,7 @@ fn end_tag<'io, 'c, 'l, W: Write>(
     tag: Tag<'l>,
 ) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
+        HtmlBlock => panic!("mdcat does not support HTML blocks"),
         Paragraph => ctx.end_inline_text_with_margin()?,
         Rule => ctx.end_inline_text_with_margin()?,
         Header(_) => {
@@ -702,6 +706,7 @@ fn end_tag<'io, 'c, 'l, W: Write>(
             ctx.end_inline_text_with_margin()?
         }
         FootnoteDefinition(_) | Table(_) | TableHead | TableRow | TableCell => {}
+        Strikethrough => panic!("mdcat does not support strikethrough"),
         Emphasis => {
             ctx.drop_style();
             ctx.style.emphasis_level -= 1;
