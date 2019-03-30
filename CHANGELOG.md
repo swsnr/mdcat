@@ -6,9 +6,11 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 ### Added
-- Render task lists nicely (see [GH-72])
+- Render task lists nicely (see [GH-72]).
+- Render strike-through text (see [GH-71]).
 
 [GH-72]: https://github.com/lunaryorn/mdcat/issues/72
+[GH-71]: https://github.com/lunaryorn/mdcat/issues/71
 
 ## [0.12.1] – 2018-12-24
 ### Fixed

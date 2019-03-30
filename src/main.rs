@@ -60,6 +60,7 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn 
         let (base_dir, input) = read_input(&args.filename)?;
         let mut options = Options::empty();
         options.insert(Options::ENABLE_TASKLISTS);
+        options.insert(Options::ENABLE_STRIKETHROUGH);
         let parser = Parser::new_ext(&input, options);
 
         if args.dump_events {

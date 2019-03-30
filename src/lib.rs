@@ -589,7 +589,10 @@ fn start_tag<'io, 'c, 'l, W: Write>(
         }
         FootnoteDefinition(_) => panic!("mdcat does not support footnotes"),
         Table(_) | TableHead | TableRow | TableCell => panic!("mdcat does not support tables"),
-        Strikethrough => panic!("mdcat does not support strikethrough"),
+        Strikethrough => {
+            let style = ctx.style.current.strikethrough();
+            ctx.set_style(style)
+        }
         Emphasis => ctx.enable_emphasis(),
         Strong => {
             let style = ctx.style.current.bold();
@@ -709,7 +712,7 @@ fn end_tag<'io, 'c, 'l, W: Write>(
             ctx.end_inline_text_with_margin()?
         }
         FootnoteDefinition(_) | Table(_) | TableHead | TableRow | TableCell => {}
-        Strikethrough => panic!("mdcat does not support strikethrough"),
+        Strikethrough => ctx.drop_style(),
         Emphasis => {
             ctx.drop_style();
             ctx.style.emphasis_level -= 1;
