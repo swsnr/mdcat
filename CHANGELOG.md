@@ -7,8 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 ## [Unreleased]
 ### Added
 - Render task lists nicely (see [GH-72]).
-- Render strike-through text (see [GH-71]).
+- Render strike-through text (see [GH-71]).  Some terminals do not support this
+  feature, and mdcat does not have a fallback currently (see [GH-73]).
 
+[GH-73]: https://github.com/lunaryorn/mdcat/issues/73
 [GH-72]: https://github.com/lunaryorn/mdcat/issues/72
 [GH-71]: https://github.com/lunaryorn/mdcat/issues/71
 
