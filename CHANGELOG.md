@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.13.0] – 2019-03-30
 ### Added
 - Render task lists nicely (see [GH-72]).
 - Render strike-through text (see [GH-71]).  Some terminals do not support this
@@ -213,4 +215,5 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 [0.11.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.1...mdcat-0.11.0
 [0.12.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.11.0...mdcat-0.12.0
 [0.12.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.0...mdcat-0.12.1
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.1...HEAD
+[0.13.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.1...mdcat-0.13.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.13.0...HEAD
