@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Render task lists nicely (see [GH-72])
+
+[GH-72]: https://github.com/lunaryorn/mdcat/issues/72
 
 ## [0.12.1] – 2018-12-24
 ### Fixed

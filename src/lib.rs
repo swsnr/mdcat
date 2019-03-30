@@ -485,7 +485,11 @@ fn write_event<'io, 'c, 'l, W: Write>(
             }
             Ok(ctx)
         }
-        TaskListMarker(_) => panic!("mdcat does not support task lists"),
+        TaskListMarker(checked) => {
+            let marker = if checked { "\u{2611} " } else { "\u{2610} " };
+            ctx.write_highlighted(CowStr::Borrowed(marker))?;
+            Ok(ctx)
+        }
         Start(tag) => start_tag(ctx, tag),
         End(tag) => end_tag(ctx, tag),
         Html(content) => {

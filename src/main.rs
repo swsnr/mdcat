@@ -19,7 +19,7 @@
 use mdcat;
 
 use clap::value_t;
-use pulldown_cmark::Parser;
+use pulldown_cmark::{Options, Parser};
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
@@ -58,7 +58,9 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn 
         Ok(())
     } else {
         let (base_dir, input) = read_input(&args.filename)?;
-        let parser = Parser::new(&input);
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_TASKLISTS);
+        let parser = Parser::new_ext(&input, options);
 
         if args.dump_events {
             mdcat::dump_events(&mut std::io::stdout(), parser)?;

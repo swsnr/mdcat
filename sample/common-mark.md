@@ -94,6 +94,11 @@ And a mix of both:
     3. Text
 * dolor sit amet
 
+Task lists:
+
+* [ ] TODO
+* [x] DONE
+
 ## Block level elements
 
 Block quotes

@@ -21,7 +21,7 @@
 use mdcat;
 
 use pretty_assertions::assert_eq;
-use pulldown_cmark::Parser;
+use pulldown_cmark::{Options, Parser};
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -43,7 +43,9 @@ fn format_ansi_to_html(markdown: &str) -> String {
         let size = mdcat::TerminalSize::default();
         let syntax_set = SyntaxSet::load_defaults_newlines();
         let wd = std::env::current_dir().expect("No working directory");
-        let parser = Parser::new(markdown);
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_TASKLISTS);
+        let parser = Parser::new_ext(markdown, options);
         mdcat::push_tty(
             &mut child.stdin.unwrap(),
             mdcat::TerminalCapabilities::ansi(),
@@ -117,5 +119,6 @@ mod formatting {
         test_compare_html!(just_a_line);
         test_compare_html!(links);
         test_compare_html!(lists);
+        test_compare_html!(tasklist);
     }
 }
