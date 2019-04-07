@@ -1,4 +1,8 @@
-Block quotes
+Block quote without paragraphs:
+
+> Lorem ipsum dolor sit amet.
+
+Block quotes with paragraphs
 
 > Lorem ipsum dolor sit amet, *consetetur sadipscing elitr*, sed diam nonumy
 > eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam
