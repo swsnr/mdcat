@@ -29,7 +29,7 @@ vte50 = ["osc8_links"]
 [dependencies]
 failure = "^0.1"
 term_size = "^0.3"
-ansi_term = "^0.11"
+ansi_term = "^0.12"
 
 # URL type to parse URLs in markdown and reference external resources
 url = {version = "^1.7", optional = true}
