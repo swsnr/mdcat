@@ -11,7 +11,7 @@ addons:
 
 env:
   global:
-    - ANSI2HTML_VERSION=1.4.2
+    - ANSI2HTML_VERSION=1.5.2
 before_install:
   # For formatting tests
   - pip install --user ansi2html==${ANSI2HTML_VERSION}
