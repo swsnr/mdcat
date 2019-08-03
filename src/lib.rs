@@ -476,6 +476,11 @@ fn write_event<'io, 'c, 'l, W: Write>(
             ctx.newline_and_indent()?;
             Ok(ctx)
         }
+        Code(code) => {
+            // Inline code
+            ctx.write_styled(&ctx.style.current.fg(Colour::Yellow), code)?;
+            Ok(ctx)
+        }
         Text(text) => {
             // When we wrote an inline image suppress the text output, ie, the
             // image title.  We do not need it if we can show the image on the
@@ -598,10 +603,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             let style = ctx.style.current.bold();
             ctx.set_style(style)
         }
-        Code => {
-            let style = ctx.style.current.fg(Colour::Yellow);
-            ctx.set_style(style)
-        }
         Link(_, destination, _) => {
             // Do nothing if the terminal doesn’t support inline links of if `destination` is no
             // valid URL:  We will write a reference link when closing the link tag.
@@ -717,7 +718,7 @@ fn end_tag<'io, 'c, 'l, W: Write>(
             ctx.drop_style();
             ctx.style.emphasis_level -= 1;
         }
-        Strong | Code => ctx.drop_style(),
+        Strong => ctx.drop_style(),
         Link(_, destination, title) => {
             if ctx.links.inside_inline_link {
                 match ctx.output.capabilities.links {
