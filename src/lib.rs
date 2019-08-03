@@ -477,7 +477,8 @@ fn write_event<'io, 'c, 'l, W: Write>(
             Ok(ctx)
         }
         Code(code) => {
-            ctx.write_highlighted(code)?;
+            // Inline code
+            ctx.write_styled(&ctx.style.current.fg(Colour::Yellow), code)?;
             Ok(ctx)
         }
         Text(text) => {
