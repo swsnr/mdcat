@@ -23,7 +23,7 @@ use ansi_term::{Colour, Style};
 use failure::Error;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
-use pulldown_cmark::{CowStr, Event, Tag};
+use pulldown_cmark::{CowStr, Event, LinkType, Tag};
 use std::collections::VecDeque;
 use std::io;
 use std::io::Write;
@@ -183,12 +183,8 @@ struct LinkContext<'a> {
     pending_links: VecDeque<Link<'a>>,
     /// The index the next link will get
     next_link_index: usize,
-    /// The last text seen.
-    ///
-    /// We use this field to track the content of link tags, and omit a link
-    /// reference if the link text equals the link destination, ie, if the link
-    /// appears in text literally.
-    last_text: Option<CowStr<'a>>,
+    /// The type of the current link of any
+    current_link_type: Option<LinkType>,
     /// Whether we are inside an inline link currently.
     inside_inline_link: bool,
 }
@@ -281,7 +277,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
             links: LinkContext {
                 pending_links: VecDeque::new(),
                 next_link_index: 1,
-                last_text: None,
+                current_link_type: None,
                 inside_inline_link: false,
             },
             code: CodeContext {
@@ -450,7 +446,6 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
         }
         if !wrote_highlighted {
             self.write_styled_current(&text)?;
-            self.links.last_text = Some(text);
         }
         Ok(())
     }
@@ -603,7 +598,8 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             let style = ctx.style.current.bold();
             ctx.set_style(style)
         }
-        Link(_, destination, _) => {
+        Link(link_type, destination, _) => {
+            ctx.links.current_link_type = Some(link_type);
             // Do nothing if the terminal doesn’t support inline links of if `destination` is no
             // valid URL:  We will write a reference link when closing the link tag.
             match ctx.output.capabilities.links {
@@ -733,11 +729,10 @@ fn end_tag<'io, 'c, 'l, W: Write>(
                 // When we did not write an inline link, create a normal reference
                 // link instead.  Even if the terminal supports inline links this
                 // can still happen for anything that's not a valid URL.
-                match ctx.links.last_text {
-                    Some(ref text) if *text == destination => {
-                        // Do nothing if the last printed text matches the destination of the link.
-                        // In this case we likely looked at an inline autolink and we should not
-                        // repeat the link when it's already in text.
+                match ctx.links.current_link_type {
+                    Some(LinkType::Autolink) | Some(LinkType::Email) => {
+                        // Do nothing for autolinks: We shouldn't repeat the link destination,
+                        // if the link text _is_ the destination.
                     }
                     _ => {
                         // Reference link
