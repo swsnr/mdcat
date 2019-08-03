@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update pulldown-cmark to 0.5 which supports CommonMark 0.29 and improves
+  parser speed and correctness.
+
+[GH-84]: https://github.com/lunaryorn/mdcat/issues/84
 
 ## [0.13.0] – 2019-03-30
 ### Added
