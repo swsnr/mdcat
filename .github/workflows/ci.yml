@@ -1,0 +1,65 @@
+name: CI
+
+on: [push]
+
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta]
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@v1
+    - name: Install rustfmt
+      run: rustup component add rustfmt
+    - name: Check code formatting
+      run: cargo fmt -- --check
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: stable
+    - uses: actions/checkout@v1
+    - name: Install clippy
+      run: rustup component add clippy
+    - name: Lint (default features)
+      run: cargo clippy --all-targets
+    - name: Lint (no default features)
+      run: cargo clippy --all-targets --no-default-features
+
+  test/linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build:
+        - target: x86_64-unknown-linux-gnu
+          flags:
+        - target: x86_64-unknown-linux-musl
+          flags: --no-default-features --features terminology
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: stable
+    - uses: actions/checkout@v1
+    - name: Test
+      run: cargo test --target ${{ matrix.build.target }} ${{ matrix.build.flags }}
+    - name: Format sample
+      run: cargo run --target ${{ matrix.build.target }} ${{ matrix.build.flags }} -- sample/common-mark.md
+  test/macos:
+    runs-on: macOS-latest
+    steps:
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: stable
+    - uses: actions/checkout@v1
+    - name: Test
+      run: cargo test $CARGOFLAGS
+    - name: Format sample
+      run: cargo run $CARGOFLAGS -- sample/common-mark.md
+    env:
+      - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
