@@ -46,6 +46,10 @@ jobs:
       with:
         rust-version: stable
     - uses: actions/checkout@v1
+    - name: Install musl tools
+      run: sudo apt-get install musl-tools
+    - name: Setup target
+      run: rustup target add ${{ matrix.build.target }}
     - name: Test
       run: cargo test --target ${{ matrix.build.target }} ${{ matrix.build.flags }}
     - name: Format sample
