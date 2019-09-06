@@ -58,8 +58,6 @@ jobs:
         rust-version: stable
     - uses: actions/checkout@v1
     - name: Test
-      run: cargo test $CARGOFLAGS
+      run: cargo test --no-default-features --features iterm2,remote_resources
     - name: Format sample
-      run: cargo run $CARGOFLAGS -- sample/common-mark.md
-    env:
-      - CARGOFLAGS='--no-default-features --features iterm2,remote_resources'
+      run: cargo run --no-default-features --features iterm2,remote_resources -- sample/common-mark.md
