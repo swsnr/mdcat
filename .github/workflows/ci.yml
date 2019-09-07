@@ -48,6 +48,8 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install musl tools
       run: sudo apt-get install musl-tools
+    - name: Install ansi2html for tests
+      run: pip3 install ansi2html
     - name: Setup target
       run: rustup target add ${{ matrix.build.target }}
     - name: Test
@@ -61,6 +63,8 @@ jobs:
       with:
         rust-version: stable
     - uses: actions/checkout@v1
+    - name: Install ansi2html for tests
+      run: pip3 install ansi2html
     - name: Test
       run: cargo test --no-default-features --features iterm2,remote_resources
     - name: Format sample
