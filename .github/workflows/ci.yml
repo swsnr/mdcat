@@ -9,96 +9,102 @@ jobs:
       matrix:
         rust: [stable, beta]
     steps:
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ matrix.rust }}
-    - uses: actions/checkout@v1
-    - name: Install rustfmt
-      run: rustup component add rustfmt
-    - name: Check code formatting
-      run: cargo fmt -- --check
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - uses: actions/checkout@v1
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+      - name: Check code formatting
+        run: cargo fmt -- --check
 
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: stable
-    - uses: actions/checkout@v1
-    - name: Install clippy
-      run: rustup component add clippy
-    - name: Lint (default features)
-      run: cargo clippy --all-targets
-    - name: Lint (no default features)
-      run: cargo clippy --all-targets --no-default-features
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+      - uses: actions/checkout@v1
+      - name: Install clippy
+        run: rustup component add clippy
+      - name: Lint (default features)
+        run: cargo clippy --all-targets
+      - name: Lint (no default features)
+        run: cargo clippy --all-targets --no-default-features
 
   test_linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         build:
-        - target: x86_64-unknown-linux-gnu
-          flags:
-          rust: stable
-        - target: x86_64-unknown-linux-gnu
-          flags:
-          rust: beta
-        - target: x86_64-unknown-linux-musl
-          flags: --no-default-features --features terminology
-          rust: stable
+          # Test a default build with all features against stable and beta,
+          # and a smaller musl build without any features that require dynamic
+          # linking; we use this build for the static linux binary build on
+          # releases.
+          - target: x86_64-unknown-linux-gnu
+            flags:
+            rust: stable
+          - target: x86_64-unknown-linux-gnu
+            flags:
+            rust: beta
+          - target: x86_64-unknown-linux-musl
+            flags: --no-default-features --features terminology
+            rust: stable
     steps:
-    # Install ansi2html for tests
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - name: Install ansi2html for tests
-      run: pip install ansi2html
-    # Install musl tools for musl target
-    - name: Install musl tools
-      run: sudo apt-get install musl-tools
-    # Setup rust version, and setup the target
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ matrix.build.rust }}
-    - name: Setup target
-      run: rustup target add ${{ matrix.build.target }}
-    # Test
-    - uses: actions/checkout@v1
-    - name: Test
-      run: cargo test --target ${{ matrix.build.target }} ${{ matrix.build.flags }}
-    - name: Format sample
-      run: cargo run --target ${{ matrix.build.target }} ${{ matrix.build.flags }} -- sample/common-mark.md
+      # Install ansi2html for tests
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Install ansi2html for tests
+        run: pip install ansi2html
+      # Install musl tools for musl target
+      - name: Install musl tools
+        run: sudo apt-get install musl-tools
+      # Setup rust version, and setup the target
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.build.rust }}
+      - name: Setup target
+        run: rustup target add ${{ matrix.build.target }}
+      # Test
+      - uses: actions/checkout@v1
+      - name: Test
+        run: cargo test --target ${{ matrix.build.target }} ${{ matrix.build.flags }}
+      - name: Format sample
+        run: cargo run --target ${{ matrix.build.target }} ${{ matrix.build.flags }} -- sample/common-mark.md
+
   test_macos:
     runs-on: macOS-latest
     steps:
-    # Install ansi2html for tests
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - name: Install ansi2html for tests
-      run: pip install ansi2html
-    # Setup rust version
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: stable
-    # Test code
-    - uses: actions/checkout@v1
-    - name: Test
-      run: cargo test --no-default-features --features iterm2,remote_resources
-    - name: Format sample
-      run: cargo run --no-default-features --features iterm2,remote_resources -- sample/common-mark.md
+      # Install ansi2html for tests
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+      - name: Install ansi2html for tests
+        run: pip install ansi2html
+      # Setup rust version
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+      # Test code
+      - uses: actions/checkout@v1
+      - name: Test
+        run: cargo test --no-default-features --features iterm2,remote_resources
+      - name: Format sample
+        run: cargo run --no-default-features --features iterm2,remote_resources -- sample/common-mark.md
+
   test_windows:
     runs-on: windows-latest
     steps:
-    # Setup rust version
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: stable
-    - name: Setup target
-      run: rustup target add x86_64-pc-windows-mscv
-    # Test code
-    - uses: actions/checkout@v1
-    - name: Test
-      run: cargo test --target x86_64-pc-windows-mscv --no-default-features
-    - name: Format sample
-      run: cargo run --target x86_64-pc-windows-mscv --no-default-features
+      # Setup rust version
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+      - name: Setup target
+        run: rustup target add x86_64-pc-windows-mscv
+      # Test code
+      - uses: actions/checkout@v1
+      - name: Test
+        run: cargo test --target x86_64-pc-windows-mscv --no-default-features
+      - name: Format sample
+        run: cargo run --target x86_64-pc-windows-mscv --no-default-features
