@@ -101,10 +101,10 @@ jobs:
         with:
           rust-version: stable
       - name: Setup target
-        run: rustup target add x86_64-pc-windows-mscv
+        run: rustup target add x86_64-pc-windows-msvc
       # Test code
       - uses: actions/checkout@v1
       - name: Test
-        run: cargo test --target x86_64-pc-windows-mscv --no-default-features
+        run: cargo test --target x86_64-pc-windows-msvc --no-default-features
       - name: Format sample
-        run: cargo run --target x86_64-pc-windows-mscv --no-default-features
+        run: cargo run --target x86_64-pc-windows-msvc --no-default-features
