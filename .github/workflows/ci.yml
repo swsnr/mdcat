@@ -87,3 +87,18 @@ jobs:
       run: cargo test --no-default-features --features iterm2,remote_resources
     - name: Format sample
       run: cargo run --no-default-features --features iterm2,remote_resources -- sample/common-mark.md
+  test_windows:
+    runs-on: windows-latest
+    steps:
+    # Setup rust version
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: stable
+    - name: Setup target
+      run: rustup target add x86_64-pc-windows-mscv
+    # Test code
+    - uses: actions/checkout@v1
+    - name: Test
+      run: cargo test --target x86_64-pc-windows-mscv --no-default-features
+    - name: Format sample
+      run: cargo run --target x86_64-pc-windows-mscv --no-default-features
