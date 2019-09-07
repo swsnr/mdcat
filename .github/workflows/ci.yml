@@ -42,16 +42,23 @@ jobs:
         - target: x86_64-unknown-linux-musl
           flags: --no-default-features --features terminology
     steps:
+    # Install ansi2html for tests
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - name: Install ansi2html for tests
+      run: pip install ansi2html
+    # Install musl tools for musl target
+    - name: Install musl tools
+      run: sudo apt-get install musl-tools
+    # Setup rust version, and setup the target
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: stable
-    - uses: actions/checkout@v1
-    - name: Install musl tools
-      run: sudo apt-get install musl-tools
-    - name: Install ansi2html for tests
-      run: pip3 install ansi2html
     - name: Setup target
       run: rustup target add ${{ matrix.build.target }}
+    # Test
+    - uses: actions/checkout@v1
     - name: Test
       run: cargo test --target ${{ matrix.build.target }} ${{ matrix.build.flags }}
     - name: Format sample
@@ -59,12 +66,18 @@ jobs:
   test_macos:
     runs-on: macOS-latest
     steps:
+    # Install ansi2html for tests
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - name: Install ansi2html for tests
+      run: pip install ansi2html
+    # Setup rust version
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: stable
+    # Test code
     - uses: actions/checkout@v1
-    - name: Install ansi2html for tests
-      run: pip3 install ansi2html
     - name: Test
       run: cargo test --no-default-features --features iterm2,remote_resources
     - name: Format sample
