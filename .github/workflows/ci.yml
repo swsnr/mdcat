@@ -100,8 +100,6 @@ jobs:
       - uses: hecrj/setup-rust-action@v1
         with:
           rust-version: stable
-      - name: Setup target
-        run: rustup target add x86_64-pc-windows-msvc
       # Test code
       - uses: actions/checkout@v1
       - name: Test
