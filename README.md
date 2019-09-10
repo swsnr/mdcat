@@ -90,8 +90,11 @@ You can also build `mdcat` manually with `cargo`.  Install Rust via [rustup] and
 run `cargo install mdcat`.  To keep mdcat up to date install [cargo-update] and
 run `cargo install-update mdcat`.
 
-**Note:** On Windows you likely need `--no-default-features` to make `mdcat`
+#### Platform-Specific Build Notes
+
+- On Windows you likely need `--no-default-features` to make `mdcat`
 build.
+- On Debian you may need to install `llvm` and `clang` via `sudo apt-get install llvm && sudo apt-get install clang`
 
 [rustup]: https://www.rustup.rs
 [cargo-update]: https://github.com/nabijaczleweli/cargo-update
