@@ -2,7 +2,8 @@ name: Release
 
 on:
   push:
-    tags: release-test-*
+    tags: 
+      - release-test-*
 
 jobs:
   unix:
