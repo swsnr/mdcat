@@ -32,7 +32,7 @@ jobs:
       - name: Strip binary
         run: strip 'target/${{ matrix.target }}/release/mdcat'
       - uses: olegtarasov/get-tag@v1
-      - run: Build package
+      - name: Build package
         id: package
         run: |          
           ARCHIVE_NAME="${GITHUB_TAG_NAME}-${{ matrix.target }}"
