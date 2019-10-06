@@ -47,6 +47,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ steps.package.outputs.file }}
-          asset_name:  ${{ steps.package.outputs.file }}
+          asset_name:  ${{ steps.package.outputs.name }}
           tag: ${{ github.ref }}
           overwrite: true
