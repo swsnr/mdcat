@@ -14,11 +14,9 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             flags: --no-default-features --features terminology
-            name: '${{github.ref}}-x86_64-unknown-linux-musl'
           - os: macOS-latest
             target: x86_64-apple-darwin
             flags: --no-default-features --features iterm2,remote_resources
-            name: '${{ github.ref }}-x86_64-apple-darwin'
     steps:
       - uses: hecrj/setup-rust-action@v1
         with:
@@ -29,18 +27,26 @@ jobs:
       - name: Install musl
         run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
-      - name: Build
+      - name: Build in release configuration
         run: cargo build --target '${{ matrix.target }}' ${{ matrix.flags }} --release --verbose
-      - run: strip 'target/${{ matrix.target }}/release/mdcat'
-      - run: mkdir "/tmp/${{ matrix.name }}"
-      - run: cp README.md CHANGELOG.md LICENSE "/tmp/${{ matrix.name }}"
-      - run: cp "target/${{ matrix.target }}/release/mdcat" "/tmp/${{ matrix.name }}"
-      - run: tar -czf "/tmp/${{ matrix.name }}.tar.gz -C /tmp/ "${{ matrix.name }}"
-      - name: Upload binaries to release
+      - name: Strip binary
+        run: strip 'target/${{ matrix.target }}/release/mdcat'
+      - uses: olegtarasov/get-tag@v1
+      - run: Build package
+        id: package
+        run: |          
+          ARCHIVE_NAME="${GITHUB_TAG_NAME}-${{ matrix.target }}"
+          ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
+          mkdir "/tmp/${ARCHIVE_NAME}"
+          cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
+          tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
+          echo ::set-output "name=file::${ARCHIVE_FILE}"
+          echo ::set-output "name=name::${ARCHIVE_NAME}"
+      - name: Upload package
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /tmp/${{ matrix.name }}.tar.gz
-          asset_name: ${{ matrix.name }}.tar.gz
+          file: ${{ steps.package.outputs.file }}
+          asset_name:  ${{ steps.package.outputs.file }}
           tag: ${{ github.ref }}
           overwrite: true
