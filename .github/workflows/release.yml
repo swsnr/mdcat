@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags: release-test-*
+
+jobs:
+  unix:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            flags: --no-default-features --features terminology
+            name: '${{github.ref}}-x86_64-unknown-linux-musl'
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+            flags: --no-default-features --features iterm2,remote_resources
+            name: '${{ github.ref }}-x86_64-apple-darwin'
+    steps:
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+      - uses: actions/checkout@v1
+      - name: Setup target
+        run: rustup target add ${{ matrix.target }}
+      - name: Install musl
+        run: sudo apt-get install musl-tools
+        if: contains(matrix.target, 'linux-musl')
+      - name: Build
+        run: cargo build --target '${{ matrix.target }}' ${{ matrix.flags }} --release --verbose
+      - run: strip 'target/${{ matrix.target }}/release/mdcat'
+      - run: mkdir "/tmp/${{ matrix.name }}"
+      - run: cp README.md CHANGELOG.md LICENSE "/tmp/${{ matrix.name }}"
+      - run: cp "target/${{ matrix.target }}/release/mdcat" "/tmp/${{ matrix.name }}"
+      - run: tar -czf "/tmp/${{ matrix.name }}.tar.gz -C /tmp/ "${{ matrix.name }}"
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /tmp/${{ matrix.name }}.tar.gz
+          asset_name: ${{ matrix.name }}.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
