@@ -46,14 +46,16 @@ jobs:
             ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
             mv LICENSE LICENSE.txt
             7z a "${ARCHIVE_FILE}" "./target/${{ matrix.target }}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
+            echo ::set-output "name=file::${ARCHIVE_FILE}"
+            echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
           else
             ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
             mkdir "/tmp/${ARCHIVE_NAME}"
             cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
             tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
+            echo ::set-output "name=file::${ARCHIVE_FILE}"
+            echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
           fi
-          echo ::set-output "name=file::${ARCHIVE_FILE}"
-          echo ::set-output "name=name::${ARCHIVE_NAME}"
       - name: Upload package
         uses: svenstaro/upload-release-action@v1-release
         with:
