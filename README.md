@@ -2,7 +2,7 @@
 
 [![Current release](https://img.shields.io/crates/v/mdcat.svg)][crates]
 [![License](https://img.shields.io/github/license/lunaryorn/mdcat.svg)][license]
-[![Build status](https://travis-ci.com/lunaryorn/mdcat.svg?branch=master)][travis]
+[![CI status](https://github.com/lunaryorn/mdcat/workflows/CI/badge.svg)][workflows]
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=lunaryorn/mdcat)](https://dependabot.com)
 
 `cat` for Markdown (that is, [CommonMark][]):
@@ -18,7 +18,7 @@ right), and [PragmataPro] as font.
 
 [crates]: https://crates.io/crates/mdcat
 [license]: https://github.com/lunaryorn/mdcat/blob/master/LICENSE
-[travis]: https://travis-ci.com/lunaryorn/mdcat
+[workflows]: https://github.com/lunaryorn/mdcat/actions
 [CommonMark]: http://commonmark.org
 [Solarized]: http://ethanschoonover.com/solarized
 [dracula]: https://draculatheme.com/iterm/

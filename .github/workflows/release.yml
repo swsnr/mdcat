@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - mdcat-*
+
+jobs:
+  unix:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            flags: --no-default-features --features terminology
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+            flags: --no-default-features --features iterm2,remote_resources
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            flags: --no-default-features
+    steps:
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+      - uses: actions/checkout@v1
+      - name: Setup target
+        run: rustup target add ${{ matrix.target }}
+      - name: Install musl
+        run: sudo apt-get install musl-tools
+        if: contains(matrix.target, 'linux-musl')
+      - name: Build in release configuration
+        run: cargo build --target ${{ matrix.target }} ${{ matrix.flags }} --release --verbose
+      - name: Strip binary
+        run: strip 'target/${{ matrix.target }}/release/mdcat'
+        if: "!contains(matrix.target, 'windows')"
+      - uses: olegtarasov/get-tag@v1
+      - name: Build package
+        id: package
+        shell: bash
+        run: |
+          ARCHIVE_NAME="${GITHUB_TAG_NAME}-${{ matrix.target }}"
+          if [[ '${{ matrix.target }}' == *windows* ]]; then
+            ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
+            mv LICENSE LICENSE.txt
+            7z a "${ARCHIVE_FILE}" "./target/${{ matrix.target }}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
+            echo ::set-output "name=file::${ARCHIVE_FILE}"
+            echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
+          else
+            ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
+            mkdir "/tmp/${ARCHIVE_NAME}"
+            cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
+            tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
+            echo ::set-output "name=file::${ARCHIVE_FILE}"
+            echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
+          fi
+      - name: Upload package
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.package.outputs.file }}
+          asset_name:  ${{ steps.package.outputs.name }}
+          tag: ${{ github.ref }}
+          overwrite: true
