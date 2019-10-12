@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - release-test-*
+      - mdcat-*
 
 jobs:
   unix:
