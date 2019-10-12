@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: 
+    tags:
       - release-test-*
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
@@ -18,6 +18,9 @@ jobs:
           - os: macOS-latest
             target: x86_64-apple-darwin
             flags: --no-default-features --features iterm2,remote_resources
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            flags: --no-default-features
     steps:
       - uses: hecrj/setup-rust-action@v1
         with:
@@ -29,18 +32,26 @@ jobs:
         run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
       - name: Build in release configuration
-        run: cargo build --target '${{ matrix.target }}' ${{ matrix.flags }} --release --verbose
+        run: cargo build --target ${{ matrix.target }} ${{ matrix.flags }} --release --verbose
       - name: Strip binary
         run: strip 'target/${{ matrix.target }}/release/mdcat'
+        if: "!contains(matrix.target, 'windows')"
       - uses: olegtarasov/get-tag@v1
       - name: Build package
         id: package
-        run: |          
+        shell: bash
+        run: |
           ARCHIVE_NAME="${GITHUB_TAG_NAME}-${{ matrix.target }}"
-          ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
-          mkdir "/tmp/${ARCHIVE_NAME}"
-          cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
-          tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
+          if [[ '${{ matrix.target }}' == *windows* ]]; then
+            ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
+            mv LICENSE LICENSE.txt
+            7z a "${ARCHIVE_FILE}" "./target/${{ matrix.target }}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
+          else
+            ARCHIVE_FILE="/tmp/${ARCHIVE_NAME}.tar.gz"
+            mkdir "/tmp/${ARCHIVE_NAME}"
+            cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
+            tar -czf "${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
+          fi
           echo ::set-output "name=file::${ARCHIVE_FILE}"
           echo ::set-output "name=name::${ARCHIVE_NAME}"
       - name: Upload package
