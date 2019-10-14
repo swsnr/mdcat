@@ -55,7 +55,7 @@ default-features = false
 features = ["color", "wrap_help"]
 
 [dependencies.pulldown-cmark]
-version = "^0.5"
+version = "^0.6"
 default-features = false
 features = ['simd']
 
