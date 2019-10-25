@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ## [Unreleased]
 ### Changed
-- Update pulldown-cmark to 0.5 which supports CommonMark 0.29 and improves
+- Update pulldown-cmark to 0.6 which supports CommonMark 0.29 and improves
   parser speed and correctness.
 - Enable SIMD in pulldown-cmark to squeeze out the last bit of performance.
 
