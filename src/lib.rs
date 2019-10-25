@@ -104,7 +104,7 @@ enum ListItemKind {
     /// An unordered list item
     Unordered,
     /// An ordered list item with its current number
-    Ordered(usize),
+    Ordered(u64),
 }
 
 /// A link.
@@ -471,6 +471,14 @@ fn write_event<'io, 'c, 'l, W: Write>(
             ctx.newline_and_indent()?;
             Ok(ctx)
         }
+        Rule => {
+            ctx.start_inline_text()?;
+            let rule = "\u{2550}".repeat(ctx.output.size.width as usize);
+            let style = ctx.style.current.fg(Colour::Green);
+            ctx.write_styled(&style, rule)?;
+            ctx.end_inline_text_with_margin()?;
+            Ok(ctx)
+        }
         Code(code) => {
             // Inline code
             ctx.write_styled(&ctx.style.current.fg(Colour::Yellow), code)?;
@@ -494,15 +502,7 @@ fn write_event<'io, 'c, 'l, W: Write>(
         End(tag) => end_tag(ctx, tag),
         Html(content) => {
             let html_style = ctx.style.current.fg(Colour::Green);
-            for line in content.lines() {
-                ctx.write_styled(&html_style, line)?;
-                ctx.newline()?;
-            }
-            Ok(ctx)
-        }
-        InlineHtml(tag) => {
-            let style = ctx.style.current.fg(Colour::Green);
-            ctx.write_styled(&style, tag)?;
+            ctx.write_styled(&html_style, content)?;
             Ok(ctx)
         }
         FootnoteReference(_) => panic!("mdcat does not support footnotes"),
@@ -515,15 +515,8 @@ fn start_tag<'io, 'c, 'l, W: Write>(
     tag: Tag<'l>,
 ) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
-        HtmlBlock => ctx.newline()?,
         Paragraph => ctx.start_inline_text()?,
-        Rule => {
-            ctx.start_inline_text()?;
-            let rule = "\u{2550}".repeat(ctx.output.size.width as usize);
-            let style = ctx.style.current.fg(Colour::Green);
-            ctx.write_styled(&style, rule)?
-        }
-        Header(level) => {
+        Heading(level) => {
             // Before we start a new header, write all pending links to keep
             // them close to the text where they appeared in
             ctx.write_pending_links()?;
@@ -664,10 +657,8 @@ fn end_tag<'io, 'c, 'l, W: Write>(
     tag: Tag<'l>,
 ) -> Result<Context<'io, 'c, 'l, W>, Error> {
     match tag {
-        HtmlBlock => {}
         Paragraph => ctx.end_inline_text_with_margin()?,
-        Rule => ctx.end_inline_text_with_margin()?,
-        Header(_) => {
+        Heading(_) => {
             ctx.drop_style();
             ctx.end_inline_text_with_margin()?
         }
