@@ -9,28 +9,37 @@ jobs:
       matrix:
         rust: [stable, beta]
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: ${{ matrix.rust }}
       - uses: actions/checkout@v1
-      - name: Install rustfmt
-        run: rustup component add rustfmt
-      - name: Check code formatting
-        run: cargo fmt -- --check
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: rustfmt
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
       - uses: actions/checkout@v1
-      - name: Install clippy
-        run: rustup component add clippy
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
       - name: Lint (default features)
-        run: cargo clippy --all-targets
-      - name: Lint (no default features)
-        run: cargo clippy --all-targets --no-default-features
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-targets
+      - name: Lint (no features)
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-targets --no-default-features
 
   test_linux:
     runs-on: ubuntu-latest
@@ -51,6 +60,7 @@ jobs:
             flags: --no-default-features --features terminology
             rust: stable
     steps:
+      - uses: actions/checkout@v1
       # Install ansi2html for tests
       - uses: actions/setup-python@v1
         with:
@@ -60,22 +70,28 @@ jobs:
       # Install musl tools for musl target
       - name: Install musl tools
         run: sudo apt-get install musl-tools
-      # Setup rust version, and setup the target
-      - uses: hecrj/setup-rust-action@v1
+      - uses: actions-rs/toolchain@v1
         with:
-          rust-version: ${{ matrix.build.rust }}
-      - name: Setup target
-        run: rustup target add ${{ matrix.build.target }}
+          toolchain: ${{ matrix.build.rust }}
+          override: true
+          target: ${{ matrix.build.target }}
       # Test
-      - uses: actions/checkout@v1
       - name: Test
-        run: cargo test --target ${{ matrix.build.target }} ${{ matrix.build.flags }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --target ${{ matrix.build.target }} ${{ matrix.build.flags }}
       - name: Format sample
-        run: cargo run --target ${{ matrix.build.target }} ${{ matrix.build.flags }} -- sample/common-mark.md
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --target ${{ matrix.build.target }} ${{ matrix.build.flags }} -- sample/common-mark.md
 
   test_macos:
     runs-on: macOS-latest
     steps:
+      # Test code
+      - uses: actions/checkout@v1
       # Install ansi2html for tests
       - uses: actions/setup-python@v1
         with:
@@ -83,26 +99,40 @@ jobs:
       - name: Install ansi2html for tests
         run: pip install ansi2html
       # Setup rust version
-      - uses: hecrj/setup-rust-action@v1
+      - uses: actions-rs/toolchain@v1
         with:
-          rust-version: stable
-      # Test code
-      - uses: actions/checkout@v1
+          toolchain: stable
+          override: true
+      # Test
       - name: Test
-        run: cargo test --no-default-features --features iterm2,remote_resources
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --no-default-features --features iterm2,remote_resources
       - name: Format sample
-        run: cargo run --no-default-features --features iterm2,remote_resources -- sample/common-mark.md
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --no-default-features --features iterm2,remote_resources -- sample/common-mark.md
 
   test_windows:
     runs-on: windows-latest
     steps:
-      # Setup rust version
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
-      # Test code
       - uses: actions/checkout@v1
+      # Setup rust version
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          target:  x86_64-pc-windows-msvc
+      # Test
       - name: Test
-        run: cargo test --target x86_64-pc-windows-msvc --no-default-features
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --target x86_64-pc-windows-msvc --no-default-features
       - name: Format sample
-        run: cargo run --target x86_64-pc-windows-msvc --no-default-features
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --target x86_64-pc-windows-msvc --no-default-features -- sample/common-mark.md
