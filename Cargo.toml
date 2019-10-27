@@ -13,7 +13,7 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2018"
 
 [features]
-default = ["vte50", "iterm2", "terminology", "remote_resources"]
+default = ["vte50", "iterm2", "terminology", "kitty", "remote_resources"]
 
 resources = ["url"]
 remote_resources = ["reqwest", "resources"]
@@ -25,6 +25,7 @@ osc8_links = ["resources", "gethostname"]
 iterm2 = ["osc8_links", "resources", "mime", "base64"]
 terminology = ["osc8_links", "resources", "immeta"]
 vte50 = ["osc8_links"]
+kitty = ["resources", "mime", "base64"]
 
 [dependencies]
 failure = "^0.1"
@@ -37,13 +38,15 @@ url = {version = "^1.7", optional = true}
 # For OSC8 links, to query the system hostname
 gethostname = {version="^0.2", optional = true}
 
-# Dependencies for iTerm2
-# Fetch images over HTTP for iTerm2
+# Dependencies for iTerm2 + kitty
+# Fetch images over HTTP for iTerm2 + kitty
 reqwest = {version = "^0.9", optional = true}
 # Mime type definitions
 mime = {version = "^0.3", optional = true}
 # base64 encoding for image data
 base64 = {version = "^0.11", optional = true}
+# Convert image into rgb/a for Kitty
+image = "^0.22.2"
 
 # Dependencies for Terminology
 # Detect image dimensions to configure Terminology for image display

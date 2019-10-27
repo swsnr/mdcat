@@ -18,10 +18,14 @@
 
 mod ansi;
 pub mod highlighting;
+pub mod magic;
 mod size;
+pub mod url;
 
 #[cfg(feature = "iterm2")]
 mod iterm2;
+#[cfg(feature = "kitty")]
+mod kitty;
 #[cfg(any(feature = "osc8_links", feature = "iterm2"))]
 mod osc;
 #[cfg(feature = "terminology")]
@@ -68,6 +72,9 @@ pub enum ImageCapability {
     /// The terminal understands the iterm2 way of inline images.
     #[cfg(feature = "iterm2")]
     ITerm2(self::iterm2::ITerm2Images),
+    /// The terminal understands the Kitty way of inline images.
+    #[cfg(feature = "kitty")]
+    Kitty(self::kitty::KittyImages),
 }
 
 /// The capabilities of a terminal.
@@ -128,6 +135,14 @@ impl TerminalCapabilities {
                 style: StyleCapability::Ansi(AnsiStyle),
                 links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
                 image: ImageCapability::Terminology(self::terminology::TerminologyImages),
+                marks: MarkCapability::None,
+            },
+            #[cfg(feature = "kitty")]
+            _ if self::kitty::is_kitty() => TerminalCapabilities {
+                name: "Kitty".to_string(),
+                style: StyleCapability::Ansi(AnsiStyle),
+                links: LinkCapability::None,
+                image: ImageCapability::Kitty(self::kitty::KittyImages),
                 marks: MarkCapability::None,
             },
             #[cfg(feature = "vte50")]
