@@ -35,8 +35,12 @@ pub fn is_kitty() -> bool {
         .unwrap_or(false)
 }
 
-/// Retrieve the terminal size by calling the command-line tool
-/// > kitty +kitten icat --print-window-size
+/// Retrieve the terminal size in pixels by calling the command-line tool `kitty`.
+///
+///     kitty +kitten icat --print-window-size
+///
+/// We cannot use the terminal size information from Context.output.size, because
+/// the size information are in columns / rows instead of pixel.
 fn get_terminal_size_in_pixels() -> std::io::Result<(u32, u32)> {
     use std::io::{Error, ErrorKind};
 
@@ -86,25 +90,56 @@ fn get_terminal_size_in_pixels() -> std::io::Result<(u32, u32)> {
     }
 }
 
+/// Provides access to printing images for kitty.
 pub struct KittyImages;
 
-static ESCAPE_CODE_START: &str = "\x1b_G";
-static ESCAPE_CODE_END: &str = "\x1b\\";
-
 impl KittyImages {
-    /// Output the KittyImage in the terminal
+    /// Write an inline image for kitty.
     pub fn write_inline_image<W: Write>(
         &self,
         writer: &mut W,
         image: KittyImage,
     ) -> Result<(), Error> {
-        let mut cmd = KittyCommandPairs::new();
-        cmd.append(KittyCommandAction::T);
-        cmd.append(KittyTransmissionMedium::DIRECT);
-        cmd.append(image.format);
+        // Kitty's escape sequence is like: Put the command key/value pairs together like "{}={}(,*)"
+        // and write them along with the image bytes in 4096 bytes chunks to the stdout.
+        // Documentation gives the following python example:
+        //
+        //  import sys
+        //  from base64 import standard_b64encode
+        //
+        //  def serialize_gr_command(cmd, payload=None):
+        //    cmd = ','.join('{}={}'.format(k, v) for k, v in cmd.items())
+        //    ans = []
+        //    w = ans.append
+        //    w(b'\033_G'), w(cmd.encode('ascii'))
+        //    if payload:
+        //      w(b';')
+        //      w(payload)
+        //    w(b'\033\\')
+        //    return b''.join(ans)
+        //
+        //  def write_chunked(cmd, data):
+        //    cmd = {'a': 'T', 'f': 100}
+        //    data = standard_b64encode(data)
+        //    while data:
+        //      chunk, data = data[:4096], data[4096:]
+        //      m = 1 if data else 0
+        //      cmd['m'] = m
+        //      sys.stdout.buffer.write(serialize_gr_command(cmd, chunk))
+        //      sys.stdout.flush()
+        //      cmd.clear()
+        //
+        // Check at <https://sw.kovidgoyal.net/kitty/graphics-protocol.html#control-data-reference>
+        // for the reference.
+        let mut cmd_header: Vec<String> = vec![
+            "a=T".into(),
+            "t=d".into(),
+            format!("f={}", image.format.control_data_value()),
+        ];
 
-        if let Some(dimensions) = image.dimensions {
-            cmd.append(dimensions);
+        if let Some((width, height)) = image.dimensions {
+            cmd_header.push(format!("s={}", width));
+            cmd_header.push(format!("v={}", height));
         }
 
         let image_data = base64::encode(&image.contents);
@@ -112,31 +147,28 @@ impl KittyImages {
         let image_data_chunks_length = image_data_chunks.len();
 
         for (i, data) in image_data_chunks.enumerate() {
-            cmd.append(KittyHasMoreChunkedData {
-                flag: i < image_data_chunks_length - 1,
-            });
+            if i < image_data_chunks_length - 1 {
+                cmd_header.push("m=1".into());
+            } else {
+                cmd_header.push("m=0".into());
+            }
 
-            let cmd_str = cmd.as_string();
-
-            let mut output = vec![];
-            output.push(ESCAPE_CODE_START);
-            output.push(&cmd_str);
-            output.push(";");
-            output.push(str::from_utf8(data)?);
-            output.push(ESCAPE_CODE_END);
-
-            writer.write(output.join("").as_bytes())?;
+            let cmd = format!(
+                "\x1b_G{};{}\x1b\\",
+                cmd_header.join(","),
+                str::from_utf8(data)?
+            );
+            writer.write(cmd.as_bytes())?;
             writer.flush()?;
 
-            cmd.clear();
+            cmd_header.clear();
         }
 
         Ok(())
     }
 
-    /// Reads the image bytes into the KittyImage from the given URL
-    /// It scales the image down if the image size is larger than the
-    /// terminal window size.
+    /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
+    /// It scales the image down, if the image size exceeds the terminal window size.
     pub fn read_and_render(&self, url: &Url) -> Result<KittyImage, Error> {
         let contents = read_url(url)?;
         let mime = magic::detect_mime_type(&contents)?;
@@ -153,6 +185,7 @@ impl KittyImages {
         }
     }
 
+    /// Wrap the image bytes as PNG format in `KittyImage`.
     fn render_as_png(&self, contents: Vec<u8>) -> Result<KittyImage, Error> {
         Ok(KittyImage {
             contents: contents,
@@ -161,6 +194,8 @@ impl KittyImages {
         })
     }
 
+    /// Render the image as RGB/RGBA format and wrap the image bytes in `KittyImage`.
+    /// It scales the image down if its size exceeds the terminal size.
     fn render_as_rgb_or_rgba(
         &self,
         image: DynamicImage,
@@ -186,143 +221,36 @@ impl KittyImages {
                 _ => image.to_rgba().into_raw(),
             },
             format: format,
-            dimensions: Some(KittyImageDimension {
-                width: image_width,
-                height: image_height,
-            }),
+            dimensions: Some((image_width, image_height)),
         })
     }
 }
 
+/// Holds the image bytes with its image format and dimensions.
 pub struct KittyImage {
     contents: Vec<u8>,
     format: KittyFormat,
-    dimensions: Option<KittyImageDimension>,
+    /// the image dimensions in width and height
+    dimensions: Option<(u32, u32)>,
 }
 
-pub struct KittyImageDimension {
-    width: u32,
-    height: u32,
-}
-
-/// The overall action this graphics command is performing.
-/// I couldn't find the meaning of the possible values.
-/// See https://sw.kovidgoyal.net/kitty/graphics-protocol.html#control-data-reference
-pub enum KittyCommandAction {
-    T,
-}
-
-/// The transmission medium
-pub enum KittyTransmissionMedium {
-    DIRECT,
-}
-
-/// The format (PNG, RGB or RGBA) of the image bytes to transmit
-pub enum KittyFormat {
+/// The image format (PNG, RGB or RGBA) of the image bytes.
+enum KittyFormat {
     PNG,
     RGB,
     RGBA,
 }
 
-pub struct KittyHasMoreChunkedData {
-    flag: bool,
-}
-
-/// Manages the Kitty command pairs
-pub struct KittyCommandPairs {
-    cmd: Vec<(String, String)>,
-}
-
-impl KittyCommandPairs {
-    fn new() -> Self {
-        KittyCommandPairs { cmd: vec![] }
-    }
-
-    fn append<T>(&mut self, value: T) -> ()
-    where
-        T: KittyCommand<T>,
-    {
-        self.cmd.append(&mut T::cmd_pairs(value));
-    }
-
-    fn as_string(&self) -> String {
-        self.cmd
-            .iter()
-            .map(|(key, value)| format!("{}={}", key, value))
-            .collect::<Vec<String>>()
-            .join(",")
-    }
-
-    fn clear(&mut self) -> () {
-        self.cmd.clear();
-    }
-}
-
-pub trait KittyCommand<T> {
-    fn cmd_pairs(value: T) -> Vec<(String, String)>;
-}
-
-/// See https://sw.kovidgoyal.net/kitty/graphics-protocol.html#transferring-pixel-data
-impl KittyCommand<KittyFormat> for KittyFormat {
-    fn cmd_pairs(value: KittyFormat) -> Vec<(String, String)> {
-        vec![(
-            "f".to_string(),
-            match value {
-                KittyFormat::PNG => "100",
-                KittyFormat::RGBA => "32",
-                KittyFormat::RGB => "24",
-            }
-            .to_string(),
-        )]
-    }
-}
-
-/// https://sw.kovidgoyal.net/kitty/graphics-protocol.html#control-data-reference
-impl KittyCommand<KittyCommandAction> for KittyCommandAction {
-    fn cmd_pairs(value: KittyCommandAction) -> Vec<(String, String)> {
-        vec![(
-            "a".to_string(),
-            match value {
-                KittyCommandAction::T => "T",
-            }
-            .to_string(),
-        )]
-    }
-}
-
-/// See https://sw.kovidgoyal.net/kitty/graphics-protocol.html#the-transmission-medium
-impl KittyCommand<KittyTransmissionMedium> for KittyTransmissionMedium {
-    fn cmd_pairs(value: KittyTransmissionMedium) -> Vec<(String, String)> {
-        vec![(
-            "t".to_string(),
-            match value {
-                KittyTransmissionMedium::DIRECT => "d",
-            }
-            .to_string(),
-        )]
-    }
-}
-
-/// See https://sw.kovidgoyal.net/kitty/graphics-protocol.html#rgb-and-rgba-data
-/// See https://sw.kovidgoyal.net/kitty/graphics-protocol.html#control-data-reference
-impl KittyCommand<KittyImageDimension> for KittyImageDimension {
-    fn cmd_pairs(value: KittyImageDimension) -> Vec<(String, String)> {
-        vec![
-            ("s".to_string(), value.width.to_string()),
-            ("v".to_string(), value.height.to_string()),
-        ]
-    }
-}
-
-impl KittyCommand<KittyHasMoreChunkedData> for KittyHasMoreChunkedData {
-    fn cmd_pairs(value: KittyHasMoreChunkedData) -> Vec<(String, String)> {
-        vec![(
-            "m".to_string(),
-            if value.flag {
-                "1".to_string()
-            } else {
-                "0".to_string()
-            },
-        )]
+impl KittyFormat {
+    /// Return the control data value of the image format.
+    /// See the [documentation] for the reference and explanation.
+    ///
+    /// [documentation]: https://sw.kovidgoyal.net/kitty/graphics-protocol.html#transferring-pixel-data
+    fn control_data_value(&self) -> &str {
+        match *self {
+            KittyFormat::PNG => "100",
+            KittyFormat::RGB => "24",
+            KittyFormat::RGBA => "32",
+        }
     }
 }
