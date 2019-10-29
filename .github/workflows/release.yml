@@ -14,7 +14,7 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            flags: --no-default-features --features terminology
+            flags: --no-default-features --features terminology,kitty,remote_resources
           - os: macOS-latest
             target: x86_64-apple-darwin
             flags: --no-default-features --features iterm2,remote_resources
