@@ -25,7 +25,7 @@ osc8_links = ["resources", "gethostname"]
 iterm2 = ["osc8_links", "resources", "mime", "base64"]
 terminology = ["osc8_links", "resources", "immeta"]
 vte50 = ["osc8_links"]
-kitty = ["resources", "mime", "base64"]
+kitty = ["resources", "mime", "base64", "image"]
 
 [dependencies]
 failure = "^0.1"
@@ -46,7 +46,7 @@ mime = {version = "^0.3", optional = true}
 # base64 encoding for image data
 base64 = {version = "^0.11", optional = true}
 # Convert image into rgb/a for Kitty
-image = "^0.22.2"
+image = {version = "^0.22.2", optional = true}
 
 # Dependencies for Terminology
 # Detect image dimensions to configure Terminology for image display
