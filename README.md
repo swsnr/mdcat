@@ -45,7 +45,7 @@ terminal font with italic characters.  Then it
 | VTE 0.50 or newer based | ✓             | ✓                   | ✓     |        |            |
 | [Terminology][]         | ✓             | ✓                   | ✓     | ✓      |            |
 | [iTerm2][]              | ✓             | ✓                   | ✓     | ✓      | ✓          |
-| [kitty][]               | ✓             |  ✓                  |       | ✓      |            |
+| [kitty][]               | ✓             | ✓                   |       | ✓      |            |
 
 1: On Windows you need to install with `--no-default-features` (see below).
 
