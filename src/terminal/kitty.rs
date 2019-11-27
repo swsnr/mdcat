@@ -19,7 +19,7 @@
 //! See <https://sw.kovidgoyal.net/kitty/> for more information.
 
 use super::magic;
-use super::url::read_url;
+use super::resources::read_url;
 use failure::Error;
 use image::{ColorType, FilterType};
 use image::{DynamicImage, GenericImageView};

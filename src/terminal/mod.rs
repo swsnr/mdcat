@@ -19,8 +19,8 @@
 mod ansi;
 pub mod highlighting;
 pub mod magic;
+pub mod resources;
 mod size;
-pub mod url;
 
 #[cfg(feature = "iterm2")]
 mod iterm2;

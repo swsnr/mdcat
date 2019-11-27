@@ -17,7 +17,7 @@
 //! Write markdown to TTYs.
 
 #[cfg(feature = "resources")]
-extern crate url;
+use url;
 
 use ansi_term::{Colour, Style};
 use failure::Error;
@@ -32,7 +32,6 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
-mod resources;
 mod terminal;
 
 // Expose some select things for use in main

@@ -12,10 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Url util functions for downloading content from url.
+//! Access to resources referenced from markdown documents.
 
 use failure::Error;
+#[cfg(feature = "resources")]
 use url::Url;
+
+/// What kind of resources mdcat may access when rendering.
+///
+/// This struct denotes whether mdcat shows inline images from remote URLs or
+/// just from local files.
+#[derive(Debug, Copy, Clone)]
+pub enum ResourceAccess {
+    /// Use only local files and prohibit remote resources.
+    LocalOnly,
+    /// Use local and remote resources alike.
+    RemoteAllowed,
+}
+
+#[cfg(feature = "resources")]
+impl ResourceAccess {
+    /// Whether the resource access permits access to the given `url`.
+    pub fn permits(self, url: &Url) -> bool {
+        match self {
+            ResourceAccess::LocalOnly if is_local(url) => true,
+            ResourceAccess::RemoteAllowed => true,
+            _ => false,
+        }
+    }
+}
+
+/// Whether `url` is readable as local file:.
+#[cfg(feature = "resources")]
+fn is_local(url: &Url) -> bool {
+    url.scheme() == "file" && url.to_file_path().is_ok()
+}
 
 /// Read the contents of the given `url` if supported.
 ///
@@ -25,6 +56,7 @@ use url::Url;
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
+#[cfg(feature = "resources")]
 pub fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
     use std::fs::File;
     use std::io::prelude::*;
@@ -66,10 +98,31 @@ pub fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "resources"))]
 mod tests {
-    use super::*;
+    pub use super::*;
     use pretty_assertions::assert_eq;
+
+    #[test]
+    fn resource_access_permits_local_resource() {
+        let resource = Url::parse("file:///foo/bar").unwrap();
+        assert!(ResourceAccess::LocalOnly.permits(&resource));
+        assert!(ResourceAccess::RemoteAllowed.permits(&resource));
+    }
+
+    #[test]
+    fn resource_access_permits_remote_file_url() {
+        let resource = Url::parse("file://example.com/foo/bar").unwrap();
+        assert!(!ResourceAccess::LocalOnly.permits(&resource));
+        assert!(ResourceAccess::RemoteAllowed.permits(&resource));
+    }
+
+    #[test]
+    fn resource_access_permits_https_url() {
+        let resource = Url::parse("https:///foo/bar").unwrap();
+        assert!(!ResourceAccess::LocalOnly.permits(&resource));
+        assert!(ResourceAccess::RemoteAllowed.permits(&resource));
+    }
 
     #[test]
     fn read_url_with_http_url_fails_when_status_404() {

@@ -21,7 +21,7 @@
 
 use super::magic;
 use super::osc::write_osc;
-use super::url::read_url;
+use super::resources::read_url;
 use failure::Error;
 use std::ffi::OsStr;
 use std::io::{self, Write};
