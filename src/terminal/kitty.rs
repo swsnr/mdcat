@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Sebastian Wiesner <sebastian@swsnr.de>
+// Copyright 2019 Fabian Spillner <fabian.spillner@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ pub fn is_kitty() -> bool {
 ///
 /// We cannot use the terminal size information from Context.output.size, because
 /// the size information are in columns / rows instead of pixel.
-fn get_terminal_size_in_pixels() -> std::io::Result<(u32, u32)> {
+fn get_terminal_size() -> std::io::Result<KittyDimension> {
     use std::io::{Error, ErrorKind};
 
     let process = Command::new("kitty")
@@ -77,7 +77,7 @@ fn get_terminal_size_in_pixels() -> std::io::Result<(u32, u32)> {
             )))?,
         );
 
-        Ok((width, height))
+        Ok(KittyDimension { width, height })
     } else {
         Err(Error::new(
             ErrorKind::Other,
@@ -137,9 +137,9 @@ impl KittyImages {
             format!("f={}", image.format.control_data_value()),
         ];
 
-        if let Some((width, height)) = image.dimensions {
-            cmd_header.push(format!("s={}", width));
-            cmd_header.push(format!("v={}", height));
+        if let Some(dimension) = image.dimension {
+            cmd_header.push(format!("s={}", dimension.width));
+            cmd_header.push(format!("v={}", dimension.height));
         }
 
         let image_data = base64::encode(&image.contents);
@@ -173,15 +173,16 @@ impl KittyImages {
         let contents = read_url(url)?;
         let mime = magic::detect_mime_type(&contents)?;
         let image = image::load_from_memory(&contents)?;
-        let (terminal_width, terminal_height) = get_terminal_size_in_pixels()?;
+        let terminal_size = get_terminal_size()?;
         let (image_width, image_height) = image.dimensions();
 
-        let needs_scaledown = image_width > terminal_width || image_height > terminal_height;
+        let needs_scaledown =
+            image_width > terminal_size.width || image_height > terminal_size.height;
 
         if mime.type_() == mime::IMAGE && mime.subtype().as_str() == "png" && !needs_scaledown {
             self.render_as_png(contents)
         } else {
-            self.render_as_rgb_or_rgba(image, (terminal_width, terminal_height))
+            self.render_as_rgb_or_rgba(image, terminal_size)
         }
     }
 
@@ -190,7 +191,7 @@ impl KittyImages {
         Ok(KittyImage {
             contents: contents,
             format: KittyFormat::PNG,
-            dimensions: None,
+            dimension: None,
         })
     }
 
@@ -199,7 +200,7 @@ impl KittyImages {
     fn render_as_rgb_or_rgba(
         &self,
         image: DynamicImage,
-        terminal_size: (u32, u32),
+        terminal_size: KittyDimension,
     ) -> Result<KittyImage, Error> {
         let format = match image.color() {
             ColorType::RGB(_) => KittyFormat::RGB,
@@ -207,10 +208,13 @@ impl KittyImages {
         };
 
         let (image_width, image_height) = image.dimensions();
-        let (available_width, available_height) = terminal_size;
 
-        let image = if image_width > available_width || image_height > available_height {
-            image.resize_to_fill(available_width, available_height, FilterType::Nearest)
+        let image = if image_width > terminal_size.width || image_height > terminal_size.height {
+            image.resize_to_fill(
+                terminal_size.width,
+                terminal_size.height,
+                FilterType::Nearest,
+            )
         } else {
             image
         };
@@ -221,7 +225,10 @@ impl KittyImages {
                 _ => image.to_rgba().into_raw(),
             },
             format: format,
-            dimensions: Some((image_width, image_height)),
+            dimension: Some(KittyDimension {
+                width: image_width,
+                height: image_height,
+            }),
         })
     }
 }
@@ -230,8 +237,7 @@ impl KittyImages {
 pub struct KittyImage {
     contents: Vec<u8>,
     format: KittyFormat,
-    /// the image dimensions in width and height
-    dimensions: Option<(u32, u32)>,
+    dimension: Option<KittyDimension>,
 }
 
 /// The image format (PNG, RGB or RGBA) of the image bytes.
@@ -253,4 +259,10 @@ impl KittyFormat {
             KittyFormat::RGBA => "32",
         }
     }
+}
+
+/// The dimension encapsulate the width and height in the pixel unit.
+struct KittyDimension {
+    width: u32,
+    height: u32,
 }
