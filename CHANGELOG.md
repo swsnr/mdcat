@@ -204,7 +204,7 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[0.1.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.0
+[0.1.0]: https://github.com/lunaryorn/mdcat/releases/mdless-0.1.0
 [0.1.1]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.0...mdless-0.1.1
 [0.2.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.1...mdless-0.2.0
 [0.3.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.2.0...mdcat-0.3.0
