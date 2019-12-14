@@ -45,6 +45,7 @@ terminal font with italic characters.  Then it
 | VTE 0.50 or newer based | ✓             | ✓                   | ✓     |        |            |
 | [Terminology][]         | ✓             | ✓                   | ✓     | ✓      |            |
 | [iTerm2][]              | ✓             | ✓                   | ✓     | ✓      | ✓          |
+| [kitty][]               | ✓             | ✓                   |       | ✓      |            |
 
 1: On Windows you need to install with `--no-default-features` (see below).
 
@@ -57,6 +58,7 @@ Not supported:
 [osc8]: https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 [Terminology]: http://terminolo.gy
 [ConEmu]: https://conemu.github.io
+[kitty]: https://sw.kovidgoyal.net/kitty/index.html
 
 ## Installation
 

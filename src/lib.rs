@@ -32,7 +32,6 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
-mod resources;
 mod terminal;
 
 // Expose some select things for use in main
@@ -638,6 +637,20 @@ fn start_tag<'io, 'c, 'l, W: Write>(
                 {
                     if let Ok(contents) = iterm2.read_and_render(&url) {
                         iterm2.write_inline_image(ctx.output.writer, url.as_str(), &contents)?;
+                        ctx.image.inline_image = true;
+                    }
+                }
+            }
+            #[cfg(feature = "kitty")]
+            ImageCapability::Kitty(ref kitty) => {
+                let access = ctx.resources.resource_access;
+                if let Some(url) = ctx
+                    .resources
+                    .resolve_reference(&link)
+                    .filter(|url| access.permits(url))
+                {
+                    if let Ok(kitty_image) = kitty.read_and_render(&url) {
+                        kitty.write_inline_image(ctx.output.writer, kitty_image)?;
                         ctx.image.inline_image = true;
                     }
                 }
