@@ -5,12 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Render images in [kitty] (see [GH-65] and [GH-104]).
+
 ### Changed
 - Update pulldown-cmark to 0.6 which supports CommonMark 0.29 and improves
   parser speed and correctness.
 - Enable SIMD in pulldown-cmark to squeeze out the last bit of performance.
 
+[kitty]: https://sw.kovidgoyal.net/kitty/
+[GH-65]: https://github.com/lunaryorn/mdcat/issues/65
 [GH-84]: https://github.com/lunaryorn/mdcat/issues/84
+[GH-104]: https://github.com/lunaryorn/mdcat/pull/104
 
 ## [0.13.0] – 2019-03-30
 ### Added
