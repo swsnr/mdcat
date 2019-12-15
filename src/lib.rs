@@ -16,9 +16,7 @@
 
 //! Write markdown to TTYs.
 
-#[cfg(feature = "resources")]
 use url;
-
 use ansi_term::{Colour, Style};
 use failure::Error;
 use pulldown_cmark::Event::*;
@@ -32,7 +30,6 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
-#[cfg(feature = "resources")]
 mod magic;
 mod terminal;
 
@@ -120,7 +117,6 @@ struct Link<'a> {
 }
 
 /// Input context.
-#[cfg(feature = "resources")]
 struct ResourceContext<'a> {
     /// The base directory, to resolve relative paths.
     base_dir: &'a Path,
@@ -128,7 +124,6 @@ struct ResourceContext<'a> {
     resource_access: ResourceAccess,
 }
 
-#[cfg(feature = "resources")]
 impl ResourceContext<'_> {
     /// Resolve a reference in the input.
     ///
@@ -216,7 +211,6 @@ struct ImageContext {
 
 /// Context for TTY rendering.
 struct Context<'io, 'c, 'l, W: Write> {
-    #[cfg(feature = "resources")]
     /// Context for input.
     resources: ResourceContext<'io>,
     /// Context for output.
@@ -247,15 +241,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
         syntax_set: SyntaxSet,
         theme: &'c Theme,
     ) -> Context<'io, 'c, 'l, W> {
-        #[cfg(not(feature = "resources"))]
-        {
-            // Mark variables as used if resources are disabled to keep public
-            // interface stable but avoid compiler warnings
-            let _ = base_dir;
-            let _ = resource_access;
-        }
         Context {
-            #[cfg(feature = "resources")]
             resources: ResourceContext {
                 base_dir,
                 resource_access,

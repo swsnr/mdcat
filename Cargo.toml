@@ -15,25 +15,23 @@ edition = "2018"
 [features]
 default = ["vte50", "iterm2", "terminology", "kitty", "remote_resources"]
 
-resources = ["url", "mime"]
-remote_resources = ["reqwest", "resources"]
+remote_resources = ["reqwest"]
 
 # Special terminal features
-osc8_links = ["resources", "gethostname"]
+osc8_links = ["gethostname"]
 
 # Terminal emulators
-iterm2 = ["osc8_links", "resources", "base64"]
-terminology = ["osc8_links", "resources", "immeta"]
+iterm2 = ["osc8_links", "base64"]
+terminology = ["osc8_links", "immeta"]
 vte50 = ["osc8_links"]
-kitty = ["resources", "base64", "image"]
+kitty = ["base64", "image"]
 
 [dependencies]
 failure = "^0.1"
 term_size = "^0.3"
 ansi_term = "^0.12"
-
-# URL type to parse URLs in markdown and reference external resources
-url = {version = "^1.7", optional = true}
+url = "^1.7"
+mime = "^0.3"
 
 # For OSC8 links, to query the system hostname
 gethostname = {version="^0.2", optional = true}
@@ -41,8 +39,6 @@ gethostname = {version="^0.2", optional = true}
 # Dependencies for iTerm2 + kitty
 # Fetch images over HTTP for iTerm2 + kitty
 reqwest = {version = "^0.9", optional = true}
-# Mime type definitions
-mime = {version = "^0.3", optional = true}
 # base64 encoding for image data
 base64 = {version = "^0.11", optional = true}
 # Convert image into rgb/a for Kitty
