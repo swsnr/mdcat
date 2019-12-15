@@ -15,17 +15,17 @@ edition = "2018"
 [features]
 default = ["vte50", "iterm2", "terminology", "kitty", "remote_resources"]
 
-resources = ["url"]
+resources = ["url", "mime"]
 remote_resources = ["reqwest", "resources"]
 
 # Special terminal features
 osc8_links = ["resources", "gethostname"]
 
 # Terminal emulators
-iterm2 = ["osc8_links", "resources", "mime", "base64"]
+iterm2 = ["osc8_links", "resources", "base64"]
 terminology = ["osc8_links", "resources", "immeta"]
 vte50 = ["osc8_links"]
-kitty = ["resources", "mime", "base64", "image"]
+kitty = ["resources", "base64", "image"]
 
 [dependencies]
 failure = "^0.1"

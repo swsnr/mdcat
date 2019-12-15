@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn detect_mimetype_of_png_image() {
-        let data = include_bytes!("../../sample/rust-logo-128x128.png");
+        let data = include_bytes!("../sample/rust-logo-128x128.png");
         let result = detect_mime_type(data);
         assert!(result.is_ok(), "Unexpected error: {:?}", result);
         assert_eq!(result.unwrap(), mime::IMAGE_PNG);
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn detect_mimetype_of_svg_image() {
-        let data = include_bytes!("../../sample/rust-logo.svg");
+        let data = include_bytes!("../sample/rust-logo.svg");
         let result = detect_mime_type(data);
         assert!(result.is_ok(), "Unexpected error: {:?}", result);
         let mime = result.unwrap();

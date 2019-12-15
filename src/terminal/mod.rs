@@ -18,7 +18,6 @@
 
 mod ansi;
 pub mod highlighting;
-pub mod magic;
 pub mod resources;
 mod size;
 
