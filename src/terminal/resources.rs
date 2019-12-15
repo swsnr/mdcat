@@ -124,6 +124,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "remote_resources")]
     fn read_url_with_http_url_fails_when_status_404() {
         let url = "https://eu.httpbin.org/status/404"
             .parse::<url::Url>()
@@ -138,6 +139,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "remote_resources")]
     fn read_url_with_http_url_returns_content_when_status_200() {
         let url = "https://eu.httpbin.org/bytes/100"
             .parse::<url::Url>()
