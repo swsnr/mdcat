@@ -158,7 +158,7 @@ impl KittyImages {
                 cmd_header.join(","),
                 str::from_utf8(data)?
             );
-            writer.write(cmd.as_bytes())?;
+            writer.write_all(cmd.as_bytes())?;
             writer.flush()?;
 
             cmd_header.clear();
