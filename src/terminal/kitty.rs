@@ -54,21 +54,21 @@ fn get_terminal_size() -> std::io::Result<KittyDimension> {
     let output = process.wait_with_output()?;
 
     if output.status.success() {
-        let terminal_size_str = std::str::from_utf8(&output.stdout).or(Err(Error::new(
+        let terminal_size_str = std::str::from_utf8(&output.stdout).or_else(|_| Err(Error::new(
             ErrorKind::Other,
             format!("The terminal size could not be read."),
         )))?;
         let terminal_size = terminal_size_str.split('x').collect::<Vec<&str>>();
 
         let (width, height) = (
-            terminal_size[0].parse::<u32>().or(Err(Error::new(
+            terminal_size[0].parse::<u32>().or_else(|_| Err(Error::new(
                 ErrorKind::Other,
                 format!(
                     "The terminal width could not be parsed: {}",
                     terminal_size_str
                 ),
             )))?,
-            terminal_size[1].parse::<u32>().or(Err(Error::new(
+            terminal_size[1].parse::<u32>().or_else(|_| Err(Error::new(
                 ErrorKind::Other,
                 format!(
                     "The terminal height could not be parsed: {}",
