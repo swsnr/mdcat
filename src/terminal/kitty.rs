@@ -37,7 +37,9 @@ pub fn is_kitty() -> bool {
 
 /// Retrieve the terminal size in pixels by calling the command-line tool `kitty`.
 ///
-///     kitty +kitten icat --print-window-size
+/// ```console
+/// $ kitty +kitten icat --print-window-size
+/// ```
 ///
 /// We cannot use the terminal size information from Context.output.size, because
 /// the size information are in columns / rows instead of pixel.
