@@ -57,7 +57,7 @@ jobs:
             flags:
             rust: beta
           - target: x86_64-unknown-linux-musl
-            flags: --no-default-features --features terminology,kitty,remote_resources
+            flags: --no-default-features --features terminology,kitty
             rust: stable
     steps:
       - uses: actions/checkout@v1
