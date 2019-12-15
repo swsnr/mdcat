@@ -189,7 +189,7 @@ impl KittyImages {
     /// Wrap the image bytes as PNG format in `KittyImage`.
     fn render_as_png(&self, contents: Vec<u8>) -> Result<KittyImage, Error> {
         Ok(KittyImage {
-            contents: contents,
+            contents,
             format: KittyFormat::PNG,
             dimension: None,
         })
@@ -224,7 +224,7 @@ impl KittyImages {
                 KittyFormat::RGB => image.to_rgb().into_raw(),
                 _ => image.to_rgba().into_raw(),
             },
-            format: format,
+            format,
             dimension: Some(KittyDimension {
                 width: image_width,
                 height: image_height,
