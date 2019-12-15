@@ -583,7 +583,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             // Do nothing if the terminal doesn’t support inline links of if `destination` is no
             // valid URL:  We will write a reference link when closing the link tag.
             match ctx.output.capabilities.links {
-                #[cfg(feature = "osc8_links")]
                 LinkCapability::OSC8(ref osc8) => {
                     // TODO: check link type (first tuple element) to write proper mailto link for
                     // emails
@@ -710,7 +709,6 @@ fn end_tag<'io, 'c, 'l, W: Write>(
         Link(_, destination, title) => {
             if ctx.links.inside_inline_link {
                 match ctx.output.capabilities.links {
-                    #[cfg(feature = "osc8_links")]
                     LinkCapability::OSC8(ref osc8) => {
                         osc8.clear_link(ctx.output.writer)?;
                     }

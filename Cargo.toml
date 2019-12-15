@@ -17,13 +17,10 @@ default = ["vte50", "iterm2", "terminology", "kitty", "remote_resources"]
 
 remote_resources = ["reqwest"]
 
-# Special terminal features
-osc8_links = ["gethostname"]
-
 # Terminal emulators
-iterm2 = ["osc8_links", "base64"]
-terminology = ["osc8_links", "immeta"]
-vte50 = ["osc8_links"]
+iterm2 = ["base64"]
+terminology = ["immeta"]
+vte50 = []
 kitty = ["base64", "image"]
 
 [dependencies]
@@ -32,9 +29,7 @@ term_size = "^0.3"
 ansi_term = "^0.12"
 url = "^1.7"
 mime = "^0.3"
-
-# For OSC8 links, to query the system hostname
-gethostname = {version="^0.2", optional = true}
+gethostname = "^0.2"
 
 # Dependencies for iTerm2 + kitty
 # Fetch images over HTTP for iTerm2 + kitty

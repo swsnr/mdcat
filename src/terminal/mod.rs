@@ -25,7 +25,6 @@ mod size;
 mod iterm2;
 #[cfg(feature = "kitty")]
 mod kitty;
-#[cfg(any(feature = "osc8_links", feature = "iterm2"))]
 mod osc;
 #[cfg(feature = "terminology")]
 mod terminology;
@@ -48,7 +47,6 @@ pub enum LinkCapability {
     /// The terminal supports [OSC 8] inline links.
     ///
     /// [OSC 8]: https://git.io/vd4ee
-    #[cfg(feature = "osc8_links")]
     OSC8(self::osc::OSC8Links),
 }
 
