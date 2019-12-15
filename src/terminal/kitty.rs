@@ -56,7 +56,7 @@ fn get_terminal_size() -> std::io::Result<KittyDimension> {
     if output.status.success() {
         let terminal_size_str = std::str::from_utf8(&output.stdout).or_else(|_| Err(Error::new(
             ErrorKind::Other,
-            format!("The terminal size could not be read."),
+            "The terminal size could not be read.".to_string(),
         )))?;
         let terminal_size = terminal_size_str.split('x').collect::<Vec<&str>>();
 
