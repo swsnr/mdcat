@@ -14,7 +14,6 @@
 
 //! Access to resources referenced from markdown documents.
 
-use failure::Error;
 #[cfg(feature = "resources")]
 use url::Url;
 
@@ -57,7 +56,7 @@ fn is_local(url: &Url) -> bool {
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
 #[cfg(feature = "resources")]
-pub fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
+pub fn read_url(url: &Url) -> Result<Vec<u8>, failure::Error> {
     use std::fs::File;
     use std::io::prelude::*;
     use std::io::{Error, ErrorKind};
