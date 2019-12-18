@@ -21,8 +21,7 @@ if [[ -z "${next_version}" ]]; then
     exit 1
 fi
 
-changes=""
-#changes="$(git status --porcelain)"
+changes="$(git status --porcelain)"
 if [[ -n "${changes}" ]]; then
     git status
     echo "Working directory not clean; aborting"
