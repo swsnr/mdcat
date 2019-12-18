@@ -19,7 +19,7 @@
 //!
 //! See <https://www.iterm2.com> for more information.
 
-use super::magic;
+use super::super::magic;
 use super::osc::write_osc;
 use super::resources::read_url;
 use failure::Error;

@@ -18,7 +18,7 @@
 //!
 //! See <https://sw.kovidgoyal.net/kitty/> for more information.
 
-use super::magic;
+use super::super::magic;
 use super::resources::read_url;
 use failure::Error;
 use image::{ColorType, FilterType};
@@ -37,7 +37,9 @@ pub fn is_kitty() -> bool {
 
 /// Retrieve the terminal size in pixels by calling the command-line tool `kitty`.
 ///
-///     kitty +kitten icat --print-window-size
+/// ```console
+/// $ kitty +kitten icat --print-window-size
+/// ```
 ///
 /// We cannot use the terminal size information from Context.output.size, because
 /// the size information are in columns / rows instead of pixel.
@@ -54,27 +56,33 @@ fn get_terminal_size() -> std::io::Result<KittyDimension> {
     let output = process.wait_with_output()?;
 
     if output.status.success() {
-        let terminal_size_str = std::str::from_utf8(&output.stdout).or(Err(Error::new(
-            ErrorKind::Other,
-            format!("The terminal size could not be read."),
-        )))?;
+        let terminal_size_str = std::str::from_utf8(&output.stdout).or_else(|_| {
+            Err(Error::new(
+                ErrorKind::Other,
+                "The terminal size could not be read.".to_string(),
+            ))
+        })?;
         let terminal_size = terminal_size_str.split('x').collect::<Vec<&str>>();
 
         let (width, height) = (
-            terminal_size[0].parse::<u32>().or(Err(Error::new(
-                ErrorKind::Other,
-                format!(
-                    "The terminal width could not be parsed: {}",
-                    terminal_size_str
-                ),
-            )))?,
-            terminal_size[1].parse::<u32>().or(Err(Error::new(
-                ErrorKind::Other,
-                format!(
-                    "The terminal height could not be parsed: {}",
-                    terminal_size_str
-                ),
-            )))?,
+            terminal_size[0].parse::<u32>().or_else(|_| {
+                Err(Error::new(
+                    ErrorKind::Other,
+                    format!(
+                        "The terminal width could not be parsed: {}",
+                        terminal_size_str
+                    ),
+                ))
+            })?,
+            terminal_size[1].parse::<u32>().or_else(|_| {
+                Err(Error::new(
+                    ErrorKind::Other,
+                    format!(
+                        "The terminal height could not be parsed: {}",
+                        terminal_size_str
+                    ),
+                ))
+            })?,
         );
 
         Ok(KittyDimension { width, height })
@@ -158,7 +166,7 @@ impl KittyImages {
                 cmd_header.join(","),
                 str::from_utf8(data)?
             );
-            writer.write(cmd.as_bytes())?;
+            writer.write_all(cmd.as_bytes())?;
             writer.flush()?;
 
             cmd_header.clear();
@@ -189,7 +197,7 @@ impl KittyImages {
     /// Wrap the image bytes as PNG format in `KittyImage`.
     fn render_as_png(&self, contents: Vec<u8>) -> Result<KittyImage, Error> {
         Ok(KittyImage {
-            contents: contents,
+            contents,
             format: KittyFormat::PNG,
             dimension: None,
         })
@@ -224,7 +232,7 @@ impl KittyImages {
                 KittyFormat::RGB => image.to_rgb().into_raw(),
                 _ => image.to_rgba().into_raw(),
             },
-            format: format,
+            format,
             dimension: Some(KittyDimension {
                 width: image_width,
                 height: image_height,

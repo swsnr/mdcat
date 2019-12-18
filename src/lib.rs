@@ -32,6 +32,8 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
+#[cfg(feature = "resources")]
+mod magic;
 mod terminal;
 
 // Expose some select things for use in main

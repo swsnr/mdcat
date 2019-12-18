@@ -14,7 +14,6 @@
 
 //! Access to resources referenced from markdown documents.
 
-use failure::Error;
 #[cfg(feature = "resources")]
 use url::Url;
 
@@ -57,7 +56,7 @@ fn is_local(url: &Url) -> bool {
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
 #[cfg(feature = "resources")]
-pub fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
+pub fn read_url(url: &Url) -> Result<Vec<u8>, failure::Error> {
     use std::fs::File;
     use std::io::prelude::*;
     use std::io::{Error, ErrorKind};
@@ -100,8 +99,7 @@ pub fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
 
 #[cfg(all(test, feature = "resources"))]
 mod tests {
-    pub use super::*;
-    use pretty_assertions::assert_eq;
+    use super::*;
 
     #[test]
     fn resource_access_permits_local_resource() {
@@ -124,27 +122,33 @@ mod tests {
         assert!(ResourceAccess::RemoteAllowed.permits(&resource));
     }
 
-    #[test]
-    fn read_url_with_http_url_fails_when_status_404() {
-        let url = "https://eu.httpbin.org/status/404"
-            .parse::<url::Url>()
-            .unwrap();
-        let result = read_url(&url);
-        assert!(result.is_err(), "Unexpected success: {:?}", result);
-        let error = result.unwrap_err().to_string();
-        assert_eq!(
-            error,
-            "HTTP error status 404 Not Found by GET https://eu.httpbin.org/status/404"
-        )
-    }
+    #[cfg(feature = "remote_resources")]
+    mod remote {
+        use super::super::*;
+        use pretty_assertions::assert_eq;
 
-    #[test]
-    fn read_url_with_http_url_returns_content_when_status_200() {
-        let url = "https://eu.httpbin.org/bytes/100"
-            .parse::<url::Url>()
-            .unwrap();
-        let result = read_url(&url);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
-        assert_eq!(result.unwrap().len(), 100);
+        #[test]
+        fn read_url_with_http_url_fails_when_status_404() {
+            let url = "https://eu.httpbin.org/status/404"
+                .parse::<url::Url>()
+                .unwrap();
+            let result = read_url(&url);
+            assert!(result.is_err(), "Unexpected success: {:?}", result);
+            let error = result.unwrap_err().to_string();
+            assert_eq!(
+                error,
+                "HTTP error status 404 Not Found by GET https://eu.httpbin.org/status/404"
+            )
+        }
+
+        #[test]
+        fn read_url_with_http_url_returns_content_when_status_200() {
+            let url = "https://eu.httpbin.org/bytes/100"
+                .parse::<url::Url>()
+                .unwrap();
+            let result = read_url(&url);
+            assert!(result.is_ok(), "Unexpected error: {:?}", result);
+            assert_eq!(result.unwrap().len(), 100);
+        }
     }
 }
