@@ -13,10 +13,6 @@
 // limitations under the License.
 
 #![deny(warnings, missing_docs, clippy::all)]
-// Currently we only run formatting tests on Unix, because we rely on a Python
-// tool here, and I failed to setup Python properly on Travis CI' Windows
-// workers.
-#![cfg(unix)]
 
 use mdcat;
 
@@ -84,7 +80,8 @@ fn read_file(basename: &str, extension: &str) -> String {
     File::open(path)
         .and_then(|mut source| source.read_to_string(&mut contents))
         .expect("Failed to read test file");
-    contents
+    // Normalize line endings
+    contents.replace("\r\n", "\n")
 }
 
 fn assert_formats_to_expected_html(basename: &str) {

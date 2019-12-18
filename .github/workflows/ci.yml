@@ -30,7 +30,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        target: [x86_64-unknown-linux-gnu, x86_64-unknown-linux-musl, x86_64-apple-darwin]
+        target:
+          # Linux default
+          - x86_64-unknown-linux-gnu
+          # For statically linked release builds
+          - x86_64-unknown-linux-musl
+          # macOS
+          - x86_64-apple-darwin
+          # Windows
+          - x86_64-pc-windows-msvc
         rust: [stable, beta]
         include:
           - target: x86_64-unknown-linux-gnu
@@ -40,10 +48,16 @@ jobs:
             flags: --no-default-features
           - target: x86_64-apple-darwin
             os: macOS-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
         exclude:
+          # Test beta only with Linux/GNU target, it's just about basic forward
+          # compatibility after all.
           - target: x86_64-unknown-linux-musl
             rust: beta
           - target: x86_64-apple-darwin
+            rust: beta
+          - target: x86_64-pc-windows-msvc
             rust: beta
     steps:
       - uses: actions/checkout@v1
@@ -73,25 +87,3 @@ jobs:
         with:
           command: run
           args: --target ${{ matrix.target }} ${{ matrix.flags }} -- sample/common-mark.md
-
-  test_windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      # Setup rust version
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          target:  x86_64-pc-windows-msvc
-      # Test
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --target x86_64-pc-windows-msvc
-      - name: Format sample
-        uses: actions-rs/cargo@v1
-        with:
-          command: run
-          args: --target x86_64-pc-windows-msvc -- sample/common-mark.md
