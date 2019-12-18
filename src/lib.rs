@@ -16,7 +16,6 @@
 
 //! Write markdown to TTYs.
 
-use url;
 use ansi_term::{Colour, Style};
 use failure::Error;
 use pulldown_cmark::Event::*;
@@ -29,6 +28,7 @@ use std::path::Path;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
+use url;
 
 mod magic;
 mod terminal;
@@ -441,7 +441,6 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// otherwise do nothing.
     fn set_mark_if_supported(&mut self) -> io::Result<()> {
         match self.output.capabilities.marks {
-            #[cfg(feature = "iterm2")]
             MarkCapability::ITerm2(ref marks) => marks.set_mark(self.output.writer),
             MarkCapability::None => Ok(()),
         }
@@ -598,7 +597,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             }
         }
         Image(_, link, _title) => match ctx.output.capabilities.image {
-            #[cfg(feature = "terminology")]
             ImageCapability::Terminology(ref terminology) => {
                 let access = ctx.resources.resource_access;
                 if let Some(url) = ctx
@@ -614,7 +612,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
                     ctx.image.inline_image = true;
                 }
             }
-            #[cfg(feature = "iterm2")]
             ImageCapability::ITerm2(ref iterm2) => {
                 let access = ctx.resources.resource_access;
                 if let Some(url) = ctx
@@ -628,7 +625,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
                     }
                 }
             }
-            #[cfg(feature = "kitty")]
             ImageCapability::Kitty(ref kitty) => {
                 let access = ctx.resources.resource_access;
                 if let Some(url) = ctx

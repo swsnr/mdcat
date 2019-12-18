@@ -13,35 +13,23 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2018"
 
 [features]
-default = ["vte50", "iterm2", "terminology", "kitty", "remote_resources"]
-
+default = ["remote_resources"]
 remote_resources = ["reqwest"]
 
-# Terminal emulators
-iterm2 = ["base64"]
-terminology = ["immeta"]
-vte50 = []
-kitty = ["base64", "image"]
-
 [dependencies]
-failure = "^0.1"
-term_size = "^0.3"
 ansi_term = "^0.12"
-url = "^1.7"
-mime = "^0.3"
+base64 = "^0.11"
+failure = "^0.1"
 gethostname = "^0.2"
+image = "^0.22.2"
+immeta = "^0.4"
+mime = "^0.3"
+term_size = "^0.3"
+url = "^1.7"
 
 # Dependencies for iTerm2 + kitty
 # Fetch images over HTTP for iTerm2 + kitty
 reqwest = {version = "^0.9", optional = true}
-# base64 encoding for image data
-base64 = {version = "^0.11", optional = true}
-# Convert image into rgb/a for Kitty
-image = {version = "^0.22.2", optional = true}
-
-# Dependencies for Terminology
-# Detect image dimensions to configure Terminology for image display
-immeta = {version = "^0.4", optional = true}
 
 [dependencies.clap]
 version = "^2.33"

@@ -57,7 +57,7 @@ jobs:
             flags:
             rust: beta
           - target: x86_64-unknown-linux-musl
-            flags: --no-default-features --features terminology,kitty
+            flags: --no-default-features
             rust: stable
     steps:
       - uses: actions/checkout@v1
@@ -108,12 +108,11 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --no-default-features --features iterm2,remote_resources
       - name: Format sample
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --no-default-features --features iterm2,remote_resources -- sample/common-mark.md
+          args: -- sample/common-mark.md
 
   test_windows:
     runs-on: windows-latest
@@ -130,9 +129,9 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --target x86_64-pc-windows-msvc --no-default-features
+          args: --target x86_64-pc-windows-msvc
       - name: Format sample
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --target x86_64-pc-windows-msvc --no-default-features -- sample/common-mark.md
+          args: --target x86_64-pc-windows-msvc -- sample/common-mark.md
