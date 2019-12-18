@@ -30,16 +30,11 @@ jobs:
           toolchain: stable
           override: true
           components: clippy
-      - name: Lint (default features)
+      - name: Lint
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-targets
-      - name: Lint (no features)
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-targets --no-default-features
 
   test_linux:
     runs-on: ubuntu-latest
