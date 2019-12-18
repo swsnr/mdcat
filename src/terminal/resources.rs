@@ -98,6 +98,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(unix)]
     fn resource_access_permits_local_resource() {
         let resource = Url::parse("file:///foo/bar").unwrap();
         assert!(ResourceAccess::LocalOnly.permits(&resource));
@@ -105,6 +106,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn resource_access_permits_remote_file_url() {
         let resource = Url::parse("file://example.com/foo/bar").unwrap();
         assert!(!ResourceAccess::LocalOnly.permits(&resource));
