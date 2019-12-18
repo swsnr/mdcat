@@ -6,7 +6,7 @@ on:
       - mdcat-*
 
 jobs:
-  unix:
+  package:
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
