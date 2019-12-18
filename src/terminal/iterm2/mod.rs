@@ -25,16 +25,16 @@ use super::resources::read_url;
 use failure::Error;
 use std::ffi::OsStr;
 use std::io::{self, Write};
-use std::os::unix::ffi::OsStrExt;
 use url::Url;
 
 pub mod svg;
 
 /// Whether we run inside iTerm2 or not.
 pub fn is_iterm2() -> bool {
-    std::env::var("TERM_PROGRAM")
-        .map(|value| value.contains("iTerm.app"))
-        .unwrap_or(false)
+    cfg!(unix)
+        && std::env::var("TERM_PROGRAM")
+            .map(|value| value.contains("iTerm.app"))
+            .unwrap_or(false)
 }
 
 /// Iterm2 marks.
@@ -55,12 +55,14 @@ impl ITerm2Images {
     ///
     /// `name` is the local file name and `contents` are the contents of the
     /// given file.
+    #[cfg(unix)]
     pub fn write_inline_image<W: Write, S: AsRef<OsStr>>(
         &self,
         writer: &mut W,
         name: S,
         contents: &[u8],
     ) -> io::Result<()> {
+        use std::os::unix::ffi::OsStrExt;
         write_osc(
             writer,
             &format!(
@@ -69,6 +71,16 @@ impl ITerm2Images {
                 base64::encode(contents)
             ),
         )
+    }
+
+    #[cfg(windows)]
+    pub fn write_inline_image<W: Write, S: AsRef<OsStr>>(
+        &self,
+        _writer: &mut W,
+        _name: S,
+        _contents: &[u8],
+    ) -> io::Result<()> {
+        unimplemented!()
     }
 
     /// Read `url` and render to an image if necessary.
