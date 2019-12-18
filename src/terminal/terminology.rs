@@ -55,10 +55,9 @@ impl TerminologyImages {
         let lines = Some(url)
             .filter(|url| url.scheme() == "file")
             .and_then(|url| url.to_file_path().ok())
-            .and_then(|path| immeta::load_from_file(path).ok())
-            .map(|m| {
-                let d = m.dimensions();
-                let (w, h) = (f64::from(d.width), f64::from(d.height));
+            .and_then(|path| image::image_dimensions(path).ok())
+            .map(|(width, height)| {
+                let (w, h) = (f64::from(width), f64::from(height));
                 // We divide by 2 because terminal cursor/font most likely has a
                 // 1:2 proportion
                 (h * (columns / 2) as f64 / w) as usize

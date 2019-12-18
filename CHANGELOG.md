@@ -14,6 +14,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 - Enable SIMD in pulldown-cmark to squeeze out the last bit of performance.
 - Remove all features except `remote_resources` to reduce build complexity.
 
+### Removed
+- No longer depend on `immeta`.
+
 [kitty]: https://sw.kovidgoyal.net/kitty/
 [GH-65]: https://github.com/lunaryorn/mdcat/issues/65
 [GH-84]: https://github.com/lunaryorn/mdcat/issues/84
