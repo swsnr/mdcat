@@ -99,8 +99,7 @@ pub fn read_url(url: &Url) -> Result<Vec<u8>, failure::Error> {
 
 #[cfg(all(test, feature = "resources"))]
 mod tests {
-    pub use super::*;
-    use pretty_assertions::assert_eq;
+    use super::*;
 
     #[test]
     fn resource_access_permits_local_resource() {
@@ -123,29 +122,33 @@ mod tests {
         assert!(ResourceAccess::RemoteAllowed.permits(&resource));
     }
 
-    #[test]
     #[cfg(feature = "remote_resources")]
-    fn read_url_with_http_url_fails_when_status_404() {
-        let url = "https://eu.httpbin.org/status/404"
-            .parse::<url::Url>()
-            .unwrap();
-        let result = read_url(&url);
-        assert!(result.is_err(), "Unexpected success: {:?}", result);
-        let error = result.unwrap_err().to_string();
-        assert_eq!(
-            error,
-            "HTTP error status 404 Not Found by GET https://eu.httpbin.org/status/404"
-        )
-    }
+    mod remote {
+        use super::super::*;
+        use pretty_assertions::assert_eq;
 
-    #[test]
-    #[cfg(feature = "remote_resources")]
-    fn read_url_with_http_url_returns_content_when_status_200() {
-        let url = "https://eu.httpbin.org/bytes/100"
-            .parse::<url::Url>()
-            .unwrap();
-        let result = read_url(&url);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
-        assert_eq!(result.unwrap().len(), 100);
+        #[test]
+        fn read_url_with_http_url_fails_when_status_404() {
+            let url = "https://eu.httpbin.org/status/404"
+                .parse::<url::Url>()
+                .unwrap();
+            let result = read_url(&url);
+            assert!(result.is_err(), "Unexpected success: {:?}", result);
+            let error = result.unwrap_err().to_string();
+            assert_eq!(
+                error,
+                "HTTP error status 404 Not Found by GET https://eu.httpbin.org/status/404"
+            )
+        }
+
+        #[test]
+        fn read_url_with_http_url_returns_content_when_status_200() {
+            let url = "https://eu.httpbin.org/bytes/100"
+                .parse::<url::Url>()
+                .unwrap();
+            let result = read_url(&url);
+            assert!(result.is_ok(), "Unexpected error: {:?}", result);
+            assert_eq!(result.unwrap().len(), 100);
+        }
     }
 }
