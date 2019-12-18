@@ -33,7 +33,13 @@ if [[ "$(git symbolic-ref --short HEAD)" != "master" ]]; then
     exit 1
 fi
 
-# TODO: Check status of HEAD commit
+ci_status="$(curl -sfS -H 'Accept: application/vnd.github.antiope-preview+json' \
+    "https://api.github.com/repos/lunaryorn/mdcat/commits/$(git rev-parse HEAD)/check-suites" |
+    jq -r '.check_suites | map(.status) | join("\n")')"
+if [[ ci_status != "completed" ]]; then
+    echo "CI for HEAD pending or failed (${ci_status}); aborting"
+    exit 1
+fi
 
 latest_version="$(git tag --sort '-v:refname' | grep '^mdcat-' | head -n1 | cut -d'-' -f2)"
 
