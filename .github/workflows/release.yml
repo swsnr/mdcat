@@ -14,13 +14,12 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
-            flags: --no-default-features --features terminology,kitty,remote_resources
+            # We can't easily cross-build OpenSSL so we just skip remote resources
+            flags: --no-default-features
           - os: macOS-latest
             target: x86_64-apple-darwin
-            flags: --no-default-features --features iterm2,remote_resources
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            flags: --no-default-features
     steps:
       - uses: hecrj/setup-rust-action@v1
         with:

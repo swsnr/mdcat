@@ -16,9 +16,6 @@
 
 //! Write markdown to TTYs.
 
-#[cfg(feature = "resources")]
-use url;
-
 use ansi_term::{Colour, Style};
 use failure::Error;
 use pulldown_cmark::Event::*;
@@ -31,8 +28,8 @@ use std::path::Path;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
+use url;
 
-#[cfg(feature = "resources")]
 mod magic;
 mod terminal;
 
@@ -120,7 +117,6 @@ struct Link<'a> {
 }
 
 /// Input context.
-#[cfg(feature = "resources")]
 struct ResourceContext<'a> {
     /// The base directory, to resolve relative paths.
     base_dir: &'a Path,
@@ -128,7 +124,6 @@ struct ResourceContext<'a> {
     resource_access: ResourceAccess,
 }
 
-#[cfg(feature = "resources")]
 impl ResourceContext<'_> {
     /// Resolve a reference in the input.
     ///
@@ -216,7 +211,6 @@ struct ImageContext {
 
 /// Context for TTY rendering.
 struct Context<'io, 'c, 'l, W: Write> {
-    #[cfg(feature = "resources")]
     /// Context for input.
     resources: ResourceContext<'io>,
     /// Context for output.
@@ -247,15 +241,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
         syntax_set: SyntaxSet,
         theme: &'c Theme,
     ) -> Context<'io, 'c, 'l, W> {
-        #[cfg(not(feature = "resources"))]
-        {
-            // Mark variables as used if resources are disabled to keep public
-            // interface stable but avoid compiler warnings
-            let _ = base_dir;
-            let _ = resource_access;
-        }
         Context {
-            #[cfg(feature = "resources")]
             resources: ResourceContext {
                 base_dir,
                 resource_access,
@@ -455,7 +441,6 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// otherwise do nothing.
     fn set_mark_if_supported(&mut self) -> io::Result<()> {
         match self.output.capabilities.marks {
-            #[cfg(feature = "iterm2")]
             MarkCapability::ITerm2(ref marks) => marks.set_mark(self.output.writer),
             MarkCapability::None => Ok(()),
         }
@@ -597,7 +582,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             // Do nothing if the terminal doesn’t support inline links of if `destination` is no
             // valid URL:  We will write a reference link when closing the link tag.
             match ctx.output.capabilities.links {
-                #[cfg(feature = "osc8_links")]
                 LinkCapability::OSC8(ref osc8) => {
                     // TODO: check link type (first tuple element) to write proper mailto link for
                     // emails
@@ -613,7 +597,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             }
         }
         Image(_, link, _title) => match ctx.output.capabilities.image {
-            #[cfg(feature = "terminology")]
             ImageCapability::Terminology(ref terminology) => {
                 let access = ctx.resources.resource_access;
                 if let Some(url) = ctx
@@ -629,7 +612,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
                     ctx.image.inline_image = true;
                 }
             }
-            #[cfg(feature = "iterm2")]
             ImageCapability::ITerm2(ref iterm2) => {
                 let access = ctx.resources.resource_access;
                 if let Some(url) = ctx
@@ -643,7 +625,6 @@ fn start_tag<'io, 'c, 'l, W: Write>(
                     }
                 }
             }
-            #[cfg(feature = "kitty")]
             ImageCapability::Kitty(ref kitty) => {
                 let access = ctx.resources.resource_access;
                 if let Some(url) = ctx
@@ -724,7 +705,6 @@ fn end_tag<'io, 'c, 'l, W: Write>(
         Link(_, destination, title) => {
             if ctx.links.inside_inline_link {
                 match ctx.output.capabilities.links {
-                    #[cfg(feature = "osc8_links")]
                     LinkCapability::OSC8(ref osc8) => {
                         osc8.clear_link(ctx.output.writer)?;
                     }

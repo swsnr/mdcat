@@ -14,7 +14,6 @@
 
 //! Access to resources referenced from markdown documents.
 
-#[cfg(feature = "resources")]
 use url::Url;
 
 /// What kind of resources mdcat may access when rendering.
@@ -29,7 +28,6 @@ pub enum ResourceAccess {
     RemoteAllowed,
 }
 
-#[cfg(feature = "resources")]
 impl ResourceAccess {
     /// Whether the resource access permits access to the given `url`.
     pub fn permits(self, url: &Url) -> bool {
@@ -42,7 +40,6 @@ impl ResourceAccess {
 }
 
 /// Whether `url` is readable as local file:.
-#[cfg(feature = "resources")]
 fn is_local(url: &Url) -> bool {
     url.scheme() == "file" && url.to_file_path().is_ok()
 }
@@ -55,7 +52,6 @@ fn is_local(url: &Url) -> bool {
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
-#[cfg(feature = "resources")]
 pub fn read_url(url: &Url) -> Result<Vec<u8>, failure::Error> {
     use std::fs::File;
     use std::io::prelude::*;
@@ -97,11 +93,12 @@ pub fn read_url(url: &Url) -> Result<Vec<u8>, failure::Error> {
     }
 }
 
-#[cfg(all(test, feature = "resources"))]
+#[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
+    #[cfg(unix)]
     fn resource_access_permits_local_resource() {
         let resource = Url::parse("file:///foo/bar").unwrap();
         assert!(ResourceAccess::LocalOnly.permits(&resource));
@@ -109,6 +106,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn resource_access_permits_remote_file_url() {
         let resource = Url::parse("file://example.com/foo/bar").unwrap();
         assert!(!ResourceAccess::LocalOnly.permits(&resource));

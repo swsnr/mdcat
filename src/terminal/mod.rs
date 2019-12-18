@@ -21,13 +21,9 @@ pub mod highlighting;
 pub mod resources;
 mod size;
 
-#[cfg(feature = "iterm2")]
 mod iterm2;
-#[cfg(feature = "kitty")]
 mod kitty;
-#[cfg(any(feature = "osc8_links", feature = "iterm2"))]
 mod osc;
-#[cfg(feature = "terminology")]
 mod terminology;
 
 pub use self::ansi::AnsiStyle;
@@ -48,7 +44,6 @@ pub enum LinkCapability {
     /// The terminal supports [OSC 8] inline links.
     ///
     /// [OSC 8]: https://git.io/vd4ee
-    #[cfg(feature = "osc8_links")]
     OSC8(self::osc::OSC8Links),
 }
 
@@ -57,7 +52,6 @@ pub enum MarkCapability {
     /// The terminal can't set marks.
     None,
     /// The terminal supports iTerm2 jump marks.
-    #[cfg(feature = "iterm2")]
     ITerm2(self::iterm2::ITerm2Marks),
 }
 
@@ -66,13 +60,10 @@ pub enum ImageCapability {
     /// The terminal can't write images inline.
     None,
     /// The terminal understands the terminology way of inline images.
-    #[cfg(feature = "terminology")]
     Terminology(self::terminology::TerminologyImages),
     /// The terminal understands the iterm2 way of inline images.
-    #[cfg(feature = "iterm2")]
     ITerm2(self::iterm2::ITerm2Images),
     /// The terminal understands the Kitty way of inline images.
-    #[cfg(feature = "kitty")]
     Kitty(self::kitty::KittyImages),
 }
 
@@ -88,6 +79,17 @@ pub struct TerminalCapabilities {
     pub image: ImageCapability,
     /// How the terminal supports marks.
     pub marks: MarkCapability,
+}
+
+/// Get the version of the underlying VTE terminal if any.
+fn get_vte_version() -> Option<(u8, u8)> {
+    std::env::var("VTE_VERSION").ok().and_then(|value| {
+        value[..2]
+            .parse::<u8>()
+            .into_iter()
+            .zip(value[2..4].parse::<u8>())
+            .next()
+    })
 }
 
 impl TerminalCapabilities {
@@ -115,56 +117,40 @@ impl TerminalCapabilities {
 
     /// Detect the capabilities of the current terminal.
     pub fn detect() -> TerminalCapabilities {
-        // Pattern matching lets use feature-switch branches, depending on
-        // enabled terminal support.  In an if chain we can't do this, so that's
-        // why we have this weird match here.  Note: Don't use true here because
-        // that makes clippy complain.
-        match 1 {
-            #[cfg(feature = "iterm2")]
-            _ if self::iterm2::is_iterm2() => TerminalCapabilities {
+        if self::iterm2::is_iterm2() {
+            TerminalCapabilities {
                 name: "iTerm2".to_string(),
                 style: StyleCapability::Ansi(AnsiStyle),
                 links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
                 image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
                 marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
-            },
-            #[cfg(feature = "terminology")]
-            _ if self::terminology::is_terminology() => TerminalCapabilities {
+            }
+        } else if self::terminology::is_terminology() {
+            TerminalCapabilities {
                 name: "Terminology".to_string(),
                 style: StyleCapability::Ansi(AnsiStyle),
                 links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
                 image: ImageCapability::Terminology(self::terminology::TerminologyImages),
                 marks: MarkCapability::None,
-            },
-            #[cfg(feature = "kitty")]
-            _ if self::kitty::is_kitty() => TerminalCapabilities {
+            }
+        } else if self::kitty::is_kitty() {
+            TerminalCapabilities {
                 name: "Kitty".to_string(),
                 style: StyleCapability::Ansi(AnsiStyle),
                 links: LinkCapability::None,
                 image: ImageCapability::Kitty(self::kitty::KittyImages),
                 marks: MarkCapability::None,
-            },
-            #[cfg(feature = "vte50")]
-            _ if get_vte_version().filter(|&v| v >= (50, 0)).is_some() => TerminalCapabilities {
+            }
+        } else if get_vte_version().filter(|&v| v >= (50, 0)).is_some() {
+            TerminalCapabilities {
                 name: "VTE 50".to_string(),
                 style: StyleCapability::Ansi(AnsiStyle),
                 links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
                 image: ImageCapability::None,
                 marks: MarkCapability::None,
-            },
-            _ => TerminalCapabilities::ansi(),
+            }
+        } else {
+            TerminalCapabilities::ansi()
         }
     }
-}
-
-/// Get the version of the underlying VTE terminal if any.
-#[cfg(feature = "vte50")]
-pub fn get_vte_version() -> Option<(u8, u8)> {
-    std::env::var("VTE_VERSION").ok().and_then(|value| {
-        value[..2]
-            .parse::<u8>()
-            .into_iter()
-            .zip(value[2..4].parse::<u8>())
-            .next()
-    })
 }

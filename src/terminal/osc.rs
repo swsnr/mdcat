@@ -16,7 +16,6 @@
 
 use std::io::{Result, Write};
 
-#[cfg(feature = "osc8_links")]
 use url::{Host, Url};
 
 /// Write an OSC `command` to this terminal.
@@ -27,7 +26,6 @@ pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> Result<()> {
     Ok(())
 }
 
-#[cfg(feature = "osc8_links")]
 pub struct OSC8Links {
     hostname: String,
 }
@@ -48,7 +46,6 @@ pub struct OSC8Links {
 ///
 /// [OSC 8]: https://git.io/vd4ee
 /// [gethostname]: https://github.com/lunaryorn/gethostname.rs
-#[cfg(feature = "osc8_links")]
 fn url_needs_explicit_host(url: &Url) -> bool {
     if url.scheme() == "file" {
         match url.host() {
@@ -63,7 +60,6 @@ fn url_needs_explicit_host(url: &Url) -> bool {
     }
 }
 
-#[cfg(feature = "osc8_links")]
 impl OSC8Links {
     /// Create OSC 8 links support for this host.
     ///
@@ -106,7 +102,6 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    #[cfg(feature = "osc8_links")]
     fn url_needs_explicit_host() {
         let checks = [
             ("http://example.com/foo/bar", false),
