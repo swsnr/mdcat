@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.14.0] – 2019-12-18
 ### Added
 - Render images in [kitty] (see [GH-65] and [GH-104]).
 
@@ -234,4 +236,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.12.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.11.0...mdcat-0.12.0
 [0.12.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.0...mdcat-0.12.1
 [0.13.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.1...mdcat-0.13.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.13.0...HEAD
+[0.14.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.13.0...mdcat-0.14.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.14.0...HEAD
