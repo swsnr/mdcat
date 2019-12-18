@@ -26,8 +26,8 @@ mime = "^0.3"
 term_size = "^0.3"
 url = "^1.7"
 
-# Dependencies for iTerm2 + kitty
-# Fetch images over HTTP for iTerm2 + kitty
+# Dependency for remote_resources which lets Kitty, iTerm2 and perhaps others
+# fetch images from HTTP(S) URLs for display.
 reqwest = {version = "^0.9", optional = true}
 
 [dependencies.clap]
