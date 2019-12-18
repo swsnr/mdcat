@@ -40,14 +40,12 @@ terminal font with italic characters.  Then it
 | Terminal                |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
 | :---------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
 | Basic ANSI              | ✓             | ✓                   |       |        |            |
-| Windows [ConEmu][]¹     | ✓             | ✓                   |       |        |            |
-| Windows 10 console¹     | ✓             | ✓                   |       |        |            |
+| Windows [ConEmu][]      | ✓             | ✓                   |       |        |            |
+| Windows 10 console      | ✓             | ✓                   |       |        |            |
 | VTE 0.50 or newer based | ✓             | ✓                   | ✓     |        |            |
 | [Terminology][]         | ✓             | ✓                   | ✓     | ✓      |            |
 | [iTerm2][]              | ✓             | ✓                   | ✓     | ✓      | ✓          |
 | [kitty][]               | ✓             | ✓                   |       | ✓      |            |
-
-1: On Windows you need to install with `--no-default-features` (see below).
 
 Not supported:
 
@@ -88,9 +86,6 @@ these to keep `mdcat` updated with the rest of the system.
 You can also build `mdcat` manually with `cargo`.  Install Rust via [rustup] and
 run `cargo install mdcat`.  To keep mdcat up to date install [cargo-update] and
 run `cargo install-update mdcat`.
-
-**Note:** On Windows you likely need `--no-default-features` to make `mdcat`
-build.
 
 [rustup]: https://www.rustup.rs
 [cargo-update]: https://github.com/nabijaczleweli/cargo-update
