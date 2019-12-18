@@ -13,10 +13,6 @@
 // limitations under the License.
 
 #![deny(warnings, missing_docs, clippy::all)]
-// Currently we only run formatting tests on Unix, because we rely on a Python
-// tool here, and I failed to setup Python properly on Travis CI' Windows
-// workers.
-#![cfg(unix)]
 
 use mdcat;
 
