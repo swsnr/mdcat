@@ -49,12 +49,3 @@ features = ["parsing", "assets", "dump-load"]
 
 [dev-dependencies]
 pretty_assertions = "^0.6"
-
-[package.metadata.release]
-upload-doc = false
-dev-version-ext = "pre"
-pre-release-commit-message = "Release {{version}}"
-pro-release-commit-message = "Bump version to {{version}}"
-tag-message = "mdcat {{version}}"
-tag-prefix = "mdcat-"
-pre-release-hook = "./scripts/prerelease-hook.py"
