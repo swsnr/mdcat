@@ -49,3 +49,7 @@ features = ["parsing", "assets", "dump-load"]
 
 [dev-dependencies]
 pretty_assertions = "^0.6"
+
+[profile.release]
+# Enable LTO for release builds; makes the binary a lot smaller
+lto = true

@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Added
+- Release builds now perform full link-time optimization to create a smaller
+  binary.  We do recommend to also `strip` the `mdcat` binary.
 
 ## [0.14.0] – 2019-12-18
 ### Added
