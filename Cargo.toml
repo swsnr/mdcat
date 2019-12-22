@@ -13,8 +13,7 @@ authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2018"
 
 [features]
-default = ["remote_resources"]
-remote_resources = ["reqwest"]
+default = ["reqwest"]
 
 [dependencies]
 ansi_term = "^0.12"
@@ -26,8 +25,9 @@ mime = "^0.3"
 term_size = "^0.3"
 url = "^1.7"
 
-# Dependency for remote_resources which lets Kitty, iTerm2 and perhaps others
-# fetch images from HTTP(S) URLs for display.
+# Dependency for reqwest which lets Kitty, iTerm2 and perhaps others
+# fetch images from HTTP(S) URLs for display.  Without reqwest we use curl to
+# fetch resources.
 reqwest = {version = "^0.9", optional = true}
 
 [dependencies.clap]

@@ -65,6 +65,9 @@ Not supported:
 The [Releases] page provides pre-build binaries for Linux, macOS and Windows.
 Use these binaries to try `mdcat`, particularly on Windows.
 
+**Note:** The Linux build is statically linked and requires the `curl` command
+to fetch images from HTTP(S).
+
 [Releases]: https://github.com/lunaryorn/mdcat/releases
 
 ### 3rd party packages

@@ -11,6 +11,11 @@ To publish a new release run `scripts/release` from the project directory.
 - Release builds now perform full link-time optimization to create a smaller
   binary.  We do recommend to also `strip` the `mdcat` binary.
 
+### Changed
+- Replace `remote_resources` feature with `reqwest` feature to use reqwest for
+  retrieving remote resources, and fall back to the `curl` command if `reqwest`
+  is disabled.
+
 ## [0.14.0] – 2019-12-18
 ### Added
 - Render images in [kitty] (see [GH-65] and [GH-104]).
