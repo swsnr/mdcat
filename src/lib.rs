@@ -31,6 +31,7 @@ use syntect::parsing::SyntaxSet;
 use url;
 
 mod magic;
+mod svg;
 mod terminal;
 
 // Expose some select things for use in main

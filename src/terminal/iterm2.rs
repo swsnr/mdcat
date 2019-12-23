@@ -27,7 +27,7 @@ use std::ffi::OsStr;
 use std::io::{self, Write};
 use url::Url;
 
-pub mod svg;
+use super::super::svg;
 
 /// Whether we run inside iTerm2 or not.
 pub fn is_iterm2() -> bool {
