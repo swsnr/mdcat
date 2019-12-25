@@ -89,8 +89,7 @@ impl ITerm2Images {
     /// reading or rendering failed.
     pub fn read_and_render(&self, url: &Url) -> Result<Vec<u8>, Error> {
         let contents = read_url(&url)?;
-        let mime = magic::detect_mime_type(&contents)?;
-        if mime.type_() == mime::IMAGE && mime.subtype().as_str() == "svg" {
+        if magic::is_svg(&magic::detect_mime_type(&contents)?) {
             svg::render_svg(&contents).map_err(Into::into)
         } else {
             Ok(contents)

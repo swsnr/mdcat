@@ -10,11 +10,14 @@ To publish a new release run `scripts/release` from the project directory.
 ### Added
 - Release builds now perform full link-time optimization to create a smaller
   binary.  We do recommend to also `strip` the `mdcat` binary.
+- Render SVG images in [kitty] (see [GH-114])
 
 ### Changed
 - Replace `remote_resources` feature with `reqwest` feature to use reqwest for
   retrieving remote resources, and fall back to the `curl` command if `reqwest`
   is disabled.
+
+[GH-114]: https://github.com/lunaryorn/mdcat/pull/114
 
 ## [0.14.0] – 2019-12-18
 ### Added
