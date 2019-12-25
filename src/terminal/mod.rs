@@ -18,7 +18,6 @@
 
 mod ansi;
 pub mod highlighting;
-pub mod resources;
 mod size;
 
 mod iterm2;

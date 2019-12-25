@@ -18,8 +18,8 @@
 //!
 //! See <https://sw.kovidgoyal.net/kitty/> for more information.
 
-use super::super::magic;
-use super::resources::read_url;
+use crate::magic;
+use crate::resources::read_url;
 use failure::Error;
 use image::{ColorType, FilterType};
 use image::{DynamicImage, GenericImageView};

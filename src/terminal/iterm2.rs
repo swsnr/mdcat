@@ -19,9 +19,9 @@
 //!
 //! See <https://www.iterm2.com> for more information.
 
-use super::super::magic;
 use super::osc::write_osc;
-use super::resources::read_url;
+use crate::magic;
+use crate::resources::read_url;
 use failure::Error;
 use std::ffi::OsStr;
 use std::io::{self, Write};

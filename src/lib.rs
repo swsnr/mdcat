@@ -31,6 +31,7 @@ use syntect::parsing::SyntaxSet;
 use url;
 
 mod magic;
+mod resources;
 mod svg;
 mod terminal;
 
