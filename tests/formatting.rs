@@ -45,7 +45,7 @@ fn format_ansi_to_html(markdown: &str) -> String {
         let parser = Parser::new_ext(markdown, options);
         mdcat::push_tty(
             &mut child.stdin.unwrap(),
-            mdcat::TerminalCapabilities::ansi(),
+            &mdcat::TerminalCapabilities::ansi(),
             size,
             parser,
             &wd,

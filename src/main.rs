@@ -18,7 +18,7 @@
 
 use mdcat;
 
-use clap::value_t;
+use clap::{value_t, values_t};
 use pulldown_cmark::{Options, Parser};
 use std::error::Error;
 use std::fs::File;
@@ -52,47 +52,46 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     }
 }
 
-fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn Error>> {
-    if args.detect_only {
-        println!("Terminal: {}", args.terminal_capabilities.name);
-        Ok(())
-    } else {
-        let (base_dir, input) = read_input(&args.filename)?;
-        let mut options = Options::empty();
-        options.insert(Options::ENABLE_TASKLISTS);
-        options.insert(Options::ENABLE_STRIKETHROUGH);
-        let parser = Parser::new_ext(&input, options);
+fn process_file(
+    filename: &str,
+    size: TerminalSize,
+    args: &Arguments,
+) -> Result<(), Box<dyn Error>> {
+    let (base_dir, input) = read_input(filename)?;
+    let mut options = Options::empty();
+    options.insert(Options::ENABLE_TASKLISTS);
+    options.insert(Options::ENABLE_STRIKETHROUGH);
+    let parser = Parser::new_ext(&input, options);
 
-        if args.dump_events {
-            mdcat::dump_events(&mut std::io::stdout(), parser)?;
-            Ok(())
-        } else {
-            let syntax_set = SyntaxSet::load_defaults_newlines();
-            mdcat::push_tty(
-                &mut stdout(),
-                args.terminal_capabilities,
-                TerminalSize {
-                    width: args.columns,
-                    ..size
-                },
-                parser,
-                &base_dir,
-                args.resource_access,
-                syntax_set,
-            )?;
-            Ok(())
-        }
+    if args.dump_events {
+        mdcat::dump_events(&mut std::io::stdout(), parser)?;
+    } else {
+        let syntax_set = SyntaxSet::load_defaults_newlines();
+        mdcat::push_tty(
+            &mut stdout(),
+            &args.terminal_capabilities,
+            TerminalSize {
+                width: args.columns,
+                ..size
+            },
+            parser,
+            &base_dir,
+            args.resource_access,
+            syntax_set,
+        )?;
     }
+    Ok(())
 }
 
 /// Represent command line arguments.
 struct Arguments {
-    filename: String,
+    filenames: Vec<String>,
     terminal_capabilities: TerminalCapabilities,
     resource_access: ResourceAccess,
     columns: usize,
     dump_events: bool,
     detect_only: bool,
+    fail_fast: bool,
 }
 
 impl Arguments {
@@ -113,9 +112,10 @@ impl Arguments {
             ansi_term::enable_ansi_support().ok();
         }
 
-        let filename = value_t!(matches, "filename", String)?;
+        let filenames = values_t!(matches, "filenames", String)?;
         let dump_events = matches.is_present("dump_events");
         let detect_only = matches.is_present("detect_only");
+        let fail_fast = matches.is_present("fail_fast");
         let columns = value_t!(matches, "columns", usize)?;
         let resource_access = if matches.is_present("local_only") {
             ResourceAccess::LocalOnly
@@ -124,11 +124,12 @@ impl Arguments {
         };
 
         Ok(Arguments {
-            filename,
+            filenames,
             columns,
             resource_access,
             dump_events,
             detect_only,
+            fail_fast,
             terminal_capabilities,
         })
     }
@@ -160,7 +161,8 @@ Licensed under the Apache License, Version 2.0
 Report issues to <https://github.com/lunaryorn/mdcat>.",
         )
         .arg(
-            Arg::with_name("filename")
+            Arg::with_name("filenames")
+                .multiple(true)
                 .help("The file to read.  If - read from standard input instead")
                 .default_value("-"),
         )
@@ -190,6 +192,11 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
                 .hidden(true),
         )
         .arg(
+            Arg::with_name("fail_fast")
+                .long("fail")
+                .help("Exit immediately if any error occurs processing an input file"),
+        )
+        .arg(
             Arg::with_name("detect_only")
                 .long("detect-only")
                 .help("Only detect the terminal type and exit")
@@ -205,11 +212,24 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
 
     let matches = app.get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
-    match process_arguments(size, arguments) {
-        Ok(_) => std::process::exit(0),
-        Err(error) => {
-            eprintln!("Error: {}", error);
-            std::process::exit(1);
+    let mut has_error_occurred: bool = false;
+
+    if arguments.detect_only {
+        println!("Terminal: {}", arguments.terminal_capabilities.name);
+    } else {
+        for filename in &arguments.filenames {
+            match process_file(filename, size, &arguments) {
+                Ok(()) => continue,
+                Err(e) => {
+                    eprintln!("Error: {} {}", filename, e);
+                    has_error_occurred = true;
+                    if arguments.fail_fast {
+                        break;
+                    }
+                }
+            }
         }
     }
+
+    std::process::exit(has_error_occurred as i32)
 }
