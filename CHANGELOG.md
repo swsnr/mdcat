@@ -11,6 +11,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Release builds now perform full link-time optimization to create a smaller
   binary.  We do recommend to also `strip` the `mdcat` binary.
 - Render SVG images in [kitty] (see [GH-114])
+- Process file list as input [See PR 115](#115) or [Issue 54](#54)
 
 ### Changed
 - Replace `remote_resources` feature with `reqwest` feature to use reqwest for
