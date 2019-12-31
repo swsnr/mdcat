@@ -60,7 +60,7 @@ where
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, 'e, W, I>(
     writer: &'a mut W,
-    capabilities: TerminalCapabilities,
+    capabilities: &TerminalCapabilities,
     size: TerminalSize,
     mut events: I,
     base_dir: &'a Path,
@@ -147,7 +147,7 @@ struct OutputContext<'a, W: Write> {
     /// A writer to the terminal.
     writer: &'a mut W,
     /// The capabilities of the terminal.
-    capabilities: TerminalCapabilities,
+    capabilities: &'a TerminalCapabilities,
 }
 
 #[derive(Debug)]
@@ -236,7 +236,7 @@ struct Context<'io, 'c, 'l, W: Write> {
 impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     fn new(
         writer: &'io mut W,
-        capabilities: TerminalCapabilities,
+        capabilities: &'io TerminalCapabilities,
         size: TerminalSize,
         base_dir: &'io Path,
         resource_access: ResourceAccess,
@@ -762,7 +762,7 @@ mod tests {
         let mut sink = Vec::new();
         push_tty(
             &mut sink,
-            capabilities,
+            &capabilities,
             size,
             source,
             base_dir,
