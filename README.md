@@ -37,15 +37,18 @@ terminal font with italic characters.  Then it
 * adds jump marks for headings in [iTerm2] (jump forwards and backwards with
   <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
 
-| Terminal                |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
-| :---------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
-| Basic ANSI              | ✓             | ✓                   |       |        |            |
-| Windows [ConEmu][]      | ✓             | ✓                   |       |        |            |
-| Windows 10 console      | ✓             | ✓                   |       |        |            |
-| VTE 0.50 or newer based | ✓             | ✓                   | ✓     |        |            |
-| [Terminology][]         | ✓             | ✓                   | ✓     | ✓      |            |
-| [iTerm2][]              | ✓             | ✓                   | ✓     | ✓      | ✓          |
-| [kitty][]               | ✓             | ✓                   |       | ✓      |            |
+| Terminal                   |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
+| :------------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
+| Basic ANSI                 | ✓             | ✓                   |       |        |            |
+| Windows [ConEmu][]         | ✓             | ✓                   |       |        |            |
+| Windows 10 console         | ✓             | ✓                   |       |        |            |
+| Generic VTE 0.50 or newer¹ | ✓             | ✓                   | ✓     |        |            |
+| [Terminology][]            | ✓             | ✓                   | ✓     | ✓      |            |
+| [iTerm2][]                 | ✓             | ✓                   | ✓     | ✓      | ✓          |
+| [kitty][]                  | ✓             | ✓                   |       | ✓      |            |
+
+¹) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including
+Gnome Terminal, Xfce Terminal, Tilix, etc.
 
 Not supported:
 
