@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -57,7 +57,7 @@ jobs:
           - target: x86_64-pc-windows-msvc
             rust: beta
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       # Install ansi2html for tests
       - uses: actions/setup-python@v1
         with:
