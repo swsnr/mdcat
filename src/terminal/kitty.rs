@@ -20,6 +20,7 @@
 
 use crate::magic;
 use crate::resources::read_url;
+use crate::svg::render_svg;
 use failure::Error;
 use image::{ColorType, FilterType};
 use image::{DynamicImage, GenericImageView};
@@ -180,7 +181,12 @@ impl KittyImages {
     pub fn read_and_render(&self, url: &Url) -> Result<KittyImage, Error> {
         let contents = read_url(url)?;
         let mime = magic::detect_mime_type(&contents)?;
-        let image = image::load_from_memory(&contents)?;
+        let image = if magic::is_svg(&mime) {
+            let rendered = render_svg(&contents)?;
+            image::load_from_memory(&rendered)?
+        } else {
+            image::load_from_memory(&contents)?
+        };
         let terminal_size = get_terminal_size()?;
         let (image_width, image_height) = image.dimensions();
 

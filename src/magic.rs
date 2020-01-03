@@ -19,6 +19,11 @@ use std::io::prelude::*;
 use std::io::{Error, ErrorKind};
 use std::process::*;
 
+/// Whether the given MIME type denotes an SVG image.
+pub fn is_svg(mime: &Mime) -> bool {
+    mime.type_() == mime::IMAGE && mime.subtype().as_str() == "svg"
+}
+
 /// Detect mime type with `file`.
 pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, failure::Error> {
     let mut process = Command::new("file")

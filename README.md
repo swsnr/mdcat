@@ -98,11 +98,12 @@ run `cargo install-update mdcat`.
 
 ### SVG support
 
-`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2]; otherwise `mdcat`
-only shows the image title and URL for SVG images.  Install with `brew install
-librsvg`.
+`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2] and [kitty];
+otherwise `mdcat` only shows the image title and URL for SVG images.  On macOS
+you can install the `librsvg` formula from Homebrew, on Linux the tool is
+typically part of the `librsvg-bin` package (or similar).
 
-[Terminology] supports SVG out of the box and needs no additional tools.
+[Terminology] renders SVG directly and needs no additional tools.
 
 ### Future plans
 
