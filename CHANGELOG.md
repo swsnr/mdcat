@@ -21,7 +21,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [0.14.0] – 2019-12-18
 ### Added
-- Render images in [kitty] (see [GH-65] and [GH-104]).
+- Render images in [kitty] (see [GH-65] and [GH-104] by @fspillner).
 
 ### Changed
 - Update pulldown-cmark to 0.6 which supports CommonMark 0.29 and improves
@@ -138,7 +138,7 @@ To publish a new release run `scripts/release` from the project directory.
 ## [0.8.0] – 2018-02-15
 ### Added
 - Render SVG images in iTerm2 with `rsvg-convert` (requires `librsvg`).
-- Expose `TerminalWrite` in `mdcat` crate (see [GH-20]).
+- Expose `TerminalWrite` in `mdcat` crate (see [GH-20] by @Byron).
 
 [GH-20]: https://github.com/lunaryorn/mdcat/pull/20
 
@@ -158,7 +158,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [0.6.0] – 2018-02-02
 ### Added
-- Show inline images in [Terminology] (see [GH-16).
+- Show inline images in [Terminology] (see [GH-16] by @vinipsmaker).
 
 [Terminology]: http://terminolo.gy
 [GH-16]: https://github.com/lunaryorn/mdcat/pull/16
@@ -181,7 +181,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Improve `--help` output.
 
 ### Fixed
-- Remove redundant default value from `--colour` help text (see [GH-10]).
+- Remove redundant default value from `--colour` help text (see [GH-10], by @wezm).
 - Replace light black with green; the former doesn't work with Solarized Dark.
 
 [GH-10]: https://github.com/lunaryorn/mdcat/pull/10
