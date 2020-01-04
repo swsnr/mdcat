@@ -21,7 +21,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [0.14.0] – 2019-12-18
 ### Added
-- Render images in [kitty] (see [GH-65] and [GH-104] by @fspillner).
+- Render images in [kitty] (see [GH-65] and [GH-104] by [@fspillner]).
 
 ### Changed
 - Update pulldown-cmark to 0.6 which supports CommonMark 0.29 and improves
@@ -36,6 +36,7 @@ To publish a new release run `scripts/release` from the project directory.
 [GH-65]: https://github.com/lunaryorn/mdcat/issues/65
 [GH-84]: https://github.com/lunaryorn/mdcat/issues/84
 [GH-104]: https://github.com/lunaryorn/mdcat/pull/104
+[@fspillner]: https://github.com/fspillner
 
 ## [0.13.0] – 2019-03-30
 ### Added
@@ -138,9 +139,10 @@ To publish a new release run `scripts/release` from the project directory.
 ## [0.8.0] – 2018-02-15
 ### Added
 - Render SVG images in iTerm2 with `rsvg-convert` (requires `librsvg`).
-- Expose `TerminalWrite` in `mdcat` crate (see [GH-20] by @Byron).
+- Expose `TerminalWrite` in `mdcat` crate (see [GH-20] by [@Byron]).
 
 [GH-20]: https://github.com/lunaryorn/mdcat/pull/20
+[@Byron]: https://github.com/Byron
 
 ## [0.7.0] – 2018-02-08
 ### Added
@@ -158,10 +160,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [0.6.0] – 2018-02-02
 ### Added
-- Show inline images in [Terminology] (see [GH-16] by @vinipsmaker).
+- Show inline images in [Terminology] (see [GH-16] by [@vinipsmaker]).
 
 [Terminology]: http://terminolo.gy
 [GH-16]: https://github.com/lunaryorn/mdcat/pull/16
+[@vinipsmaker]: https://github.com/lunaryorn/vinipsmaker
 
 ### Changed
 - Improve `--help` output: Hide some redundant options, add a bug reporting URL
@@ -181,10 +184,11 @@ To publish a new release run `scripts/release` from the project directory.
 - Improve `--help` output.
 
 ### Fixed
-- Remove redundant default value from `--colour` help text (see [GH-10], by @wezm).
+- Remove redundant default value from `--colour` help text (see [GH-10], by [@wezm]).
 - Replace light black with green; the former doesn't work with Solarized Dark.
 
 [GH-10]: https://github.com/lunaryorn/mdcat/pull/10
+[@wezm]: https://github.com/wezm
 
 ## [0.4.0] – 2018-01-21
 ### Changed
