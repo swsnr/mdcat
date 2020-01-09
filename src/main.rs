@@ -52,36 +52,60 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
     }
 }
 
-fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), Box<dyn Error>> {
+fn process_file(
+    filename: &str,
+    size: TerminalSize,
+    args: &Arguments,
+) -> Result<(), Box<dyn Error>> {
+    let (base_dir, input) = read_input(filename)?;
+    let mut options = Options::empty();
+    options.insert(Options::ENABLE_TASKLISTS);
+    options.insert(Options::ENABLE_STRIKETHROUGH);
+    let parser = Parser::new_ext(&input, options);
+
+    if args.dump_events {
+        mdcat::dump_events(&mut std::io::stdout(), parser)?;
+    } else {
+        let syntax_set = SyntaxSet::load_defaults_newlines();
+        mdcat::push_tty(
+            &mut stdout(),
+            &args.terminal_capabilities,
+            TerminalSize {
+                width: args.columns,
+                ..size
+            },
+            parser,
+            &base_dir,
+            args.resource_access,
+            syntax_set,
+        )?;
+    }
+    Ok(())
+}
+
+fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), String> {
+    let mut has_error_occurred: bool = false;
+    let mut last_error_message = String::with_capacity(150);
     if args.detect_only {
         println!("Terminal: {}", args.terminal_capabilities.name);
-        Ok(())
     } else {
-        for filename in args.filenames {
-            let (base_dir, input) = read_input(filename)?;
-            let mut options = Options::empty();
-            options.insert(Options::ENABLE_TASKLISTS);
-            options.insert(Options::ENABLE_STRIKETHROUGH);
-            let parser = Parser::new_ext(&input, options);
-
-            if args.dump_events {
-                mdcat::dump_events(&mut std::io::stdout(), parser)?;
-            } else {
-                let syntax_set = SyntaxSet::load_defaults_newlines();
-                mdcat::push_tty(
-                    &mut stdout(),
-                    &args.terminal_capabilities,
-                    TerminalSize {
-                        width: args.columns,
-                        ..size
-                    },
-                    parser,
-                    &base_dir,
-                    args.resource_access,
-                    syntax_set,
-                )?;
+        for filename in &args.filenames {
+            match process_file(filename, size, &args) {
+                Ok(()) => continue,
+                Err(e) => {
+                    last_error_message = format!("Error: {} {}", filename, e);
+                    eprintln!("{}", last_error_message);
+                    has_error_occurred = true;
+                    if args.fail_fast {
+                        break;
+                    }
+                }
             }
         }
+    }
+    if has_error_occurred {
+        Err(last_error_message)
+    } else {
         Ok(())
     }
 }
@@ -94,6 +118,7 @@ struct Arguments {
     columns: usize,
     dump_events: bool,
     detect_only: bool,
+    fail_fast: bool,
 }
 
 impl Arguments {
@@ -117,6 +142,7 @@ impl Arguments {
         let filenames = values_t!(matches, "filenames", String)?;
         let dump_events = matches.is_present("dump_events");
         let detect_only = matches.is_present("detect_only");
+        let fail_fast = matches.is_present("fail_fast");
         let columns = value_t!(matches, "columns", usize)?;
         let resource_access = if matches.is_present("local_only") {
             ResourceAccess::LocalOnly
@@ -130,6 +156,7 @@ impl Arguments {
             resource_access,
             dump_events,
             detect_only,
+            fail_fast,
             terminal_capabilities,
         })
     }
@@ -192,6 +219,12 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
                 .hidden(true),
         )
         .arg(
+            Arg::with_name("fail_fast")
+                .long("fail-fast")
+                .help("Exit if any error occurs processing an input file")
+                .hidden(true),
+        )
+        .arg(
             Arg::with_name("detect_only")
                 .long("detect-only")
                 .help("Only detect the terminal type and exit")
@@ -210,8 +243,7 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
 
     match process_arguments(size, arguments) {
         Ok(_) => std::process::exit(0),
-        Err(error) => {
-            eprintln!("Error: {}", error);
+        Err(_) => {
             std::process::exit(1);
         }
     }
