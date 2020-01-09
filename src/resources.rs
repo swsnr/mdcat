@@ -49,7 +49,7 @@ fn is_local(url: &Url) -> bool {
 
 #[cfg(feature = "reqwest")]
 fn fetch_http(url: &Url) -> Result<Vec<u8>, failure::Error> {
-    let mut response = reqwest::get(url.clone())?;
+    let mut response = reqwest::blocking::get(url.clone())?;
     if response.status().is_success() {
         let mut buffer = Vec::new();
         response.read_to_end(&mut buffer)?;
