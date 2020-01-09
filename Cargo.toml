@@ -23,12 +23,15 @@ gethostname = "^0.2"
 image = "^0.22.2"
 mime = "^0.3"
 term_size = "^0.3"
-url = "^1.7"
+url = "^2.1"
 
 # Dependency for reqwest which lets Kitty, iTerm2 and perhaps others
 # fetch images from HTTP(S) URLs for display.  Without reqwest we use curl to
 # fetch resources.
-reqwest = {version = "^0.9", optional = true}
+[dependencies.reqwest]
+version = "^0.10"
+optional = true
+features = ["gzip", "blocking"]
 
 [dependencies.clap]
 version = "^2.33"
