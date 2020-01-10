@@ -83,27 +83,6 @@ fn process_file(
     Ok(())
 }
 
-fn process_arguments(size: TerminalSize, args: Arguments) -> i32 {
-    let mut has_error_occurred: bool = false;
-    if args.detect_only {
-        println!("Terminal: {}", args.terminal_capabilities.name);
-    } else {
-        for filename in &args.filenames {
-            match process_file(filename, size, &args) {
-                Ok(()) => continue,
-                Err(e) => {
-                    eprintln!("Error: {} {}", filename, e);
-                    has_error_occurred = true;
-                    if args.fail_fast {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    has_error_occurred as i32
-}
-
 /// Represent command line arguments.
 struct Arguments {
     filenames: Vec<String>,
@@ -234,6 +213,24 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
 
     let matches = app.get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
+    let mut has_error_occurred: bool = false;
 
-    std::process::exit(process_arguments(size, arguments))
+    if arguments.detect_only {
+        println!("Terminal: {}", arguments.terminal_capabilities.name);
+    } else {
+        for filename in &arguments.filenames {
+            match process_file(filename, size, &arguments) {
+                Ok(()) => continue,
+                Err(e) => {
+                    eprintln!("Error: {} {}", filename, e);
+                    has_error_occurred = true;
+                    if arguments.fail_fast {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    std::process::exit(has_error_occurred as i32)
 }
