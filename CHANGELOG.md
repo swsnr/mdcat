@@ -13,6 +13,9 @@ To publish a new release run `scripts/release` from the project directory.
 - Render SVG images in [kitty] (see [GH-114]).
 - Update to reqwest 0.10.
 - Process file list as input (see [GH-115][PR-115] or [GH-54]).
+- Add --fail flag  
+  When processing a file list, exit on the first file that generates an error
+  and not process the remaining files in the list.
 
 ### Changed
 - Replace `remote_resources` feature with `reqwest` feature to use reqwest for
