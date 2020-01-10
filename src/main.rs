@@ -83,9 +83,8 @@ fn process_file(
     Ok(())
 }
 
-fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), String> {
+fn process_arguments(size: TerminalSize, args: Arguments) -> i32 {
     let mut has_error_occurred: bool = false;
-    let mut last_error_message = String::with_capacity(150);
     if args.detect_only {
         println!("Terminal: {}", args.terminal_capabilities.name);
     } else {
@@ -93,8 +92,7 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), String> 
             match process_file(filename, size, &args) {
                 Ok(()) => continue,
                 Err(e) => {
-                    last_error_message = format!("Error: {} {}", filename, e);
-                    eprintln!("{}", last_error_message);
+                    eprintln!("Error: {} {}", filename, e);
                     has_error_occurred = true;
                     if args.fail_fast {
                         break;
@@ -103,11 +101,7 @@ fn process_arguments(size: TerminalSize, args: Arguments) -> Result<(), String> 
             }
         }
     }
-    if has_error_occurred {
-        Err(last_error_message)
-    } else {
-        Ok(())
-    }
+    has_error_occurred as i32
 }
 
 /// Represent command line arguments.
@@ -241,10 +235,5 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
     let matches = app.get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
 
-    match process_arguments(size, arguments) {
-        Ok(_) => std::process::exit(0),
-        Err(_) => {
-            std::process::exit(1);
-        }
-    }
+    std::process::exit(process_arguments(size, arguments))
 }
