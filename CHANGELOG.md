@@ -12,7 +12,7 @@ To publish a new release run `scripts/release` from the project directory.
   binary.  We do recommend to also `strip` the `mdcat` binary.
 - Render SVG images in [kitty] (see [GH-114]).
 - Update to reqwest 0.10.
-- Process file list as input (see [GH-54] and [GH-115]):
+- Process file list as input (see [GH-54] and [GH-115], by [@norman-abramovitz]):
     - Add `--fail` flag to exit on the first error when processing a file list;
       the default behaviour is to continue with the next file in case of error.
 
@@ -24,6 +24,7 @@ To publish a new release run `scripts/release` from the project directory.
 [GH-114]: https://github.com/lunaryorn/mdcat/pull/114
 [GH-115]: https://github.com/lunaryorn/mdcat/pull/115
 [GH-54]: https://github.com/lunaryorn/mdcat/issues/54
+[@norman-abramovitz]: https://github.com/norman-abramovitz
 
 ## [0.14.0] – 2019-12-18
 ### Added
