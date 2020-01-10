@@ -194,7 +194,7 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
         .arg(
             Arg::with_name("fail_fast")
                 .long("fail")
-                .help("Exit immediately if any error occurs processing an input file")
+                .help("Exit immediately if any error occurs processing an input file"),
         )
         .arg(
             Arg::with_name("detect_only")
