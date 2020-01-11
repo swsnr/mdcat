@@ -9,9 +9,6 @@ To publish a new release run `scripts/release` from the project directory.
 ## [Unreleased]
 
 ## [0.15.0] – 2020-01-11
-$a
-[0.15.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.14.0...mdcat-0.15.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...HEAD
 ### Added
 - Release builds now perform full link-time optimization to create a smaller
   binary.  We do recommend to also `strip` the `mdcat` binary.
@@ -264,3 +261,5 @@ $a
 [0.12.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.0...mdcat-0.12.1
 [0.13.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.1...mdcat-0.13.0
 [0.14.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.13.0...mdcat-0.14.0
+[0.15.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.14.0...mdcat-0.15.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...HEAD
