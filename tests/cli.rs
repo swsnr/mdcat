@@ -54,7 +54,7 @@ mod cli {
         let stdout = std::str::from_utf8(&output.stdout).unwrap();
         assert!(!output.status.success());
         // We failed to read the first file but still printed the second.
-        assert!(stderr.contains("Error: does-not-exist No such file or directory (os error 2)"));
+        assert!(stderr.contains("Error: does-not-exist: No such file or directory (os error 2)"));
         assert!(stdout.contains("CommonMark sample document"));
     }
 
@@ -64,7 +64,7 @@ mod cli {
         let stderr = std::str::from_utf8(&output.stderr).unwrap();
         assert!(!output.status.success());
         // We failed to read the first file and exited early, so nothing was printed at all
-        assert!(stderr.contains("Error: does-not-exist No such file or directory (os error 2)"));
+        assert!(stderr.contains("Error: does-not-exist: No such file or directory (os error 2)"));
         assert!(output.stdout.is_empty());
     }
 }
