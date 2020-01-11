@@ -55,7 +55,7 @@ mod cli {
         assert!(!output.status.success());
         // We failed to read the first file but still printed the second.
         assert!(
-            stderr.contains("Error: does-not-exist: No such file or directory (os error 2)"),
+            stderr.contains("Error: does-not-exist:") && stderr.contains("(os error 2)"),
             "Stderr: {}",
             stderr
         );
@@ -69,7 +69,7 @@ mod cli {
         assert!(!output.status.success());
         // We failed to read the first file and exited early, so nothing was printed at all
         assert!(
-            stderr.contains("Error: does-not-exist: No such file or directory (os error 2)"),
+            stderr.contains("Error: does-not-exist:") && stderr.contains("(os error 2)"),
             "Stderr: {}",
             stderr
         );
