@@ -156,7 +156,7 @@ markdown documents for viewing in text terminals:
 • In some terminals: Inline images and inline links
 • In iTerm2: Jump marks for headings
 
-Copyright (C) 2018 Sebastian Wiesner
+Copyright (C) 2018–2020 Sebastian Wiesner and contributors
 Licensed under the Apache License, Version 2.0
 Report issues to <https://github.com/lunaryorn/mdcat>.",
         )
