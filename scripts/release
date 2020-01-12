@@ -56,7 +56,7 @@ git add Cargo.toml Cargo.lock
 # 3. Delete the old link reference for the Unreleased header
 sed -e "/^## \[Unreleased\]\$/ a\\
 \\
-## [${next_version}] – $(date +%Y-%m-%d)\\" \
+## [${next_version}] – $(date +%Y-%m-%d)" \
     -e "\$a\\
 [$next_version]: https://github.com/lunaryorn/mdcat/compare/mdcat-${latest_version}...mdcat-${next_version}\\
 [Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-${next_version}...HEAD" \
