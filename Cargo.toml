@@ -18,7 +18,6 @@ default = ["reqwest"]
 [dependencies]
 ansi_term = "^0.12"
 base64 = "^0.11"
-failure = "^0.1"
 gethostname = "^0.2"
 image = "^0.22.4"
 mime = "^0.3"
