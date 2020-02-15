@@ -17,11 +17,11 @@
 //! Write markdown to TTYs.
 
 use ansi_term::{Colour, Style};
-use failure::Error;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::{CowStr, Event, LinkType, Tag};
 use std::collections::VecDeque;
+use std::error::Error;
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -40,7 +40,7 @@ pub use crate::resources::ResourceAccess;
 pub use crate::terminal::*;
 
 /// Dump markdown events to a writer.
-pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Error>
+pub fn dump_events<'a, W, I>(writer: &mut W, events: I) -> Result<(), Box<dyn Error>>
 where
     I: Iterator<Item = Event<'a>>,
     W: Write,
@@ -66,7 +66,7 @@ pub fn push_tty<'a, 'e, W, I>(
     base_dir: &'a Path,
     resource_access: ResourceAccess,
     syntax_set: SyntaxSet,
-) -> Result<(), Error>
+) -> Result<(), Box<dyn Error>>
 where
     I: Iterator<Item = Event<'e>>,
     W: Write,
@@ -399,7 +399,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// Write all pending links.
     ///
     /// Empty all pending links afterwards.
-    fn write_pending_links(&mut self) -> Result<(), Error> {
+    fn write_pending_links(&mut self) -> Result<(), Box<dyn Error>> {
         if !self.links.pending_links.is_empty() {
             self.newline()?;
             let link_style = self.style.current.fg(Colour::Blue);
@@ -453,7 +453,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
 fn write_event<'io, 'c, 'l, W: Write>(
     mut ctx: Context<'io, 'c, 'l, W>,
     event: Event<'l>,
-) -> Result<Context<'io, 'c, 'l, W>, Error> {
+) -> Result<Context<'io, 'c, 'l, W>, Box<dyn Error>> {
     match event {
         SoftBreak | HardBreak => {
             ctx.newline_and_indent()?;
@@ -501,7 +501,7 @@ fn write_event<'io, 'c, 'l, W: Write>(
 fn start_tag<'io, 'c, 'l, W: Write>(
     mut ctx: Context<'io, 'c, 'l, W>,
     tag: Tag<'l>,
-) -> Result<Context<'io, 'c, 'l, W>, Error> {
+) -> Result<Context<'io, 'c, 'l, W>, Box<dyn Error>> {
     match tag {
         Paragraph => ctx.start_inline_text()?,
         Heading(level) => {
@@ -653,7 +653,7 @@ fn start_tag<'io, 'c, 'l, W: Write>(
 fn end_tag<'io, 'c, 'l, W: Write>(
     mut ctx: Context<'io, 'c, 'l, W>,
     tag: Tag<'l>,
-) -> Result<Context<'io, 'c, 'l, W>, Error> {
+) -> Result<Context<'io, 'c, 'l, W>, Box<dyn Error>> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Heading(_) => {
@@ -757,7 +757,7 @@ mod tests {
         syntax_set: SyntaxSet,
         capabilities: TerminalCapabilities,
         size: TerminalSize,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Vec<u8>, Box<dyn Error>> {
         let source = Parser::new(input);
         let mut sink = Vec::new();
         push_tty(

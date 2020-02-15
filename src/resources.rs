@@ -48,7 +48,7 @@ fn is_local(url: &Url) -> bool {
 }
 
 #[cfg(feature = "reqwest")]
-fn fetch_http(url: &Url) -> Result<Vec<u8>, failure::Error> {
+fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut response = reqwest::blocking::get(url.clone())?;
     if response.status().is_success() {
         let mut buffer = Vec::new();
@@ -64,7 +64,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>, failure::Error> {
 }
 
 #[cfg(not(feature = "reqwest"))]
-fn fetch_http(url: &Url) -> Result<Vec<u8>, failure::Error> {
+fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let output = std::process::Command::new("curl")
         .arg("-fsSL")
         .arg(url.to_string())
@@ -93,7 +93,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>, failure::Error> {
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
-pub fn read_url(url: &Url) -> Result<Vec<u8>, failure::Error> {
+pub fn read_url(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     match url.scheme() {
         "file" => match url.to_file_path() {
             Ok(path) => {
@@ -164,7 +164,7 @@ mod tests {
                 error
             );
             assert!(
-                error.contains("404 NOT FOUND"),
+                error.contains("404"),
                 "Error did not contain expected string: {}",
                 error
             );

@@ -22,7 +22,7 @@
 use super::osc::write_osc;
 use crate::magic;
 use crate::resources::read_url;
-use failure::Error;
+use std::error::Error;
 use std::ffi::OsStr;
 use std::io::{self, Write};
 use url::Url;
@@ -87,7 +87,7 @@ impl ITerm2Images {
     ///
     /// Render the binary content of the (rendered) image or an IO error if
     /// reading or rendering failed.
-    pub fn read_and_render(&self, url: &Url) -> Result<Vec<u8>, Error> {
+    pub fn read_and_render(&self, url: &Url) -> Result<Vec<u8>, Box<dyn Error>> {
         let contents = read_url(&url)?;
         if magic::is_svg(&magic::detect_mime_type(&contents)?) {
             svg::render_svg(&contents).map_err(Into::into)

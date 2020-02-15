@@ -21,9 +21,9 @@
 use crate::magic;
 use crate::resources::read_url;
 use crate::svg::render_svg;
-use failure::Error;
 use image::{ColorType, FilterType};
 use image::{DynamicImage, GenericImageView};
+use std::error::Error;
 use std::io::Write;
 use std::process::{Command, Stdio};
 use std::str;
@@ -108,7 +108,7 @@ impl KittyImages {
         &self,
         writer: &mut W,
         image: KittyImage,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Box<dyn Error>> {
         // Kitty's escape sequence is like: Put the command key/value pairs together like "{}={}(,*)"
         // and write them along with the image bytes in 4096 bytes chunks to the stdout.
         // Documentation gives the following python example:
@@ -178,7 +178,7 @@ impl KittyImages {
 
     /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
     /// It scales the image down, if the image size exceeds the terminal window size.
-    pub fn read_and_render(&self, url: &Url) -> Result<KittyImage, Error> {
+    pub fn read_and_render(&self, url: &Url) -> Result<KittyImage, Box<dyn std::error::Error>> {
         let contents = read_url(url)?;
         let mime = magic::detect_mime_type(&contents)?;
         let image = if magic::is_svg(&mime) {
@@ -201,7 +201,7 @@ impl KittyImages {
     }
 
     /// Wrap the image bytes as PNG format in `KittyImage`.
-    fn render_as_png(&self, contents: Vec<u8>) -> Result<KittyImage, Error> {
+    fn render_as_png(&self, contents: Vec<u8>) -> Result<KittyImage, Box<dyn Error>> {
         Ok(KittyImage {
             contents,
             format: KittyFormat::PNG,
@@ -215,7 +215,7 @@ impl KittyImages {
         &self,
         image: DynamicImage,
         terminal_size: KittyDimension,
-    ) -> Result<KittyImage, Error> {
+    ) -> Result<KittyImage, Box<dyn Error>> {
         let format = match image.color() {
             ColorType::RGB(_) => KittyFormat::RGB,
             _ => KittyFormat::RGBA,

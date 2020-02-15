@@ -25,7 +25,7 @@ pub fn is_svg(mime: &Mime) -> bool {
 }
 
 /// Detect mime type with `file`.
-pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, failure::Error> {
+pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error>> {
     let mut process = Command::new("file")
         .arg("--brief")
         .arg("--mime-type")
