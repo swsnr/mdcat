@@ -164,7 +164,7 @@ mod tests {
                 error
             );
             assert!(
-                error.contains("404 NOT FOUND"),
+                error.contains("404"),
                 "Error did not contain expected string: {}",
                 error
             );
