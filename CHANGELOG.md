@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.15.1] – 2020-02-15
 ### Changed
 - Update pulldown-cmark to 0.7.
 
@@ -264,4 +266,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.13.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.1...mdcat-0.13.0
 [0.14.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.13.0...mdcat-0.14.0
 [0.15.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.14.0...mdcat-0.15.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...HEAD
+[0.15.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...mdcat-0.15.1
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.1...HEAD
