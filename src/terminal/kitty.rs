@@ -22,7 +22,8 @@
 use crate::magic;
 use crate::resources::read_url;
 use crate::svg::render_svg;
-use image::{ColorType, FilterType};
+use image::imageops::FilterType;
+use image::ColorType;
 use image::{DynamicImage, GenericImageView};
 use std::error::Error;
 use std::io::Write;
@@ -218,7 +219,15 @@ impl KittyImages {
         terminal_size: KittyDimension,
     ) -> Result<KittyImage, Box<dyn Error>> {
         let format = match image.color() {
-            ColorType::RGB(_) => KittyFormat::RGB,
+            ColorType::L8
+            | ColorType::Rgb8
+            | ColorType::L16
+            | ColorType::Rgb16
+            | ColorType::Bgr8 => KittyFormat::RGB,
+            // Default to RGBA format: We cannot match all colour types because
+            // ColorType is marked non-exhaustive, but RGBA is a safe default
+            // because we can convert any image to RGBA, at worth with additional
+            // runtime costs.
             _ => KittyFormat::RGBA,
         };
 
