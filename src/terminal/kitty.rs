@@ -245,8 +245,8 @@ impl KittyImages {
 
         Ok(KittyImage {
             contents: match format {
-                KittyFormat::RGB => image.to_rgb().into_raw(),
-                _ => image.to_rgba().into_raw(),
+                KittyFormat::RGB => image.into_rgb().into_raw(),
+                _ => image.into_rgba().into_raw(),
             },
             format,
             dimension: Some(KittyDimension {
