@@ -19,7 +19,7 @@
 use ansi_term::{Colour, Style};
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
-use pulldown_cmark::{CowStr, Event, LinkType, Tag};
+use pulldown_cmark::{CodeBlockKind, CowStr, Event, LinkType, Tag};
 use std::collections::VecDeque;
 use std::error::Error;
 use std::io;
@@ -520,17 +520,18 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             ctx.enable_emphasis();
             ctx.style.current = ctx.style.current.fg(Colour::Green);
         }
-        CodeBlock(name) => {
+        CodeBlock(kind) => {
             ctx.start_inline_text()?;
             ctx.write_border()?;
             // Try to get a highlighter for the current code.
-            ctx.code.current_highlighter = if name.is_empty() {
-                None
-            } else {
-                ctx.code
+            ctx.code.current_highlighter = match kind {
+                CodeBlockKind::Indented => None,
+                CodeBlockKind::Fenced(name) if name.is_empty() => None,
+                CodeBlockKind::Fenced(name) => ctx
+                    .code
                     .syntax_set
                     .find_syntax_by_token(&name)
-                    .map(|syntax| HighlightLines::new(syntax, ctx.code.theme))
+                    .map(|syntax| HighlightLines::new(syntax, ctx.code.theme)),
             };
             if ctx.code.current_highlighter.is_none() {
                 // If we found no highlighter (code block had no language or

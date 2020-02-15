@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Changed
+- Update pulldown-cmark to 0.7.
 
 ## [0.15.0] – 2020-01-11
 ### Added
