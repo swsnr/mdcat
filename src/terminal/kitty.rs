@@ -184,11 +184,10 @@ impl KittyImages {
         let contents = read_url(url)?;
         let mime = magic::detect_mime_type(&contents)?;
         let image = if magic::is_svg(&mime) {
-            let rendered = render_svg(&contents)?;
-            image::load_from_memory(&rendered)?
+            image::load_from_memory(&render_svg(&contents)?)
         } else {
-            image::load_from_memory(&contents)?
-        };
+            image::load_from_memory(&contents)
+        }?;
         let terminal_size = get_terminal_size()?;
         let (image_width, image_height) = image.dimensions();
 
