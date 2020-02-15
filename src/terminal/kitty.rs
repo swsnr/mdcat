@@ -1,3 +1,4 @@
+// Copyright 2020 Sebastian Wiesner <sebastian@swsnr.de>
 // Copyright 2019 Fabian Spillner <fabian.spillner@gmail.com>
 
 // Licensed under the Apache License, Version 2.0 (the "License");
