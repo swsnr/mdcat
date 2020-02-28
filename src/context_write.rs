@@ -313,13 +313,11 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     fn enable_emphasis(&mut self) {
         self.style.emphasis_level += 1;
         let is_italic = self.style.emphasis_level % 2 == 1;
-        {
-            let new_style = Style {
-                is_italic,
-                ..self.style.current
-            };
-            self.set_style(new_style);
-        }
+        let new_style = Style {
+            is_italic,
+            ..self.style.current
+        };
+        self.set_style(new_style);
     }
 
     /// Add a link to the context.
@@ -355,8 +353,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// Write a simple border.
     fn write_border(&mut self) -> io::Result<()> {
         let separator = "\u{2500}".repeat(self.output.size.width.min(20));
-        let style = self.style.current.fg(Colour::Green);
-        self.write_styled(&style, separator)?;
+        self.write_styled(&self.style.current.fg(Colour::Green), separator)?;
         self.newline()
     }
 
@@ -365,15 +362,13 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// If the code context has a highlighter, use it to highlight `text` and
     /// write it.  Otherwise write `text` without highlighting.
     fn write_highlighted(&mut self, text: CowStr<'l>) -> io::Result<()> {
-        let mut wrote_highlighted: bool = false;
-        if let Some(ref mut highlighter) = self.code.current_highlighter {
-            if let StyleCapability::Ansi(ref ansi) = self.output.capabilities.style {
-                let regions = highlighter.highlight(&text, &self.code.syntax_set);
-                highlighting::write_as_ansi(self.output.writer, ansi, &regions)?;
-                wrote_highlighted = true;
-            }
-        }
-        if !wrote_highlighted {
+        if let (Some(ref mut highlighter), StyleCapability::Ansi(ref ansi)) = (
+            &mut self.code.current_highlighter,
+            &self.output.capabilities.style,
+        ) {
+            let regions = highlighter.highlight(&text, &self.code.syntax_set);
+            highlighting::write_as_ansi(self.output.writer, ansi, &regions)?;
+        } else {
             self.write_styled_current(&text)?;
         }
         Ok(())
@@ -429,8 +424,7 @@ pub fn write_event<'io, 'c, 'l, W: Write>(
         Start(tag) => start_tag(ctx, tag),
         End(tag) => end_tag(ctx, tag),
         Html(content) => {
-            let html_style = ctx.style.current.fg(Colour::Green);
-            ctx.write_styled(&html_style, content)?;
+            ctx.write_styled(&ctx.style.current.fg(Colour::Green), content)?;
             Ok(ctx)
         }
         FootnoteReference(_) => panic!("mdcat does not support footnotes"),
@@ -511,15 +505,9 @@ fn start_tag<'io, 'c, 'l, W: Write>(
         }
         FootnoteDefinition(_) => panic!("mdcat does not support footnotes"),
         Table(_) | TableHead | TableRow | TableCell => panic!("mdcat does not support tables"),
-        Strikethrough => {
-            let style = ctx.style.current.strikethrough();
-            ctx.set_style(style)
-        }
+        Strikethrough => ctx.set_style(ctx.style.current.strikethrough()),
         Emphasis => ctx.enable_emphasis(),
-        Strong => {
-            let style = ctx.style.current.bold();
-            ctx.set_style(style)
-        }
+        Strong => ctx.set_style(ctx.style.current.bold()),
         Link(link_type, destination, _) => {
             ctx.links.current_link_type = Some(link_type);
             // Do nothing if the terminal doesn’t support inline links of if `destination` is no
@@ -533,59 +521,34 @@ fn start_tag<'io, 'c, 'l, W: Write>(
                         ctx.links.inside_inline_link = true;
                     }
                 }
-                LinkCapability::None => {
-                    // Just mark destination as used
-                    let _ = destination;
-                }
+                LinkCapability::None => {}
             }
         }
-        Image(_, link, _title) => match ctx.output.capabilities.image {
-            ImageCapability::Terminology(ref terminology) => {
-                let access = ctx.resources.resource_access;
-                if let Some(url) = ctx
-                    .resources
-                    .resolve_reference(&link)
-                    .filter(|url| access.permits(url))
-                {
-                    terminology.write_inline_image(
-                        &mut ctx.output.writer,
-                        ctx.output.size,
-                        &url,
-                    )?;
+        Image(_, link, _title) => {
+            let url = ctx
+                .resources
+                .resolve_reference(&link)
+                .filter(|url| ctx.resources.resource_access.permits(url));
+            match (&ctx.output.capabilities.image, url) {
+                (ImageCapability::Terminology(ref terminology), Some(ref url)) => {
+                    terminology.write_inline_image(&mut ctx.output.writer, ctx.output.size, url)?; /*  */
                     ctx.image.inline_image = true;
                 }
-            }
-            ImageCapability::ITerm2(ref iterm2) => {
-                let access = ctx.resources.resource_access;
-                if let Some(url) = ctx
-                    .resources
-                    .resolve_reference(&link)
-                    .filter(|url| access.permits(url))
-                {
-                    if let Ok(contents) = iterm2.read_and_render(&url) {
+                (ImageCapability::ITerm2(ref iterm2), Some(ref url)) => {
+                    if let Ok(contents) = iterm2.read_and_render(url) {
                         iterm2.write_inline_image(ctx.output.writer, url.as_str(), &contents)?;
                         ctx.image.inline_image = true;
                     }
                 }
-            }
-            ImageCapability::Kitty(ref kitty) => {
-                let access = ctx.resources.resource_access;
-                if let Some(url) = ctx
-                    .resources
-                    .resolve_reference(&link)
-                    .filter(|url| access.permits(url))
-                {
-                    if let Ok(kitty_image) = kitty.read_and_render(&url) {
+                (ImageCapability::Kitty(ref kitty), Some(ref url)) => {
+                    if let Ok(kitty_image) = kitty.read_and_render(url) {
                         kitty.write_inline_image(ctx.output.writer, kitty_image)?;
                         ctx.image.inline_image = true;
                     }
                 }
+                (_, None) | (ImageCapability::None, _) => {}
             }
-            ImageCapability::None => {
-                // Just to mark "link" as used
-                let _ = link;
-            }
-        },
+        }
     };
     Ok(ctx)
 }
