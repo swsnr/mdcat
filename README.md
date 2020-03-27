@@ -1,10 +1,5 @@
 # mdcat
 
-[![Current release](https://img.shields.io/crates/v/mdcat.svg)][crates]
-[![License](https://img.shields.io/github/license/lunaryorn/mdcat.svg)][license]
-[![CI status](https://github.com/lunaryorn/mdcat/workflows/CI/badge.svg)][workflows]
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=lunaryorn/mdcat)](https://dependabot.com)
-
 `cat` for Markdown (that is, [CommonMark][]):
 
 ```
