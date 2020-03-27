@@ -11,9 +11,6 @@ $ mdcat sample.md
 mdcat in [iTerm2], with [Dracula], and [Solarized] Light and Dark (from left to
 right), and [PragmataPro] as font.
 
-[crates]: https://crates.io/crates/mdcat
-[license]: https://github.com/lunaryorn/mdcat/blob/master/LICENSE
-[workflows]: https://github.com/lunaryorn/mdcat/actions
 [CommonMark]: http://commonmark.org
 [Solarized]: http://ethanschoonover.com/solarized
 [dracula]: https://draculatheme.com/iterm/
