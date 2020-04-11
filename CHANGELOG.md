@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.16.0] – 2020-04-11
 ### Changed
 - Upgrade to syntect 4.1 and enable its pure Rust regex backend to simplify
   building (see [GH-131]).
@@ -272,4 +274,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.14.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.13.0...mdcat-0.14.0
 [0.15.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.14.0...mdcat-0.15.0
 [0.15.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...mdcat-0.15.1
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.1...HEAD
+[0.16.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.1...mdcat-0.16.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.0...HEAD
