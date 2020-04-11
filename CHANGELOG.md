@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Changed
+- Upgrade to syntect 4.1 and enable its pure Rust regex backend to simplify
+  building.
 
 ## [0.15.1] – 2020-02-15
 ### Changed

@@ -43,11 +43,9 @@ default-features = false
 features = ['simd']
 
 [dependencies.syntect]
-# onig rust fails to build w/o clang currently so pin syntect,
-# see <https://github.com/rust-onig/rust-onig/issues/109> and GH-90
-version = "^3, <3.2"
+version = "^4.1"
 default-features = false
-features = ["parsing", "assets", "dump-load"]
+features = ["parsing", "assets", "dump-load", "regex-fancy"]
 
 [dev-dependencies]
 pretty_assertions = "^0.6"
