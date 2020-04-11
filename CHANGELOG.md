@@ -9,7 +9,9 @@ To publish a new release run `scripts/release` from the project directory.
 ## [Unreleased]
 ### Changed
 - Upgrade to syntect 4.1 and enable its pure Rust regex backend to simplify
-  building.
+  building (see [GH-131]).
+
+[GH-131]: https://github.com/lunaryorn/mdcat/pull/131
 
 ## [0.15.1] – 2020-02-15
 ### Changed
