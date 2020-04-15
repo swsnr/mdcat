@@ -11,8 +11,10 @@ To publish a new release run `scripts/release` from the project directory.
 ## [0.16.0] – 2020-04-11
 ### Changed
 - Upgrade to syntect 4.1 and enable its pure Rust regex backend to simplify
-  building (see [GH-131]).
+  building (see [GH-131]).  This crate now builds without Clang which fixes
+  Clang-related build issues (see [GH-90])
 
+[GH-90]: https://github.com/lunaryorn/mdcat/issues/90
 [GH-131]: https://github.com/lunaryorn/mdcat/pull/131
 
 ## [0.15.1] – 2020-02-15
