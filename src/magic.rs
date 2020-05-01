@@ -39,7 +39,14 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error
         .stdin
         .as_mut()
         .expect("Forgot to pipe stdin?")
-        .write_all(buffer)?;
+        // extract only the first 4kb of interesting bytes
+        // that's sufficient for detecting the mime type,
+        // otherwise the method write_all may fail with
+        // "Broken pipe (os error 32)" error if the data
+        // being piped is large enough to overflow the kernel
+        // pipe buffer and hence the kernel terminates the process
+        // due to SIGPIPE.
+        .write_all(&buffer[..4096])?;
 
     let output = process.wait_with_output()?;
     if output.status.success() {

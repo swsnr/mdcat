@@ -232,15 +232,20 @@ impl KittyImages {
 
         let (image_width, image_height) = image.dimensions();
 
-        let image = if image_width > terminal_size.width || image_height > terminal_size.height {
-            image.resize_to_fill(
-                terminal_size.width,
-                terminal_size.height,
-                FilterType::Nearest,
-            )
-        } else {
-            image
-        };
+        let (image, image_width, image_height) =
+            if image_width > terminal_size.width || image_height > terminal_size.height {
+                (
+                    image.resize_to_fill(
+                        terminal_size.width,
+                        terminal_size.height,
+                        FilterType::Nearest,
+                    ),
+                    terminal_size.width,
+                    terminal_size.height,
+                )
+            } else {
+                (image, image_width, image_height)
+            };
 
         Ok(KittyImage {
             contents: match format {
