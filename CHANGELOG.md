@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Fixed
+- Fix SIGPIPE if rendering large image >1MB (see [GH-134]).
 
 ## [0.16.0] – 2020-04-11
 ### Changed
