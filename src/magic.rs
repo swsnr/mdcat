@@ -16,6 +16,11 @@ pub fn is_svg(mime: &Mime) -> bool {
     mime.type_() == mime::IMAGE && mime.subtype().as_str() == "svg"
 }
 
+/// Whether the given MIME type denotes a PNG image.
+pub fn is_png(mime: &Mime) -> bool {
+    *mime == mime::IMAGE_PNG
+}
+
 /// Detect mime type with `file`.
 pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error>> {
     let mut process = Command::new("file")
