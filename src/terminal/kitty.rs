@@ -190,12 +190,8 @@ impl KittyImages {
             image::load_from_memory(&contents)
         }?;
         let terminal_size = get_terminal_size()?;
-        let (image_width, image_height) = image.dimensions();
 
-        let needs_scaledown =
-            image_width > terminal_size.width || image_height > terminal_size.height;
-
-        if mime.type_() == mime::IMAGE && mime.subtype().as_str() == "png" && !needs_scaledown {
+        if magic::is_png(&mime) && terminal_size.contains(&image.dimensions().into()) {
             self.render_as_png(contents)
         } else {
             self.render_as_rgb_or_rgba(image, terminal_size)
@@ -231,17 +227,17 @@ impl KittyImages {
             _ => KittyFormat::RGBA,
         };
 
-        let (image_width, image_height) = image.dimensions();
-
-        let image = if image_width > terminal_size.width || image_height > terminal_size.height {
-            image.resize_to_fill(
+        let image = if terminal_size.contains(&KittyDimension::from(image.dimensions())) {
+            image
+        } else {
+            image.resize(
                 terminal_size.width,
                 terminal_size.height,
                 FilterType::Nearest,
             )
-        } else {
-            image
         };
+
+        let image_dimension = image.dimensions().into();
 
         Ok(KittyImage {
             contents: match format {
@@ -249,10 +245,7 @@ impl KittyImages {
                 _ => image.into_rgba().into_raw(),
             },
             format,
-            dimension: Some(KittyDimension {
-                width: image_width,
-                height: image_height,
-            }),
+            dimension: Some(image_dimension),
         })
     }
 }
@@ -289,4 +282,21 @@ impl KittyFormat {
 struct KittyDimension {
     width: u32,
     height: u32,
+}
+
+impl KittyDimension {
+    /// Check whether this dimension entirely contains the specified dimension.
+    fn contains(&self, other: &KittyDimension) -> bool {
+        self.width >= other.width && self.height >= other.height
+    }
+}
+
+impl From<(u32, u32)> for KittyDimension {
+    /// Convert a tuple struct (`u32`, `u32`) ordered by width and height
+    /// into a `KittyDimension`.
+    fn from(dimension: (u32, u32)) -> KittyDimension {
+        let (width, height) = dimension;
+
+        KittyDimension { width, height }
+    }
 }

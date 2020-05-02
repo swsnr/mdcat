@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Fixed
+- Correctly scale down large images on [kitty] (see [GH-124] and [GH-133] by
+  [@fspillner]).
+
+[GH-124]: https://github.com/lunaryorn/mdcat/issues/124
+[GH-133]: https://github.com/lunaryorn/mdcat/pull/133
 
 ## [0.17.0] – 2020-05-20
 ### Changed
