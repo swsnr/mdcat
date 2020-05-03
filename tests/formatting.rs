@@ -14,8 +14,6 @@
 
 #![deny(warnings, missing_docs, clippy::all)]
 
-use mdcat;
-
 use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};
 use std::fs::File;

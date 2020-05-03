@@ -16,8 +16,6 @@
 
 //! Show CommonMark documents on TTYs.
 
-use mdcat;
-
 use clap::{value_t, values_t};
 use pulldown_cmark::{Options, Parser};
 use std::error::Error;

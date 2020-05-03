@@ -24,7 +24,6 @@ use std::path::Path;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
-use url;
 
 use crate::resources::ResourceAccess;
 use crate::terminal::*;
