@@ -55,7 +55,7 @@ fn process_file(
     let parser = Parser::new_ext(&input, options);
 
     if dump_events {
-        mdcat::dump_events(&mut std::io::stdout(), parser)
+        mdcat::dump_states(settings, &mut stdout(), &base_dir, parser)
     } else {
         mdcat::push_tty(settings, &mut stdout(), &base_dir, parser)
     }

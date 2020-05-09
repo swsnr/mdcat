@@ -1,1 +1,4 @@
-foo bar[34m (/url)[0m[34m (/url2)[0m
+foo bar[1][2]
+
+[34m[1]: /url [0m
+[34m[2]: /url2 [0m

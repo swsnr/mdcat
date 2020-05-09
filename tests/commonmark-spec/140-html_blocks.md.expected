@@ -3,4 +3,5 @@
 [0m[32m
 [0m[32mdocument.getElementById("demo").innerHTML = "Hello JavaScript!";
 [0m[32m</script>
-[0mokay
+[0m
+okay

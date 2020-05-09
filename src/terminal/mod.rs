@@ -33,7 +33,7 @@ pub enum StyleCapability {
 #[derive(Debug)]
 pub enum LinkCapability {
     /// The terminal does not support inline links.
-    None,
+    NoLinks,
     /// The terminal supports [OSC 8] inline links.
     ///
     /// [OSC 8]: https://git.io/vd4ee
@@ -53,7 +53,7 @@ pub enum MarkCapability {
 #[derive(Debug, Copy, Clone)]
 pub enum ImageCapability {
     /// The terminal can't write images inline.
-    None,
+    NoImages,
     /// The terminal understands the terminology way of inline images.
     Terminology(self::terminology::TerminologyImages),
     /// The terminal understands the iterm2 way of inline images.
@@ -94,8 +94,8 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "dumb".to_string(),
             style: StyleCapability::None,
-            links: LinkCapability::None,
-            image: ImageCapability::None,
+            links: LinkCapability::NoLinks,
+            image: ImageCapability::NoImages,
             marks: MarkCapability::None,
         }
     }
@@ -105,8 +105,8 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "Ansi".to_string(),
             style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::None,
-            image: ImageCapability::None,
+            links: LinkCapability::NoLinks,
+            image: ImageCapability::NoImages,
             marks: MarkCapability::None,
         }
     }
@@ -133,7 +133,7 @@ impl TerminalCapabilities {
             TerminalCapabilities {
                 name: "Kitty".to_string(),
                 style: StyleCapability::Ansi(AnsiStyle),
-                links: LinkCapability::None,
+                links: LinkCapability::NoLinks,
                 image: ImageCapability::Kitty(self::kitty::KittyImages),
                 marks: MarkCapability::None,
             }
@@ -142,7 +142,7 @@ impl TerminalCapabilities {
                 name: "VTE 50".to_string(),
                 style: StyleCapability::Ansi(AnsiStyle),
                 links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
-                image: ImageCapability::None,
+                image: ImageCapability::NoImages,
                 marks: MarkCapability::None,
             }
         } else {

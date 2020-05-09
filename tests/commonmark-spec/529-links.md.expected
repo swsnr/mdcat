@@ -1,4 +1,4 @@
-[foo [3mbar [0m[3mbaz[0m[3;34m[1][0m]ref[34m[2][0m
+[foo [3mbar [0m[3;34mbaz[0m[3;34m[1][0m][34mref[0m[34m[2][0m
 
 [34m[1]: /uri [0m
 [34m[2]: /uri [0m

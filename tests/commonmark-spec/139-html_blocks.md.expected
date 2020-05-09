@@ -4,4 +4,5 @@
 [0m[32mmain :: IO ()
 [0m[32mmain = print $ parseTags tags
 [0m[32m</code></pre>
-[0mokay
+[0m
+okay

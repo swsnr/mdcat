@@ -1,6 +1,6 @@
-foo[34m[1][0m,
-bar[34m[2][0m,
-baz[34m[3][0m
+[34mfoo[0m[34m[1][0m,
+[34mbar[0m[34m[2][0m,
+[34mbaz[0m[34m[3][0m
 
 [34m[1]: /foo-url foo[0m
 [34m[2]: /bar-url bar[0m

@@ -7,6 +7,22 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Changed
+- Rewrite the rendering algorithm to replace the `Context` god object; mdcat now
+  explicitly tracks a stack of focused states.  This simplifies the algorithm a
+  lot and makes relations between states and Markdown events explicit and easier
+  to understand.  It also solves numerous rendering issues in the old
+  algorithm; mdcat now
+
+    - adds more consistent margins after paragraphs, around HTML blocks and inside list items,
+    - correctly indents code blocks inside other blocks such as quotes or lists,
+    - no longer emits an extra blank line before lists in certain situations,
+    - always indents block quotes correctly, and
+    - prints link text in blue colour.
+
+  The code also became much easier to read and maintain.  See [GH-142].
+
+[GH-142]: https://github.com/lunaryorn/mdcat/issues/142
 
 ## [0.17.1] – 2020-05-24
 ### Fixed

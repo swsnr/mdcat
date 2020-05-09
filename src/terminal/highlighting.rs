@@ -26,12 +26,12 @@ use syntect::highlighting::{FontStyle, Style};
 ///
 /// Furthermore we completely ignore any background colour settings, to avoid
 /// conflicts with the terminal colour themes.
-pub fn write_as_ansi<W: Write>(
+pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
     writer: &mut W,
     ansi: AnsiStyle,
-    regions: &[(Style, &str)],
+    regions: I,
 ) -> Result<()> {
-    for &(style, text) in regions {
+    for (style, text) in regions {
         let rgb = {
             let fg = style.foreground;
             (fg.r, fg.g, fg.b)
