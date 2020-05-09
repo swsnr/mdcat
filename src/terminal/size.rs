@@ -14,7 +14,7 @@
 
 //! Terminal size.
 
-/// The size of a text terminal.
+/// The size of a text terminal, in characters and lines.
 #[derive(Debug, Copy, Clone)]
 pub struct Size {
     /// The width of the terminal, in characters aka columns.

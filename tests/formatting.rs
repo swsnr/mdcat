@@ -34,21 +34,20 @@ fn format_ansi_to_html(markdown: &str) -> String {
         .spawn()
         .expect("Failed to start ansi2html");
     {
-        let size = mdcat::TerminalSize::default();
-        let syntax_set = SyntaxSet::load_defaults_newlines();
-        let wd = std::env::current_dir().expect("No working directory");
         let mut options = Options::empty();
         options.insert(Options::ENABLE_TASKLISTS);
         options.insert(Options::ENABLE_STRIKETHROUGH);
         let parser = Parser::new_ext(markdown, options);
         mdcat::push_tty(
+            &mdcat::Settings {
+                terminal_capabilities: mdcat::TerminalCapabilities::ansi(),
+                terminal_size: mdcat::TerminalSize::default(),
+                resource_access: mdcat::ResourceAccess::LocalOnly,
+                syntax_set: SyntaxSet::load_defaults_newlines(),
+            },
             &mut child.stdin.unwrap(),
-            &mdcat::TerminalCapabilities::ansi(),
-            size,
+            &std::env::current_dir().expect("No working directory"),
             parser,
-            &wd,
-            mdcat::ResourceAccess::LocalOnly,
-            syntax_set,
         )
         .expect("Formatting failed")
     }

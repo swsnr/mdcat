@@ -48,21 +48,32 @@ where
     Ok(())
 }
 
+/// Settings for markdown rendering.
+pub struct Settings {
+    /// Capabilities of the terminal mdcat writes to.
+    pub terminal_capabilities: TerminalCapabilities,
+    /// The size of the terminal mdcat writes to.
+    pub terminal_size: TerminalSize,
+    /// Whether remote resource access is permitted.
+    pub resource_access: ResourceAccess,
+    /// Syntax set for syntax highlighting of code blocks.
+    pub syntax_set: SyntaxSet,
+}
+
 /// Write markdown to a TTY.
 ///
 /// Iterate over Markdown AST `events`, format each event for TTY output and
-/// write the result to a `writer`.
+/// write the result to a `writer`, using the given `settings` for rendering and
+/// resource access.  `base_dir` denotes the base directory the `events` were
+/// read from, to resolve relative references in the Markdown document.
 ///
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
 pub fn push_tty<'a, 'e, W, I>(
+    settings: &Settings,
     writer: &'a mut W,
-    capabilities: &TerminalCapabilities,
-    size: TerminalSize,
-    mut events: I,
     base_dir: &'a Path,
-    resource_access: ResourceAccess,
-    syntax_set: SyntaxSet,
+    mut events: I,
 ) -> Result<(), Box<dyn Error>>
 where
     I: Iterator<Item = Event<'e>>,
@@ -70,18 +81,7 @@ where
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
     events
-        .try_fold(
-            Context::new(
-                writer,
-                capabilities,
-                size,
-                base_dir,
-                resource_access,
-                syntax_set,
-                theme,
-            ),
-            write_event,
-        )?
+        .try_fold(Context::new(writer, settings, base_dir, theme), write_event)?
         .write_pending_links()?;
     Ok(())
 }
@@ -92,25 +92,10 @@ mod tests {
     use pretty_assertions::assert_eq;
     use pulldown_cmark::Parser;
 
-    fn render_string(
-        input: &str,
-        base_dir: &Path,
-        resource_access: ResourceAccess,
-        syntax_set: SyntaxSet,
-        capabilities: TerminalCapabilities,
-        size: TerminalSize,
-    ) -> Result<Vec<u8>, Box<dyn Error>> {
+    fn render_string(input: &str, settings: &Settings) -> Result<Vec<u8>, Box<dyn Error>> {
         let source = Parser::new(input);
         let mut sink = Vec::new();
-        push_tty(
-            &mut sink,
-            &capabilities,
-            size,
-            source,
-            base_dir,
-            resource_access,
-            syntax_set,
-        )?;
+        push_tty(settings, &mut sink, &Path::new("/"), source)?;
         Ok(sink)
     }
 
@@ -120,11 +105,12 @@ mod tests {
         let result = String::from_utf8(
             render_string(
                 "_lorem_ **ipsum** dolor **sit** _amet_",
-                Path::new("/"),
-                ResourceAccess::LocalOnly,
-                SyntaxSet::default(),
-                TerminalCapabilities::none(),
-                TerminalSize::default(),
+                &Settings {
+                    resource_access: ResourceAccess::LocalOnly,
+                    syntax_set: SyntaxSet::default(),
+                    terminal_capabilities: TerminalCapabilities::none(),
+                    terminal_size: TerminalSize::default(),
+                },
             )
             .unwrap(),
         )

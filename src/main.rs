@@ -17,6 +17,7 @@
 //! Show CommonMark documents on TTYs.
 
 use clap::{value_t, values_t};
+use mdcat::Settings;
 use pulldown_cmark::{Options, Parser};
 use std::error::Error;
 use std::fs::File;
@@ -52,8 +53,8 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
 
 fn process_file(
     filename: &str,
-    size: TerminalSize,
-    args: &Arguments,
+    settings: &Settings,
+    dump_events: bool,
 ) -> Result<(), Box<dyn Error>> {
     let (base_dir, input) = read_input(filename)?;
     let mut options = Options::empty();
@@ -61,22 +62,10 @@ fn process_file(
     options.insert(Options::ENABLE_STRIKETHROUGH);
     let parser = Parser::new_ext(&input, options);
 
-    if args.dump_events {
+    if dump_events {
         mdcat::dump_events(&mut std::io::stdout(), parser)?;
     } else {
-        let syntax_set = SyntaxSet::load_defaults_newlines();
-        mdcat::push_tty(
-            &mut stdout(),
-            &args.terminal_capabilities,
-            TerminalSize {
-                width: args.columns,
-                ..size
-            },
-            parser,
-            &base_dir,
-            args.resource_access,
-            syntax_set,
-        )?;
+        mdcat::push_tty(settings, &mut stdout(), &base_dir, parser)?;
     }
     Ok(())
 }
@@ -214,15 +203,33 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
     if arguments.detect_only {
         println!("Terminal: {}", arguments.terminal_capabilities.name);
     } else {
-        let exit_code = arguments
-            .filenames
+        let Arguments {
+            filenames,
+            dump_events,
+            fail_fast,
+            terminal_capabilities,
+            columns,
+            resource_access,
+            ..
+        } = arguments;
+
+        let settings = Settings {
+            terminal_capabilities,
+            terminal_size: TerminalSize {
+                width: columns,
+                ..size
+            },
+            resource_access,
+            syntax_set: SyntaxSet::load_defaults_newlines(),
+        };
+        let exit_code = filenames
             .iter()
             .try_fold(0, |code, filename| {
-                process_file(filename, size, &arguments)
+                process_file(filename, &settings, dump_events)
                     .map(|_| code)
                     .or_else(|error| {
                         eprintln!("Error: {}: {}", filename, error);
-                        if arguments.fail_fast {
+                        if fail_fast {
                             Err(error)
                         } else {
                             Ok(1)

@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Changed
+- `mdcat::push_tty` now takes a `mdcat::Settings` struct which groups all
+  external settings.
 
 ## [0.16.0] – 2020-04-11
 ### Changed

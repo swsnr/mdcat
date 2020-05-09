@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::Settings;
 use ansi_term::{Colour, Style};
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
@@ -23,9 +24,7 @@ use std::io::Write;
 use std::path::Path;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
-use syntect::parsing::SyntaxSet;
 
-use crate::resources::ResourceAccess;
 use crate::terminal::*;
 
 /// The "level" the current event occurs at.
@@ -55,38 +54,6 @@ struct Link<'a> {
     destination: CowStr<'a>,
     /// The link title.
     title: CowStr<'a>,
-}
-
-/// Input context.
-struct ResourceContext<'a> {
-    /// The base directory, to resolve relative paths.
-    base_dir: &'a Path,
-    /// What resources we may access when processing markdown.
-    resource_access: ResourceAccess,
-}
-
-impl ResourceContext<'_> {
-    /// Resolve a reference in the input.
-    ///
-    /// If `reference` parses as URL return the parsed URL.  Otherwise assume
-    /// `reference` is a file path, resolve it against `base_dir` and turn it
-    /// into a file:// URL.  If this also fails return `None`.
-    fn resolve_reference(&self, reference: &str) -> Option<url::Url> {
-        use url::Url;
-        Url::parse(reference)
-            .or_else(|_| Url::from_file_path(self.base_dir.join(reference)))
-            .ok()
-    }
-}
-
-/// Context for TTY output.
-struct OutputContext<'a, W: Write> {
-    /// The terminal dimensions to limit output to.
-    size: TerminalSize,
-    /// A writer to the terminal.
-    writer: &'a mut W,
-    /// The capabilities of the terminal.
-    capabilities: &'a TerminalCapabilities,
 }
 
 #[derive(Debug)]
@@ -126,21 +93,6 @@ struct LinkContext<'a> {
     inside_inline_link: bool,
 }
 
-struct CodeContext<'a> {
-    /// Available syntaxes
-    syntax_set: SyntaxSet,
-    /// The theme to use for highlighting
-    theme: &'a Theme,
-    /// The current highlighter.
-    ///
-    /// If set assume we are in a code block and highlight all text with this
-    /// highlighter.
-    ///
-    /// Otherwise we are either outside of a code block or in a code block we
-    /// cannot highlight.
-    current_highlighter: Option<HighlightLines<'a>>,
-}
-
 /// Context for images.
 #[derive(Debug)]
 struct ImageContext {
@@ -151,19 +103,29 @@ struct ImageContext {
 }
 
 /// Context for TTY rendering.
-pub struct Context<'io, 'c, 'l, W: Write> {
-    /// Context for input.
-    resources: ResourceContext<'io>,
-    /// Context for output.
-    output: OutputContext<'io, W>,
+pub struct Context<'a, 'b, W: Write> {
+    /// Settings to use.
+    settings: &'a Settings,
+    /// The base directory for relative resources.
+    base_dir: &'a Path,
+    /// The sink to write to,
+    writer: &'a mut W,
+    /// A theme for highlighting
+    theme: &'a Theme,
+    /// The current highlighter.
+    ///
+    /// If set assume we are in a code block and highlight all text with this
+    /// highlighter.
+    ///
+    /// Otherwise we are either outside of a code block or in a code block we
+    /// cannot highlight.
+    current_highlighter: Option<HighlightLines<'a>>,
     /// Context for styling
     style: StyleContext,
     /// Context for the current block.
     block: BlockContext,
     /// Context to keep track of links.
-    links: LinkContext<'l>,
-    /// Context for code blocks
-    code: CodeContext<'c>,
+    links: LinkContext<'b>,
     /// Context for images.
     image: ImageContext,
     /// The kind of the current list item.
@@ -172,26 +134,19 @@ pub struct Context<'io, 'c, 'l, W: Write> {
     list_item_kind: Vec<ListItemKind>,
 }
 
-impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
+impl<'a, 'b, W: Write> Context<'a, 'b, W> {
     pub fn new(
-        writer: &'io mut W,
-        capabilities: &'io TerminalCapabilities,
-        size: TerminalSize,
-        base_dir: &'io Path,
-        resource_access: ResourceAccess,
-        syntax_set: SyntaxSet,
-        theme: &'c Theme,
-    ) -> Context<'io, 'c, 'l, W> {
+        writer: &'a mut W,
+        settings: &'a Settings,
+        base_dir: &'a Path,
+        theme: &'a Theme,
+    ) -> Context<'a, 'b, W> {
         Context {
-            resources: ResourceContext {
-                base_dir,
-                resource_access,
-            },
-            output: OutputContext {
-                size,
-                writer,
-                capabilities,
-            },
+            settings,
+            base_dir,
+            writer,
+            theme,
+            current_highlighter: None,
             style: StyleContext {
                 current: Style::new(),
                 previous: Vec::new(),
@@ -208,16 +163,23 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
                 current_link_type: None,
                 inside_inline_link: false,
             },
-            code: CodeContext {
-                syntax_set,
-                theme,
-                current_highlighter: None,
-            },
             image: ImageContext {
                 inline_image: false,
             },
             list_item_kind: Vec::new(),
         }
+    }
+
+    /// Resolve a reference in the input.
+    ///
+    /// If `reference` parses as URL return the parsed URL.  Otherwise assume
+    /// `reference` is a file path, resolve it against `base_dir` and turn it
+    /// into a file:// URL.  If this also fails return `None`.
+    fn resolve_reference(&self, reference: &str) -> Option<url::Url> {
+        use url::Url;
+        Url::parse(reference)
+            .or_else(|_| Url::from_file_path(self.base_dir.join(reference)))
+            .ok()
     }
 
     /// Start a new block.
@@ -250,7 +212,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     ///
     /// Restart all current styles after the newline.
     fn newline(&mut self) -> io::Result<()> {
-        writeln!(self.output.writer)
+        writeln!(self.writer)
     }
 
     /// Write a newline and indent.
@@ -264,12 +226,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
 
     /// Indent according to the current indentation level.
     fn indent(&mut self) -> io::Result<()> {
-        write!(
-            self.output.writer,
-            "{}",
-            " ".repeat(self.block.indent_level)
-        )
-        .map_err(Into::into)
+        write!(self.writer, "{}", " ".repeat(self.block.indent_level)).map_err(Into::into)
     }
 
     /// Push a new style.
@@ -291,11 +248,9 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
 
     /// Write `text` with the given `style`.
     fn write_styled<S: AsRef<str>>(&mut self, style: &Style, text: S) -> io::Result<()> {
-        match self.output.capabilities.style {
-            StyleCapability::None => write!(self.output.writer, "{}", text.as_ref())?,
-            StyleCapability::Ansi(ref ansi) => {
-                ansi.write_styled(self.output.writer, style, text)?
-            }
+        match self.settings.terminal_capabilities.style {
+            StyleCapability::None => write!(self.writer, "{}", text.as_ref())?,
+            StyleCapability::Ansi(ref ansi) => ansi.write_styled(self.writer, style, text)?,
         }
         Ok(())
     }
@@ -322,7 +277,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// Add a link to the context.
     ///
     /// Return the index of the link.
-    fn add_link(&mut self, destination: CowStr<'l>, title: CowStr<'l>) -> usize {
+    fn add_link(&mut self, destination: CowStr<'b>, title: CowStr<'b>) -> usize {
         let index = self.links.next_link_index;
         self.links.next_link_index += 1;
         self.links.pending_links.push_back(Link {
@@ -351,7 +306,7 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
 
     /// Write a simple border.
     fn write_border(&mut self) -> io::Result<()> {
-        let separator = "\u{2500}".repeat(self.output.size.width.min(20));
+        let separator = "\u{2500}".repeat(self.settings.terminal_size.width.min(20));
         self.write_styled(&self.style.current.fg(Colour::Green), separator)?;
         self.newline()
     }
@@ -360,13 +315,13 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     ///
     /// If the code context has a highlighter, use it to highlight `text` and
     /// write it.  Otherwise write `text` without highlighting.
-    fn write_highlighted(&mut self, text: CowStr<'l>) -> io::Result<()> {
+    fn write_highlighted(&mut self, text: CowStr<'b>) -> io::Result<()> {
         if let (Some(ref mut highlighter), StyleCapability::Ansi(ref ansi)) = (
-            &mut self.code.current_highlighter,
-            &self.output.capabilities.style,
+            &mut self.current_highlighter,
+            &self.settings.terminal_capabilities.style,
         ) {
-            let regions = highlighter.highlight(&text, &self.code.syntax_set);
-            highlighting::write_as_ansi(self.output.writer, ansi, &regions)?;
+            let regions = highlighter.highlight(&text, &self.settings.syntax_set);
+            highlighting::write_as_ansi(self.writer, ansi, &regions)?;
         } else {
             self.write_styled_current(&text)?;
         }
@@ -376,18 +331,18 @@ impl<'io, 'c, 'l, W: Write> Context<'io, 'c, 'l, W> {
     /// Set a mark on the current position of the terminal if supported,
     /// otherwise do nothing.
     fn set_mark_if_supported(&mut self) -> io::Result<()> {
-        match self.output.capabilities.marks {
-            MarkCapability::ITerm2(ref marks) => marks.set_mark(self.output.writer),
+        match self.settings.terminal_capabilities.marks {
+            MarkCapability::ITerm2(ref marks) => marks.set_mark(self.writer),
             MarkCapability::None => Ok(()),
         }
     }
 }
 
 /// Write a single `event` in the given context.
-pub fn write_event<'io, 'c, 'l, W: Write>(
-    mut ctx: Context<'io, 'c, 'l, W>,
-    event: Event<'l>,
-) -> Result<Context<'io, 'c, 'l, W>, Box<dyn Error>> {
+pub fn write_event<'a, 'b, W: Write>(
+    mut ctx: Context<'a, 'b, W>,
+    event: Event<'b>,
+) -> Result<Context<'a, 'b, W>, Box<dyn Error>> {
     match event {
         SoftBreak | HardBreak => {
             ctx.newline_and_indent()?;
@@ -395,7 +350,7 @@ pub fn write_event<'io, 'c, 'l, W: Write>(
         }
         Rule => {
             ctx.start_inline_text()?;
-            let rule = "\u{2550}".repeat(ctx.output.size.width as usize);
+            let rule = "\u{2550}".repeat(ctx.settings.terminal_size.width as usize);
             let style = ctx.style.current.fg(Colour::Green);
             ctx.write_styled(&style, rule)?;
             ctx.end_inline_text_with_margin()?;
@@ -431,10 +386,10 @@ pub fn write_event<'io, 'c, 'l, W: Write>(
 }
 
 /// Write the start of a `tag` in the given context.
-fn start_tag<'io, 'c, 'l, W: Write>(
-    mut ctx: Context<'io, 'c, 'l, W>,
-    tag: Tag<'l>,
-) -> Result<Context<'io, 'c, 'l, W>, Box<dyn Error>> {
+fn start_tag<'a, 'b, W: Write>(
+    mut ctx: Context<'a, 'b, W>,
+    tag: Tag<'b>,
+) -> Result<Context<'a, 'b, W>, Box<dyn Error>> {
     match tag {
         Paragraph => ctx.start_inline_text()?,
         Heading(level) => {
@@ -457,16 +412,16 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             ctx.start_inline_text()?;
             ctx.write_border()?;
             // Try to get a highlighter for the current code.
-            ctx.code.current_highlighter = match kind {
+            ctx.current_highlighter = match kind {
                 CodeBlockKind::Indented => None,
                 CodeBlockKind::Fenced(name) if name.is_empty() => None,
                 CodeBlockKind::Fenced(name) => ctx
-                    .code
+                    .settings
                     .syntax_set
                     .find_syntax_by_token(&name)
-                    .map(|syntax| HighlightLines::new(syntax, ctx.code.theme)),
+                    .map(|syntax| HighlightLines::new(syntax, ctx.theme)),
             };
-            if ctx.code.current_highlighter.is_none() {
+            if ctx.current_highlighter.is_none() {
                 // If we found no highlighter (code block had no language or
                 // a language synctex doesn't support) we set a style to
                 // highlight the code as generic fixed block.
@@ -490,12 +445,12 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             ctx.block.level = BlockLevel::Inline;
             match ctx.list_item_kind.pop() {
                 Some(ListItemKind::Unordered) => {
-                    write!(ctx.output.writer, "\u{2022} ")?;
+                    write!(ctx.writer, "\u{2022} ")?;
                     ctx.block.indent_level += 2;
                     ctx.list_item_kind.push(ListItemKind::Unordered);
                 }
                 Some(ListItemKind::Ordered(number)) => {
-                    write!(ctx.output.writer, "{:>2}. ", number)?;
+                    write!(ctx.writer, "{:>2}. ", number)?;
                     ctx.block.indent_level += 4;
                     ctx.list_item_kind.push(ListItemKind::Ordered(number + 1));
                 }
@@ -511,12 +466,12 @@ fn start_tag<'io, 'c, 'l, W: Write>(
             ctx.links.current_link_type = Some(link_type);
             // Do nothing if the terminal doesn’t support inline links of if `destination` is no
             // valid URL:  We will write a reference link when closing the link tag.
-            match ctx.output.capabilities.links {
+            match ctx.settings.terminal_capabilities.links {
                 LinkCapability::OSC8(ref osc8) => {
                     // TODO: check link type (first tuple element) to write proper mailto link for
                     // emails
-                    if let Some(url) = ctx.resources.resolve_reference(&destination) {
-                        osc8.set_link_url(ctx.output.writer, url)?;
+                    if let Some(url) = ctx.resolve_reference(&destination) {
+                        osc8.set_link_url(ctx.writer, url)?;
                         ctx.links.inside_inline_link = true;
                     }
                 }
@@ -525,23 +480,26 @@ fn start_tag<'io, 'c, 'l, W: Write>(
         }
         Image(_, link, _title) => {
             let url = ctx
-                .resources
                 .resolve_reference(&link)
-                .filter(|url| ctx.resources.resource_access.permits(url));
-            match (&ctx.output.capabilities.image, url) {
+                .filter(|url| ctx.settings.resource_access.permits(url));
+            match (&ctx.settings.terminal_capabilities.image, url) {
                 (ImageCapability::Terminology(ref terminology), Some(ref url)) => {
-                    terminology.write_inline_image(&mut ctx.output.writer, ctx.output.size, url)?; /*  */
+                    terminology.write_inline_image(
+                        &mut ctx.writer,
+                        ctx.settings.terminal_size,
+                        url,
+                    )?; /*  */
                     ctx.image.inline_image = true;
                 }
                 (ImageCapability::ITerm2(ref iterm2), Some(ref url)) => {
                     if let Ok(contents) = iterm2.read_and_render(url) {
-                        iterm2.write_inline_image(ctx.output.writer, url.as_str(), &contents)?;
+                        iterm2.write_inline_image(ctx.writer, url.as_str(), &contents)?;
                         ctx.image.inline_image = true;
                     }
                 }
                 (ImageCapability::Kitty(ref kitty), Some(ref url)) => {
                     if let Ok(kitty_image) = kitty.read_and_render(url) {
-                        kitty.write_inline_image(ctx.output.writer, kitty_image)?;
+                        kitty.write_inline_image(ctx.writer, kitty_image)?;
                         ctx.image.inline_image = true;
                     }
                 }
@@ -553,10 +511,10 @@ fn start_tag<'io, 'c, 'l, W: Write>(
 }
 
 /// Write the end of a `tag` in the given context.
-fn end_tag<'io, 'c, 'l, W: Write>(
-    mut ctx: Context<'io, 'c, 'l, W>,
-    tag: Tag<'l>,
-) -> Result<Context<'io, 'c, 'l, W>, Box<dyn Error>> {
+fn end_tag<'a, 'b, W: Write>(
+    mut ctx: Context<'a, 'b, W>,
+    tag: Tag<'b>,
+) -> Result<Context<'a, 'b, W>, Box<dyn Error>> {
     match tag {
         Paragraph => ctx.end_inline_text_with_margin()?,
         Heading(_) => {
@@ -571,13 +529,13 @@ fn end_tag<'io, 'c, 'l, W: Write>(
             ctx.end_inline_text_with_margin()?
         }
         CodeBlock(_) => {
-            match ctx.code.current_highlighter {
+            match ctx.current_highlighter {
                 None => ctx.drop_style(),
                 Some(_) => {
                     // If we had a highlighter we used `write_ansi` to write the
                     // entire highlighted block and so don't need to reset the
                     // current style here
-                    ctx.code.current_highlighter = None;
+                    ctx.current_highlighter = None;
                 }
             }
             ctx.write_border()?;
@@ -609,9 +567,9 @@ fn end_tag<'io, 'c, 'l, W: Write>(
         Strong => ctx.drop_style(),
         Link(_, destination, title) => {
             if ctx.links.inside_inline_link {
-                match ctx.output.capabilities.links {
+                match ctx.settings.terminal_capabilities.links {
                     LinkCapability::OSC8(ref osc8) => {
-                        osc8.clear_link(ctx.output.writer)?;
+                        osc8.clear_link(ctx.writer)?;
                     }
                     LinkCapability::None => {}
                 }
