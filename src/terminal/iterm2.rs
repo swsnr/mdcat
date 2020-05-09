@@ -38,6 +38,7 @@ pub fn is_iterm2() -> bool {
 }
 
 /// Iterm2 marks.
+#[derive(Debug)]
 pub struct ITerm2Marks;
 
 impl ITerm2Marks {
@@ -48,6 +49,7 @@ impl ITerm2Marks {
 }
 
 /// Iterm2 inline iamges.
+#[derive(Debug)]
 pub struct ITerm2Images;
 
 impl ITerm2Images {

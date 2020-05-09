@@ -29,6 +29,7 @@ pub use self::ansi::AnsiStyle;
 pub use self::size::Size as TerminalSize;
 
 /// The capability of basic styling.
+#[derive(Debug)]
 pub enum StyleCapability {
     /// The terminal supports no styles.
     None,
@@ -37,6 +38,7 @@ pub enum StyleCapability {
 }
 
 /// How the terminal supports inline links.
+#[derive(Debug)]
 pub enum LinkCapability {
     /// The terminal does not support inline links.
     None,
@@ -47,6 +49,7 @@ pub enum LinkCapability {
 }
 
 /// The capability of the terminal to set marks.
+#[derive(Debug)]
 pub enum MarkCapability {
     /// The terminal can't set marks.
     None,
@@ -55,6 +58,7 @@ pub enum MarkCapability {
 }
 
 /// The capability of the terminal to write images inline.
+#[derive(Debug)]
 pub enum ImageCapability {
     /// The terminal can't write images inline.
     None,
@@ -67,6 +71,7 @@ pub enum ImageCapability {
 }
 
 /// The capabilities of a terminal.
+#[derive(Debug)]
 pub struct TerminalCapabilities {
     /// How do we call this terminal?
     pub name: String,

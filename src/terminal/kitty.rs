@@ -102,6 +102,7 @@ fn get_terminal_size() -> std::io::Result<KittyDimension> {
 }
 
 /// Provides access to printing images for kitty.
+#[derive(Debug)]
 pub struct KittyImages;
 
 impl KittyImages {

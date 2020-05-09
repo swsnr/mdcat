@@ -18,6 +18,7 @@ use ansi_term::Style;
 use std::io::{Result, Write};
 
 /// Access to a terminal’s basic ANSI styling functionality.
+#[derive(Debug)]
 pub struct AnsiStyle;
 
 impl AnsiStyle {

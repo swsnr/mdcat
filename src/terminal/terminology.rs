@@ -28,6 +28,7 @@ pub fn is_terminology() -> bool {
 }
 
 /// Provides access to printing images for Terminology.
+#[derive(Debug)]
 pub struct TerminologyImages;
 
 impl TerminologyImages {

@@ -49,6 +49,7 @@ where
 }
 
 /// Settings for markdown rendering.
+#[derive(Debug)]
 pub struct Settings {
     /// Capabilities of the terminal mdcat writes to.
     pub terminal_capabilities: TerminalCapabilities,

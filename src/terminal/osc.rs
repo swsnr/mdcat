@@ -26,6 +26,7 @@ pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> Result<()> {
     Ok(())
 }
 
+#[derive(Debug)]
 pub struct OSC8Links {
     hostname: String,
 }
