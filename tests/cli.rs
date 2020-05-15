@@ -18,7 +18,8 @@
 
 mod cli {
     use std::ffi::OsStr;
-    use std::process::{Command, Output};
+    use std::io::Read;
+    use std::process::{Command, Output, Stdio};
 
     fn run_cargo_mdcat<I, S>(args: I) -> Output
     where
@@ -74,5 +75,31 @@ mod cli {
             stderr
         );
         assert!(output.stdout.is_empty());
+    }
+
+    #[test]
+    fn ignore_broken_pipe() {
+        let mut child = Command::new("cargo")
+            .arg("run")
+            .arg("-q")
+            .arg("--")
+            .arg("sample/common-mark.md")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+
+        let mut stderr = Vec::new();
+        // use std::os::unix::io::AsRawFd;
+        drop(child.stdout.take());
+        child
+            .stderr
+            .as_mut()
+            .unwrap()
+            .read_to_end(&mut stderr)
+            .unwrap();
+
+        use pretty_assertions::assert_eq;
+        assert_eq!(String::from_utf8_lossy(&stderr), "")
     }
 }

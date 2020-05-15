@@ -63,11 +63,14 @@ fn process_file(
     let parser = Parser::new_ext(&input, options);
 
     if dump_events {
-        mdcat::dump_events(&mut std::io::stdout(), parser)?;
+        mdcat::dump_events(&mut std::io::stdout(), parser)
     } else {
-        mdcat::push_tty(settings, &mut stdout(), &base_dir, parser)?;
+        mdcat::push_tty(settings, &mut stdout(), &base_dir, parser)
     }
-    Ok(())
+    .or_else(|error| match error.downcast_ref::<std::io::Error>() {
+        Some(error) if error.kind() == std::io::ErrorKind::BrokenPipe => Ok(()),
+        _ => Err(error),
+    })
 }
 
 /// Represent command line arguments.

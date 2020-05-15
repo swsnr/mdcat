@@ -11,6 +11,12 @@ To publish a new release run `scripts/release` from the project directory.
 - `mdcat::push_tty` now takes a `mdcat::Settings` struct which groups all
   external settings.
 
+### Fixed
+- Ignore broken pipes; `mdcat | head` no longer errors when `head` closes stdout
+  of mdcat early (see [GH-136]).
+
+[GH-136]: https://github.com/lunaryorn/mdcat/issues/136
+
 ## [0.16.0] – 2020-04-11
 ### Changed
 - Upgrade to syntect 4.1 and enable its pure Rust regex backend to simplify
