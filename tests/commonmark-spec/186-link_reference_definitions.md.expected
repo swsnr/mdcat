@@ -1,0 +1,7 @@
+foo[34m[1][0m,
+bar[34m[2][0m,
+baz[34m[3][0m
+
+[34m[1]: /foo-url foo[0m
+[34m[2]: /bar-url bar[0m
+[34m[3]: /baz-url [0m

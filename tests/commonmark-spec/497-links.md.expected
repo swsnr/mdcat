@@ -1,0 +1,9 @@
+link[34m[1][0m
+
+link[34m[2][0m
+
+link[34m[3][0m
+
+[34m[1]: #fragment [0m
+[34m[2]: http://example.com#fragment [0m
+[34m[3]: http://example.com?foo=3#frag [0m

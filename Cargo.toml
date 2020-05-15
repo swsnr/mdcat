@@ -49,6 +49,8 @@ features = ["parsing", "assets", "dump-load", "regex-fancy"]
 
 [dev-dependencies]
 pretty_assertions = "^0.6"
+test-generator = "^0.3"
+lazy_static = "^1.4"
 
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller
