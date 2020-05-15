@@ -58,10 +58,7 @@ fn format_ansi_to_html(markdown: &str) -> String {
         .read_to_end(&mut buffer)
         .expect("Failed to read");
 
-    String::from_utf8(buffer)
-        .expect("Failed to convert from bytes")
-        // Normalize line endings
-        .replace("\r\n", "\n")
+    String::from_utf8(buffer).expect("Failed to convert from bytes")
 }
 
 fn test_directory() -> PathBuf {
@@ -77,8 +74,7 @@ fn read_file(basename: &str, extension: &str) -> String {
     File::open(path)
         .and_then(|mut source| source.read_to_string(&mut contents))
         .expect("Failed to read test file");
-    // Normalize line endings
-    contents.replace("\r\n", "\n")
+    contents
 }
 
 fn assert_formats_to_expected_html(basename: &str) {
