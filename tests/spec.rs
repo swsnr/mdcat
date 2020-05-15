@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![deny(warnings, missing_docs, clippy::all)]
+
 ///! Check every test case from the commonmark spec.
 ///
 /// The commonmark-spec/update.py script generates a markdown file for each official test case;
@@ -21,9 +23,6 @@
 /// looks like; they exist to test that we _can_ render all sorts of commonmark constructs without
 /// errors or panics, and to catch regressions and unintended changes in rendering format when
 /// working on the rendering code.
-
-#![deny(warnings, missing_docs, clippy::all)]
-
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
