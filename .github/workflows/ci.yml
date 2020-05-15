@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       # Install ansi2html for tests
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
       - name: Install ansi2html for tests
@@ -75,6 +75,12 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
           target: ${{ matrix.target }}
+      # Build, including tests, to report build failures and measure build time separately from tests
+      - name:
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all-targets --target ${{ matrix.target }} ${{ matrix.flags }}
       # Test
       - name: Test
         uses: actions-rs/cargo@v1
