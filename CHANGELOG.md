@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.16.1] – 2020-05-15
 ### Changed
 - `mdcat::push_tty` now takes a `mdcat::Settings` struct which groups all
   external settings.
@@ -286,4 +288,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.15.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.14.0...mdcat-0.15.0
 [0.15.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...mdcat-0.15.1
 [0.16.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.1...mdcat-0.16.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.0...HEAD
+[0.16.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.0...mdcat-0.16.1
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.1...HEAD
