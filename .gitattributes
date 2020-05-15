@@ -1,0 +1,4 @@
+# Windows, please keep my line endings alone
+* text eol=lf
+
+*.png -text
