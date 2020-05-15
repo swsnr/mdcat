@@ -8,7 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 ### Fixed
-- Fix SIGPIPE if rendering large image >1MB (see [GH-134]).
+- Do not fail with broken pipe error when rending large images (see [GH-134] by
+  [@fspillner]).
 
 ## [0.16.1] – 2020-05-15
 ### Changed
