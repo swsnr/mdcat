@@ -8,7 +8,7 @@ documentation = "https://docs.rs/mdcat"
 keywords = ["markdown", "less", "cat"]
 version = "0.16.1"
 categories = ["command-line-utilities", "text-processing"]
-license = "Apache-2.0"
+license = "MPL-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2018"
 

@@ -7,9 +7,15 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Changed
+- `mdcat` is now distributed under the [MPL 2](http://mozilla.org/MPL/2.0/) license;
+  some source files remain Apache 2.0 due to 3rd party rights (see [GH-138]).
+
 ### Fixed
 - Do not fail with broken pipe error when rending large images (see [GH-134] by
   [@fspillner]).
+  
+[GH-138]: https://github.com/lunaryorn/mdcat/issues/138
 
 ## [0.16.1] – 2020-05-15
 ### Changed
