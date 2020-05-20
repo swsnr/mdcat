@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.17.0] – 2020-05-20
 ### Changed
 - `mdcat` is now distributed under the [MPL 2](http://mozilla.org/MPL/2.0/) license;
   some source files remain Apache 2.0 due to 3rd party rights (see [GH-138]).
@@ -299,4 +301,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.15.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...mdcat-0.15.1
 [0.16.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.1...mdcat-0.16.0
 [0.16.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.0...mdcat-0.16.1
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.1...HEAD
+[0.17.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.1...mdcat-0.17.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.17.0...HEAD
