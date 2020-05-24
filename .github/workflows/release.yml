@@ -21,12 +21,12 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
     steps:
-      - uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: stable
       - uses: actions/checkout@v2
-      - name: Setup target
-        run: rustup target add ${{ matrix.target }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
       - name: Install musl
         run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
