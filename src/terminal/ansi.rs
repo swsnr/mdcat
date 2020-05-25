@@ -10,13 +10,13 @@ use ansi_term::Style;
 use std::io::{Result, Write};
 
 /// Access to a terminal’s basic ANSI styling functionality.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct AnsiStyle;
 
 impl AnsiStyle {
     /// Write styled text to the given writer.
     pub fn write_styled<W: Write, V: AsRef<str>>(
-        &self,
+        self,
         write: &mut W,
         style: &Style,
         text: V,

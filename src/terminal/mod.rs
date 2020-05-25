@@ -21,7 +21,7 @@ pub use self::ansi::AnsiStyle;
 pub use self::size::Size as TerminalSize;
 
 /// The capability of basic styling.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum StyleCapability {
     /// The terminal supports no styles.
     None,
@@ -41,7 +41,7 @@ pub enum LinkCapability {
 }
 
 /// The capability of the terminal to set marks.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum MarkCapability {
     /// The terminal can't set marks.
     None,
@@ -50,7 +50,7 @@ pub enum MarkCapability {
 }
 
 /// The capability of the terminal to write images inline.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum ImageCapability {
     /// The terminal can't write images inline.
     None,

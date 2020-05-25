@@ -28,13 +28,13 @@ pub fn is_terminology() -> bool {
 }
 
 /// Provides access to printing images for Terminology.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct TerminologyImages;
 
 impl TerminologyImages {
     /// Write an inline image for Terminology.
     pub fn write_inline_image<W: Write>(
-        &self,
+        self,
         writer: &mut W,
         max_size: TerminalSize,
         url: &Url,

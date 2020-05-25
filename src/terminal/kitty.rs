@@ -102,13 +102,13 @@ fn get_terminal_size() -> std::io::Result<KittyDimension> {
 }
 
 /// Provides access to printing images for kitty.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct KittyImages;
 
 impl KittyImages {
     /// Write an inline image for kitty.
     pub fn write_inline_image<W: Write>(
-        &self,
+        self,
         writer: &mut W,
         image: KittyImage,
     ) -> Result<(), Box<dyn Error>> {
@@ -181,7 +181,7 @@ impl KittyImages {
 
     /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
     /// It scales the image down, if the image size exceeds the terminal window size.
-    pub fn read_and_render(&self, url: &Url) -> Result<KittyImage, Box<dyn std::error::Error>> {
+    pub fn read_and_render(self, url: &Url) -> Result<KittyImage, Box<dyn std::error::Error>> {
         let contents = read_url(url)?;
         let mime = magic::detect_mime_type(&contents)?;
         let image = if magic::is_svg(&mime) {
@@ -199,7 +199,7 @@ impl KittyImages {
     }
 
     /// Wrap the image bytes as PNG format in `KittyImage`.
-    fn render_as_png(&self, contents: Vec<u8>) -> Result<KittyImage, Box<dyn Error>> {
+    fn render_as_png(self, contents: Vec<u8>) -> Result<KittyImage, Box<dyn Error>> {
         Ok(KittyImage {
             contents,
             format: KittyFormat::PNG,
@@ -210,7 +210,7 @@ impl KittyImages {
     /// Render the image as RGB/RGBA format and wrap the image bytes in `KittyImage`.
     /// It scales the image down if its size exceeds the terminal size.
     fn render_as_rgb_or_rgba(
-        &self,
+        self,
         image: DynamicImage,
         terminal_size: KittyDimension,
     ) -> Result<KittyImage, Box<dyn Error>> {

@@ -308,9 +308,9 @@ impl<'a, 'b, W: Write> Context<'a, 'b, W> {
     /// If the code context has a highlighter, use it to highlight `text` and
     /// write it.  Otherwise write `text` without highlighting.
     fn write_highlighted(&mut self, text: CowStr<'b>) -> io::Result<()> {
-        if let (Some(ref mut highlighter), StyleCapability::Ansi(ref ansi)) = (
+        if let (Some(ref mut highlighter), StyleCapability::Ansi(ansi)) = (
             &mut self.current_highlighter,
-            &self.settings.terminal_capabilities.style,
+            self.settings.terminal_capabilities.style,
         ) {
             let regions = highlighter.highlight(&text, &self.settings.syntax_set);
             highlighting::write_as_ansi(self.writer, ansi, &regions)?;

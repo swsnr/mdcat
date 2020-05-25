@@ -28,7 +28,7 @@ use syntect::highlighting::{FontStyle, Style};
 /// conflicts with the terminal colour themes.
 pub fn write_as_ansi<W: Write>(
     writer: &mut W,
-    ansi: &AnsiStyle,
+    ansi: AnsiStyle,
     regions: &[(Style, &str)],
 ) -> Result<()> {
     for &(style, text) in regions {

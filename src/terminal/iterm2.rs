@@ -30,18 +30,18 @@ pub fn is_iterm2() -> bool {
 }
 
 /// Iterm2 marks.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct ITerm2Marks;
 
 impl ITerm2Marks {
     /// Write an iterm2 mark command to the given `writer`.
-    pub fn set_mark<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+    pub fn set_mark<W: Write>(self, writer: &mut W) -> io::Result<()> {
         write_osc(writer, "1337;SetMark")
     }
 }
 
 /// Iterm2 inline iamges.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct ITerm2Images;
 
 impl ITerm2Images {
@@ -51,7 +51,7 @@ impl ITerm2Images {
     /// given file.
     #[cfg(unix)]
     pub fn write_inline_image<W: Write, S: AsRef<OsStr>>(
-        &self,
+        self,
         writer: &mut W,
         name: S,
         contents: &[u8],
@@ -69,7 +69,7 @@ impl ITerm2Images {
 
     #[cfg(windows)]
     pub fn write_inline_image<W: Write, S: AsRef<OsStr>>(
-        &self,
+        self,
         _writer: &mut W,
         _name: S,
         _contents: &[u8],
@@ -81,7 +81,7 @@ impl ITerm2Images {
     ///
     /// Render the binary content of the (rendered) image or an IO error if
     /// reading or rendering failed.
-    pub fn read_and_render(&self, url: &Url) -> Result<Vec<u8>, Box<dyn Error>> {
+    pub fn read_and_render(self, url: &Url) -> Result<Vec<u8>, Box<dyn Error>> {
         let contents = read_url(&url)?;
         if magic::is_svg(&magic::detect_mime_type(&contents)?) {
             svg::render_svg(&contents).map_err(Into::into)
