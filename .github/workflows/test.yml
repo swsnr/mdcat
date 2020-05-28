@@ -63,12 +63,6 @@ jobs:
             rust: beta
     steps:
       - uses: actions/checkout@v2
-      # Install ansi2html for tests
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: Install ansi2html for tests
-        run: pip install ansi2html
       # Install musl tools for musl target
       - name: Install musl tools
         run: sudo apt-get install musl-tools
