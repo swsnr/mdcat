@@ -701,25 +701,16 @@ pub fn write_event<'a, W: Write>(
         (NestedState(return_to, _), End(List(_))) => Ok((*return_to, data)),
 
         // Impossible events
-        (s @ TopLevel(_), e @ Code(_)) => impossible(s, e),
-        (s @ TopLevel(_), e @ Text(_)) => impossible(s, e),
-
-        // TODO: Remove and cover all impossible cases when finishing this branch.
-        (s, e) => panic!("Unexpected event in state {:?}: {:?}", s, e),
-    }
-}
-
-#[inline]
-fn impossible(state: State, event: Event) -> ! {
-    panic!(
-        "Event {:?} impossible in state {:?}
+        (s, e) => panic!(
+            "Event {:?} impossible in state {:?}
 
 Please do report an issue at <https://github.com/lunaryorn/mdcat/issues/new> including
 
 * a copy of this message, and
 * the markdown document which caused this error.",
-        state, event
-    )
+            s, e
+        ),
+    }
 }
 
 pub fn finish<'a, W: Write>(
