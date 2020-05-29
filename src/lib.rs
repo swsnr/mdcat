@@ -8,8 +8,8 @@
 
 //! Write markdown to TTYs.
 
+use fehler::throws;
 use pulldown_cmark::Event;
-use std::error::Error;
 use std::io::Write;
 use std::path::Path;
 use syntect::highlighting::ThemeSet;
@@ -21,6 +21,7 @@ mod svg;
 mod terminal;
 
 mod render;
+pub use render::Error;
 
 // Expose some select things for use in main
 pub use crate::resources::ResourceAccess;
@@ -48,12 +49,13 @@ pub struct Settings {
 ///
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
+#[throws]
 pub fn push_tty<'a, 'e, W, I>(
     settings: &Settings,
     writer: &'a mut W,
     base_dir: &'a Path,
     mut events: I,
-) -> Result<(), Box<dyn Error>>
+) -> ()
 where
     I: Iterator<Item = Event<'e>>,
     W: Write,
@@ -65,16 +67,16 @@ where
         |(state, data), event| write_event(writer, settings, base_dir, &theme, state, data, event),
     )?;
     finish(writer, settings, final_state, final_data)?;
-    Ok(())
 }
 
 /// Write as push_tty would, but ignore actual output and instead write states and events.
+#[throws]
 pub fn dump_states<'a, 'e, W, I>(
     settings: &Settings,
     writer: &'a mut W,
     base_dir: &'a Path,
     mut events: I,
-) -> Result<(), Box<dyn Error>>
+) -> ()
 where
     I: Iterator<Item = Event<'e>>,
     W: Write,
@@ -97,7 +99,6 @@ where
         },
     )?;
     writeln!(writer, "{:?}", final_state)?;
-    Ok(())
 }
 
 #[cfg(test)]
@@ -105,11 +106,12 @@ mod tests {
     use super::*;
     use pulldown_cmark::Parser;
 
-    fn render_string(input: &str, settings: &Settings) -> Result<String, Box<dyn Error>> {
+    #[throws]
+    fn render_string(input: &str, settings: &Settings) -> String {
         let source = Parser::new(input);
         let mut sink = Vec::new();
         push_tty(settings, &mut sink, &Path::new("/"), source)?;
-        Ok(String::from_utf8_lossy(&sink).into())
+        String::from_utf8_lossy(&sink).into()
     }
 
     mod layout {

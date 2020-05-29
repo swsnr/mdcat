@@ -252,6 +252,12 @@ pub enum State {
     NestedState(Box<State>, NestedState),
 }
 
+impl State {
+    pub(super) fn and_data<T>(self, data: T) -> (Self, T) {
+        (self, data)
+    }
+}
+
 impl Default for State {
     fn default() -> Self {
         State::TopLevel(TopLevelAttrs::default())

@@ -8,7 +8,8 @@
 
 use super::ansi::AnsiStyle;
 use ansi_term::Colour;
-use std::io::{Result, Write};
+use fehler::throws;
+use std::io::{Error, Write};
 use syntect::highlighting::{FontStyle, Style};
 
 /// Write regions as ANSI 8-bit coloured text.
@@ -26,11 +27,12 @@ use syntect::highlighting::{FontStyle, Style};
 ///
 /// Furthermore we completely ignore any background colour settings, to avoid
 /// conflicts with the terminal colour themes.
+#[throws]
 pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
     writer: &mut W,
     ansi: AnsiStyle,
     regions: I,
-) -> Result<()> {
+) -> () {
     for (style, text) in regions {
         let rgb = {
             let fg = style.foreground;
@@ -63,6 +65,4 @@ pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
         ansi_style.is_underline = font.contains(FontStyle::UNDERLINE);
         ansi.write_styled(writer, &ansi_style, text)?;
     }
-
-    Ok(())
 }
