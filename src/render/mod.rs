@@ -584,14 +584,14 @@ pub fn write_event<'a, W: Write>(
                     Some(RenderedImage)
                 }
                 (ITerm2(iterm2), Some(ref url)) => iterm2
-                    .read_and_render(url)
+                    .read_and_render(url, settings.resource_access)
                     .and_then(|contents| {
                         iterm2.write_inline_image(writer, url.as_str(), &contents)?;
                         Ok(RenderedImage)
                     })
                     .ok(),
                 (Kitty(ref kitty), Some(ref url)) => kitty
-                    .read_and_render(url)
+                    .read_and_render(url, settings.resource_access)
                     .and_then(|contents| {
                         kitty.write_inline_image(writer, contents)?;
                         Ok(RenderedImage)

@@ -16,7 +16,7 @@ use url::Url;
 ///
 /// This struct denotes whether mdcat shows inline images from remote URLs or
 /// just from local files.
-#[derive(Debug, Copy, Clone)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub enum ResourceAccess {
     /// Use only local files and prohibit remote resources.
     LocalOnly,
@@ -44,7 +44,7 @@ pub enum Error {
         source: reqwest::Error,
     },
     #[cfg(feature = "reqwest")]
-    #[error("HTTP request returned unexpected status code")]
+    #[error("HTTP GET {url} returned unexpected status code: {status}")]
     UnexpectedHttpStatus {
         url: Url,
         status: reqwest::StatusCode,
@@ -66,6 +66,9 @@ pub enum Error {
         #[from]
         source: std::io::Error,
     },
+
+    #[error("Access to {url} denied by policy {access:?}")]
+    AccessDenied { url: Url, access: ResourceAccess },
 
     #[error("Cannot convert local {url} to file path")]
     NoFilePath { url: Url },
@@ -122,7 +125,13 @@ fn fetch_http(url: &Url) -> Vec<u8> {
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
-pub fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
+pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>, Error> {
+    if !access.permits(url) {
+        throw!(Error::AccessDenied {
+            url: url.clone(),
+            access,
+        })
+    }
     match url.scheme() {
         "file" => match url.to_file_path() {
             Ok(path) => {
@@ -166,30 +175,36 @@ mod tests {
     }
 
     #[test]
+    fn read_url_with_http_url_fails_if_local_only_access() {
+        let url = "https://eu.httpbin.org/status/404"
+            .parse::<url::Url>()
+            .unwrap();
+        let error = read_url(&url, ResourceAccess::LocalOnly).unwrap_err();
+        match error {
+            Error::AccessDenied {
+                url: denied_url,
+                access: denied_access,
+            } => {
+                assert_eq!(denied_url, url);
+                assert_eq!(denied_access, ResourceAccess::LocalOnly);
+            }
+            e => panic!("Unexpected error: {}", e),
+        }
+    }
+
+    #[test]
     fn read_url_with_http_url_fails_when_status_404() {
         let url = "https://eu.httpbin.org/status/404"
             .parse::<url::Url>()
             .unwrap();
-        let result = read_url(&url);
+        let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {:?}", result);
         let error = result.unwrap_err().to_string();
-        if cfg!(feature = "reqwest") {
-            assert_eq!(
-                error,
-                "HTTP error status 404 Not Found by GET https://eu.httpbin.org/status/404"
-            )
-        } else {
-            assert!(
-                error.contains("curl https://eu.httpbin.org/status/404 failed:"),
-                "Error did not contain expected string: {}",
-                error
-            );
-            assert!(
-                error.contains("404"),
-                "Error did not contain expected string: {}",
-                error
-            );
-        }
+        assert!(
+            error.contains("https://eu.httpbin.org/status/404"),
+            "Error did not contain URL: {}",
+            error
+        );
     }
 
     #[test]
@@ -197,7 +212,7 @@ mod tests {
         let url = "https://eu.httpbin.org/bytes/100"
             .parse::<url::Url>()
             .unwrap();
-        let result = read_url(&url);
+        let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_ok(), "Unexpected error: {:?}", result);
         assert_eq!(result.unwrap().len(), 100);
     }

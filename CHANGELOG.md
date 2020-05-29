@@ -22,7 +22,11 @@ To publish a new release run `scripts/release` from the project directory.
 
   The code also became much easier to read and maintain.  See [GH-142].
 
+### Fixed
+- Respect `--local-only` and resource access policy; this got lost in some refactoring (see [GH-146]).
+
 [GH-142]: https://github.com/lunaryorn/mdcat/issues/142
+[GH-146]: https://github.com/lunaryorn/mdcat/issues/146
 
 ## [0.17.1] – 2020-05-24
 ### Fixed
