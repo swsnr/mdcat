@@ -7,29 +7,26 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Added 
+- Add `mdcat::Error` as type alias to `std::io::Error`.
+
 ### Changed
-- Rewrite the rendering algorithm to replace the `Context` god object; mdcat now
-  explicitly tracks a stack of focused states.  This simplifies the algorithm a
-  lot and makes relations between states and Markdown events explicit and easier
-  to understand.  It also solves numerous rendering issues in the old
-  algorithm; mdcat now
-
-    - adds more consistent margins after paragraphs, around HTML blocks and inside list items,
-    - correctly indents code blocks inside other blocks such as quotes or lists,
-    - no longer emits an extra blank line before lists in certain situations,
-    - always indents block quotes correctly, and
-    - prints link text in blue colour.
-
-  The code also became much easier to read and maintain.  See [GH-142].
-- Simplify internal and external error handling and representation:
-    - Use [anyhow] to handle internal errors (see [GH-139]) and attach context
-      to all deeply nested errors.
-    - Reduce error type of `mdcat::push_tty` to `std::io::Error`: `mdcat` never
-      visibly fails unless it really can’t write to the output stream.
-    - Add `mdcat::Error` as public error type, referencing `std::io::Error`.
+- New simpler rendering algorithm (see GH-[142]) which solves numerous rendering
+  issues (see below).
+- Handle internal errors with [anyhow] to add more context to errors (see
+  [GH-139]}.
+- `mdcat::push_tty` only fails with `std::io::Error`: `mdcat` never visibly
+  fails unless it can’t write output.
 
 ### Fixed
-- Respect `--local-only` and resource access policy; this got lost in some refactoring (see [GH-146]).
+- Respect `--local-only` and resource access policy; this got lost in some
+  refactoring (see [GH-146]).
+- Consistent margins and newlines around paragraphs, HTML blocks and inside list
+  items (see [GH-142]).
+- Correctly indent nested code blocks in lists and block quotes (see [GH-142]).
+- No longer print leading blank lines before lists (see [GH-142]).
+- Correctly indent block quotes (see [GH-142]).
+- Colorize the entire text of links (see [GH-142]).
 
 [GH-142]: https://github.com/lunaryorn/mdcat/issues/142
 [GH-139]: https://github.com/lunaryorn/mdcat/issues/139
