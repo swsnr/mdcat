@@ -22,7 +22,9 @@ mod terminal;
 
 mod render;
 
-/// The catch-all error type returned by mdcat.
+/// The mdcat error type.
+///
+/// This is `std::io::Error`: mdcat never fails visible unless it cannot write output.
 pub type Error = std::io::Error;
 
 // Expose some select things for use in main

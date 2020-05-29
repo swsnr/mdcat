@@ -26,6 +26,7 @@ To publish a new release run `scripts/release` from the project directory.
       to all deeply nested errors.
     - Reduce error type of `mdcat::push_tty` to `std::io::Error`: `mdcat` never
       visibly fails unless it really can’t write to the output stream.
+    - Add `mdcat::Error` as public error type, referencing `std::io::Error`.
 
 ### Fixed
 - Respect `--local-only` and resource access policy; this got lost in some refactoring (see [GH-146]).
