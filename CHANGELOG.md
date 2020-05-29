@@ -21,11 +21,18 @@ To publish a new release run `scripts/release` from the project directory.
     - prints link text in blue colour.
 
   The code also became much easier to read and maintain.  See [GH-142].
+- Simplify internal and external error handling and representation:
+    - Use [anyhow] to handle internal errors (see [GH-139]) and attach context
+      to all deeply nested errors.
+    - Reduce error type of `mdcat::push_tty` to `std::io::Error`: `mdcat` never
+      visibly fails unless it really can’t write to the output stream.
 
 ### Fixed
 - Respect `--local-only` and resource access policy; this got lost in some refactoring (see [GH-146]).
 
 [GH-142]: https://github.com/lunaryorn/mdcat/issues/142
+[GH-139]: https://github.com/lunaryorn/mdcat/issues/139
+[anyhow]: https://docs.rs/crate/anyhow
 [GH-146]: https://github.com/lunaryorn/mdcat/issues/146
 
 ## [0.17.1] – 2020-05-24

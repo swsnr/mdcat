@@ -17,7 +17,8 @@
 //! [Terminology]: http://terminolo.gy
 
 use super::TerminalSize;
-use std::io::{Result, Write};
+use fehler::throws;
+use std::io::{Error, Write};
 use url::Url;
 
 /// Whether we run in terminology or not.
@@ -33,12 +34,13 @@ pub struct TerminologyImages;
 
 impl TerminologyImages {
     /// Write an inline image for Terminology.
+    #[throws]
     pub fn write_inline_image<W: Write>(
         self,
         writer: &mut W,
         max_size: TerminalSize,
         url: &Url,
-    ) -> Result<()> {
+    ) -> () {
         // Terminology escape sequence is like: set texture to path, then draw a
         // rectangle of chosen character to be replaced by the given texture.
         // Documentation gives the following C example:
@@ -74,6 +76,5 @@ impl TerminologyImages {
             command.push_str("\x1b}ie\x00\n");
         }
         writer.write_all(command.as_bytes())?;
-        Ok(())
     }
 }

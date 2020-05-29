@@ -21,7 +21,9 @@ mod svg;
 mod terminal;
 
 mod render;
-pub use render::Error;
+
+/// The catch-all error type returned by mdcat.
+pub type Error = std::io::Error;
 
 // Expose some select things for use in main
 pub use crate::resources::ResourceAccess;
@@ -106,7 +108,7 @@ mod tests {
     use super::*;
     use pulldown_cmark::Parser;
 
-    #[throws]
+    #[throws(anyhow::Error)]
     fn render_string(input: &str, settings: &Settings) -> String {
         let source = Parser::new(input);
         let mut sink = Vec::new();
@@ -117,11 +119,11 @@ mod tests {
     mod layout {
         use super::render_string;
         use crate::*;
+        use anyhow::Result;
         use pretty_assertions::assert_eq;
-        use std::error::Error;
         use syntect::parsing::SyntaxSet;
 
-        fn render(markup: &str) -> Result<String, Box<dyn Error>> {
+        fn render(markup: &str) -> Result<String> {
             render_string(
                 markup,
                 &Settings {
