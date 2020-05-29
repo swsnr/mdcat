@@ -12,8 +12,8 @@
 //! See <https://www.iterm2.com> for more information.
 
 use super::osc::write_osc;
-use crate::magic;
 use crate::resources::read_url;
+use crate::{magic, ResourceAccess};
 use anyhow::{Context, Result};
 use std::ffi::OsStr;
 use std::io::{self, Write};
@@ -81,8 +81,8 @@ impl ITerm2Images {
     ///
     /// Render the binary content of the (rendered) image or an IO error if
     /// reading or rendering failed.
-    pub fn read_and_render(self, url: &Url) -> Result<Vec<u8>> {
-        let contents = read_url(&url)?;
+    pub fn read_and_render(self, url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
+        let contents = read_url(&url, access)?;
         let mimetype = magic::detect_mime_type(&contents)
             .with_context(|| format!("Failed to guess mime type for URL {}", url))?;
         if magic::is_svg(&mimetype) {

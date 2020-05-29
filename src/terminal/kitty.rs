@@ -19,9 +19,9 @@
 //!
 //! See <https://sw.kovidgoyal.net/kitty/> for more information.
 
-use crate::magic;
 use crate::resources::read_url;
 use crate::svg::render_svg;
+use crate::{magic, ResourceAccess};
 use anyhow::{anyhow, Context, Error, Result};
 use fehler::throws;
 use image::imageops::FilterType;
@@ -165,8 +165,8 @@ impl KittyImages {
     /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
     /// It scales the image down, if the image size exceeds the terminal window size.
     #[throws]
-    pub fn read_and_render(self, url: &Url) -> KittyImage {
-        let contents = read_url(url)?;
+    pub fn read_and_render(self, url: &Url, access: ResourceAccess) -> KittyImage {
+        let contents = read_url(url, access)?;
         let mime = magic::detect_mime_type(&contents)
             .with_context(|| format!("Failed to detect mime type for URL {}", url))?;
         let image = if magic::is_svg(&mime) {

@@ -88,7 +88,14 @@ fn fetch_http(url: &Url) -> Vec<u8> {
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
-pub fn read_url(url: &Url) -> Result<Vec<u8>> {
+pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
+    if !access.permits(url) {
+        throw!(anyhow!(
+            "Access denied to URL {} by policy {:?}",
+            url,
+            access
+        ))
+    }
     match url.scheme() {
         "file" => match url.to_file_path() {
             Ok(path) => {
@@ -135,11 +142,25 @@ mod tests {
     }
 
     #[test]
+    fn read_url_with_http_url_fails_if_local_only_access() {
+        let url = "https://eu.httpbin.org/status/404"
+            .parse::<url::Url>()
+            .unwrap();
+        let error = read_url(&url, ResourceAccess::LocalOnly)
+            .unwrap_err()
+            .to_string();
+        assert_eq!(
+            error,
+            "Access denied to URL https://eu.httpbin.org/status/404 by policy LocalOnly"
+        );
+    }
+
+    #[test]
     fn read_url_with_http_url_fails_when_status_404() {
         let url = "https://eu.httpbin.org/status/404"
             .parse::<url::Url>()
             .unwrap();
-        let result = read_url(&url);
+        let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {:?}", result);
         let error = result.unwrap_err().to_string();
         if cfg!(feature = "reqwest") {
@@ -166,7 +187,7 @@ mod tests {
         let url = "https://eu.httpbin.org/bytes/100"
             .parse::<url::Url>()
             .unwrap();
-        let result = read_url(&url);
+        let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_ok(), "Unexpected error: {:?}", result);
         assert_eq!(result.unwrap().len(), 100);
     }
