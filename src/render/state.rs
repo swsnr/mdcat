@@ -180,7 +180,7 @@ pub struct LiteralBlockAttrs {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum NestedState {
+pub enum StackedState {
     /// Styled block.
     ///
     /// A block with attached style.
@@ -198,21 +198,21 @@ pub enum NestedState {
     Inline(InlineState, InlineAttrs),
 }
 
-impl From<StyledBlockAttrs> for NestedState {
+impl From<StyledBlockAttrs> for StackedState {
     fn from(attrs: StyledBlockAttrs) -> Self {
-        NestedState::StyledBlock(attrs)
+        StackedState::StyledBlock(attrs)
     }
 }
 
-impl From<HighlightBlockAttrs> for NestedState {
+impl From<HighlightBlockAttrs> for StackedState {
     fn from(attrs: HighlightBlockAttrs) -> Self {
-        NestedState::HighlightBlock(attrs)
+        StackedState::HighlightBlock(attrs)
     }
 }
 
-impl From<LiteralBlockAttrs> for NestedState {
+impl From<LiteralBlockAttrs> for StackedState {
     fn from(attrs: LiteralBlockAttrs) -> Self {
-        NestedState::LiteralBlock(attrs)
+        StackedState::LiteralBlock(attrs)
     }
 }
 
@@ -244,15 +244,76 @@ impl Default for TopLevelAttrs {
     }
 }
 
+const MAX_STATES: usize = 100;
+
+#[derive(Debug, PartialEq)]
+pub struct StateStack {
+    /// The top level state this stack grows upon.
+    top_level: TopLevelAttrs,
+    /// The stack of states
+    states: Vec<StackedState>,
+}
+
+impl StateStack {
+    /// Stack onto the given top level state.
+    fn new(top_level: TopLevelAttrs) -> Self {
+        StateStack {
+            top_level,
+            states: Vec::with_capacity(20),
+        }
+    }
+
+    /// Push a new stacked state.
+    ///
+    /// Panics if the amount of stacked states is exceeded.
+    pub(crate) fn push(mut self, state: StackedState) -> StateStack {
+        if MAX_STATES <= self.states.len() {
+            panic!(
+                "More than {} levels of nesting reached.
+
+Report an issue to https://github.com/lunaryorn/mdcat/issues
+including the document causing this panic.",
+                MAX_STATES
+            )
+        }
+        self.states.push(state);
+        self
+    }
+
+    /// Return a state by combining this stack with the current stacked state.
+    pub(crate) fn current(self, state: StackedState) -> State {
+        State::Stacked(self, state)
+    }
+
+    /// Pop a stacked state.
+    ///
+    /// Returns a stacked state with the last state on the stack and the rest of the stack if the
+    /// stack is non-empty, or a toplevel state if the stack is empty.
+    pub(crate) fn pop(self) -> State {
+        let StateStack {
+            mut states,
+            top_level,
+        } = self;
+        match states.pop() {
+            None => State::TopLevel(top_level),
+            Some(state) => StateStack { states, top_level }.current(state),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum State {
     /// At top level.
     TopLevel(TopLevelAttrs),
-    /// A nested state, with a state to return to and the actual state.
-    NestedState(Box<State>, NestedState),
+    /// A stacked state.
+    Stacked(StateStack, StackedState),
 }
 
 impl State {
+    pub(super) fn stack_onto(top_level: TopLevelAttrs) -> StateStack {
+        StateStack::new(top_level)
+    }
+
     pub(super) fn and_data<T>(self, data: T) -> (Self, T) {
         (self, data)
     }

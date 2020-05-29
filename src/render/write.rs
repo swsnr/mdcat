@@ -4,10 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::error::Error;
-use std::io::Write;
+use std::io::{Error, Result, Write};
 
 use ansi_term::{Colour, Style};
+use fehler::throws;
 use pulldown_cmark::CodeBlockKind;
 use syntect::highlighting::{HighlightState, Highlighter, Theme};
 use syntect::parsing::{ParseState, ScopeStack};
@@ -27,21 +27,19 @@ pub fn write_styled<W: Write, S: AsRef<str>>(
     capabilities: &TerminalCapabilities,
     style: &Style,
     text: S,
-) -> std::io::Result<()> {
+) -> Result<()> {
     match capabilities.style {
-        StyleCapability::None => write!(writer, "{}", text.as_ref())?,
-        StyleCapability::Ansi(ref ansi) => ansi.write_styled(writer, style, text)?,
+        StyleCapability::None => write!(writer, "{}", text.as_ref()),
+        StyleCapability::Ansi(ref ansi) => ansi.write_styled(writer, style, text),
     }
-    Ok(())
 }
 
-pub fn write_mark<W: Write>(
-    writer: &mut W,
-    capabilities: &TerminalCapabilities,
-) -> std::io::Result<()> {
+#[inline]
+#[throws]
+pub fn write_mark<W: Write>(writer: &mut W, capabilities: &TerminalCapabilities) -> () {
     match capabilities.marks {
-        MarkCapability::ITerm2(ref marks) => marks.set_mark(writer),
-        MarkCapability::None => Ok(()),
+        MarkCapability::ITerm2(ref marks) => marks.set_mark(writer)?,
+        MarkCapability::None => (),
     }
 }
 
@@ -68,11 +66,12 @@ pub fn write_border<W: Write>(
     writeln!(writer)
 }
 
+#[throws]
 pub fn write_link_refs<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
     links: Vec<Link>,
-) -> std::io::Result<()> {
+) -> () {
     if !links.is_empty() {
         writeln!(writer)?;
         for link in links {
@@ -82,18 +81,17 @@ pub fn write_link_refs<W: Write>(
             writeln!(writer)?;
         }
     }
-    Ok(())
 }
 
+#[throws]
 pub fn write_start_code_block<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
-    return_to: State,
     indent: u16,
     style: Style,
     block_kind: CodeBlockKind<'a>,
     theme: &Theme,
-) -> Result<State, Box<dyn Error>> {
+) -> StackedState {
     write_indent(writer, indent)?;
     write_border(
         writer,
@@ -106,49 +104,40 @@ pub fn write_start_code_block<'a, W: Write>(
     match (&settings.terminal_capabilities.style, block_kind) {
         (StyleCapability::Ansi(ansi), CodeBlockKind::Fenced(name)) if !name.is_empty() => {
             match settings.syntax_set.find_syntax_by_token(&name) {
-                None => Ok(State::NestedState(
-                    Box::new(return_to),
-                    LiteralBlockAttrs {
-                        indent,
-                        style: style.fg(Colour::Yellow),
-                    }
-                    .into(),
-                )),
+                None => LiteralBlockAttrs {
+                    indent,
+                    style: style.fg(Colour::Yellow),
+                }
+                .into(),
                 Some(syntax) => {
                     let parse_state = ParseState::new(syntax);
                     let highlight_state =
                         HighlightState::new(&Highlighter::new(theme), ScopeStack::new());
-                    Ok(State::NestedState(
-                        Box::new(return_to),
-                        HighlightBlockAttrs {
-                            ansi: *ansi,
-                            indent,
-                            highlight_state,
-                            parse_state,
-                        }
-                        .into(),
-                    ))
+                    HighlightBlockAttrs {
+                        ansi: *ansi,
+                        indent,
+                        highlight_state,
+                        parse_state,
+                    }
+                    .into()
                 }
             }
         }
-        (_, _) => Ok(State::NestedState(
-            Box::new(return_to),
-            LiteralBlockAttrs {
-                indent,
-                style: style.fg(Colour::Yellow),
-            }
-            .into(),
-        )),
+        (_, _) => LiteralBlockAttrs {
+            indent,
+            style: style.fg(Colour::Yellow),
+        }
+        .into(),
     }
 }
 
+#[throws]
 pub fn write_start_heading<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
-    return_to: State,
     style: Style,
     level: u32,
-) -> Result<State, Box<dyn Error>> {
+) -> StackedState {
     let style = style.fg(Colour::Blue).bold();
     write_styled(
         writer,
@@ -156,9 +145,7 @@ pub fn write_start_heading<W: Write>(
         &style,
         "\u{2504}".repeat(level as usize),
     )?;
-    Ok(State::NestedState(
-        Box::new(return_to),
-        // Headlines never wrap, so indent doesn't matter
-        NestedState::Inline(InlineState::InlineText, InlineAttrs { style, indent: 0 }),
-    ))
+
+    // Headlines never wrap, so indent doesn't matter
+    StackedState::Inline(InlineState::InlineText, InlineAttrs { style, indent: 0 })
 }

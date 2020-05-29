@@ -54,7 +54,7 @@ pub fn write_event<'a, W: Write>(
 ) -> (State, StateData<'a>) {
     use self::InlineState::*;
     use self::ListItemState::*;
-    use self::NestedState::*;
+    use self::StackedState::*;
     use State::*;
     match (state, event) {
         // Top level items
@@ -62,11 +62,9 @@ pub fn write_event<'a, W: Write>(
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
-            NestedState(
-                Box::new(TopLevelAttrs::margin_before().into()),
-                Inline(InlineText, InlineAttrs::default()),
-            )
-            .and_data(data)
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(Inline(InlineText, InlineAttrs::default()))
+                .and_data(data)
         }
         (TopLevel(attrs), Start(Heading(level))) => {
             let (data, links) = data.take_links();
@@ -76,29 +74,29 @@ pub fn write_event<'a, W: Write>(
             }
             write_mark(writer, &settings.terminal_capabilities)?;
 
-            write_start_heading(
-                writer,
-                &settings.terminal_capabilities,
-                TopLevelAttrs::margin_before().into(),
-                Style::new(),
-                level,
-            )?
-            .and_data(data)
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(write_start_heading(
+                    writer,
+                    &settings.terminal_capabilities,
+                    Style::new(),
+                    level,
+                )?)
+                .and_data(data)
         }
         (TopLevel(attrs), Start(BlockQuote)) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
-            NestedState(
-                Box::new(TopLevelAttrs::margin_before().into()),
-                // We've written a block-level margin already, so the first
-                // block inside the styled block should add another margin.
-                StyledBlockAttrs::default()
-                    .block_quote()
-                    .without_margin_before()
-                    .into(),
-            )
-            .and_data(data)
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(
+                    // We've written a block-level margin already, so the first
+                    // block inside the styled block should add another margin.
+                    StyledBlockAttrs::default()
+                        .block_quote()
+                        .without_margin_before()
+                        .into(),
+                )
+                .and_data(data)
         }
         (TopLevel(attrs), Rule) => {
             if attrs.margin_before != NoMargin {
@@ -117,16 +115,16 @@ pub fn write_event<'a, W: Write>(
                 writeln!(writer)?;
             }
 
-            write_start_code_block(
-                writer,
-                settings,
-                TopLevel(TopLevelAttrs::margin_before()),
-                0,
-                Style::new(),
-                kind,
-                theme,
-            )?
-            .and_data(data)
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(write_start_code_block(
+                    writer,
+                    settings,
+                    0,
+                    Style::new(),
+                    kind,
+                    theme,
+                )?)
+                .and_data(data)
         }
         (TopLevel(attrs), Start(List(start))) => {
             if attrs.margin_before != NoMargin {
@@ -135,11 +133,10 @@ pub fn write_event<'a, W: Write>(
             let kind = start.map_or(ListItemKind::Unordered, |start| {
                 ListItemKind::Ordered(start)
             });
-            NestedState(
-                Box::new(TopLevelAttrs::margin_before().into()),
-                Inline(ListItem(kind, StartItem), InlineAttrs::default()),
-            )
-            .and_data(data)
+
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(Inline(ListItem(kind, StartItem), InlineAttrs::default()))
+                .and_data(data)
         }
         (TopLevel(attrs), Html(html)) => {
             if attrs.margin_before == Margin {
@@ -155,32 +152,27 @@ pub fn write_event<'a, W: Write>(
         }
 
         // Nested blocks with style, e.g. paragraphs in quotes, etc.
-        (NestedState(return_to, StyledBlock(attrs)), Start(Paragraph)) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Paragraph)) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
             write_indent(writer, attrs.indent)?;
             let inline = InlineAttrs::from(&attrs);
-            NestedState(
-                Box::new(NestedState(return_to, attrs.with_margin_before().into())),
-                Inline(InlineText, inline),
-            )
-            .and_data(data)
+            stack
+                .push(attrs.with_margin_before().into())
+                .current(Inline(InlineText, inline))
+                .and_data(data)
         }
-        (NestedState(return_to, StyledBlock(attrs)), Start(BlockQuote)) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(BlockQuote)) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
-            NestedState(
-                Box::new(NestedState(
-                    return_to,
-                    attrs.clone().with_margin_before().into(),
-                )),
-                attrs.without_margin_before().block_quote().into(),
-            )
-            .and_data(data)
+            stack
+                .push(attrs.clone().with_margin_before().into())
+                .current(attrs.without_margin_before().block_quote().into())
+                .and_data(data)
         }
-        (NestedState(return_to, StyledBlock(attrs)), Rule) => {
+        (Stacked(stack, StyledBlock(attrs)), Rule) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -191,9 +183,11 @@ pub fn write_event<'a, W: Write>(
                 settings.terminal_size.width - (attrs.indent as usize),
             )?;
             writeln!(writer)?;
-            NestedState(return_to, attrs.with_margin_before().into()).and_data(data)
+            stack
+                .current(attrs.with_margin_before().into())
+                .and_data(data)
         }
-        (NestedState(return_to, StyledBlock(attrs)), Start(Heading(level))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Heading(level))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -201,16 +195,17 @@ pub fn write_event<'a, W: Write>(
 
             // We deliberately don't mark headings which aren't top-level.
             let style = attrs.style;
-            write_start_heading(
-                writer,
-                &settings.terminal_capabilities,
-                NestedState(return_to, attrs.with_margin_before().into()),
-                style,
-                level,
-            )?
-            .and_data(data)
+            stack
+                .push(attrs.with_margin_before().into())
+                .current(write_start_heading(
+                    writer,
+                    &settings.terminal_capabilities,
+                    style,
+                    level,
+                )?)
+                .and_data(data)
         }
-        (NestedState(return_to, StyledBlock(attrs)), Start(List(start))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(List(start))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -218,29 +213,24 @@ pub fn write_event<'a, W: Write>(
                 ListItemKind::Ordered(start)
             });
             let inline = InlineAttrs::from(&attrs);
-            NestedState(
-                Box::new(NestedState(return_to, attrs.with_margin_before().into())),
-                Inline(ListItem(kind, StartItem), inline),
-            )
-            .and_data(data)
+            stack
+                .push(attrs.with_margin_before().into())
+                .current(Inline(ListItem(kind, StartItem), inline))
+                .and_data(data)
         }
-        (NestedState(return_to, StyledBlock(attrs)), Start(CodeBlock(kind))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(CodeBlock(kind))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
             let StyledBlockAttrs { indent, style, .. } = attrs;
-            write_start_code_block(
-                writer,
-                settings,
-                NestedState(return_to, attrs.into()),
-                indent,
-                style,
-                kind,
-                theme,
-            )?
-            .and_data(data)
+            stack
+                .push(attrs.into())
+                .current(write_start_code_block(
+                    writer, settings, indent, style, kind, theme,
+                )?)
+                .and_data(data)
         }
-        (NestedState(return_to, StyledBlock(attrs)), Html(html)) => {
+        (Stacked(stack, StyledBlock(attrs)), Html(html)) => {
             if attrs.margin_before == Margin {
                 writeln!(writer)?;
             }
@@ -251,11 +241,13 @@ pub fn write_event<'a, W: Write>(
                 &attrs.style.fg(Colour::Green),
                 html,
             )?;
-            NestedState(return_to, attrs.without_margin_for_html_only().into()).and_data(data)
+            stack
+                .current(attrs.without_margin_for_html_only().into())
+                .and_data(data)
         }
 
         // Lists
-        (NestedState(return_to, Inline(ListItem(kind, state), attrs)), Start(Item)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Item)) => {
             let InlineAttrs { indent, style } = attrs;
             if state == ItemBlock {
                 // Add margin
@@ -272,43 +264,36 @@ pub fn write_event<'a, W: Write>(
                     indent + 4
                 }
             };
-            NestedState(
-                return_to,
-                Inline(ListItem(kind, StartItem), InlineAttrs { indent, style }),
-            )
-            .and_data(data)
+            stack
+                .current(Inline(
+                    ListItem(kind, StartItem),
+                    InlineAttrs { indent, style },
+                ))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, state), attrs)), Start(Paragraph)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Paragraph)) => {
             if state != StartItem {
                 // Write margin, unless we're at the start of the list item in which case the first line of the
                 // paragraph should go right beside the item bullet.
                 writeln!(writer)?;
                 write_indent(writer, attrs.indent)?;
             }
-            NestedState(
-                Box::new(NestedState(
-                    return_to,
-                    Inline(ListItem(kind, ItemBlock), attrs.clone()),
-                )),
-                Inline(InlineText, attrs),
-            )
-            .and_data(data)
+            stack
+                .push(Inline(ListItem(kind, ItemBlock), attrs.clone()))
+                .current(Inline(InlineText, attrs))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, _), attrs)), Start(CodeBlock(ck))) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(CodeBlock(ck))) => {
             writeln!(writer)?;
             let InlineAttrs { indent, style } = attrs;
-            write_start_code_block(
-                writer,
-                settings,
-                NestedState(return_to, Inline(ListItem(kind, ItemBlock), attrs)),
-                indent,
-                style,
-                ck,
-                theme,
-            )?
-            .and_data(data)
+            stack
+                .push(Inline(ListItem(kind, ItemBlock), attrs))
+                .current(write_start_code_block(
+                    writer, settings, indent, style, ck, theme,
+                )?)
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, _), attrs)), Rule) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Rule) => {
             writeln!(writer)?;
             write_indent(writer, attrs.indent)?;
             write_rule(
@@ -317,53 +302,48 @@ pub fn write_event<'a, W: Write>(
                 settings.terminal_size.width - (attrs.indent as usize),
             )?;
             writeln!(writer)?;
-            NestedState(return_to, Inline(ListItem(kind, ItemBlock), attrs)).and_data(data)
+            stack
+                .current(Inline(ListItem(kind, ItemBlock), attrs))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, state), attrs)), Start(Heading(level))) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Heading(level))) => {
             if state != StartItem {
                 writeln!(writer)?;
                 write_indent(writer, attrs.indent)?;
             }
             // We deliberately don't mark headings which aren't top-level.
             let style = attrs.style;
-            write_start_heading(
-                writer,
-                &settings.terminal_capabilities,
-                NestedState(return_to, Inline(ListItem(kind, ItemBlock), attrs)),
-                style,
-                level,
-            )?
-            .and_data(data)
+            stack
+                .push(Inline(ListItem(kind, ItemBlock), attrs))
+                .current(write_start_heading(
+                    writer,
+                    &settings.terminal_capabilities,
+                    style,
+                    level,
+                )?)
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, _), attrs)), Start(List(start))) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(List(start))) => {
             writeln!(writer)?;
             let nested_kind = start.map_or(ListItemKind::Unordered, |start| {
                 ListItemKind::Ordered(start)
             });
-            NestedState(
-                Box::new(NestedState(
-                    return_to,
-                    Inline(ListItem(kind, ItemBlock), attrs.clone()),
-                )),
-                Inline(ListItem(nested_kind, StartItem), attrs),
-            )
-            .and_data(data)
+            stack
+                .push(Inline(ListItem(kind, ItemBlock), attrs.clone()))
+                .current(Inline(ListItem(nested_kind, StartItem), attrs))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, _), attrs)), Start(BlockQuote)) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(BlockQuote)) => {
             writeln!(writer)?;
             let block_quote = StyledBlockAttrs::from(&attrs)
                 .without_margin_before()
                 .block_quote();
-            NestedState(
-                Box::new(NestedState(
-                    return_to,
-                    Inline(ListItem(kind, ItemBlock), attrs),
-                )),
-                block_quote.into(),
-            )
-            .and_data(data)
+            stack
+                .push(Inline(ListItem(kind, ItemBlock), attrs))
+                .current(block_quote.into())
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, state), attrs)), End(Item)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), End(Item)) => {
             let InlineAttrs { indent, style } = attrs;
             if state != ItemBlock {
                 // End the inline text of this item
@@ -374,15 +354,13 @@ pub fn write_event<'a, W: Write>(
                 ListItemKind::Unordered => (indent - 2, ListItemKind::Unordered),
                 ListItemKind::Ordered(no) => (indent - 4, ListItemKind::Ordered(no + 1)),
             };
-            NestedState(
-                return_to,
-                Inline(ListItem(kind, state), InlineAttrs { indent, style }),
-            )
-            .and_data(data)
+            stack
+                .current(Inline(ListItem(kind, state), InlineAttrs { indent, style }))
+                .and_data(data)
         }
 
         // Literal blocks without highlighting
-        (NestedState(return_to, LiteralBlock(attrs)), Text(text)) => {
+        (Stacked(stack, LiteralBlock(attrs)), Text(text)) => {
             let LiteralBlockAttrs { indent, style } = attrs;
             for line in LinesWithEndings::from(&text) {
                 write_styled(writer, &settings.terminal_capabilities, &style, line)?;
@@ -390,19 +368,19 @@ pub fn write_event<'a, W: Write>(
                     write_indent(writer, indent)?;
                 }
             }
-            NestedState(return_to, attrs.into()).and_data(data)
+            stack.current(attrs.into()).and_data(data)
         }
-        (NestedState(return_to, LiteralBlock(_)), End(CodeBlock(_))) => {
+        (Stacked(stack, LiteralBlock(_)), End(CodeBlock(_))) => {
             write_border(
                 writer,
                 &settings.terminal_capabilities,
                 &settings.terminal_size,
             )?;
-            (*return_to, data)
+            stack.pop().and_data(data)
         }
 
         // Highlighted code blocks
-        (NestedState(return_to, HighlightBlock(mut attrs)), Text(text)) => {
+        (Stacked(stack, HighlightBlock(mut attrs)), Text(text)) => {
             let highlighter = Highlighter::new(theme);
             for line in LinesWithEndings::from(&text) {
                 let ops = attrs.parse_state.parse_line(line, &settings.syntax_set);
@@ -415,61 +393,58 @@ pub fn write_event<'a, W: Write>(
                     write_indent(writer, attrs.indent)?;
                 }
             }
-            (NestedState(return_to, attrs.into()), data)
+            stack.current(attrs.into()).and_data(data)
         }
-        (NestedState(return_to, HighlightBlock(_)), End(CodeBlock(_))) => {
+        (Stacked(stack, HighlightBlock(_)), End(CodeBlock(_))) => {
             write_border(
                 writer,
                 &settings.terminal_capabilities,
                 &settings.terminal_size,
             )?;
-            (*return_to, data)
+            stack.pop().and_data(data)
         }
 
         // Inline markup
-        (NestedState(return_to, Inline(state, attrs)), Start(Emphasis)) => {
+        (Stacked(stack, Inline(state, attrs)), Start(Emphasis)) => {
             let indent = attrs.indent;
             let style = Style {
                 is_italic: !attrs.style.is_italic,
                 ..attrs.style
             };
-            NestedState(
-                Box::new(NestedState(return_to, Inline(state, attrs))),
-                Inline(InlineText, InlineAttrs { style, indent }),
-            )
-            .and_data(data)
+            stack
+                .push(Inline(state, attrs))
+                .current(Inline(InlineText, InlineAttrs { style, indent }))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(_, _)), End(Emphasis)) => (*return_to, data),
-        (NestedState(return_to, Inline(state, attrs)), Start(Strong)) => {
+        (Stacked(stack, Inline(_, _)), End(Emphasis)) => (stack.pop(), data),
+        (Stacked(stack, Inline(state, attrs)), Start(Strong)) => {
             let indent = attrs.indent;
             let style = attrs.style.bold();
-            NestedState(
-                Box::new(NestedState(return_to, Inline(state, attrs))),
-                Inline(InlineText, InlineAttrs { style, indent }),
-            )
-            .and_data(data)
+            stack
+                .push(Inline(state, attrs))
+                .current(Inline(InlineText, InlineAttrs { style, indent }))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(_, _)), End(Strong)) => (*return_to, data),
-        (NestedState(return_to, Inline(state, attrs)), Start(Strikethrough)) => {
+        (Stacked(stack, Inline(_, _)), End(Strong)) => (stack.pop(), data),
+        (Stacked(stack, Inline(state, attrs)), Start(Strikethrough)) => {
             let style = attrs.style.strikethrough();
             let indent = attrs.indent;
-            NestedState(
-                Box::new(NestedState(return_to, Inline(state, attrs))),
-                Inline(InlineText, InlineAttrs { style, indent }),
-            )
-            .and_data(data)
+            stack
+                .push(Inline(state, attrs))
+                .current(Inline(InlineText, InlineAttrs { style, indent }))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(_, _)), End(Strikethrough)) => (*return_to, data),
-        (NestedState(return_to, Inline(state, attrs)), Code(code)) => {
+        (Stacked(stack, Inline(_, _)), End(Strikethrough)) => (stack.pop(), data),
+        (Stacked(stack, Inline(state, attrs)), Code(code)) => {
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
                 &attrs.style.fg(Colour::Yellow),
                 code,
             )?;
-            (NestedState(return_to, Inline(state, attrs)), data)
+            (stack.current(Inline(state, attrs)), data)
         }
-        (NestedState(return_to, Inline(ListItem(kind, state), attrs)), TaskListMarker(checked)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), TaskListMarker(checked)) => {
             let marker = if checked { "\u{2611} " } else { "\u{2610} " };
             write_styled(
                 writer,
@@ -477,32 +452,36 @@ pub fn write_event<'a, W: Write>(
                 &attrs.style,
                 marker,
             )?;
-            NestedState(return_to, Inline(ListItem(kind, state), attrs)).and_data(data)
+            stack
+                .current(Inline(ListItem(kind, state), attrs))
+                .and_data(data)
         }
         // Inline line breaks
-        (NestedState(return_to, Inline(state, attrs)), SoftBreak) => {
+        (Stacked(stack, Inline(state, attrs)), SoftBreak) => {
             writeln!(writer)?;
             write_indent(writer, attrs.indent)?;
-            (NestedState(return_to, Inline(state, attrs)), data)
+            (stack.current(Inline(state, attrs)), data)
         }
-        (NestedState(return_to, Inline(state, attrs)), HardBreak) => {
+        (Stacked(stack, Inline(state, attrs)), HardBreak) => {
             writeln!(writer)?;
             write_indent(writer, attrs.indent)?;
-            (NestedState(return_to, Inline(state, attrs)), data)
+            (stack.current(Inline(state, attrs)), data)
         }
         // Inline text
-        (NestedState(return_to, Inline(ListItem(kind, ItemBlock), attrs)), Text(text)) => {
+        (Stacked(stack, Inline(ListItem(kind, ItemBlock), attrs)), Text(text)) => {
             // Fresh text after a new block, so indent again.
             write_indent(writer, attrs.indent)?;
             write_styled(writer, &settings.terminal_capabilities, &attrs.style, text)?;
-            NestedState(return_to, Inline(ListItem(kind, ItemText), attrs)).and_data(data)
+            stack
+                .current(Inline(ListItem(kind, ItemText), attrs))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(state, attrs)), Text(text)) => {
+        (Stacked(stack, Inline(state, attrs)), Text(text)) => {
             write_styled(writer, &settings.terminal_capabilities, &attrs.style, text)?;
-            (NestedState(return_to, Inline(state, attrs)), data)
+            (stack.current(Inline(state, attrs)), data)
         }
         // Inline HTML
-        (NestedState(return_to, Inline(ListItem(kind, ItemBlock), attrs)), Html(html)) => {
+        (Stacked(stack, Inline(ListItem(kind, ItemBlock), attrs)), Html(html)) => {
             // Fresh text after a new block, so indent again.
             write_indent(writer, attrs.indent)?;
             write_styled(
@@ -511,32 +490,34 @@ pub fn write_event<'a, W: Write>(
                 &attrs.style.fg(Colour::Green),
                 html,
             )?;
-            NestedState(return_to, Inline(ListItem(kind, ItemText), attrs)).and_data(data)
+            stack
+                .current(Inline(ListItem(kind, ItemText), attrs))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(state, attrs)), Html(html)) => {
+        (Stacked(stack, Inline(state, attrs)), Html(html)) => {
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
                 &attrs.style.fg(Colour::Green),
                 html,
             )?;
-            (NestedState(return_to, Inline(state, attrs)), data)
+            (stack.current(Inline(state, attrs)), data)
         }
         // Ending inline text
-        (NestedState(return_to, Inline(_, _)), End(Paragraph)) => {
+        (Stacked(stack, Inline(_, _)), End(Paragraph)) => {
             writeln!(writer)?;
-            (*return_to, data)
+            (stack.pop(), data)
         }
-        (NestedState(return_to, Inline(_, _)), End(Heading(_))) => {
+        (Stacked(stack, Inline(_, _)), End(Heading(_))) => {
             writeln!(writer)?;
-            (*return_to, data)
+            (stack.pop(), data)
         }
 
         // Links.
         //
         // Links need a bit more work than standard inline markup because we
         // need to keep track of link references if we can't write inline links.
-        (NestedState(return_to, Inline(state, attrs)), Start(Link(_, target, _))) => {
+        (Stacked(stack, Inline(state, attrs)), Start(Link(_, target, _))) => {
             let link_state = match settings.terminal_capabilities.links {
                 LinkCapability::OSC8(ref osc8) => {
                     // TODO: Handle email links
@@ -549,19 +530,18 @@ pub fn write_event<'a, W: Write>(
             .unwrap_or(InlineText);
 
             let InlineAttrs { style, indent } = attrs;
-            NestedState(
-                Box::new(NestedState(return_to, Inline(state, attrs))),
-                Inline(
+            stack
+                .push(Inline(state, attrs))
+                .current(Inline(
                     link_state,
                     InlineAttrs {
                         indent,
                         style: style.fg(Colour::Blue),
                     },
-                ),
-            )
-            .and_data(data)
+                ))
+                .and_data(data)
         }
-        (NestedState(return_to, Inline(InlineLink, _)), End(Link(_, _, _))) => {
+        (Stacked(stack, Inline(InlineLink, _)), End(Link(_, _, _))) => {
             match settings.terminal_capabilities.links {
                 LinkCapability::OSC8(ref osc8) => {
                     osc8.clear_link(writer)?;
@@ -570,17 +550,17 @@ pub fn write_event<'a, W: Write>(
                     panic!("Unreachable code: We opened an inline link but can't close it now?")
                 }
             }
-            (*return_to, data)
+            (stack.pop(), data)
         }
         // When closing email or autolinks in inline text just return because link, being identical
         // to the link text, was already written.
-        (NestedState(return_to, Inline(InlineText, _)), End(Link(LinkType::Autolink, _, _))) => {
-            (*return_to, data)
+        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Autolink, _, _))) => {
+            (stack.pop(), data)
         }
-        (NestedState(return_to, Inline(InlineText, _)), End(Link(LinkType::Email, _, _))) => {
-            (*return_to, data)
+        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Email, _, _))) => {
+            (stack.pop(), data)
         }
-        (NestedState(return_to, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
+        (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
             let (data, index) = data.add_link(target, title);
             write_styled(
                 writer,
@@ -588,11 +568,11 @@ pub fn write_event<'a, W: Write>(
                 &attrs.style.fg(Colour::Blue),
                 format!("[{}]", index),
             )?;
-            (*return_to, data)
+            (stack.pop(), data)
         }
 
         // Images
-        (NestedState(return_to, Inline(state, attrs)), Start(Image(_, link, _))) => {
+        (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
             let InlineAttrs { style, indent } = attrs;
             use ImageCapability::*;
             let image_state = match (
@@ -621,14 +601,13 @@ pub fn write_event<'a, W: Write>(
                 (_, None) => None,
             }
             .unwrap_or_else(|| Inline(InlineText, InlineAttrs { indent, style }));
-            NestedState(
-                Box::new(NestedState(return_to, Inline(state, attrs))),
-                image_state,
-            )
-            .and_data(data)
+            stack
+                .push(Inline(state, attrs))
+                .current(image_state)
+                .and_data(data)
         }
-        (NestedState(return_to, RenderedImage), End(Image(_, _, _))) => (*return_to, data),
-        (NestedState(return_to, Inline(_, attrs)), End(Image(_, target, title))) => {
+        (Stacked(stack, RenderedImage), End(Image(_, _, _))) => (stack.pop(), data),
+        (Stacked(stack, Inline(_, attrs)), End(Image(_, target, title))) => {
             let (data, index) = data.add_link(target, title);
             write_styled(
                 writer,
@@ -636,12 +615,12 @@ pub fn write_event<'a, W: Write>(
                 &attrs.style,
                 format!("[{}]", index),
             )?;
-            (*return_to, data)
+            (stack.pop(), data)
         }
 
         // Unconditional returns to previous states
-        (NestedState(return_to, _), End(BlockQuote)) => (*return_to, data),
-        (NestedState(return_to, _), End(List(_))) => (*return_to, data),
+        (Stacked(stack, _), End(BlockQuote)) => (stack.pop(), data),
+        (Stacked(stack, _), End(List(_))) => (stack.pop(), data),
 
         // Impossible events
         (s, e) => panic!(
