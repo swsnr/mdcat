@@ -6,10 +6,12 @@
 
 //! Magic util functions for detecting image types.
 
-use mime::Mime;
+use mime::{FromStrError, Mime};
 use std::io::prelude::*;
-use std::io::{Error, ErrorKind};
+use std::io::ErrorKind;
 use std::process::*;
+use std::str::Utf8Error;
+use thiserror::Error;
 
 /// Whether the given MIME type denotes an SVG image.
 pub fn is_svg(mime: &Mime) -> bool {
@@ -21,8 +23,29 @@ pub fn is_png(mime: &Mime) -> bool {
     *mime == mime::IMAGE_PNG
 }
 
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Failed to invoke 'file': {source}")]
+    FileInvocationError {
+        #[from]
+        source: std::io::Error,
+    },
+    #[error("'file' failed with code {status}: {stderr:?}")]
+    FileFailed { status: ExitStatus, stderr: String },
+    #[error("'file' returned an invalid mime type: {source}")]
+    InvalidMimeTypeError {
+        #[from]
+        source: FromStrError,
+    },
+    #[error("'file' returned invalid UTF-8: {source}")]
+    InvalidOutputError {
+        #[from]
+        source: Utf8Error,
+    },
+}
+
 /// Detect mime type with `file`.
-pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error>> {
+pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Error> {
     let mut process = Command::new("file")
         .arg("--brief")
         .arg("--mime-type")
@@ -49,15 +72,10 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error
             .parse()
             .map_err(Into::into)
     } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!(
-                "file --brief --mime-type failed with status {}: {}",
-                output.status,
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        )
-        .into())
+        Err(Error::FileFailed {
+            status: output.status,
+            stderr: String::from_utf8_lossy(&output.stderr).into(),
+        })
     }
 }
 
