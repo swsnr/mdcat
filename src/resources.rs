@@ -170,12 +170,12 @@ mod tests {
             )
         } else {
             assert!(
-                error.contains("curl https://eu.httpbin.org/status/404 failed:"),
+                error.contains("curl -fsSL https://eu.httpbin.org/status/404 failed:"),
                 "Error did not contain expected string: {}",
                 error
             );
             assert!(
-                error.contains("404"),
+                error.contains("URL returned error: 404"),
                 "Error did not contain expected string: {}",
                 error
             );
