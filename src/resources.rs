@@ -6,9 +6,10 @@
 
 //! Access to resources referenced from markdown documents.
 
+use fehler::{throw, throws};
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::{Error, ErrorKind};
+use thiserror::Error;
 use url::Url;
 
 /// What kind of resources mdcat may access when rendering.
@@ -34,46 +35,82 @@ impl ResourceAccess {
     }
 }
 
+#[derive(Debug, Error)]
+pub enum Error {
+    #[cfg(feature = "reqwest")]
+    #[error("HTTP request failed: {source}")]
+    HttpRequestError {
+        #[from]
+        source: reqwest::Error,
+    },
+    #[cfg(feature = "reqwest")]
+    #[error("HTTP request returned unexpected status code")]
+    UnexpectedHttpStatus {
+        url: Url,
+        status: reqwest::StatusCode,
+    },
+
+    #[cfg(not(feature = "reqwest"))]
+    #[error("Failed to invoke 'curl': {source}")]
+    CurlInvocationFailed { source: std::io::Error },
+    #[cfg(not(feature = "reqwest"))]
+    #[error("'curl {url}' failed with code {status}: {stderr:?}")]
+    CurlFailed {
+        url: Url,
+        status: std::process::ExitStatus,
+        stderr: String,
+    },
+
+    #[error("Failed to read resource: {source}")]
+    ReadError {
+        #[from]
+        source: std::io::Error,
+    },
+
+    #[error("Cannot convert local {url} to file path")]
+    NoFilePath { url: Url },
+    #[error("Scheme of {url} not supported")]
+    UnsupportedScheme { url: Url },
+}
+
 /// Whether `url` is readable as local file:.
 fn is_local(url: &Url) -> bool {
     url.scheme() == "file" && url.to_file_path().is_ok()
 }
 
 #[cfg(feature = "reqwest")]
-fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+#[throws]
+fn fetch_http(url: &Url) -> Vec<u8> {
     let mut response = reqwest::blocking::get(url.clone())?;
     if response.status().is_success() {
         let mut buffer = Vec::new();
         response.read_to_end(&mut buffer)?;
-        Ok(buffer)
+        buffer
     } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!("HTTP error status {} by GET {}", response.status(), url),
-        )
-        .into())
+        throw!(Error::UnexpectedHttpStatus {
+            url: url.clone(),
+            status: response.status()
+        });
     }
 }
 
 #[cfg(not(feature = "reqwest"))]
-fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+#[throws]
+fn fetch_http(url: &Url) -> Vec<u8> {
     let output = std::process::Command::new("curl")
         .arg("-fsSL")
         .arg(url.to_string())
-        .output()?;
+        .output()
+        .map_err(|e| Error::CurlInvocationFailed { source: e })?;
 
     if output.status.success() {
-        Ok(output.stdout)
+        output.stdout
     } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!(
-                "curl {} failed: {}",
-                url,
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        )
-        .into())
+        throw!(Error::CurlFailed {
+            url: url.clone(),
+            status: output.status,
+            stderr: String::from_utf8_lossy(&output.stderr).into()
+        });
     }
 }
 
@@ -85,7 +122,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
-pub fn read_url(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn read_url(url: &Url) -> Result<Vec<u8>, Error> {
     match url.scheme() {
         "file" => match url.to_file_path() {
             Ok(path) => {
@@ -93,18 +130,10 @@ pub fn read_url(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
                 File::open(path)?.read_to_end(&mut buffer)?;
                 Ok(buffer)
             }
-            Err(_) => Err(Error::new(
-                ErrorKind::InvalidInput,
-                format!("Remote file: URL {} not supported", url),
-            )
-            .into()),
+            Err(()) => Err(Error::NoFilePath { url: url.clone() }),
         },
         "http" | "https" => fetch_http(url),
-        _ => Err(Error::new(
-            ErrorKind::InvalidInput,
-            format!("Protocol of URL {} not supported", url),
-        )
-        .into()),
+        _ => Err(Error::UnsupportedScheme { url: url.clone() }),
     }
 }
 
