@@ -6,9 +6,10 @@
 
 //! Access to resources referenced from markdown documents.
 
+use anyhow::{anyhow, Context, Error, Result};
+use fehler::{throw, throws};
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::{Error, ErrorKind};
 use url::Url;
 
 /// What kind of resources mdcat may access when rendering.
@@ -40,40 +41,42 @@ fn is_local(url: &Url) -> bool {
 }
 
 #[cfg(feature = "reqwest")]
-fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let mut response = reqwest::blocking::get(url.clone())?;
+#[throws]
+fn fetch_http(url: &Url) -> Vec<u8> {
+    let mut response =
+        reqwest::blocking::get(url.clone()).with_context(|| format!("Failed to GET {}", url))?;
     if response.status().is_success() {
         let mut buffer = Vec::new();
-        response.read_to_end(&mut buffer)?;
-        Ok(buffer)
+        response
+            .read_to_end(&mut buffer)
+            .with_context(|| format!("Failed to read from URL {}", url))?;
+        buffer
     } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!("HTTP error status {} by GET {}", response.status(), url),
-        )
-        .into())
+        throw!(anyhow!(
+            "HTTP error status {} by GET {}",
+            response.status(),
+            url
+        ))
     }
 }
 
 #[cfg(not(feature = "reqwest"))]
-fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+#[throws]
+fn fetch_http(url: &Url) -> Vec<u8> {
     let output = std::process::Command::new("curl")
         .arg("-fsSL")
         .arg(url.to_string())
-        .output()?;
+        .output()
+        .with_context(|| format!("curl -fsSL {} failed to spawn", url))?;
 
     if output.status.success() {
-        Ok(output.stdout)
+        output.stdout
     } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!(
-                "curl {} failed: {}",
-                url,
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        )
-        .into())
+        throw!(anyhow!(
+            "curl -fsSL {} failed: {}",
+            url,
+            String::from_utf8_lossy(&output.stderr)
+        ))
     }
 }
 
@@ -85,26 +88,21 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
 /// build system.
-pub fn read_url(url: &Url) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+pub fn read_url(url: &Url) -> Result<Vec<u8>> {
     match url.scheme() {
         "file" => match url.to_file_path() {
             Ok(path) => {
                 let mut buffer = Vec::new();
-                File::open(path)?.read_to_end(&mut buffer)?;
+                File::open(path)
+                    .with_context(|| format!("Failed to open file at {}", url))?
+                    .read_to_end(&mut buffer)
+                    .with_context(|| format!("Failed to read from file at {}", url))?;
                 Ok(buffer)
             }
-            Err(_) => Err(Error::new(
-                ErrorKind::InvalidInput,
-                format!("Remote file: URL {} not supported", url),
-            )
-            .into()),
+            Err(_) => Err(anyhow!("Cannot convert URL {} to file path", url)),
         },
         "http" | "https" => fetch_http(url),
-        _ => Err(Error::new(
-            ErrorKind::InvalidInput,
-            format!("Protocol of URL {} not supported", url),
-        )
-        .into()),
+        _ => Err(anyhow!("Cannot read from URL {}, protocol not supported")),
     }
 }
 

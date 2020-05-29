@@ -6,9 +6,10 @@
 
 //! Magic util functions for detecting image types.
 
+use anyhow::{anyhow, Context, Result};
 use mime::Mime;
 use std::io::prelude::*;
-use std::io::{Error, ErrorKind};
+use std::io::ErrorKind;
 use std::process::*;
 
 /// Whether the given MIME type denotes an SVG image.
@@ -22,7 +23,7 @@ pub fn is_png(mime: &Mime) -> bool {
 }
 
 /// Detect mime type with `file`.
-pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error>> {
+pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime> {
     let mut process = Command::new("file")
         .arg("--brief")
         .arg("--mime-type")
@@ -30,7 +31,8 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn()?;
+        .spawn()
+        .with_context(|| "Failed to spawn mime --brief --mime-type")?;
 
     process
         .stdin
@@ -42,22 +44,27 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime, Box<dyn std::error::Error
             _ => Err(error),
         })?;
 
-    let output = process.wait_with_output()?;
+    let output = process
+        .wait_with_output()
+        .with_context(|| "Failed to read output from mime --brief --mime-type")?;
     if output.status.success() {
-        std::str::from_utf8(&output.stdout)?
-            .trim()
+        let stdout = std::str::from_utf8(&output.stdout)
+            .with_context(|| {
+                format!(
+                    "mime --brief --mime-type returned non-utf8: {:?}",
+                    output.stdout
+                )
+            })?
+            .trim();
+        stdout
             .parse()
-            .map_err(Into::into)
+            .with_context(|| format!("Failed to parse mime type from output: {}", stdout))
     } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!(
-                "file --brief --mime-type failed with status {}: {}",
-                output.status,
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        )
-        .into())
+        Err(anyhow!(
+            "file --brief --mime-type failed with status {}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr)
+        ))
     }
 }
 

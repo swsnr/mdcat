@@ -9,12 +9,13 @@
 //! Show CommonMark documents on TTYs.
 
 use clap::{value_t, values_t};
+use fehler::throws;
 use mdcat::Settings;
 use pulldown_cmark::{Options, Parser};
-use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{stdin, stdout};
+use std::io::{Error, Result};
 use std::path::PathBuf;
 use syntect::parsing::SyntaxSet;
 
@@ -24,13 +25,14 @@ use mdcat::{ResourceAccess, TerminalCapabilities, TerminalSize};
 ///
 /// If `filename` is `-` read from standard input, otherwise try to open and
 /// read the given file.
-fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> {
+#[throws]
+fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
     let cd = std::env::current_dir()?;
     let mut buffer = String::new();
 
     if filename.as_ref() == "-" {
         stdin().read_to_string(&mut buffer)?;
-        Ok((cd, buffer))
+        (cd, buffer)
     } else {
         let mut source = File::open(filename.as_ref())?;
         source.read_to_string(&mut buffer)?;
@@ -39,15 +41,11 @@ fn read_input<T: AsRef<str>>(filename: T) -> std::io::Result<(PathBuf, String)> 
             .parent()
             .map(|p| p.to_path_buf())
             .unwrap_or(cd);
-        Ok((base_dir, buffer))
+        (base_dir, buffer)
     }
 }
 
-fn process_file(
-    filename: &str,
-    settings: &Settings,
-    dump_events: bool,
-) -> Result<(), Box<dyn Error>> {
+fn process_file(filename: &str, settings: &Settings, dump_events: bool) -> Result<()> {
     let (base_dir, input) = read_input(filename)?;
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TASKLISTS);
@@ -59,9 +57,12 @@ fn process_file(
     } else {
         mdcat::push_tty(settings, &mut stdout(), &base_dir, parser)
     }
-    .or_else(|error| match error.downcast_ref::<std::io::Error>() {
-        Some(error) if error.kind() == std::io::ErrorKind::BrokenPipe => Ok(()),
-        _ => Err(error),
+    .or_else(|error| {
+        if error.kind() == std::io::ErrorKind::BrokenPipe {
+            Ok(())
+        } else {
+            Err(error)
+        }
     })
 }
 
@@ -140,7 +141,7 @@ markdown documents for viewing in text terminals:
 
 Copyright (C) Sebastian Wiesner and contributors
 
-This program is subject to the terms of the Mozilla Public License, 
+This program is subject to the terms of the Mozilla Public License,
 v. 2.0. If a copy of the MPL was not distributed with this file,
 You can obtain one at http://mozilla.org/MPL/2.0/.
 

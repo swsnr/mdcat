@@ -14,6 +14,7 @@ use fehler::throws;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, LinkType};
+use std::io::Error;
 use syntect::highlighting::{HighlightIterator, Highlighter, Theme};
 use syntect::util::LinesWithEndings;
 use url::Url;
@@ -37,9 +38,6 @@ fn resolve_reference(base_dir: &Path, reference: &str) -> Option<Url> {
         .or_else(|_| Url::from_file_path(base_dir.join(reference)))
         .ok()
 }
-
-/// A rendering error.
-pub type Error = Box<dyn std::error::Error>;
 
 #[allow(clippy::cognitive_complexity)]
 #[throws]
@@ -589,6 +587,7 @@ pub fn write_event<'a, W: Write>(
                         iterm2.write_inline_image(writer, url.as_str(), &contents)?;
                         Ok(RenderedImage)
                     })
+                    .map(|_| RenderedImage)
                     .ok(),
                 (Kitty(ref kitty), Some(ref url)) => kitty
                     .read_and_render(url)

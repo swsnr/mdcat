@@ -22,10 +22,11 @@
 use crate::magic;
 use crate::resources::read_url;
 use crate::svg::render_svg;
+use anyhow::{anyhow, Context, Error, Result};
+use fehler::throws;
 use image::imageops::FilterType;
 use image::ColorType;
 use image::{DynamicImage, GenericImageView};
-use std::error::Error;
 use std::io::Write;
 use std::process::{Command, Stdio};
 use std::str;
@@ -46,57 +47,44 @@ pub fn is_kitty() -> bool {
 ///
 /// We cannot use the terminal size information from Context.output.size, because
 /// the size information are in columns / rows instead of pixel.
-fn get_terminal_size() -> std::io::Result<KittyDimension> {
-    use std::io::{Error, ErrorKind};
-
+fn get_terminal_size() -> Result<KittyDimension> {
     let process = Command::new("kitty")
         .arg("+kitten")
         .arg("icat")
         .arg("--print-window-size")
         .stdout(Stdio::piped())
-        .spawn()?;
+        .spawn()
+        .with_context(|| "Failed to spawn kitty +kitten icat --print-window-size")?;
 
     let output = process.wait_with_output()?;
 
     if output.status.success() {
-        let terminal_size_str = std::str::from_utf8(&output.stdout).or_else(|_| {
-            Err(Error::new(
-                ErrorKind::Other,
-                "The terminal size could not be read.".to_string(),
-            ))
+        let terminal_size_str = std::str::from_utf8(&output.stdout).with_context(|| {
+            format!(
+                "kitty +kitten icat --print-window-size returned non-utf8: {:?}",
+                output.stdout
+            )
         })?;
         let terminal_size = terminal_size_str.split('x').collect::<Vec<&str>>();
 
-        let (width, height) = (
-            terminal_size[0].parse::<u32>().or_else(|_| {
-                Err(Error::new(
-                    ErrorKind::Other,
-                    format!(
-                        "The terminal width could not be parsed: {}",
-                        terminal_size_str
-                    ),
-                ))
-            })?,
-            terminal_size[1].parse::<u32>().or_else(|_| {
-                Err(Error::new(
-                    ErrorKind::Other,
-                    format!(
-                        "The terminal height could not be parsed: {}",
-                        terminal_size_str
-                    ),
-                ))
-            })?,
-        );
-
-        Ok(KittyDimension { width, height })
+        terminal_size[0]
+            .parse::<u32>()
+            .and_then(|width| {
+                terminal_size[1]
+                    .parse::<u32>()
+                    .map(|height| KittyDimension { width, height })
+            })
+            .with_context(|| {
+                format!(
+                    "Failed to parse kitty width and height from output: {}",
+                    terminal_size_str
+                )
+            })
     } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!(
-                "kitty +kitten icat --print-window-size failed with status {}: {}",
-                output.status,
-                String::from_utf8_lossy(&output.stderr)
-            ),
+        Err(anyhow!(
+            "kitty +kitten icat --print-window-size failed with status {}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr)
         ))
     }
 }
@@ -107,11 +95,8 @@ pub struct KittyImages;
 
 impl KittyImages {
     /// Write an inline image for kitty.
-    pub fn write_inline_image<W: Write>(
-        self,
-        writer: &mut W,
-        image: KittyImage,
-    ) -> Result<(), Box<dyn Error>> {
+    #[throws]
+    pub fn write_inline_image<W: Write>(self, writer: &mut W, image: KittyImage) -> () {
         // Kitty's escape sequence is like: Put the command key/value pairs together like "{}={}(,*)"
         // and write them along with the image bytes in 4096 bytes chunks to the stdout.
         // Documentation gives the following python example:
@@ -175,20 +160,25 @@ impl KittyImages {
 
             cmd_header.clear();
         }
-
-        Ok(())
     }
 
     /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
     /// It scales the image down, if the image size exceeds the terminal window size.
-    pub fn read_and_render(self, url: &Url) -> Result<KittyImage, Box<dyn std::error::Error>> {
+    #[throws]
+    pub fn read_and_render(self, url: &Url) -> KittyImage {
         let contents = read_url(url)?;
-        let mime = magic::detect_mime_type(&contents)?;
+        let mime = magic::detect_mime_type(&contents)
+            .with_context(|| format!("Failed to detect mime type for URL {}", url))?;
         let image = if magic::is_svg(&mime) {
-            image::load_from_memory(&render_svg(&contents)?)
+            image::load_from_memory(
+                &render_svg(&contents)
+                    .with_context(|| format!("Failed to render SVG at {} to PNG", url))?,
+            )
+            .with_context(|| format!("Failed to load SVG rendered from {}", url))?
         } else {
             image::load_from_memory(&contents)
-        }?;
+                .with_context(|| format!("Failed to load image from URL {}", url))?
+        };
         let terminal_size = get_terminal_size()?;
 
         if magic::is_png(&mime) && terminal_size.contains(&image.dimensions().into()) {
@@ -199,12 +189,12 @@ impl KittyImages {
     }
 
     /// Wrap the image bytes as PNG format in `KittyImage`.
-    fn render_as_png(self, contents: Vec<u8>) -> Result<KittyImage, Box<dyn Error>> {
-        Ok(KittyImage {
+    fn render_as_png(self, contents: Vec<u8>) -> KittyImage {
+        KittyImage {
             contents,
             format: KittyFormat::PNG,
             dimension: None,
-        })
+        }
     }
 
     /// Render the image as RGB/RGBA format and wrap the image bytes in `KittyImage`.
@@ -213,7 +203,7 @@ impl KittyImages {
         self,
         image: DynamicImage,
         terminal_size: KittyDimension,
-    ) -> Result<KittyImage, Box<dyn Error>> {
+    ) -> KittyImage {
         let format = match image.color() {
             ColorType::L8
             | ColorType::Rgb8
@@ -239,14 +229,14 @@ impl KittyImages {
 
         let image_dimension = image.dimensions().into();
 
-        Ok(KittyImage {
+        KittyImage {
             contents: match format {
                 KittyFormat::RGB => image.into_rgb().into_raw(),
                 _ => image.into_rgba().into_raw(),
             },
             format,
             dimension: Some(image_dimension),
-        })
+        }
     }
 }
 
