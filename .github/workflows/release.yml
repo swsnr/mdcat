@@ -92,7 +92,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: v${{ steps.version.outputs.tag }}
+          name: mdcat-${{ steps.version.outputs.version }}
           body_path: ./CHANGELOG-release.md
           files: |
             ./binaries/**/*.zip
