@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.18.1] – 2020-05-31
 ### Fixed
 - Fix release workflow.
 
@@ -341,4 +343,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.17.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.1...mdcat-0.17.0
 [0.17.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.17.0...mdcat-0.17.1
 [0.18.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.17.1...mdcat-0.18.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.0...HEAD
+[0.18.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.0...mdcat-0.18.1
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.1...HEAD
