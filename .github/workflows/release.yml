@@ -46,7 +46,7 @@ jobs:
         id: package
         shell: bash
         run: |
-          ARCHIVE_NAME="mdcat-${{ step.version.outputs.version }}-${{ matrix.target }}"
+          ARCHIVE_NAME="mdcat-${{ steps.version.outputs.version }}-${{ matrix.target }}"
           if [[ '${{ matrix.target }}' == *windows* ]]; then
             ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
             mv LICENSE LICENSE.txt

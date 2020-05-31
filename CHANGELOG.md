@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Fixed
+- Fix release workflow.
 
 ## [0.18.0] – 2020-05-31
 ### Added 
