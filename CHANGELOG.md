@@ -7,10 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Fixed
+- Properly upload binaries for releases.
 
 ## [0.18.1] – 2020-05-31
 ### Fixed
-- Fix release workflow.
+- Fix typo in release workflow.
 
 ## [0.18.0] – 2020-05-31
 ### Added 

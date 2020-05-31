@@ -61,6 +61,11 @@ jobs:
             echo ::set-output "name=file::${ARCHIVE_FILE}"
             echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
           fi
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ steps.package.outputs.file }}
 
   create-release:
     runs-on: ubuntu-latest
