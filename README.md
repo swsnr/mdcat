@@ -58,7 +58,6 @@ Not supported:
 ### Binaries
 
 The [Releases] page provides pre-build binaries for Linux, macOS and Windows.
-Use these binaries to try `mdcat`, particularly on Windows.
 
 **Note:** The Linux build is statically linked and requires the `curl` command
 to fetch images from HTTP(S).
@@ -67,26 +66,18 @@ to fetch images from HTTP(S).
 
 ### 3rd party packages
 
-Some package managers include `mdcat`:
+Some package repositories include `mdcat`:
 
 * [Homebrew]: `brew install mdcat`
 * Arch Linux: [mdcat in AUR][aur]
 * Void Linux: `xbps-install -S mdcat`
-
-While these packages may not always be up to date we generally recommend to use
-these to keep `mdcat` updated with the rest of the system.
 
 [Homebrew]: https://brew.sh
 [aur]: https://aur.archlinux.org/packages/mdcat/
 
 ### Building with rustup
 
-You can also build `mdcat` manually with `cargo`.  Install Rust via [rustup] and
-run `cargo install mdcat`.  To keep mdcat up to date install [cargo-update] and
-run `cargo install-update mdcat`.
-
-[rustup]: https://www.rustup.rs
-[cargo-update]: https://github.com/nabijaczleweli/cargo-update
+You can also build `mdcat` manually with `cargo install mdcat`.
 
 ### SVG support
 
