@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Fixed
+- Properly ignore alt text of inline images (see [GH-148]).
+
+[GH-148]: https://github.com/lunaryorn/mdcat/issues/148
 
 ## [0.18.2] – 2020-05-31
 ### Fixed

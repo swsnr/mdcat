@@ -605,6 +605,7 @@ pub fn write_event<'a, W: Write>(
                 .current(image_state)
                 .and_data(data)
         }
+        (Stacked(stack, RenderedImage), Text(_)) => (Stacked(stack, RenderedImage), data),
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => (stack.pop(), data),
         (Stacked(stack, Inline(_, attrs)), End(Image(_, target, title))) => {
             let (data, index) = data.add_link(target, title);
