@@ -80,7 +80,7 @@ jobs:
         shell: bash
         run: |
           cd binaries
-          b2sums *.zip *.tar.gz > B2SUMS.txt
+          b2sum *.zip *.tar.gz > B2SUMS.txt
           sha512sum *.zip *.tar.gz > SHA512SUM.txt
       - name: Get version
         id: version
