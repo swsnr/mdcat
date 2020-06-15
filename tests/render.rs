@@ -16,9 +16,9 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
 
-use glob::glob;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
+use test_generator::test_resources;
 
 use lazy_static::lazy_static;
 
@@ -54,24 +54,26 @@ fn render<P: AsRef<Path>>(file: P, settings: &mdcat::Settings) -> Result<Vec<u8>
     Ok(render_buffer)
 }
 
-#[test]
-fn ansi_only_commonmark_spec() -> Result<(), Box<dyn Error>> {
-    let mut mint = goldenfile::Mint::new("tests/render/golden/commonmark-spec");
-    for md_file_res in glob("tests/render/md/commonmark-spec/*.md")? {
-        let md_file = md_file_res?;
-        mint.new_goldenfile(md_file.file_stem().unwrap())?
-            .write_all(&render(md_file, &*SETTINGS_ANSI_ONLY)?)?;
-    }
-    Ok(())
+#[test_resources("tests/render/md/commonmark-spec/*.md")]
+fn ansi_only_commonmark_spec(markdown_file: &str) {
+    render(markdown_file, &*SETTINGS_ANSI_ONLY)
+        .and_then(|buf| {
+            let mut mint = goldenfile::Mint::new("tests/render/golden/commonmark-spec");
+            mint.new_goldenfile(Path::new(markdown_file).file_stem().unwrap())
+                .and_then(|mut file| file.write_all(&buf))
+                .map_err(|e| e.into())
+        })
+        .unwrap();
 }
 
-#[test]
-fn ansi_only_samples() -> Result<(), Box<dyn Error>> {
-    let mut mint = goldenfile::Mint::new("tests/render/golden/samples");
-    for md_file_res in glob("tests/render/md/samples/*.md")? {
-        let md_file = md_file_res?;
-        mint.new_goldenfile(md_file.file_stem().unwrap())?
-            .write_all(&render(md_file, &*SETTINGS_ANSI_ONLY)?)?;
-    }
-    Ok(())
+#[test_resources("tests/render/md/samples/*.md")]
+fn ansi_only_samples(markdown_file: &str) {
+    render(markdown_file, &*SETTINGS_ANSI_ONLY)
+        .and_then(|buf| {
+            let mut mint = goldenfile::Mint::new("tests/render/golden/samples");
+            mint.new_goldenfile(Path::new(markdown_file).file_stem().unwrap())
+                .and_then(|mut file| file.write_all(&buf))
+                .map_err(|e| e.into())
+        })
+        .unwrap();
 }
