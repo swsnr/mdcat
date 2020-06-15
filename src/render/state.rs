@@ -5,7 +5,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use crate::AnsiStyle;
-use ansi_term::{Colour, Style};
+use ansi_term::Style;
 use std::borrow::Borrow;
 use syntect::highlighting::HighlightState;
 use syntect::parsing::ParseState;
@@ -129,7 +129,7 @@ impl StyledBlockAttrs {
     pub(super) fn block_quote(self) -> Self {
         StyledBlockAttrs {
             indent: self.indent + 4,
-            style: self.style.fg(Colour::Green).italic(),
+            style: self.style.italic(),
             ..self
         }
     }

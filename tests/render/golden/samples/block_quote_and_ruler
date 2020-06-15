@@ -1,16 +1,16 @@
 Block quote without paragraphs:
 
-    [3;32mLorem ipsum dolor sit amet.[0m
+    [3mLorem ipsum dolor sit amet.[0m
 
 Block quotes with paragraphs
 
-    [3;32mLorem ipsum dolor sit amet, [0m[32mconsetetur sadipscing elitr[0m[3;32m, sed diam nonumy[0m
-    [3;32meirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam[0m
-    [3;32mvoluptua.[0m
+    [3mLorem ipsum dolor sit amet, [0mconsetetur sadipscing elitr[3m, sed diam nonumy[0m
+    [3meirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam[0m
+    [3mvoluptua.[0m
 
-    [3;32mLorem ipsum dolor sit amet, [0m[1;3;32mconsetetur sadipscing elitr[0m[3;32m, sed diam nonumy[0m
-    [3;32meirmod tempor invidunt ut [0m[3;33mlabore et dolore magna[0m[3;32m aliquyam erat, sed diam[0m
-    [3;32mvoluptua.[0m
+    [3mLorem ipsum dolor sit amet, [0m[1;3mconsetetur sadipscing elitr[0m[3m, sed diam nonumy[0m
+    [3meirmod tempor invidunt ut [0m[3;33mlabore et dolore magna[0m[3m aliquyam erat, sed diam[0m
+    [3mvoluptua.[0m
 
 Before we continue, have a ruler:
 

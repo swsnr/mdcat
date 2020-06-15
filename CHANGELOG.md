@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Changed
+- Blockquotes no longer have green foreground text (see [GH-144]).
+
+[GH-144]: https://github.com/lunaryorn/mdcat/issues/144
 
 ## [0.18.4] – 2020-06-14
 ### Fixed
