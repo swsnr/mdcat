@@ -23,7 +23,7 @@ use test_generator::test_resources;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    // Re-use settings for every generated test; constructing a `SyntaxSet` is really expansive and
+    // Re-use settings for every generated test; constructing a `SyntaxSet` is really expensive and
     // and doing it for every test again causes a nasty drop in execution speed.
     static ref SETTINGS_ANSI_ONLY: mdcat::Settings = mdcat::Settings {
         terminal_capabilities: mdcat::TerminalCapabilities::ansi(),
