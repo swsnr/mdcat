@@ -558,7 +558,7 @@ pub fn write_event<'a, W: Write>(
             (stack.pop(), data)
         }
         (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
-            let (data, index) = data.add_link(target, title);
+            let (data, index) = data.add_link(target, title, Colour::Blue);
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
@@ -598,7 +598,15 @@ pub fn write_event<'a, W: Write>(
                 (ImageCapability::NoImages, _) => None,
                 (_, None) => None,
             }
-            .unwrap_or_else(|| Inline(InlineText, InlineAttrs { indent, style }));
+            .unwrap_or_else(|| {
+                Inline(
+                    InlineText,
+                    InlineAttrs {
+                        indent,
+                        style: style.fg(Colour::Purple),
+                    },
+                )
+            });
             stack
                 .push(Inline(state, attrs))
                 .current(image_state)
@@ -607,7 +615,7 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, RenderedImage), Text(_)) => (Stacked(stack, RenderedImage), data),
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => (stack.pop(), data),
         (Stacked(stack, Inline(_, attrs)), End(Image(_, target, title))) => {
-            let (data, index) = data.add_link(target, title);
+            let (data, index) = data.add_link(target, title, Colour::Purple);
             write_styled(
                 writer,
                 &settings.terminal_capabilities,

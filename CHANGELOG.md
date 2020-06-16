@@ -12,9 +12,12 @@ To publish a new release run `scripts/release` from the project directory.
 
 ### Changed
 - `mdcat::push_tty` now returns an error if `base_dir` is a relative path.
+- Image links now use purple foreground text (see [GH-140]).
 
 ### Fixed
 - Always treat links targets as URLs, never as paths.
+
+[GH-140]: https://github.com/lunaryorn/mdcat/issues/140
 
 ## [0.19.0] – 2020-06-19
 ### Added

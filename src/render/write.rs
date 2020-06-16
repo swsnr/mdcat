@@ -75,7 +75,7 @@ pub fn write_link_refs<W: Write>(
     if !links.is_empty() {
         writeln!(writer)?;
         for link in links {
-            let style = Style::new().fg(Colour::Blue);
+            let style = Style::new().fg(link.colour);
             let link_text = format!("[{}]: {} {}", link.index, link.target, link.title);
             write_styled(writer, capabilities, &style, link_text)?;
             writeln!(writer)?;
