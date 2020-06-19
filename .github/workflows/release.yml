@@ -32,7 +32,12 @@ jobs:
         run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
       - name: Build in release configuration
-        run: cargo build --target ${{ matrix.target }} ${{ matrix.flags }} --release
+        shell: bash
+        id: build
+        run: |
+            OUTDIR="$(cargo build --target '${{ matrix.target }}' ${{ matrix.flags }} --release --message-format=json-render-diagnostics |
+                jq -r 'select(.out_dir) | select(.package_id | startswith("mdcat ")) | .out_dir')"
+            echo "::set-output name=outdir::$OUTDIR"
       - name: Strip binary
         run: strip 'target/${{ matrix.target }}/release/mdcat'
         if: "!contains(matrix.target, 'windows')"
@@ -45,22 +50,7 @@ jobs:
       - name: Build package
         id: package
         shell: bash
-        run: |
-          ARCHIVE_NAME="mdcat-${{ steps.version.outputs.version }}-${{ matrix.target }}"
-          if [[ '${{ matrix.target }}' == *windows* ]]; then
-            ARCHIVE_FILE="${ARCHIVE_NAME}.zip"
-            mv LICENSE LICENSE.txt
-            7z a "${ARCHIVE_FILE}" "./target/${{ matrix.target }}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt
-            echo ::set-output "name=file::${ARCHIVE_FILE}"
-            echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
-          else
-            ARCHIVE_FILE="${ARCHIVE_NAME}.tar.gz"
-            mkdir "/tmp/${ARCHIVE_NAME}"
-            cp README.md CHANGELOG.md LICENSE "target/${{ matrix.target }}/release/mdcat" "/tmp/${ARCHIVE_NAME}"
-            tar -czf "${PWD}/${ARCHIVE_FILE}" -C /tmp/ "${ARCHIVE_NAME}"
-            echo ::set-output "name=file::${ARCHIVE_FILE}"
-            echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
-          fi
+        run: exec ./scripts/package '${{ steps.version.outputs.version }}' '${{ matrix.target }}' '${{ steps.build.outputs.outdir }}'
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:

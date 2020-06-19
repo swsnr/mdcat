@@ -55,6 +55,10 @@ goldenfile = "^1.1"
 lazy_static = "^1.4"
 test-generator = "^0.3"
 
+[build-dependencies]
+# To generate completions during build
+clap = { version = "^2.33", default-features = false }
+
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller
 lto = true

@@ -1,0 +1,45 @@
+#!/bin/bash
+# Copyright 2020 Sebastian Wiesnser <sebastian@swsnr.de>
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+set -e
+set -o pipefail
+
+VERSION="$1"
+TARGET="$2"
+OUTDIR="$3"
+
+ARCHIVE_NAME="mdcat-${VERSION}-${TARGET}"
+
+package_windows() {
+  local archive_file
+  archive_file="${ARCHIVE_NAME}.zip"
+  mv LICENSE LICENSE.txt
+  7z a "${archive_file}" "./target/${TARGET}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt "${OUTDIR}/completions"
+  echo ::set-output "name=file::${archive_file}"
+  echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
+}
+
+package_unix() {
+  local archive_file
+  local pkg_dir
+  archive_file="${ARCHIVE_NAME}.tar.gz"
+
+  pkg_dir=$(mktemp -d)
+
+  mkdir "${pkg_dir}/${ARCHIVE_NAME}"
+  cp README.md CHANGELOG.md LICENSE "target/${TARGET}/release/mdcat" "${pkg_dir}/${ARCHIVE_NAME}"
+  cp -r "${OUTDIR}/completions" "${pkg_dir}/${ARCHIVE_NAME}"
+  tar -czf "${PWD}/${archive_file}" -C "$pkg_dir" "${ARCHIVE_NAME}"
+  echo ::set-output "name=file::${archive_file}"
+  echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
+}
+
+if [[ "${TARGET}" == *windows* ]]; then
+  package_windows
+else
+  package_unix
+fi

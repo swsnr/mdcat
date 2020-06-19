@@ -7,6 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Added
+- Release packages now include generated shell completions for Bash, Zsh and Fish.
+
 ### Changed
 - Blockquotes no longer have green foreground text (see [GH-144]).
 
