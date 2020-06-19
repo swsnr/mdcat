@@ -35,7 +35,7 @@ jobs:
         shell: bash
         id: build
         run: |
-            OUTDIR="$(cargo build --target '${{ matrix.target }}' ${{ matrix.flags }} --release --message-format=json-render-diagnostics |
+            OUTDIR="$(cargo build --locked --target '${{ matrix.target }}' ${{ matrix.flags }} --release --message-format=json-render-diagnostics |
                 jq -r 'select(.out_dir) | select(.package_id | startswith("mdcat ")) | .out_dir')"
             echo "::set-output name=outdir::$OUTDIR"
       - name: Strip binary

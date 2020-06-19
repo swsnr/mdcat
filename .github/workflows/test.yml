@@ -79,13 +79,13 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --all-targets --target ${{ matrix.target }} ${{ matrix.flags }}
+          args: --all-targets --locked --target ${{ matrix.target }} ${{ matrix.flags }}
       # Test
       - name: Test
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --target ${{ matrix.target }} ${{ matrix.flags }}
+          args: --locked --target ${{ matrix.target }} ${{ matrix.flags }}
       - name: Format sample
         uses: actions-rs/cargo@v1
         with:
