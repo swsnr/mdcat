@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.19.0] – 2020-06-19
 ### Added
 - Release packages now include generated shell completions for Bash, Zsh and Fish.
 
@@ -369,4 +371,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.18.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.1...mdcat-0.18.2
 [0.18.3]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.2...mdcat-0.18.3
 [0.18.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.3...mdcat-0.18.4
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.4...HEAD
+[0.19.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.4...mdcat-0.19.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.19.0...HEAD
