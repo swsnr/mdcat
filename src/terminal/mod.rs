@@ -111,42 +111,62 @@ impl TerminalCapabilities {
         }
     }
 
+    /// Terminal capabilities of iTerm2.
+    pub fn iterm2() -> TerminalCapabilities {
+        TerminalCapabilities {
+            name: "iTerm2".to_string(),
+            style: StyleCapability::Ansi(AnsiStyle),
+            links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+            image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
+            marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
+        }
+    }
+
+    /// Terminal capabilities of Terminology.
+    pub fn terminology() -> TerminalCapabilities {
+        TerminalCapabilities {
+            name: "Terminology".to_string(),
+            style: StyleCapability::Ansi(AnsiStyle),
+            links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+            image: ImageCapability::Terminology(self::terminology::TerminologyImages),
+            marks: MarkCapability::None,
+        }
+    }
+
+    /// Terminal capabilities of Kitty.
+    pub fn kitty() -> TerminalCapabilities {
+        TerminalCapabilities {
+            name: "Kitty".to_string(),
+            style: StyleCapability::Ansi(AnsiStyle),
+            links: LinkCapability::NoLinks,
+            image: ImageCapability::Kitty(self::kitty::KittyImages),
+            marks: MarkCapability::None,
+        }
+    }
+
+    /// Terminal capabilities of VET 0.50 or newer.
+    pub fn vte50() -> TerminalCapabilities {
+        TerminalCapabilities {
+            name: "VTE 50".to_string(),
+            style: StyleCapability::Ansi(AnsiStyle),
+            links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+            image: ImageCapability::NoImages,
+            marks: MarkCapability::None,
+        }
+    }
+
     /// Detect the capabilities of the current terminal.
     pub fn detect() -> TerminalCapabilities {
         if self::iterm2::is_iterm2() {
-            TerminalCapabilities {
-                name: "iTerm2".to_string(),
-                style: StyleCapability::Ansi(AnsiStyle),
-                links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
-                image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
-                marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
-            }
+            Self::iterm2()
         } else if self::terminology::is_terminology() {
-            TerminalCapabilities {
-                name: "Terminology".to_string(),
-                style: StyleCapability::Ansi(AnsiStyle),
-                links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
-                image: ImageCapability::Terminology(self::terminology::TerminologyImages),
-                marks: MarkCapability::None,
-            }
+            Self::terminology()
         } else if self::kitty::is_kitty() {
-            TerminalCapabilities {
-                name: "Kitty".to_string(),
-                style: StyleCapability::Ansi(AnsiStyle),
-                links: LinkCapability::NoLinks,
-                image: ImageCapability::Kitty(self::kitty::KittyImages),
-                marks: MarkCapability::None,
-            }
+            Self::kitty()
         } else if get_vte_version().filter(|&v| v >= (50, 0)).is_some() {
-            TerminalCapabilities {
-                name: "VTE 50".to_string(),
-                style: StyleCapability::Ansi(AnsiStyle),
-                links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
-                image: ImageCapability::NoImages,
-                marks: MarkCapability::None,
-            }
+            Self::vte50()
         } else {
-            TerminalCapabilities::ansi()
+            Self::ansi()
         }
     }
 }

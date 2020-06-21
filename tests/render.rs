@@ -21,13 +21,18 @@ use anyhow::{Context, Result};
 use lazy_static::lazy_static;
 
 lazy_static! {
-    // Re-use settings for every generated test; constructing a `SyntaxSet` is really expensive and
-    // and doing it for every test again causes a nasty drop in execution speed.
+    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
     static ref SETTINGS_ANSI_ONLY: mdcat::Settings = mdcat::Settings {
         terminal_capabilities: mdcat::TerminalCapabilities::ansi(),
         terminal_size: mdcat::TerminalSize::default(),
         resource_access: mdcat::ResourceAccess::LocalOnly,
-        syntax_set: SyntaxSet::load_defaults_newlines(),
+        syntax_set: (*SYNTAX_SET).clone(),
+    };
+    static ref SETTINGS_ITERM2: mdcat::Settings = mdcat::Settings {
+        terminal_capabilities: mdcat::TerminalCapabilities::iterm2(),
+        terminal_size: mdcat::TerminalSize::default(),
+        resource_access: mdcat::ResourceAccess::LocalOnly,
+        syntax_set: (*SYNTAX_SET).clone(),
     };
 }
 
@@ -80,6 +85,16 @@ fn ansi_only(markdown_file: &str) {
         "tests/render/golden/ansi-only",
         markdown_file,
         &*SETTINGS_ANSI_ONLY,
+    )
+    .unwrap()
+}
+
+#[test_resources("tests/render/md/*/*.md")]
+fn iterm2(markdown_file: &str) {
+    render_golden_file(
+        "tests/render/golden/iterm2",
+        markdown_file,
+        &*SETTINGS_ITERM2,
     )
     .unwrap()
 }
