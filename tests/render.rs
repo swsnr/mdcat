@@ -11,69 +11,90 @@
 
 // #![deny(warnings, missing_docs, clippy::all)]
 
-use std::error::Error;
-use std::fs::File;
-use std::io::{Read, Write};
 use std::path::Path;
 
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use test_generator::test_resources;
 
+use anyhow::{Context, Result};
 use lazy_static::lazy_static;
 
 lazy_static! {
-    // Re-use settings for every generated test; constructing a `SyntaxSet` is really expensive and
-    // and doing it for every test again causes a nasty drop in execution speed.
+    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
     static ref SETTINGS_ANSI_ONLY: mdcat::Settings = mdcat::Settings {
         terminal_capabilities: mdcat::TerminalCapabilities::ansi(),
         terminal_size: mdcat::TerminalSize::default(),
         resource_access: mdcat::ResourceAccess::LocalOnly,
-        syntax_set: SyntaxSet::load_defaults_newlines(),
+        syntax_set: (*SYNTAX_SET).clone(),
+    };
+    static ref SETTINGS_ITERM2: mdcat::Settings = mdcat::Settings {
+        terminal_capabilities: mdcat::TerminalCapabilities::iterm2(),
+        terminal_size: mdcat::TerminalSize::default(),
+        resource_access: mdcat::ResourceAccess::LocalOnly,
+        syntax_set: (*SYNTAX_SET).clone(),
     };
 }
 
-fn render<P: AsRef<Path>>(file: P, settings: &mdcat::Settings) -> Result<Vec<u8>, Box<dyn Error>> {
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_TASKLISTS);
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    let markdown = {
-        let mut buffer = String::new();
-        let mut source = File::open(file)?;
-        source.read_to_string(&mut buffer)?;
-        buffer
-    };
-    let parser = Parser::new_ext(&markdown, options);
-    let mut render_buffer: Vec<u8> = Vec::new();
+fn render_golden_file<P: AsRef<Path>>(
+    golden_dir: P,
+    markdown_file: &str,
+    settings: &mdcat::Settings,
+) -> Result<()> {
+    let prefix = "tests/render/md";
+    let golden_path = Path::new(markdown_file)
+        .strip_prefix(prefix)
+        .with_context(|| format!("Failed to strip {} from {}", prefix, markdown_file))?
+        .with_extension("");
+
+    let mut mint = goldenfile::Mint::new(
+        golden_dir.as_ref().join(
+            golden_path
+                .parent()
+                .with_context(|| format!("Failed to get parent of {}", golden_path.display()))?,
+        ),
+    );
+
+    let markdown = std::fs::read_to_string(markdown_file)
+        .with_context(|| format!("Failed to read markdown file from {}", markdown_file))?;
+    let parser = Parser::new_ext(
+        &markdown,
+        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
+    );
+    let mut golden = mint
+        .new_goldenfile(
+            golden_path
+                .file_stem()
+                .with_context(|| format!("Failed to get stem of {}", golden_path.display()))?,
+        )
+        .with_context(|| format!("Failed to open golden file at {}", golden_path.display()))?;
     mdcat::push_tty(
         settings,
-        &mut render_buffer,
-        &std::env::current_dir().expect("No working directory"),
+        &mut golden,
+        &Path::new(markdown_file)
+            .parent()
+            .expect("Markdown file had no parent"),
         parser,
-    )?;
-    Ok(render_buffer)
+    )
+    .with_context(|| format!("Failed to render {}", markdown_file))
 }
 
-#[test_resources("tests/render/md/commonmark-spec/*.md")]
-fn ansi_only_commonmark_spec(markdown_file: &str) {
-    render(markdown_file, &*SETTINGS_ANSI_ONLY)
-        .and_then(|buf| {
-            let mut mint = goldenfile::Mint::new("tests/render/golden/commonmark-spec");
-            mint.new_goldenfile(Path::new(markdown_file).file_stem().unwrap())
-                .and_then(|mut file| file.write_all(&buf))
-                .map_err(|e| e.into())
-        })
-        .unwrap();
+#[test_resources("tests/render/md/*/*.md")]
+fn ansi_only(markdown_file: &str) {
+    render_golden_file(
+        "tests/render/golden/ansi-only",
+        markdown_file,
+        &*SETTINGS_ANSI_ONLY,
+    )
+    .unwrap()
 }
 
-#[test_resources("tests/render/md/samples/*.md")]
-fn ansi_only_samples(markdown_file: &str) {
-    render(markdown_file, &*SETTINGS_ANSI_ONLY)
-        .and_then(|buf| {
-            let mut mint = goldenfile::Mint::new("tests/render/golden/samples");
-            mint.new_goldenfile(Path::new(markdown_file).file_stem().unwrap())
-                .and_then(|mut file| file.write_all(&buf))
-                .map_err(|e| e.into())
-        })
-        .unwrap();
+#[test_resources("tests/render/md/*/*.md")]
+fn iterm2(markdown_file: &str) {
+    render_golden_file(
+        "tests/render/golden/iterm2",
+        markdown_file,
+        &*SETTINGS_ITERM2,
+    )
+    .unwrap()
 }
