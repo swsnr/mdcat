@@ -17,7 +17,7 @@ use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use test_generator::test_resources;
 
-use anyhow::{Context, Result};
+use anyhow::Context;
 use lazy_static::lazy_static;
 
 lazy_static! {
@@ -40,23 +40,26 @@ fn render_golden_file<P: AsRef<Path>>(
     golden_dir: P,
     markdown_file: &str,
     settings: &mdcat::Settings,
-) -> Result<()> {
+) -> () {
     let prefix = "tests/render/md";
     let golden_path = Path::new(markdown_file)
         .strip_prefix(prefix)
-        .with_context(|| format!("Failed to strip {} from {}", prefix, markdown_file))?
+        .with_context(|| format!("Failed to strip {} from {}", prefix, markdown_file))
+        .unwrap()
         .with_extension("");
 
     let mut mint = goldenfile::Mint::new(
         golden_dir.as_ref().join(
             golden_path
                 .parent()
-                .with_context(|| format!("Failed to get parent of {}", golden_path.display()))?,
+                .with_context(|| format!("Failed to get parent of {}", golden_path.display()))
+                .unwrap(),
         ),
     );
 
     let markdown = std::fs::read_to_string(markdown_file)
-        .with_context(|| format!("Failed to read markdown file from {}", markdown_file))?;
+        .with_context(|| format!("Failed to read markdown file from {}", markdown_file))
+        .unwrap();
     let parser = Parser::new_ext(
         &markdown,
         Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
@@ -65,9 +68,11 @@ fn render_golden_file<P: AsRef<Path>>(
         .new_goldenfile(
             golden_path
                 .file_stem()
-                .with_context(|| format!("Failed to get stem of {}", golden_path.display()))?,
+                .with_context(|| format!("Failed to get stem of {}", golden_path.display()))
+                .unwrap(),
         )
-        .with_context(|| format!("Failed to open golden file at {}", golden_path.display()))?;
+        .with_context(|| format!("Failed to open golden file at {}", golden_path.display()))
+        .unwrap();
     mdcat::push_tty(
         settings,
         &mut golden,
@@ -77,6 +82,7 @@ fn render_golden_file<P: AsRef<Path>>(
         parser,
     )
     .with_context(|| format!("Failed to render {}", markdown_file))
+    .unwrap()
 }
 
 #[test_resources("tests/render/md/*/*.md")]
@@ -86,7 +92,6 @@ fn ansi_only(markdown_file: &str) {
         markdown_file,
         &*SETTINGS_ANSI_ONLY,
     )
-    .unwrap()
 }
 
 #[test_resources("tests/render/md/*/*.md")]
@@ -96,5 +101,4 @@ fn iterm2(markdown_file: &str) {
         markdown_file,
         &*SETTINGS_ITERM2,
     )
-    .unwrap()
 }
