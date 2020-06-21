@@ -73,16 +73,17 @@ fn render_golden_file<P: AsRef<Path>>(
         )
         .with_context(|| format!("Failed to open golden file at {}", golden_path.display()))
         .unwrap();
-    mdcat::push_tty(
-        settings,
-        &mut golden,
-        &Path::new(markdown_file)
-            .parent()
-            .expect("Markdown file had no parent"),
-        parser,
-    )
-    .with_context(|| format!("Failed to render {}", markdown_file))
-    .unwrap()
+    let base_dir = std::env::current_dir()
+        .expect("Current dir not available")
+        .join(
+            &Path::new(markdown_file)
+                .parent()
+                .with_context(|| format!("Markdown file {} had no parent", markdown_file))
+                .unwrap(),
+        );
+    mdcat::push_tty(settings, &mut golden, &base_dir, parser)
+        .with_context(|| format!("Failed to render {}", markdown_file))
+        .unwrap()
 }
 
 #[test_resources("tests/render/md/*/*.md")]

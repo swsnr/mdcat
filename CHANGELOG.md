@@ -10,6 +10,9 @@ To publish a new release run `scripts/release` from the project directory.
 ### Added
 - `mdcat::TerminalCapabilities` now exposes constructors for specific terminal emulators.
 
+### Changed
+- `mdcat::push_tty` now returns an error if `base_dir` is a relative path.
+
 ## [0.19.0] – 2020-06-19
 ### Added
 - Release packages now include generated shell completions for Bash, Zsh and Fish.

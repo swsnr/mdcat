@@ -8,12 +8,17 @@
 
 //! Write markdown to TTYs.
 
-use fehler::throws;
-use pulldown_cmark::Event;
-use std::io::Write;
+use std::io::{ErrorKind, Write};
 use std::path::Path;
+
+use fehler::{throw, throws};
+use pulldown_cmark::Event;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
+
+// Expose some select things for use in main
+pub use crate::resources::ResourceAccess;
+pub use crate::terminal::*;
 
 mod magic;
 mod resources;
@@ -26,10 +31,6 @@ mod render;
 ///
 /// This is `std::io::Error`: mdcat never fails visible unless it cannot write output.
 pub type Error = std::io::Error;
-
-// Expose some select things for use in main
-pub use crate::resources::ResourceAccess;
-pub use crate::terminal::*;
 
 /// Settings for markdown rendering.
 #[derive(Debug)]
@@ -64,6 +65,15 @@ where
     I: Iterator<Item = Event<'e>>,
     W: Write,
 {
+    if !(base_dir.is_absolute()) {
+        throw!(Error::new(
+            ErrorKind::InvalidInput,
+            format!(
+                "Base directory {} must be an absolute path",
+                base_dir.display()
+            )
+        ))
+    }
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
     use render::*;
     let (final_state, final_data) = events.try_fold(
@@ -107,8 +117,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use pulldown_cmark::Parser;
+
+    use super::*;
 
     #[throws(anyhow::Error)]
     fn render_string(input: &str, settings: &Settings) -> String {
@@ -119,11 +130,13 @@ mod tests {
     }
 
     mod layout {
-        use super::render_string;
-        use crate::*;
         use anyhow::Result;
         use pretty_assertions::assert_eq;
         use syntect::parsing::SyntaxSet;
+
+        use crate::*;
+
+        use super::render_string;
 
         fn render(markup: &str) -> Result<String> {
             render_string(
