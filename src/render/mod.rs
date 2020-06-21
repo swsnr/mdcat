@@ -411,7 +411,7 @@ pub fn write_event<'a, W: Write>(
             };
             stack
                 .push(Inline(state, attrs))
-                .current(Inline(InlineText, InlineAttrs { style, indent }))
+                .current(Inline(state, InlineAttrs { style, indent }))
                 .and_data(data)
         }
         (Stacked(stack, Inline(_, _)), End(Emphasis)) => (stack.pop(), data),
@@ -420,7 +420,7 @@ pub fn write_event<'a, W: Write>(
             let style = attrs.style.bold();
             stack
                 .push(Inline(state, attrs))
-                .current(Inline(InlineText, InlineAttrs { style, indent }))
+                .current(Inline(state, InlineAttrs { style, indent }))
                 .and_data(data)
         }
         (Stacked(stack, Inline(_, _)), End(Strong)) => (stack.pop(), data),
@@ -429,7 +429,7 @@ pub fn write_event<'a, W: Write>(
             let indent = attrs.indent;
             stack
                 .push(Inline(state, attrs))
-                .current(Inline(InlineText, InlineAttrs { style, indent }))
+                .current(Inline(state, InlineAttrs { style, indent }))
                 .and_data(data)
         }
         (Stacked(stack, Inline(_, _)), End(Strikethrough)) => (stack.pop(), data),

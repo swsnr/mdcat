@@ -67,7 +67,7 @@ pub enum ListItemState {
     ItemBlock,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum InlineState {
     /// Inline text.
     ///
