@@ -1,3 +1,3 @@
-]8;;file://kasterl/foo-url[34mfoo[0m]8;;,
-]8;;file://kasterl/bar-url[34mbar[0m]8;;,
-]8;;file://kasterl/baz-url[34mbaz[0m]8;;
+]8;;file://HOSTNAME/foo-url[34mfoo[0m]8;;,
+]8;;file://HOSTNAME/bar-url[34mbar[0m]8;;,
+]8;;file://HOSTNAME/baz-url[34mbaz[0m]8;;

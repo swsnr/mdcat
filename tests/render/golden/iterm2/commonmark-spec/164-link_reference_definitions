@@ -1,3 +1,1 @@
-[34mFoo bar[0m[34m[1][0m
-
-[34m[1]: my url title[0m
+]8;;file://HOSTNAME/WORKING_DIR/tests/render/md/commonmark-spec/my%20url[34mFoo bar[0m]8;;

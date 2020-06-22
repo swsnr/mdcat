@@ -1,3 +1,1 @@
-[34mfoo [0m[34m*[0m[34mbar[0m[34m[1][0m
-
-[34m[1]: baz* [0m
+]8;;file://HOSTNAME/WORKING_DIR/tests/render/md/commonmark-spec/baz*[34mfoo [0m[34m*[0m[34mbar[0m]8;;
