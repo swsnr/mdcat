@@ -30,6 +30,12 @@ lazy_static! {
         resource_access: mdcat::ResourceAccess::LocalOnly,
         syntax_set: (*SYNTAX_SET).clone(),
     };
+    static ref SETTINGS_VTE50: mdcat::Settings = mdcat::Settings {
+        terminal_capabilities: mdcat::TerminalCapabilities::vte50(),
+        terminal_size: mdcat::TerminalSize::default(),
+        resource_access: mdcat::ResourceAccess::LocalOnly,
+        syntax_set: (*SYNTAX_SET).clone(),
+    };
     static ref SETTINGS_ITERM2: mdcat::Settings = mdcat::Settings {
         terminal_capabilities: mdcat::TerminalCapabilities::iterm2(),
         terminal_size: mdcat::TerminalSize::default(),
@@ -122,6 +128,7 @@ fn render_golden_file<P: AsRef<Path>>(
         .unwrap();
 }
 
+/// Test basic rendering.
 #[test_resources("tests/render/md/*/*.md")]
 fn ansi_only(markdown_file: &str) {
     render_golden_file(
@@ -131,6 +138,13 @@ fn ansi_only(markdown_file: &str) {
     )
 }
 
+/// Test basic rendering plus inline links.
+#[test_resources("tests/render/md/*/*.md")]
+fn vte50(markdown_file: &str) {
+    render_golden_file("tests/render/golden/vte50", markdown_file, &*SETTINGS_VTE50)
+}
+
+/// Test the full shebang, but not on Windows, since the iTerm2 backend has some unimplemented stuff on Windows.
 #[test_resources("tests/render/md/*/*.md")]
 fn iterm2(markdown_file: &str) {
     render_golden_file(
