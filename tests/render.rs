@@ -20,6 +20,7 @@ use test_generator::test_resources;
 use anyhow::{Context, Result};
 use lazy_static::lazy_static;
 use std::io::Write;
+use url::Url;
 
 lazy_static! {
     static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
@@ -67,28 +68,30 @@ fn render<P: AsRef<Path>>(markdown_file: P, settings: &mdcat::Settings) -> Resul
     String::from_utf8(sink).with_context(|| "Failed to convert rendered result to string")
 }
 
+fn replace_system_specific_urls(s: &str) -> String {
+    let hostname = gethostname::gethostname().to_string_lossy().to_string();
+    let cwd = std::fs::canonicalize(std::env::current_dir().expect("Require working directory"))
+        .expect("Canonical working directory");
+
+    let mut cwd_url = Url::from_directory_path(cwd).expect("Working directory URL");
+    cwd_url
+        .set_host(Some(hostname.as_ref()))
+        .expect("gethostname as URL hist");
+    let mut host_url = Url::parse("file://").expect("file://");
+    host_url
+        .set_host(Some(hostname.as_ref()))
+        .expect("gethostname as URL hist");
+    s.replace(cwd_url.as_str(), "file://HOSTNAME/WORKING_DIRECTORY/")
+        .replace(host_url.as_str(), "file://HOSTNAME/")
+}
+
 fn render_golden_file<P: AsRef<Path>>(
     golden_dir: P,
     markdown_file: &str,
     settings: &mdcat::Settings,
 ) {
-    let hostname = gethostname::gethostname();
-    let cwd = std::fs::canonicalize(std::env::current_dir().expect("Require working directory"))
-        .expect("Canonical working directory");
     // Replace environment specific facts in
-    let rendered = render(markdown_file, settings)
-        .unwrap()
-        .replace(
-            &format!(
-                "file://{}/",
-                hostname.to_str().expect("Non-string hostname")
-            ),
-            "file://HOSTNAME/",
-        )
-        .replace(
-            cwd.to_str().expect("Non-string working directory"),
-            "/WORKING_DIR",
-        );
+    let rendered = replace_system_specific_urls(&render(markdown_file, settings).unwrap());
 
     let prefix = "tests/render/md";
     let golden_path = Path::new(markdown_file)

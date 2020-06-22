@@ -6,4 +6,4 @@ Lorem ipsum dolor sit amet, ]8;;http://www.example.com/inline[34mconsetetur[
 [34msadipscing[0m]8;; elitr, sed diam nonumy eirmod tempor
 invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos
 et accusam et ]8;;http://www.example.com/reference[34mjusto duo dolores[0m]8;; et ea rebum. Stet clita kasd gubergren, no
-sea ]8;;file://HOSTNAME/WORKING_DIR/tests/render/md/samples/showcase.md[34mtakimata sanctus[0m]8;; est Lorem ipsum dolor sit amet.
+sea ]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/render/md/samples/showcase.md[34mtakimata sanctus[0m]8;; est Lorem ipsum dolor sit amet.
