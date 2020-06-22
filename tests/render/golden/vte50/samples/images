@@ -1,0 +1,17 @@
+An inline [35mimage[0m[35m[1][0m.
+
+An inline ]8;;https://example.com/[35mimage[0m[35m[2][0m]8;; with a link.
+
+An inline ]8;;https://example.com/[34mlinked [0m[35mimage[0m[35m[3][0m]8;; with some extra text.
+
+An inline ]8;;https://example.com/[1;34mlinked [0m[1;35mimage[0m[1;35m[4][0m]8;; with nested formatting.
+
+Or as block:
+
+[35mimage[0m[35m[5][0m
+
+[35m[1]: ./image.png [0m
+[35m[2]: ./image.png [0m
+[35m[3]: ./image.png [0m
+[35m[4]: ./image.png [0m
+[35m[5]: ./image.png [0m
