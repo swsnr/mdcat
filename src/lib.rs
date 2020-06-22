@@ -125,7 +125,12 @@ mod tests {
     fn render_string(input: &str, settings: &Settings) -> String {
         let source = Parser::new(input);
         let mut sink = Vec::new();
-        push_tty(settings, &mut sink, &Path::new("/"), source)?;
+        push_tty(
+            settings,
+            &mut sink,
+            &std::env::current_dir().expect("Working directory"),
+            source,
+        )?;
         String::from_utf8_lossy(&sink).into()
     }
 
