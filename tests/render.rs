@@ -76,17 +76,16 @@ fn render<P: AsRef<Path>>(markdown_file: P, settings: &mdcat::Settings) -> Resul
 
 fn replace_system_specific_urls(s: &str) -> String {
     let hostname = gethostname::gethostname().to_string_lossy().to_string();
-    let cwd = std::fs::canonicalize(std::env::current_dir().expect("Require working directory"))
-        .expect("Canonical working directory");
+    let cwd = std::env::current_dir().expect("Require working directory");
 
     let mut cwd_url = Url::from_directory_path(cwd).expect("Working directory URL");
     cwd_url
         .set_host(Some(hostname.as_ref()))
-        .expect("gethostname as URL hist");
+        .expect("gethostname as URL host");
     let mut host_url = Url::parse("file://").expect("file://");
     host_url
         .set_host(Some(hostname.as_ref()))
-        .expect("gethostname as URL hist");
+        .expect("gethostname as URL host");
     s.replace(cwd_url.as_str(), "file://HOSTNAME/WORKING_DIRECTORY/")
         .replace(host_url.as_str(), "file://HOSTNAME/")
 }
