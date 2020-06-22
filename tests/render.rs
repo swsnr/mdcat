@@ -146,6 +146,7 @@ fn vte50(markdown_file: &str) {
 
 /// Test the full shebang, but not on Windows, since the iTerm2 backend has some unimplemented stuff on Windows.
 #[test_resources("tests/render/md/*/*.md")]
+#[cfg(not(windows))]
 fn iterm2(markdown_file: &str) {
     render_golden_file(
         "tests/render/golden/iterm2",
