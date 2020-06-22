@@ -8,10 +8,10 @@
 
 //! Write markdown to TTYs.
 
-use std::io::{ErrorKind, Write};
+use std::io::{ErrorKind, Result, Write};
 use std::path::Path;
 
-use fehler::{throw, throws};
+use fehler::throws;
 use pulldown_cmark::Event;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
@@ -19,6 +19,7 @@ use syntect::parsing::SyntaxSet;
 // Expose some select things for use in main
 pub use crate::resources::ResourceAccess;
 pub use crate::terminal::*;
+use url::Url;
 
 mod magic;
 mod resources;
@@ -45,6 +46,18 @@ pub struct Settings {
     pub syntax_set: SyntaxSet,
 }
 
+fn base_url(base_dir: &Path) -> Result<Url> {
+    Url::from_directory_path(base_dir).map_err(|_| {
+        Error::new(
+            ErrorKind::InvalidInput,
+            format!(
+                "Base directory {} must be an absolute path",
+                base_dir.display()
+            ),
+        )
+    })
+}
+
 /// Write markdown to a TTY.
 ///
 /// Iterate over Markdown AST `events`, format each event for TTY output and
@@ -58,27 +71,28 @@ pub struct Settings {
 pub fn push_tty<'a, 'e, W, I>(
     settings: &Settings,
     writer: &'a mut W,
-    base_dir: &'a Path,
+    base_dir: &Path,
     mut events: I,
 ) -> ()
 where
     I: Iterator<Item = Event<'e>>,
     W: Write,
 {
-    if !(base_dir.is_absolute()) {
-        throw!(Error::new(
-            ErrorKind::InvalidInput,
-            format!(
-                "Base directory {} must be an absolute path",
-                base_dir.display()
-            )
-        ))
-    }
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
     use render::*;
     let (final_state, final_data) = events.try_fold(
         (State::default(), StateData::default()),
-        |(state, data), event| write_event(writer, settings, base_dir, &theme, state, data, event),
+        |(state, data), event| {
+            write_event(
+                writer,
+                settings,
+                &base_url(base_dir)?,
+                &theme,
+                state,
+                data,
+                event,
+            )
+        },
     )?;
     finish(writer, settings, final_state, final_data)?;
 }
@@ -109,7 +123,15 @@ where
                 .fg(Colour::Purple)
                 .paint(format!("{:?}", event));
             writeln!(writer, "{} {} {}", s, sep, e)?;
-            write_event(&mut sink, settings, base_dir, &theme, state, data, event)
+            write_event(
+                &mut sink,
+                settings,
+                &base_url(base_dir)?,
+                &theme,
+                state,
+                data,
+                event,
+            )
         },
     )?;
     writeln!(writer, "{:?}", final_state)?;

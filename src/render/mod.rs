@@ -7,7 +7,6 @@
 //! Rendering algorithm.
 
 use std::io::prelude::*;
-use std::path::Path;
 
 use ansi_term::{Colour, Style};
 use fehler::throws;
@@ -33,9 +32,9 @@ use crate::render::state::MarginControl::{Margin, NoMargin};
 pub use data::StateData;
 pub use state::State;
 
-fn resolve_reference(base_dir: &Path, reference: &str) -> Option<Url> {
+fn resolve_reference(base_url: &Url, reference: &str) -> Option<Url> {
     Url::parse(reference)
-        .or_else(|_| Url::from_file_path(base_dir.join(reference)))
+        .or_else(|_| base_url.join(reference))
         .ok()
 }
 
@@ -44,7 +43,7 @@ fn resolve_reference(base_dir: &Path, reference: &str) -> Option<Url> {
 pub fn write_event<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
-    base_dir: &Path,
+    base_url: &Url,
     theme: &Theme,
     state: State,
     data: StateData<'a>,
@@ -519,7 +518,7 @@ pub fn write_event<'a, W: Write>(
             let link_state = match settings.terminal_capabilities.links {
                 LinkCapability::OSC8(ref osc8) => {
                     // TODO: Handle email links
-                    resolve_reference(base_dir, &target)
+                    resolve_reference(base_url, &target)
                         .and_then(|url| osc8.set_link_url(writer, url).ok())
                         .and(Some(InlineLink))
                 }
@@ -575,7 +574,7 @@ pub fn write_event<'a, W: Write>(
             use ImageCapability::*;
             let image_state = match (
                 &settings.terminal_capabilities.image,
-                resolve_reference(base_dir, &link),
+                resolve_reference(base_url, &link),
             ) {
                 (Terminology(terminology), Some(ref url)) => {
                     terminology.write_inline_image(writer, settings.terminal_size, url)?;
@@ -661,7 +660,7 @@ mod tests {
     #[test]
     fn resolve_reference_with_url() {
         let url = resolve_reference(
-            &std::env::current_dir().expect("Current dir"),
+            &Url::parse("file:///some/root/").unwrap(),
             "http://www.example.com/reference",
         );
         assert_eq!(
@@ -672,28 +671,18 @@ mod tests {
 
     #[test]
     fn resolve_reference_with_relative_url() {
-        let cwd = std::env::current_dir().expect("Current dir");
-        let cwd_url = Url::from_directory_path(&cwd).expect("Current dir URL");
-        let url = resolve_reference(&cwd, "./foo.md");
+        let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "./foo.md");
 
-        assert!(
-            url.as_ref()
-                .map_or(false, |u| u.as_str().starts_with("file://")),
-            "Url {:?} starts with file://",
-            url
+        assert_eq!(
+            url.as_ref().map_or("", |u| u.as_str()),
+            "file:///some/root/foo.md"
         );
-        assert!(
-            url.as_ref()
-                .map_or(false, |u| u.as_str().starts_with(cwd_url.as_str())),
-            "Url {:?} starts with {}",
-            url,
-            cwd_url
-        );
-        assert!(
-            url.as_ref()
-                .map_or(false, |u| u.as_str().ends_with("/foo.md")),
-            "Url {:?} ends with foo.md",
-            url
-        );
+    }
+
+    #[test]
+    fn resolve_reference_with_absolute_url() {
+        let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "/foo.md");
+
+        assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///foo.md");
     }
 }

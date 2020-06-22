@@ -13,6 +13,9 @@ To publish a new release run `scripts/release` from the project directory.
 ### Changed
 - `mdcat::push_tty` now returns an error if `base_dir` is a relative path.
 
+### Fixed
+- Always treat links targets as URLs, never as paths.
+
 ## [0.19.0] – 2020-06-19
 ### Added
 - Release packages now include generated shell completions for Bash, Zsh and Fish.
