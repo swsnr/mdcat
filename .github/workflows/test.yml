@@ -75,7 +75,7 @@ jobs:
           override: true
           target: ${{ matrix.target }}
       # Build, including tests, to report build failures and measure build time separately from tests
-      - name:
+      - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
