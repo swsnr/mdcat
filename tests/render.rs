@@ -74,20 +74,31 @@ fn render<P: AsRef<Path>>(markdown_file: P, settings: &mdcat::Settings) -> Resul
     String::from_utf8(sink).with_context(|| "Failed to convert rendered result to string")
 }
 
-fn replace_system_specific_urls(s: &str) -> String {
+fn replace_system_specific_urls(input: String) -> String {
     let hostname = gethostname::gethostname().to_string_lossy().to_string();
     let cwd = std::env::current_dir().expect("Require working directory");
 
-    let mut cwd_url = Url::from_directory_path(cwd).expect("Working directory URL");
-    cwd_url
-        .set_host(Some(hostname.as_ref()))
-        .expect("gethostname as URL host");
-    let mut host_url = Url::parse("file://").expect("file://");
-    host_url
-        .set_host(Some(hostname.as_ref()))
-        .expect("gethostname as URL host");
-    s.replace(cwd_url.as_str(), "file://HOSTNAME/WORKING_DIRECTORY/")
-        .replace(host_url.as_str(), "file://HOSTNAME/")
+    let mut urls = [
+        // Replace any URLs pointing to the current working directory
+        (
+            Url::from_directory_path(&cwd).expect("Working directory URL"),
+            "file://HOSTNAME/WORKING_DIRECTORY/",
+        ),
+        // Replace any URLs pointing to the root URL, to account for windows drive letters.
+        (
+            Url::from_directory_path(&cwd)
+                .expect("Working directory URL")
+                .join("/")
+                .expect("Root URL"),
+            "file://HOSTNAME/ROOT/",
+        ),
+    ];
+
+    urls.iter_mut().fold(input, |s, (url, replacement)| {
+        url.set_host(Some(hostname.as_ref()))
+            .expect("gethostname as URL host");
+        s.replace(url.as_str(), replacement)
+    })
 }
 
 fn render_golden_file<P: AsRef<Path>>(
@@ -96,7 +107,7 @@ fn render_golden_file<P: AsRef<Path>>(
     settings: &mdcat::Settings,
 ) {
     // Replace environment specific facts in
-    let rendered = replace_system_specific_urls(&render(markdown_file, settings).unwrap());
+    let rendered = replace_system_specific_urls(render(markdown_file, settings).unwrap());
 
     let prefix = "tests/render/md";
     let golden_path = Path::new(markdown_file)

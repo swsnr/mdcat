@@ -653,36 +653,50 @@ pub fn finish<'a, W: Write>(
 
 #[cfg(test)]
 mod tests {
-    use super::resolve_reference;
-    use pretty_assertions::assert_eq;
-    use url::Url;
+    mod resolve_reference {
+        use super::super::resolve_reference;
+        use pretty_assertions::assert_eq;
+        use url::Url;
 
-    #[test]
-    fn resolve_reference_with_url() {
-        let url = resolve_reference(
-            &Url::parse("file:///some/root/").unwrap(),
-            "http://www.example.com/reference",
-        );
-        assert_eq!(
-            url.as_ref().map_or("", |u| u.as_str()),
-            "http://www.example.com/reference"
-        );
-    }
+        #[test]
+        fn absolute_url() {
+            let url = resolve_reference(
+                &Url::parse("file:///some/root/").unwrap(),
+                "http://www.example.com/reference",
+            );
+            assert_eq!(
+                url.as_ref().map_or("", |u| u.as_str()),
+                "http://www.example.com/reference"
+            );
+        }
 
-    #[test]
-    fn resolve_reference_with_relative_url() {
-        let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "./foo.md");
+        #[test]
+        fn relative_path() {
+            let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "./foo.md");
 
-        assert_eq!(
-            url.as_ref().map_or("", |u| u.as_str()),
-            "file:///some/root/foo.md"
-        );
-    }
+            assert_eq!(
+                url.as_ref().map_or("", |u| u.as_str()),
+                "file:///some/root/foo.md"
+            );
+        }
 
-    #[test]
-    fn resolve_reference_with_absolute_url() {
-        let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "/foo.md");
+        #[test]
+        fn absolute_path() {
+            let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "/foo.md");
 
-        assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///foo.md");
+            assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///foo.md");
+        }
+
+        #[test]
+        fn base_with_drive_letter_and_absolute_path() {
+            let url = resolve_reference(&Url::parse("file:///d:/some/folder").unwrap(), "/foo");
+            assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///d:/foo");
+        }
+
+        #[test]
+        fn base_with_drive_letter_and_root_path() {
+            let url = resolve_reference(&Url::parse("file:///d:/some/folder").unwrap(), "/");
+            assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///d:/");
+        }
     }
 }
