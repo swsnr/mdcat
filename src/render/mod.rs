@@ -651,3 +651,49 @@ pub fn finish<'a, W: Write>(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::resolve_reference;
+    use pretty_assertions::assert_eq;
+    use url::Url;
+
+    #[test]
+    fn resolve_reference_with_url() {
+        let url = resolve_reference(
+            &std::env::current_dir().expect("Current dir"),
+            "http://www.example.com/reference",
+        );
+        assert_eq!(
+            url.as_ref().map_or("", |u| u.as_str()),
+            "http://www.example.com/reference"
+        );
+    }
+
+    #[test]
+    fn resolve_reference_with_relative_url() {
+        let cwd = std::env::current_dir().expect("Current dir");
+        let cwd_url = Url::from_directory_path(&cwd).expect("Current dir URL");
+        let url = resolve_reference(&cwd, "./foo.md");
+
+        assert!(
+            url.as_ref()
+                .map_or(false, |u| u.as_str().starts_with("file://")),
+            "Url {:?} starts with file://",
+            url
+        );
+        assert!(
+            url.as_ref()
+                .map_or(false, |u| u.as_str().starts_with(cwd_url.as_str())),
+            "Url {:?} starts with {}",
+            url,
+            cwd_url
+        );
+        assert!(
+            url.as_ref()
+                .map_or(false, |u| u.as_str().ends_with("/foo.md")),
+            "Url {:?} ends with foo.md",
+            url
+        );
+    }
+}
