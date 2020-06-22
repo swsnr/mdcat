@@ -64,14 +64,14 @@ fn render<P: AsRef<Path>>(markdown_file: P, settings: &mdcat::Settings) -> Resul
             markdown_file.as_ref().display()
         )
     })?;
-    String::from_utf8(sink).with_context(|| format!("Failed to convert rendered result to string"))
+    String::from_utf8(sink).with_context(|| "Failed to convert rendered result to string")
 }
 
 fn render_golden_file<P: AsRef<Path>>(
     golden_dir: P,
     markdown_file: &str,
     settings: &mdcat::Settings,
-) -> () {
+) {
     let hostname = gethostname::gethostname();
     let cwd = std::fs::canonicalize(std::env::current_dir().expect("Require working directory"))
         .expect("Canonical working directory");
