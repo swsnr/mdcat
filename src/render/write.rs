@@ -12,7 +12,7 @@ use pulldown_cmark::CodeBlockKind;
 use syntect::highlighting::{HighlightState, Highlighter, Theme};
 use syntect::parsing::{ParseState, ScopeStack};
 
-use crate::render::data::Link;
+use crate::render::data::LinkReferenceDefinition;
 use crate::render::state::*;
 use crate::{MarkCapability, Settings, StyleCapability, TerminalCapabilities, TerminalSize};
 
@@ -70,14 +70,34 @@ pub fn write_border<W: Write>(
 pub fn write_link_refs<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
-    links: Vec<Link>,
+    links: Vec<LinkReferenceDefinition>,
 ) -> () {
     if !links.is_empty() {
         writeln!(writer)?;
         for link in links {
             let style = Style::new().fg(link.colour);
-            let link_text = format!("[{}]: {} {}", link.index, link.target, link.title);
-            write_styled(writer, capabilities, &style, link_text)?;
+            write_styled(writer, capabilities, &style, &format!("[{}]: ", link.index))?;
+
+            // If we could resolve the link try to write it as inline link to make the URL
+            // clickable.  This mostly helps images inside inline links which we had to write as
+            // reference links because we can't nest inline links.
+            if let Some(url) = link.resolved_target {
+                use crate::LinkCapability::*;
+                match &capabilities.links {
+                    OSC8(links) => {
+                        links.set_link_url(writer, url)?;
+                        write_styled(writer, capabilities, &style, link.target)?;
+                        links.clear_link(writer)?;
+                    }
+                    NoLinks => write_styled(writer, capabilities, &style, link.target)?,
+                };
+            } else {
+                write_styled(writer, capabilities, &style, link.target)?;
+            }
+
+            if !link.title.is_empty() {
+                write_styled(writer, capabilities, &style, format!(" {}", link.title))?;
+            }
             writeln!(writer)?;
         }
     }

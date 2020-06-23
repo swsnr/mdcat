@@ -8,6 +8,6 @@ invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos
 et accusam et [34mjusto duo dolores[0m[34m[2][0m et ea rebum. Stet clita kasd gubergren, no
 sea [34mtakimata sanctus[0m[34m[3][0m est Lorem ipsum dolor sit amet.
 
-[34m[1]: http://www.example.com/inline [0m
-[34m[2]: http://www.example.com/reference [0m
-[34m[3]: ./showcase.md [0m
+[34m[1]: [0m[34mhttp://www.example.com/inline[0m
+[34m[2]: [0m[34mhttp://www.example.com/reference[0m
+[34m[3]: [0m[34m./showcase.md[0m

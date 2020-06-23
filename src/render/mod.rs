@@ -558,7 +558,8 @@ pub fn write_event<'a, W: Write>(
             (stack.pop(), data)
         }
         (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
-            let (data, index) = data.add_link(target, title, Colour::Blue);
+            let resolved_target = resolve_reference(base_url, &target);
+            let (data, index) = data.add_link(target, resolved_target, title, Colour::Blue);
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
@@ -618,7 +619,8 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, RenderedImage), Text(_)) => (Stacked(stack, RenderedImage), data),
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => (stack.pop(), data),
         (Stacked(stack, Inline(_, attrs)), End(Image(_, target, title))) => {
-            let (data, index) = data.add_link(target, title, Colour::Purple);
+            let resolved_target = resolve_reference(base_url, &target);
+            let (data, index) = data.add_link(target, resolved_target, title, Colour::Purple);
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
@@ -656,7 +658,11 @@ pub fn finish<'a, W: Write>(
 ) -> () {
     match state {
         State::TopLevel(_) => {
-            write_link_refs(writer, &settings.terminal_capabilities, data.pending_links)?;
+            write_link_refs(
+                writer,
+                &settings.terminal_capabilities,
+                data.pending_link_definitions,
+            )?;
         }
         _ => {
             panic!("Must finish in state TopLevel but got: {:?}", state);

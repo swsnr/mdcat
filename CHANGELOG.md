@@ -9,6 +9,8 @@ To publish a new release run `scripts/release` from the project directory.
 ## [Unreleased]
 ### Added
 - `mdcat::TerminalCapabilities` now exposes constructors for specific terminal emulators.
+- Render reference link definitions as inline links if possible (see [GH-149]).  
+    This mainly affects image links inside inline links which get rendered as reference links.
 
 ### Changed
 - `mdcat::push_tty` now returns an error if `base_dir` is a relative path.

@@ -10,11 +10,11 @@ Or as block:
 
 [35mimage[0m[35m[8][0m
 
-[35m[1]: ./image.png [0m
-[35m[2]: ./image.png [0m
-[34m[3]: https://example.com [0m
-[35m[4]: ./image.png [0m
-[34m[5]: https://example.com [0m
-[35m[6]: ./image.png [0m
-[34m[7]: https://example.com [0m
-[35m[8]: ./image.png [0m
+[35m[1]: [0m[35m./image.png[0m
+[35m[2]: [0m[35m./image.png[0m
+[34m[3]: [0m[34mhttps://example.com[0m
+[35m[4]: [0m[35m./image.png[0m
+[34m[5]: [0m[34mhttps://example.com[0m
+[35m[6]: [0m[35m./image.png[0m
+[34m[7]: [0m[34mhttps://example.com[0m
+[35m[8]: [0m[35m./image.png[0m

@@ -1,4 +1,4 @@
 [35mfoo [0m[35mbar[0m[35m[1][0m[35m[2][0m
 
-[35m[1]: /url [0m
-[35m[2]: /url2 [0m
+[35m[1]: [0m]8;;file://HOSTNAME/ROOT/url[35m/url[0m]8;;
+[35m[2]: [0m]8;;file://HOSTNAME/ROOT/url2[35m/url2[0m]8;;

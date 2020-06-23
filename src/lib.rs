@@ -269,7 +269,8 @@ mod tests {
 
     ┄No refs before this headline
 
-[1]: http://example.com/world \n
+[1]: http://example.com/world
+
 ┄But before this\n"
             )
         }
@@ -287,12 +288,13 @@ Hello [Donald](http://example.com/Donald)"
                 .unwrap(),
                 "Hello World[1]
 
-[1]: http://example.com/world \n
+[1]: http://example.com/world
+
 ┄Headline
 
 Hello Donald[2]
 
-[2]: http://example.com/Donald \n"
+[2]: http://example.com/Donald\n"
             )
         }
     }
