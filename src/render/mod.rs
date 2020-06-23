@@ -601,13 +601,14 @@ pub fn write_event<'a, W: Write>(
                 (_, None) => None,
             }
             .unwrap_or_else(|| {
-                Inline(
-                    InlineText,
-                    InlineAttrs {
-                        indent,
-                        style: style.fg(Colour::Purple),
-                    },
-                )
+                // Inside an inline link keep the blue foreground colour; we cannot nest links so we
+                // should clarify that clicking the link follows the link target and not the image.
+                let style = if let InlineLink = state {
+                    style
+                } else {
+                    style.fg(Colour::Purple)
+                };
+                Inline(InlineText, InlineAttrs { indent, style })
             });
             stack
                 .push(Inline(state, attrs))
@@ -621,7 +622,9 @@ pub fn write_event<'a, W: Write>(
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
-                &attrs.style,
+                // Regardless of text style always colour the reference to make clear it points to
+                // an image
+                &attrs.style.fg(Colour::Purple),
                 format!("[{}]", index),
             )?;
             (stack.pop(), data)
