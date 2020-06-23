@@ -583,7 +583,9 @@ pub fn write_event<'a, W: Write>(
                 (ITerm2(iterm2), Some(ref url)) => iterm2
                     .read_and_render(url, settings.resource_access)
                     .and_then(|contents| {
-                        iterm2.write_inline_image(writer, url.as_str(), &contents)?;
+                        // Use the last segment as file name for iterm2.
+                        let name = url.path_segments().and_then(|s| s.last());
+                        iterm2.write_inline_image(writer, name, &contents)?;
                         Ok(RenderedImage)
                     })
                     .map(|_| RenderedImage)
