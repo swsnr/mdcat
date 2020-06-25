@@ -16,7 +16,7 @@ right), and [PragmataPro] as font.
 [dracula]: https://draculatheme.com/iterm/
 [iterm2]: https://www.iterm2.com
 [PragmataPro]: https://www.fsd.it/shop/fonts/pragmatapro/
-[sxs]: https://raw.githubusercontent.com/lunaryorn/mdcat/master/screenshots/side-by-side.png
+[sxs]: ./screenshots/side-by-side.png
 
 ## Features
 
