@@ -36,7 +36,7 @@ latest_version="$(git tag --sort '-v:refname' | grep '^mdcat-' | head -n1 | cut 
 # Substitute version in Cargo.toml
 sed -i'' "1,/^version =/ s/^version = .*$/version = \"$next_version\"/" Cargo.toml
 # Make cargo update the version in the lockfile as well
-cargo metadata --format-version 1 > /dev/null
+cargo metadata --format-version 1 >/dev/null
 # Add both files to Git
 git add Cargo.toml Cargo.lock
 
@@ -58,4 +58,3 @@ git commit -m "Release $next_version"
 git tag -m "mdcat $next_version" "mdcat-$next_version"
 cargo publish --no-verify
 git push --follow-tags origin main
-
