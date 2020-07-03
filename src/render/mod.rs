@@ -573,10 +573,8 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
             let InlineAttrs { style, indent } = attrs;
             use ImageCapability::*;
-            let image_state = match (
-                &settings.terminal_capabilities.image,
-                resolve_reference(base_url, &link),
-            ) {
+            let resolved_link = resolve_reference(base_url, &link);
+            let image_state = match (&settings.terminal_capabilities.image, resolved_link) {
                 (Terminology(terminology), Some(ref url)) => {
                     terminology.write_inline_image(writer, settings.terminal_size, url)?;
                     Some(RenderedImage)
@@ -598,7 +596,25 @@ pub fn write_event<'a, W: Write>(
                         Ok(RenderedImage)
                     })
                     .ok(),
-                (ImageCapability::NoImages, _) => None,
+                (ImageCapability::NoImages, Some(url)) => {
+                    if let InlineLink = state {
+                        None
+                    } else {
+                        match &settings.terminal_capabilities.links {
+                            LinkCapability::OSC8(osc8) => {
+                                osc8.set_link_url(writer, url)?;
+                                Some(Inline(
+                                    InlineLink,
+                                    InlineAttrs {
+                                        indent,
+                                        style: style.fg(Colour::Purple),
+                                    },
+                                ))
+                            }
+                            LinkCapability::NoLinks => None,
+                        }
+                    }
+                }
                 (_, None) => None,
             }
             .unwrap_or_else(|| {
@@ -618,18 +634,30 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, RenderedImage), Text(_)) => (Stacked(stack, RenderedImage), data),
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => (stack.pop(), data),
-        (Stacked(stack, Inline(_, attrs)), End(Image(_, target, title))) => {
-            let resolved_target = resolve_reference(base_url, &target);
-            let (data, index) = data.add_link(target, resolved_target, title, Colour::Purple);
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                // Regardless of text style always colour the reference to make clear it points to
-                // an image
-                &attrs.style.fg(Colour::Purple),
-                format!("[{}]", index),
-            )?;
-            (stack.pop(), data)
+        (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
+            if let InlineLink = state {
+                match settings.terminal_capabilities.links {
+                    LinkCapability::OSC8(ref osc8) => {
+                        osc8.clear_link(writer)?;
+                    }
+                    LinkCapability::NoLinks => {
+                        panic!("Unreachable code: We opened an inline link but can't close it now?")
+                    }
+                }
+                (stack.pop(), data)
+            } else {
+                let resolved_target = resolve_reference(base_url, &target);
+                let (data, index) = data.add_link(target, resolved_target, title, Colour::Purple);
+                write_styled(
+                    writer,
+                    &settings.terminal_capabilities,
+                    // Regardless of text style always colour the reference to make clear it points to
+                    // an image
+                    &attrs.style.fg(Colour::Purple),
+                    format!("[{}]", index),
+                )?;
+                (stack.pop(), data)
+            }
         }
 
         // Unconditional returns to previous states

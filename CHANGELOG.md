@@ -15,6 +15,7 @@ To publish a new release run `scripts/release` from the project directory.
 ### Changed
 - `mdcat::push_tty` now returns an error if `base_dir` is a relative path.
 - Image links now use purple foreground text (see [GH-140] and [GH-149]).
+- Image links render as inline links if the terminal does not support inline images and the image is not inside another link. (see [GH-141]).
 
 ### Fixed
 - Always treat links targets as URLs, never as paths.
@@ -22,6 +23,7 @@ To publish a new release run `scripts/release` from the project directory.
     Previously mdcat used the full URL based on a misunderstanding of the [Inline Images Protocol].
 
 [GH-140]: https://github.com/lunaryorn/mdcat/issues/140
+[GH-141]: https://github.com/lunaryorn/mdcat/issues/141
 [GH-149]: https://github.com/lunaryorn/mdcat/issues/149
 [Inline Images Protocol]: https://iterm2.com/documentation-images.html
 
