@@ -20,8 +20,8 @@ if [[ -n "${changes}" ]]; then
     exit 1
 fi
 
-if [[ "$(git symbolic-ref --short HEAD)" != "master" ]]; then
-    echo "Not on master branch; aborting"
+if [[ "$(git symbolic-ref --short HEAD)" != "main" ]]; then
+    echo "Not on main branch; aborting"
     exit 1
 fi
 
@@ -57,5 +57,5 @@ git add CHANGELOG.md
 git commit -m "Release $next_version"
 git tag -m "mdcat $next_version" "mdcat-$next_version"
 cargo publish --no-verify
-git push --follow-tags origin master
+git push --follow-tags origin main
 
