@@ -15,7 +15,6 @@ use super::osc::write_osc;
 use crate::resources::read_url;
 use crate::{magic, ResourceAccess};
 use anyhow::{Context, Result};
-use std::ffi::OsStr;
 use std::io::{self, Write};
 use url::Url;
 
@@ -49,32 +48,25 @@ impl ITerm2Images {
     ///
     /// `name` is the local file name and `contents` are the contents of the
     /// given file.
-    #[cfg(unix)]
-    pub fn write_inline_image<W: Write, S: AsRef<OsStr>>(
+    pub fn write_inline_image<W: Write>(
         self,
         writer: &mut W,
-        name: S,
+        name: Option<&str>,
         contents: &[u8],
     ) -> io::Result<()> {
-        use std::os::unix::ffi::OsStrExt;
         write_osc(
             writer,
-            &format!(
-                "1337;File=name={};inline=1:{}",
-                base64::encode(name.as_ref().as_bytes()),
-                base64::encode(contents)
+            &name.map_or_else(
+                || format!("1337;inline=1:{}", base64::encode(contents)),
+                |name| {
+                    format!(
+                        "1337;File=name={};inline=1:{}",
+                        base64::encode(name.as_bytes()),
+                        base64::encode(contents)
+                    )
+                },
             ),
         )
-    }
-
-    #[cfg(windows)]
-    pub fn write_inline_image<W: Write, S: AsRef<OsStr>>(
-        self,
-        _writer: &mut W,
-        _name: S,
-        _contents: &[u8],
-    ) -> io::Result<()> {
-        unimplemented!()
     }
 
     /// Read `url` and render to an image if necessary.

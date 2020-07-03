@@ -2,6 +2,6 @@
 [34mbar[0m[34m[2][0m,
 [34mbaz[0m[34m[3][0m
 
-[34m[1]: /foo-url foo[0m
-[34m[2]: /bar-url bar[0m
-[34m[3]: /baz-url [0m
+[34m[1]: [0m[34m/foo-url[0m[34m foo[0m
+[34m[2]: [0m[34m/bar-url[0m[34m bar[0m
+[34m[3]: [0m[34m/baz-url[0m

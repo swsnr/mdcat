@@ -558,7 +558,8 @@ pub fn write_event<'a, W: Write>(
             (stack.pop(), data)
         }
         (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
-            let (data, index) = data.add_link(target, title);
+            let resolved_target = resolve_reference(base_url, &target);
+            let (data, index) = data.add_link(target, resolved_target, title, Colour::Blue);
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
@@ -572,10 +573,8 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
             let InlineAttrs { style, indent } = attrs;
             use ImageCapability::*;
-            let image_state = match (
-                &settings.terminal_capabilities.image,
-                resolve_reference(base_url, &link),
-            ) {
+            let resolved_link = resolve_reference(base_url, &link);
+            let image_state = match (&settings.terminal_capabilities.image, resolved_link) {
                 (Terminology(terminology), Some(ref url)) => {
                     terminology.write_inline_image(writer, settings.terminal_size, url)?;
                     Some(RenderedImage)
@@ -583,7 +582,9 @@ pub fn write_event<'a, W: Write>(
                 (ITerm2(iterm2), Some(ref url)) => iterm2
                     .read_and_render(url, settings.resource_access)
                     .and_then(|contents| {
-                        iterm2.write_inline_image(writer, url.as_str(), &contents)?;
+                        // Use the last segment as file name for iterm2.
+                        let name = url.path_segments().and_then(|s| s.last());
+                        iterm2.write_inline_image(writer, name, &contents)?;
                         Ok(RenderedImage)
                     })
                     .map(|_| RenderedImage)
@@ -595,10 +596,37 @@ pub fn write_event<'a, W: Write>(
                         Ok(RenderedImage)
                     })
                     .ok(),
-                (ImageCapability::NoImages, _) => None,
+                (ImageCapability::NoImages, Some(url)) => {
+                    if let InlineLink = state {
+                        None
+                    } else {
+                        match &settings.terminal_capabilities.links {
+                            LinkCapability::OSC8(osc8) => {
+                                osc8.set_link_url(writer, url)?;
+                                Some(Inline(
+                                    InlineLink,
+                                    InlineAttrs {
+                                        indent,
+                                        style: style.fg(Colour::Purple),
+                                    },
+                                ))
+                            }
+                            LinkCapability::NoLinks => None,
+                        }
+                    }
+                }
                 (_, None) => None,
             }
-            .unwrap_or_else(|| Inline(InlineText, InlineAttrs { indent, style }));
+            .unwrap_or_else(|| {
+                // Inside an inline link keep the blue foreground colour; we cannot nest links so we
+                // should clarify that clicking the link follows the link target and not the image.
+                let style = if let InlineLink = state {
+                    style
+                } else {
+                    style.fg(Colour::Purple)
+                };
+                Inline(InlineText, InlineAttrs { indent, style })
+            });
             stack
                 .push(Inline(state, attrs))
                 .current(image_state)
@@ -606,15 +634,30 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, RenderedImage), Text(_)) => (Stacked(stack, RenderedImage), data),
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => (stack.pop(), data),
-        (Stacked(stack, Inline(_, attrs)), End(Image(_, target, title))) => {
-            let (data, index) = data.add_link(target, title);
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &attrs.style,
-                format!("[{}]", index),
-            )?;
-            (stack.pop(), data)
+        (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
+            if let InlineLink = state {
+                match settings.terminal_capabilities.links {
+                    LinkCapability::OSC8(ref osc8) => {
+                        osc8.clear_link(writer)?;
+                    }
+                    LinkCapability::NoLinks => {
+                        panic!("Unreachable code: We opened an inline link but can't close it now?")
+                    }
+                }
+                (stack.pop(), data)
+            } else {
+                let resolved_target = resolve_reference(base_url, &target);
+                let (data, index) = data.add_link(target, resolved_target, title, Colour::Purple);
+                write_styled(
+                    writer,
+                    &settings.terminal_capabilities,
+                    // Regardless of text style always colour the reference to make clear it points to
+                    // an image
+                    &attrs.style.fg(Colour::Purple),
+                    format!("[{}]", index),
+                )?;
+                (stack.pop(), data)
+            }
         }
 
         // Unconditional returns to previous states
@@ -643,7 +686,11 @@ pub fn finish<'a, W: Write>(
 ) -> () {
     match state {
         State::TopLevel(_) => {
-            write_link_refs(writer, &settings.terminal_capabilities, data.pending_links)?;
+            write_link_refs(
+                writer,
+                &settings.terminal_capabilities,
+                data.pending_link_definitions,
+            )?;
         }
         _ => {
             panic!("Must finish in state TopLevel but got: {:?}", state);

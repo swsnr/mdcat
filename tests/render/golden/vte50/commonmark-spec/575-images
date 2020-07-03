@@ -1,3 +1,1 @@
-My foo bar[1]
-
-[34m[1]: /path/to/train.jpg title[0m
+My ]8;;file://HOSTNAME/ROOT/path/to/train.jpg[35mfoo bar[0m]8;;

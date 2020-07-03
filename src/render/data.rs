@@ -4,13 +4,23 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+use ansi_term::Colour;
 use pulldown_cmark::CowStr;
+use url::Url;
 
+/// The definition of a reference link, i.e. a numeric index for a link.
 #[derive(Debug, PartialEq)]
-pub struct Link<'a> {
+pub struct LinkReferenceDefinition<'a> {
+    /// The reference index of this link.
     pub(crate) index: u16,
+    /// The link target as it appeared in Markdown.
     pub(crate) target: CowStr<'a>,
+    /// The resolved link target, or `None` if the link failed to resolve.
+    pub(crate) resolved_target: Option<Url>,
+    /// The link title as it appeared in Markdown.
     pub(crate) title: CowStr<'a>,
+    /// The colour to use for the link.
+    pub(crate) colour: Colour,
 }
 
 /// Data associated with rendering state.
@@ -19,32 +29,45 @@ pub struct Link<'a> {
 /// concerns which are manipulated across all states.
 #[derive(Debug)]
 pub struct StateData<'a> {
-    /// A list of pending reference links.
+    /// A list of pending reference link definitions.
     ///
     /// These are links which mdcat already created a reference number for
     /// but didn't yet write out.
-    pub(super) pending_links: Vec<Link<'a>>,
+    pub(super) pending_link_definitions: Vec<LinkReferenceDefinition<'a>>,
     /// The reference number for the next link.
     pub(super) next_link: u16,
 }
 
 impl<'a> StateData<'a> {
-    pub(crate) fn add_link(mut self, target: CowStr<'a>, title: CowStr<'a>) -> (Self, u16) {
+    /// Add a pending link to the state data.
+    ///
+    /// `target` is the link target, and `title` the link title to show after the URL.
+    /// `colour` is the colour to use for foreground text to differentiate between
+    /// different types of links.
+    pub(crate) fn add_link(
+        mut self,
+        target: CowStr<'a>,
+        resolved_target: Option<Url>,
+        title: CowStr<'a>,
+        colour: Colour,
+    ) -> (Self, u16) {
         let index = self.next_link;
         self.next_link += 1;
-        self.pending_links.push(Link {
+        self.pending_link_definitions.push(LinkReferenceDefinition {
             index,
             target,
+            resolved_target,
             title,
+            colour,
         });
         (self, index)
     }
 
-    pub(crate) fn take_links(self) -> (Self, Vec<Link<'a>>) {
-        let links = self.pending_links;
+    pub(crate) fn take_links(self) -> (Self, Vec<LinkReferenceDefinition<'a>>) {
+        let links = self.pending_link_definitions;
         (
             StateData {
-                pending_links: Vec::new(),
+                pending_link_definitions: Vec::new(),
                 ..self
             },
             links,
@@ -55,7 +78,7 @@ impl<'a> StateData<'a> {
 impl<'a> Default for StateData<'a> {
     fn default() -> Self {
         StateData {
-            pending_links: Vec::new(),
+            pending_link_definitions: Vec::new(),
             next_link: 1,
         }
     }
