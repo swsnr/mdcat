@@ -33,7 +33,7 @@ package_unix() {
     mkdir "${pkg_dir}/${ARCHIVE_NAME}"
     cp README.md CHANGELOG.md LICENSE "target/${TARGET}/release/mdcat" "${pkg_dir}/${ARCHIVE_NAME}"
     cp -r "${OUTDIR}/completions" "${pkg_dir}/${ARCHIVE_NAME}"
-    tar -czf "${PWD}/${archive_file}" -C "$pkg_dir" "${ARCHIVE_NAME}"
+    tar -czf "${PWD}/${archive_file}" -C "${pkg_dir}" "${ARCHIVE_NAME}"
     echo ::set-output "name=file::${archive_file}"
     echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
 }
