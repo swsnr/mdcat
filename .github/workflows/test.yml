@@ -8,6 +8,19 @@ on:
   pull_request:
 
 jobs:
+  check-scripts:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download tools
+        run: |
+          curl -fsSL -o ./shfmt https://github.com/mvdan/sh/releases/download/v3.1.2/shfmt_v3.1.2_linux_amd64
+          chmod 700 ./shfmt
+      - name: Check formatting
+        run: ./shfmt -i 4 -l -d scripts/*
+      - name: Lint scripts
+        run: shellcheck -S style -o all scripts/*
+
   lint:
     runs-on: ubuntu-latest
     steps:
