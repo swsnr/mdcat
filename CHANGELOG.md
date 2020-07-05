@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+## [0.20.0] – 2020-07-05
 ### Added
 - `mdcat::TerminalCapabilities` now exposes constructors for specific terminal emulators.
 - Render reference link definitions as inline links if possible (see [GH-149]).  
@@ -394,4 +396,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.18.3]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.2...mdcat-0.18.3
 [0.18.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.3...mdcat-0.18.4
 [0.19.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.4...mdcat-0.19.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.19.0...HEAD
+[0.20.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.19.0...mdcat-0.20.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.20.0...HEAD
