@@ -6,7 +6,6 @@
 
 use ansi_term::Colour;
 use pulldown_cmark::CowStr;
-use url::Url;
 
 /// The definition of a reference link, i.e. a numeric index for a link.
 #[derive(Debug, PartialEq)]
@@ -15,8 +14,6 @@ pub struct LinkReferenceDefinition<'a> {
     pub(crate) index: u16,
     /// The link target as it appeared in Markdown.
     pub(crate) target: CowStr<'a>,
-    /// The resolved link target, or `None` if the link failed to resolve.
-    pub(crate) resolved_target: Option<Url>,
     /// The link title as it appeared in Markdown.
     pub(crate) title: CowStr<'a>,
     /// The colour to use for the link.
@@ -47,7 +44,6 @@ impl<'a> StateData<'a> {
     pub(crate) fn add_link(
         mut self,
         target: CowStr<'a>,
-        resolved_target: Option<Url>,
         title: CowStr<'a>,
         colour: Colour,
     ) -> (Self, u16) {
@@ -56,7 +52,6 @@ impl<'a> StateData<'a> {
         self.pending_link_definitions.push(LinkReferenceDefinition {
             index,
             target,
-            resolved_target,
             title,
             colour,
         });

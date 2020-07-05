@@ -30,7 +30,7 @@ pub enum StyleCapability {
 }
 
 /// How the terminal supports inline links.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum LinkCapability {
     /// The terminal does not support inline links.
     NoLinks,
@@ -116,7 +116,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "iTerm2".to_string(),
             style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+            links: LinkCapability::OSC8(self::osc::OSC8Links),
             image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
             marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
         }
@@ -127,7 +127,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "Terminology".to_string(),
             style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+            links: LinkCapability::OSC8(self::osc::OSC8Links),
             image: ImageCapability::Terminology(self::terminology::TerminologyImages),
             marks: MarkCapability::None,
         }
@@ -149,7 +149,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "VTE 50".to_string(),
             style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::OSC8(self::osc::OSC8Links::for_localhost()),
+            links: LinkCapability::OSC8(self::osc::OSC8Links),
             image: ImageCapability::NoImages,
             marks: MarkCapability::None,
         }

@@ -22,6 +22,7 @@ pub use crate::terminal::*;
 use url::Url;
 
 mod magic;
+mod references;
 mod resources;
 mod svg;
 mod terminal;
@@ -46,32 +47,65 @@ pub struct Settings {
     pub syntax_set: SyntaxSet,
 }
 
-fn base_url(base_dir: &Path) -> Result<Url> {
-    Url::from_directory_path(base_dir).map_err(|_| {
-        Error::new(
-            ErrorKind::InvalidInput,
-            format!(
-                "Base directory {} must be an absolute path",
-                base_dir.display()
-            ),
-        )
-    })
+/// The environment to render markdown in.
+#[derive(Debug)]
+pub struct Environment {
+    /// The base URL to resolve relative URLs with.
+    pub base_url: Url,
+    /// The local host name.
+    pub hostname: String,
+}
+
+impl Environment {
+    /// Create an environment for the local host with the given `base_url`.
+    ///
+    /// Take the local hostname from `gethostname`.
+    pub fn for_localhost(base_url: Url) -> Result<Self> {
+        gethostname::gethostname()
+            .into_string()
+            .map_err(|raw| {
+                Error::new(
+                    ErrorKind::InvalidData,
+                    format!("gethostname() returned invalid unicode data: {:?}", raw),
+                )
+            })
+            .map(|hostname| Environment { base_url, hostname })
+    }
+
+    /// Create an environment for a local diretory.
+    ///
+    /// Convert the directory to a directory URL, and obtain the hostname from `gethostname`.
+    ///
+    /// `base_dir` must be an absolute path; return an IO error with `ErrorKind::InvalidInput`
+    /// otherwise.
+    pub fn for_local_directory<P: AsRef<Path>>(base_dir: &P) -> Result<Self> {
+        Url::from_directory_path(base_dir)
+            .map_err(|_| {
+                Error::new(
+                    ErrorKind::InvalidInput,
+                    format!(
+                        "Base directory {} must be an absolute path",
+                        base_dir.as_ref().display()
+                    ),
+                )
+            })
+            .and_then(Self::for_localhost)
+    }
 }
 
 /// Write markdown to a TTY.
 ///
 /// Iterate over Markdown AST `events`, format each event for TTY output and
-/// write the result to a `writer`, using the given `settings` for rendering and
-/// resource access.  `base_dir` denotes the base directory the `events` were
-/// read from, to resolve relative references in the Markdown document.
+/// write the result to a `writer`, using the given `settings` and `environment`
+/// for rendering and resource access.
 ///
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
 #[throws]
 pub fn push_tty<'a, 'e, W, I>(
     settings: &Settings,
+    environment: &Environment,
     writer: &'a mut W,
-    base_dir: &Path,
     mut events: I,
 ) -> ()
 where
@@ -83,26 +117,18 @@ where
     let (final_state, final_data) = events.try_fold(
         (State::default(), StateData::default()),
         |(state, data), event| {
-            write_event(
-                writer,
-                settings,
-                &base_url(base_dir)?,
-                &theme,
-                state,
-                data,
-                event,
-            )
+            write_event(writer, settings, environment, &theme, state, data, event)
         },
     )?;
-    finish(writer, settings, final_state, final_data)?;
+    finish(writer, settings, environment, final_state, final_data)?;
 }
 
 /// Write as push_tty would, but ignore actual output and instead write states and events.
 #[throws]
 pub fn dump_states<'a, 'e, W, I>(
     settings: &Settings,
+    environment: &Environment,
     writer: &'a mut W,
-    base_dir: &'a Path,
     mut events: I,
 ) -> ()
 where
@@ -123,15 +149,7 @@ where
                 .fg(Colour::Purple)
                 .paint(format!("{:?}", event));
             writeln!(writer, "{} {} {}", s, sep, e)?;
-            write_event(
-                &mut sink,
-                settings,
-                &base_url(base_dir)?,
-                &theme,
-                state,
-                data,
-                event,
-            )
+            write_event(&mut sink, settings, environment, &theme, state, data, event)
         },
     )?;
     writeln!(writer, "{:?}", final_state)?;
@@ -147,12 +165,9 @@ mod tests {
     fn render_string(input: &str, settings: &Settings) -> String {
         let source = Parser::new(input);
         let mut sink = Vec::new();
-        push_tty(
-            settings,
-            &mut sink,
-            &std::env::current_dir().expect("Working directory"),
-            source,
-        )?;
+        let env =
+            Environment::for_local_directory(&std::env::current_dir().expect("Working directory"))?;
+        push_tty(settings, &env, &mut sink, source)?;
         String::from_utf8_lossy(&sink).into()
     }
 

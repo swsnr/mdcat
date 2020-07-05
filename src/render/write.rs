@@ -12,9 +12,12 @@ use pulldown_cmark::CodeBlockKind;
 use syntect::highlighting::{HighlightState, Highlighter, Theme};
 use syntect::parsing::{ParseState, ScopeStack};
 
+use crate::references::*;
 use crate::render::data::LinkReferenceDefinition;
 use crate::render::state::*;
-use crate::{MarkCapability, Settings, StyleCapability, TerminalCapabilities, TerminalSize};
+use crate::{
+    Environment, MarkCapability, Settings, StyleCapability, TerminalCapabilities, TerminalSize,
+};
 
 #[inline]
 pub fn write_indent<W: Write>(writer: &mut W, level: u16) -> std::io::Result<()> {
@@ -69,6 +72,7 @@ pub fn write_border<W: Write>(
 #[throws]
 pub fn write_link_refs<W: Write>(
     writer: &mut W,
+    environment: &Environment,
     capabilities: &TerminalCapabilities,
     links: Vec<LinkReferenceDefinition>,
 ) -> () {
@@ -78,14 +82,14 @@ pub fn write_link_refs<W: Write>(
             let style = Style::new().fg(link.colour);
             write_styled(writer, capabilities, &style, &format!("[{}]: ", link.index))?;
 
-            // If we could resolve the link try to write it as inline link to make the URL
+            // If we can resolve the link try to write it as inline link to make the URL
             // clickable.  This mostly helps images inside inline links which we had to write as
             // reference links because we can't nest inline links.
-            if let Some(url) = link.resolved_target {
+            if let Some(url) = environment.resolve_reference(&link.target) {
                 use crate::LinkCapability::*;
                 match &capabilities.links {
                     OSC8(links) => {
-                        links.set_link_url(writer, url)?;
+                        links.set_link_url(writer, url, &environment.hostname)?;
                         write_styled(writer, capabilities, &style, link.target)?;
                         links.clear_link(writer)?;
                     }

@@ -10,7 +10,7 @@
 
 use clap::{value_t, values_t};
 use fehler::throws;
-use mdcat::Settings;
+use mdcat::{Environment, Settings};
 use pulldown_cmark::{Options, Parser};
 use std::fs::File;
 use std::io::prelude::*;
@@ -53,11 +53,12 @@ fn process_file(filename: &str, settings: &Settings, dump_events: bool) -> Resul
     options.insert(Options::ENABLE_TASKLISTS);
     options.insert(Options::ENABLE_STRIKETHROUGH);
     let parser = Parser::new_ext(&input, options);
+    let env = Environment::for_local_directory(&base_dir)?;
 
     if dump_events {
-        mdcat::dump_states(settings, &mut stdout(), &base_dir, parser)
+        mdcat::dump_states(settings, &env, &mut stdout(), parser)
     } else {
-        mdcat::push_tty(settings, &mut stdout(), &base_dir, parser)
+        mdcat::push_tty(settings, &env, &mut stdout(), parser)
     }
     .or_else(|error| {
         if error.kind() == std::io::ErrorKind::BrokenPipe {

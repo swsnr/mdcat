@@ -16,15 +16,15 @@ use pulldown_cmark::{Event, LinkType};
 use std::io::Error;
 use syntect::highlighting::{HighlightIterator, Highlighter, Theme};
 use syntect::util::LinesWithEndings;
-use url::Url;
 
 use crate::terminal::*;
-use crate::Settings;
+use crate::{Environment, Settings};
 
 mod data;
 mod state;
 mod write;
 
+use crate::references::*;
 use state::*;
 use write::*;
 
@@ -32,18 +32,12 @@ use crate::render::state::MarginControl::{Margin, NoMargin};
 pub use data::StateData;
 pub use state::State;
 
-fn resolve_reference(base_url: &Url, reference: &str) -> Option<Url> {
-    Url::parse(reference)
-        .or_else(|_| base_url.join(reference))
-        .ok()
-}
-
 #[allow(clippy::cognitive_complexity)]
 #[throws]
 pub fn write_event<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
-    base_url: &Url,
+    environment: &Environment,
     theme: &Theme,
     state: State,
     data: StateData<'a>,
@@ -65,7 +59,7 @@ pub fn write_event<'a, W: Write>(
         }
         (TopLevel(attrs), Start(Heading(level))) => {
             let (data, links) = data.take_links();
-            write_link_refs(writer, &settings.terminal_capabilities, links)?;
+            write_link_refs(writer, environment, &settings.terminal_capabilities, links)?;
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -518,8 +512,9 @@ pub fn write_event<'a, W: Write>(
             let link_state = match settings.terminal_capabilities.links {
                 LinkCapability::OSC8(ref osc8) => {
                     // TODO: Handle email links
-                    resolve_reference(base_url, &target)
-                        .and_then(|url| osc8.set_link_url(writer, url).ok())
+                    environment
+                        .resolve_reference(&target)
+                        .and_then(|url| osc8.set_link_url(writer, url, &environment.hostname).ok())
                         .and(Some(InlineLink))
                 }
                 LinkCapability::NoLinks => None,
@@ -558,8 +553,7 @@ pub fn write_event<'a, W: Write>(
             (stack.pop(), data)
         }
         (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
-            let resolved_target = resolve_reference(base_url, &target);
-            let (data, index) = data.add_link(target, resolved_target, title, Colour::Blue);
+            let (data, index) = data.add_link(target, title, Colour::Blue);
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
@@ -573,7 +567,7 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
             let InlineAttrs { style, indent } = attrs;
             use ImageCapability::*;
-            let resolved_link = resolve_reference(base_url, &link);
+            let resolved_link = environment.resolve_reference(&link);
             let image_state = match (&settings.terminal_capabilities.image, resolved_link) {
                 (Terminology(terminology), Some(ref url)) => {
                     terminology.write_inline_image(writer, settings.terminal_size, url)?;
@@ -602,7 +596,7 @@ pub fn write_event<'a, W: Write>(
                     } else {
                         match &settings.terminal_capabilities.links {
                             LinkCapability::OSC8(osc8) => {
-                                osc8.set_link_url(writer, url)?;
+                                osc8.set_link_url(writer, url, &environment.hostname)?;
                                 Some(Inline(
                                     InlineLink,
                                     InlineAttrs {
@@ -646,8 +640,7 @@ pub fn write_event<'a, W: Write>(
                 }
                 (stack.pop(), data)
             } else {
-                let resolved_target = resolve_reference(base_url, &target);
-                let (data, index) = data.add_link(target, resolved_target, title, Colour::Purple);
+                let (data, index) = data.add_link(target, title, Colour::Purple);
                 write_styled(
                     writer,
                     &settings.terminal_capabilities,
@@ -681,6 +674,7 @@ Please do report an issue at <https://github.com/lunaryorn/mdcat/issues/new> inc
 pub fn finish<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
+    environment: &Environment,
     state: State,
     data: StateData<'a>,
 ) -> () {
@@ -688,62 +682,13 @@ pub fn finish<'a, W: Write>(
         State::TopLevel(_) => {
             write_link_refs(
                 writer,
+                environment,
                 &settings.terminal_capabilities,
                 data.pending_link_definitions,
             )?;
         }
         _ => {
             panic!("Must finish in state TopLevel but got: {:?}", state);
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    mod resolve_reference {
-        use super::super::resolve_reference;
-        use pretty_assertions::assert_eq;
-        use url::Url;
-
-        #[test]
-        fn absolute_url() {
-            let url = resolve_reference(
-                &Url::parse("file:///some/root/").unwrap(),
-                "http://www.example.com/reference",
-            );
-            assert_eq!(
-                url.as_ref().map_or("", |u| u.as_str()),
-                "http://www.example.com/reference"
-            );
-        }
-
-        #[test]
-        fn relative_path() {
-            let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "./foo.md");
-
-            assert_eq!(
-                url.as_ref().map_or("", |u| u.as_str()),
-                "file:///some/root/foo.md"
-            );
-        }
-
-        #[test]
-        fn absolute_path() {
-            let url = resolve_reference(&Url::parse("file:///some/root/").unwrap(), "/foo.md");
-
-            assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///foo.md");
-        }
-
-        #[test]
-        fn base_with_drive_letter_and_absolute_path() {
-            let url = resolve_reference(&Url::parse("file:///d:/some/folder").unwrap(), "/foo");
-            assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///d:/foo");
-        }
-
-        #[test]
-        fn base_with_drive_letter_and_root_path() {
-            let url = resolve_reference(&Url::parse("file:///d:/some/folder").unwrap(), "/");
-            assert_eq!(url.as_ref().map_or("", |u| u.as_str()), "file:///d:/");
         }
     }
 }

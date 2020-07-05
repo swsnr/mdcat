@@ -11,11 +11,13 @@ To publish a new release run `scripts/release` from the project directory.
 - `mdcat::TerminalCapabilities` now exposes constructors for specific terminal emulators.
 - Render reference link definitions as inline links if possible (see [GH-149]).  
     This mainly affects image links inside inline links which get rendered as reference links.
+- `mdcat::Environment` now contains all environment information required to render properly, namely the local hostname and the base URL.
 
 ### Changed
-- `mdcat::push_tty` now returns an error if `base_dir` is a relative path.
+- `mdcat::push_tty` now takes an `mdcat::Environment` instead of `base_dir`.
+    `base_dir` is now part of `mdcat::Environment`.
 - Image links now use purple foreground text (see [GH-140] and [GH-149]).
-- Image links render as inline links if the terminal does not support inline images and the image is not inside another link. (see [GH-141]).
+- Image links render as inline links if the terminal does not support inline images and the image is not inside another link (see [GH-141]).
 
 ### Fixed
 - Always treat links targets as URLs, never as paths.

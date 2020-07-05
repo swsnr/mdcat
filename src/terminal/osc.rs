@@ -19,10 +19,8 @@ pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> () {
     writer.write_all(&[0x07])?;
 }
 
-#[derive(Debug)]
-pub struct OSC8Links {
-    hostname: String,
-}
+#[derive(Debug, Copy, Clone)]
+pub struct OSC8Links;
 
 /// Whether the given `url` needs to get an explicit host.
 ///
@@ -55,28 +53,21 @@ fn url_needs_explicit_host(url: &Url) -> bool {
 }
 
 impl OSC8Links {
-    /// Create OSC 8 links support for this host.
-    ///
-    /// Queries and remembers the hostname of this system as per `gethostname()`
-    /// to resolve local `file://` URLs.
-    pub fn for_localhost() -> OSC8Links {
-        use gethostname::gethostname;
-        OSC8Links {
-            // Hostnames should be ASCII only anyway
-            hostname: gethostname().to_string_lossy().into_owned(),
-        }
-    }
-
     /// Set a link to the given `destination` URL for subsequent text.
     ///
     /// Take ownership of `destination` to resolve `file://` URLs for localhost
-    /// and loopback addresses, and print these with the proper hostname of the
+    /// and loopback addresses, and print these with the proper `hostname` of the
     /// local system instead to make `file://` URLs work properly over SSH.
     ///
     /// See <https://git.io/vd4ee#file-uris-and-the-hostname>.
-    pub fn set_link_url<W: Write>(&self, writer: &mut W, mut destination: Url) -> Result<()> {
+    pub fn set_link_url<W: Write>(
+        &self,
+        writer: &mut W,
+        mut destination: Url,
+        hostname: &str,
+    ) -> Result<()> {
         if url_needs_explicit_host(&destination) {
-            destination.set_host(Some(&self.hostname)).unwrap();
+            destination.set_host(Some(&hostname)).unwrap();
         }
         self.set_link(writer, destination.as_str())
     }

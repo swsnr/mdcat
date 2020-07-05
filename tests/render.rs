@@ -19,6 +19,7 @@ use test_generator::test_resources;
 
 use anyhow::{Context, Result};
 use lazy_static::lazy_static;
+use mdcat::Environment;
 use std::io::Write;
 use url::Url;
 
@@ -65,7 +66,11 @@ fn render<P: AsRef<Path>>(markdown_file: P, settings: &mdcat::Settings) -> Resul
         .parent()
         .expect("Absolute file name must have a parent!");
     let mut sink = Vec::new();
-    mdcat::push_tty(settings, &mut sink, base_dir, parser).with_context(|| {
+    let env = Environment {
+        hostname: "HOSTNAME".to_string(),
+        ..Environment::for_local_directory(&base_dir)?
+    };
+    mdcat::push_tty(settings, &env, &mut sink, parser).with_context(|| {
         format!(
             "Failed to render contents of {}",
             markdown_file.as_ref().display()
@@ -75,7 +80,6 @@ fn render<P: AsRef<Path>>(markdown_file: P, settings: &mdcat::Settings) -> Resul
 }
 
 fn replace_system_specific_urls(input: String) -> String {
-    let hostname = gethostname::gethostname().to_string_lossy().to_string();
     let cwd = std::env::current_dir().expect("Require working directory");
 
     let mut urls = [
@@ -95,7 +99,7 @@ fn replace_system_specific_urls(input: String) -> String {
     ];
 
     urls.iter_mut().fold(input, |s, (url, replacement)| {
-        url.set_host(Some(hostname.as_ref()))
+        url.set_host(Some("HOSTNAME"))
             .expect("gethostname as URL host");
         s.replace(url.as_str(), replacement)
     })
