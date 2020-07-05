@@ -509,17 +509,23 @@ pub fn write_event<'a, W: Write>(
         // Links need a bit more work than standard inline markup because we
         // need to keep track of link references if we can't write inline links.
         (Stacked(stack, Inline(state, attrs)), Start(Link(_, target, _))) => {
-            let link_state = match settings.terminal_capabilities.links {
-                LinkCapability::OSC8(ref osc8) => {
-                    // TODO: Handle email links
-                    environment
-                        .resolve_reference(&target)
-                        .and_then(|url| osc8.set_link_url(writer, url, &environment.hostname).ok())
-                        .and(Some(InlineLink))
-                }
-                LinkCapability::NoLinks => None,
-            }
-            .unwrap_or(InlineText);
+            let link_state = settings
+                .terminal_capabilities
+                .links
+                .and_then(|link_capability| {
+                    match link_capability {
+                        LinkCapability::OSC8(ref osc8) => {
+                            // TODO: Handle email links
+                            environment
+                                .resolve_reference(&target)
+                                .and_then(|url| {
+                                    osc8.set_link_url(writer, url, &environment.hostname).ok()
+                                })
+                                .and(Some(InlineLink(link_capability)))
+                        }
+                    }
+                })
+                .unwrap_or(InlineText);
 
             let InlineAttrs { style, indent } = attrs;
             stack
@@ -533,13 +539,10 @@ pub fn write_event<'a, W: Write>(
                 ))
                 .and_data(data)
         }
-        (Stacked(stack, Inline(InlineLink, _)), End(Link(_, _, _))) => {
-            match settings.terminal_capabilities.links {
+        (Stacked(stack, Inline(InlineLink(capability), _)), End(Link(_, _, _))) => {
+            match capability {
                 LinkCapability::OSC8(ref osc8) => {
                     osc8.clear_link(writer)?;
-                }
-                LinkCapability::NoLinks => {
-                    panic!("Unreachable code: We opened an inline link but can't close it now?")
                 }
             }
             (stack.pop(), data)
@@ -568,12 +571,12 @@ pub fn write_event<'a, W: Write>(
             let InlineAttrs { style, indent } = attrs;
             use ImageCapability::*;
             let resolved_link = environment.resolve_reference(&link);
-            let image_state = match (&settings.terminal_capabilities.image, resolved_link) {
-                (Terminology(terminology), Some(ref url)) => {
+            let image_state = match (settings.terminal_capabilities.image, resolved_link) {
+                (Some(Terminology(terminology)), Some(ref url)) => {
                     terminology.write_inline_image(writer, settings.terminal_size, url)?;
                     Some(RenderedImage)
                 }
-                (ITerm2(iterm2), Some(ref url)) => iterm2
+                (Some(ITerm2(iterm2)), Some(ref url)) => iterm2
                     .read_and_render(url, settings.resource_access)
                     .and_then(|contents| {
                         // Use the last segment as file name for iterm2.
@@ -583,29 +586,31 @@ pub fn write_event<'a, W: Write>(
                     })
                     .map(|_| RenderedImage)
                     .ok(),
-                (Kitty(ref kitty), Some(ref url)) => kitty
+                (Some(Kitty(kitty)), Some(ref url)) => kitty
                     .read_and_render(url, settings.resource_access)
                     .and_then(|contents| {
                         kitty.write_inline_image(writer, contents)?;
                         Ok(RenderedImage)
                     })
                     .ok(),
-                (ImageCapability::NoImages, Some(url)) => {
-                    if let InlineLink = state {
+                (None, Some(url)) => {
+                    if let InlineLink(_) = state {
                         None
                     } else {
-                        match &settings.terminal_capabilities.links {
-                            LinkCapability::OSC8(osc8) => {
-                                osc8.set_link_url(writer, url, &environment.hostname)?;
-                                Some(Inline(
-                                    InlineLink,
-                                    InlineAttrs {
-                                        indent,
-                                        style: style.fg(Colour::Purple),
-                                    },
-                                ))
-                            }
-                            LinkCapability::NoLinks => None,
+                        match settings.terminal_capabilities.links {
+                            Some(capability) => match capability {
+                                LinkCapability::OSC8(osc8) => {
+                                    osc8.set_link_url(writer, url, &environment.hostname)?;
+                                    Some(Inline(
+                                        InlineLink(capability),
+                                        InlineAttrs {
+                                            indent,
+                                            style: style.fg(Colour::Purple),
+                                        },
+                                    ))
+                                }
+                            },
+                            None => None,
                         }
                     }
                 }
@@ -614,7 +619,7 @@ pub fn write_event<'a, W: Write>(
             .unwrap_or_else(|| {
                 // Inside an inline link keep the blue foreground colour; we cannot nest links so we
                 // should clarify that clicking the link follows the link target and not the image.
-                let style = if let InlineLink = state {
+                let style = if let InlineLink(_) = state {
                     style
                 } else {
                     style.fg(Colour::Purple)
@@ -629,13 +634,10 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, RenderedImage), Text(_)) => (Stacked(stack, RenderedImage), data),
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => (stack.pop(), data),
         (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
-            if let InlineLink = state {
-                match settings.terminal_capabilities.links {
+            if let InlineLink(capability) = state {
+                match capability {
                     LinkCapability::OSC8(ref osc8) => {
                         osc8.clear_link(writer)?;
-                    }
-                    LinkCapability::NoLinks => {
-                        panic!("Unreachable code: We opened an inline link but can't close it now?")
                     }
                 }
                 (stack.pop(), data)

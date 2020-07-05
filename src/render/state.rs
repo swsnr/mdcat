@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use crate::AnsiStyle;
+use crate::{AnsiStyle, LinkCapability};
 use ansi_term::Style;
 use std::borrow::Borrow;
 use syntect::highlighting::HighlightState;
@@ -77,7 +77,9 @@ pub enum InlineState {
     ///
     /// This state suppresses link references being written when reading a link
     /// end event.
-    InlineLink,
+    ///
+    /// Contains the link capability used to render the link.
+    InlineLink(LinkCapability),
     /// A list item.
     ///
     /// This is a hybrid between inline and block state because it can contain nested blocks as well

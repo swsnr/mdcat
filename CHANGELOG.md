@@ -18,6 +18,7 @@ To publish a new release run `scripts/release` from the project directory.
     `base_dir` is now part of `mdcat::Environment`.
 - Image links now use purple foreground text (see [GH-140] and [GH-149]).
 - Image links render as inline links if the terminal does not support inline images and the image is not inside another link (see [GH-141]).
+- `mdcat::TerminalCapabilities` now uses `Option` to denote missing capabilities.
 
 ### Fixed
 - Always treat links targets as URLs, never as paths.

@@ -23,17 +23,13 @@ pub use self::size::Size as TerminalSize;
 /// The capability of basic styling.
 #[derive(Debug, Copy, Clone)]
 pub enum StyleCapability {
-    /// The terminal supports no styles.
-    None,
     /// The terminal supports ANSI styles.
     Ansi(AnsiStyle),
 }
 
 /// How the terminal supports inline links.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum LinkCapability {
-    /// The terminal does not support inline links.
-    NoLinks,
     /// The terminal supports [OSC 8] inline links.
     ///
     /// [OSC 8]: https://git.io/vd4ee
@@ -43,8 +39,6 @@ pub enum LinkCapability {
 /// The capability of the terminal to set marks.
 #[derive(Debug, Copy, Clone)]
 pub enum MarkCapability {
-    /// The terminal can't set marks.
-    None,
     /// The terminal supports iTerm2 jump marks.
     ITerm2(self::iterm2::ITerm2Marks),
 }
@@ -52,8 +46,6 @@ pub enum MarkCapability {
 /// The capability of the terminal to write images inline.
 #[derive(Debug, Copy, Clone)]
 pub enum ImageCapability {
-    /// The terminal can't write images inline.
-    NoImages,
     /// The terminal understands the terminology way of inline images.
     Terminology(self::terminology::TerminologyImages),
     /// The terminal understands the iterm2 way of inline images.
@@ -68,13 +60,13 @@ pub struct TerminalCapabilities {
     /// How do we call this terminal?
     pub name: String,
     /// How the terminal supports basic styling.
-    pub style: StyleCapability,
+    pub style: Option<StyleCapability>,
     /// How the terminal supports links.
-    pub links: LinkCapability,
+    pub links: Option<LinkCapability>,
     /// How the terminal supports images.
-    pub image: ImageCapability,
+    pub image: Option<ImageCapability>,
     /// How the terminal supports marks.
-    pub marks: MarkCapability,
+    pub marks: Option<MarkCapability>,
 }
 
 /// Get the version of the underlying VTE terminal if any.
@@ -93,10 +85,10 @@ impl TerminalCapabilities {
     pub fn none() -> TerminalCapabilities {
         TerminalCapabilities {
             name: "dumb".to_string(),
-            style: StyleCapability::None,
-            links: LinkCapability::NoLinks,
-            image: ImageCapability::NoImages,
-            marks: MarkCapability::None,
+            style: None,
+            links: None,
+            image: None,
+            marks: None,
         }
     }
 
@@ -104,10 +96,10 @@ impl TerminalCapabilities {
     pub fn ansi() -> TerminalCapabilities {
         TerminalCapabilities {
             name: "Ansi".to_string(),
-            style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::NoLinks,
-            image: ImageCapability::NoImages,
-            marks: MarkCapability::None,
+            style: Some(StyleCapability::Ansi(AnsiStyle)),
+            links: None,
+            image: None,
+            marks: None,
         }
     }
 
@@ -115,10 +107,10 @@ impl TerminalCapabilities {
     pub fn iterm2() -> TerminalCapabilities {
         TerminalCapabilities {
             name: "iTerm2".to_string(),
-            style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::OSC8(self::osc::OSC8Links),
-            image: ImageCapability::ITerm2(self::iterm2::ITerm2Images),
-            marks: MarkCapability::ITerm2(self::iterm2::ITerm2Marks),
+            style: Some(StyleCapability::Ansi(AnsiStyle)),
+            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
+            image: Some(ImageCapability::ITerm2(self::iterm2::ITerm2Images)),
+            marks: Some(MarkCapability::ITerm2(self::iterm2::ITerm2Marks)),
         }
     }
 
@@ -126,10 +118,12 @@ impl TerminalCapabilities {
     pub fn terminology() -> TerminalCapabilities {
         TerminalCapabilities {
             name: "Terminology".to_string(),
-            style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::OSC8(self::osc::OSC8Links),
-            image: ImageCapability::Terminology(self::terminology::TerminologyImages),
-            marks: MarkCapability::None,
+            style: Some(StyleCapability::Ansi(AnsiStyle)),
+            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
+            image: Some(ImageCapability::Terminology(
+                self::terminology::TerminologyImages,
+            )),
+            marks: None,
         }
     }
 
@@ -137,10 +131,10 @@ impl TerminalCapabilities {
     pub fn kitty() -> TerminalCapabilities {
         TerminalCapabilities {
             name: "Kitty".to_string(),
-            style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::NoLinks,
-            image: ImageCapability::Kitty(self::kitty::KittyImages),
-            marks: MarkCapability::None,
+            style: Some(StyleCapability::Ansi(AnsiStyle)),
+            links: None,
+            image: Some(ImageCapability::Kitty(self::kitty::KittyImages)),
+            marks: None,
         }
     }
 
@@ -148,10 +142,10 @@ impl TerminalCapabilities {
     pub fn vte50() -> TerminalCapabilities {
         TerminalCapabilities {
             name: "VTE 50".to_string(),
-            style: StyleCapability::Ansi(AnsiStyle),
-            links: LinkCapability::OSC8(self::osc::OSC8Links),
-            image: ImageCapability::NoImages,
-            marks: MarkCapability::None,
+            style: Some(StyleCapability::Ansi(AnsiStyle)),
+            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
+            image: None,
+            marks: None,
         }
     }
 

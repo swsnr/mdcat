@@ -32,17 +32,18 @@ pub fn write_styled<W: Write, S: AsRef<str>>(
     text: S,
 ) -> Result<()> {
     match capabilities.style {
-        StyleCapability::None => write!(writer, "{}", text.as_ref()),
-        StyleCapability::Ansi(ref ansi) => ansi.write_styled(writer, style, text),
+        None => write!(writer, "{}", text.as_ref()),
+        Some(StyleCapability::Ansi(ansi)) => ansi.write_styled(writer, style, text),
     }
 }
 
 #[inline]
 #[throws]
 pub fn write_mark<W: Write>(writer: &mut W, capabilities: &TerminalCapabilities) -> () {
-    match capabilities.marks {
-        MarkCapability::ITerm2(ref marks) => marks.set_mark(writer)?,
-        MarkCapability::None => (),
+    if let Some(mark) = capabilities.marks {
+        match mark {
+            MarkCapability::ITerm2(marks) => marks.set_mark(writer)?,
+        }
     }
 }
 
@@ -88,12 +89,12 @@ pub fn write_link_refs<W: Write>(
             if let Some(url) = environment.resolve_reference(&link.target) {
                 use crate::LinkCapability::*;
                 match &capabilities.links {
-                    OSC8(links) => {
+                    Some(OSC8(links)) => {
                         links.set_link_url(writer, url, &environment.hostname)?;
                         write_styled(writer, capabilities, &style, link.target)?;
                         links.clear_link(writer)?;
                     }
-                    NoLinks => write_styled(writer, capabilities, &style, link.target)?,
+                    None => write_styled(writer, capabilities, &style, link.target)?,
                 };
             } else {
                 write_styled(writer, capabilities, &style, link.target)?;
@@ -126,7 +127,7 @@ pub fn write_start_code_block<'a, W: Write>(
     write_indent(writer, indent)?;
 
     match (&settings.terminal_capabilities.style, block_kind) {
-        (StyleCapability::Ansi(ansi), CodeBlockKind::Fenced(name)) if !name.is_empty() => {
+        (Some(StyleCapability::Ansi(ansi)), CodeBlockKind::Fenced(name)) if !name.is_empty() => {
             match settings.syntax_set.find_syntax_by_token(&name) {
                 None => LiteralBlockAttrs {
                     indent,

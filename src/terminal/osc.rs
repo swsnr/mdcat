@@ -19,7 +19,7 @@ pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> () {
     writer.write_all(&[0x07])?;
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub struct OSC8Links;
 
 /// Whether the given `url` needs to get an explicit host.
