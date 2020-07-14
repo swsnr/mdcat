@@ -49,10 +49,10 @@ fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
 
 fn process_file(filename: &str, settings: &Settings, dump_events: bool) -> Result<()> {
     let (base_dir, input) = read_input(filename)?;
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_TASKLISTS);
-    options.insert(Options::ENABLE_STRIKETHROUGH);
-    let parser = Parser::new_ext(&input, options);
+    let parser = Parser::new_ext(
+        &input,
+        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
+    );
     let env = Environment::for_local_directory(&base_dir)?;
 
     if dump_events {
