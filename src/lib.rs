@@ -326,4 +326,41 @@ Hello Donald[2]
             )
         }
     }
+
+    mod disabled_features {
+        use anyhow::Result;
+        use pretty_assertions::assert_eq;
+        use syntect::parsing::SyntaxSet;
+
+        use crate::*;
+
+        use super::render_string;
+
+        fn render(markup: &str) -> Result<String> {
+            render_string(
+                markup,
+                &Settings {
+                    resource_access: ResourceAccess::LocalOnly,
+                    syntax_set: SyntaxSet::default(),
+                    terminal_capabilities: TerminalCapabilities::none(),
+                    terminal_size: TerminalSize::default(),
+                },
+            )
+        }
+
+        #[test]
+        fn do_not_choke_on_footnoes() {
+            assert_eq!(
+                render(
+                    "A footnote [^1]
+
+[^1: We do not support footnotes."
+                )
+                .unwrap(),
+                "A footnote [^1]
+
+[^1: We do not support footnotes.\n"
+            )
+        }
+    }
 }
