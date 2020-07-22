@@ -13,7 +13,6 @@
 
 use std::path::Path;
 
-use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use test_generator::test_resources;
 
@@ -52,10 +51,7 @@ fn render<P: AsRef<Path>>(markdown_file: P, settings: &mdcat::Settings) -> Resul
             markdown_file.as_ref().display()
         )
     })?;
-    let parser = Parser::new_ext(
-        &markdown,
-        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
-    );
+    let parser = mdcat::parse_ext_supported(&markdown);
     let abs_path = std::fs::canonicalize(&markdown_file).with_context(|| {
         format!(
             "Failed to convert {} to an absolute path",

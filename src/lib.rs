@@ -12,7 +12,7 @@ use std::io::{ErrorKind, Result, Write};
 use std::path::Path;
 
 use fehler::throws;
-use pulldown_cmark::Event;
+use pulldown_cmark::{Event, Options, Parser};
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 
@@ -93,6 +93,16 @@ impl Environment {
     }
 }
 
+/// Supported parser options.
+pub fn supported_options() -> Options {
+    Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH
+}
+
+/// Parse `input` with all parser extensions supported by mdcat.
+pub fn parse_ext_supported(input: &str) -> Parser<'_> {
+    Parser::new_ext(input, supported_options())
+}
+
 /// Write markdown to a TTY.
 ///
 /// Iterate over Markdown AST `events`, format each event for TTY output and
@@ -157,13 +167,16 @@ where
 
 #[cfg(test)]
 mod tests {
-    use pulldown_cmark::Parser;
-
     use super::*;
+
+    #[test]
+    fn supported_options_excludes_footnotes() {
+        assert!(!supported_options().contains(Options::ENABLE_FOOTNOTES))
+    }
 
     #[throws(anyhow::Error)]
     fn render_string(input: &str, settings: &Settings) -> String {
-        let source = Parser::new(input);
+        let source = parse_ext_supported(input);
         let mut sink = Vec::new();
         let env =
             Environment::for_local_directory(&std::env::current_dir().expect("Working directory"))?;

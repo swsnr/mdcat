@@ -11,7 +11,6 @@
 use clap::{value_t, values_t};
 use fehler::throws;
 use mdcat::{Environment, Settings};
-use pulldown_cmark::{Options, Parser};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{stdin, stdout};
@@ -49,10 +48,7 @@ fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
 
 fn process_file(filename: &str, settings: &Settings, dump_events: bool) -> Result<()> {
     let (base_dir, input) = read_input(filename)?;
-    let parser = Parser::new_ext(
-        &input,
-        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
-    );
+    let parser = mdcat::parse_ext_supported(&input);
     let env = Environment::for_local_directory(&base_dir)?;
 
     if dump_events {
