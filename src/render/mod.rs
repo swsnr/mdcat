@@ -667,7 +667,7 @@ Please do report an issue at <https://github.com/lunaryorn/mdcat/issues/new> inc
 
 * a copy of this message, and
 * the markdown document which caused this error.",
-            s, e
+            e, s
         ),
     }
 }
