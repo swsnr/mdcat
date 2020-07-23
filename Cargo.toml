@@ -62,3 +62,7 @@ clap = { version = "^2.33", default-features = false }
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller
 lto = true
+
+[patch.crates-io]
+# Work around https://github.com/raphlinus/pulldown-cmark/issues/459, see https://github.com/lunaryorn/mdcat/issues/155
+pulldown-cmark = { git = "https://github.com/marcusklaas/pulldown-cmark.git", branch = "footnote-option" }
