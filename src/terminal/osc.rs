@@ -39,17 +39,14 @@ pub struct OSC8Links;
 /// [OSC 8]: https://git.io/vd4ee
 /// [gethostname]: https://github.com/lunaryorn/gethostname.rs
 fn url_needs_explicit_host(url: &Url) -> bool {
-    if url.scheme() == "file" {
-        match url.host() {
+    url.scheme() == "file"
+        && match url.host() {
             None => true,
             Some(Host::Domain("localhost")) => true,
             Some(Host::Ipv4(addr)) if addr.is_loopback() => true,
             Some(Host::Ipv6(addr)) if addr.is_loopback() => true,
             _ => false,
         }
-    } else {
-        false
-    }
 }
 
 impl OSC8Links {
