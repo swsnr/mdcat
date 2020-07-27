@@ -16,6 +16,7 @@ use pulldown_cmark::{Event, LinkType};
 use std::io::Error;
 use syntect::highlighting::{HighlightIterator, Highlighter, Theme};
 use syntect::util::LinesWithEndings;
+use url::Url;
 
 use crate::terminal::*;
 use crate::{Environment, Settings};
@@ -508,21 +509,22 @@ pub fn write_event<'a, W: Write>(
         //
         // Links need a bit more work than standard inline markup because we
         // need to keep track of link references if we can't write inline links.
-        (Stacked(stack, Inline(state, attrs)), Start(Link(_, target, _))) => {
+        (Stacked(stack, Inline(state, attrs)), Start(Link(link_type, target, _))) => {
             let link_state = settings
                 .terminal_capabilities
                 .links
-                .and_then(|link_capability| {
-                    match link_capability {
-                        LinkCapability::OSC8(ref osc8) => {
-                            // TODO: Handle email links
-                            environment
-                                .resolve_reference(&target)
-                                .and_then(|url| {
-                                    osc8.set_link_url(writer, url, &environment.hostname).ok()
-                                })
-                                .and(Some(InlineLink(link_capability)))
-                        }
+                .and_then(|link_capability| match link_capability {
+                    LinkCapability::OSC8(ref osc8) => {
+                        let url = if let LinkType::Email = link_type {
+                            // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
+                            Url::parse(&format!("mailto:{}", target)).ok()
+                        } else {
+                            environment.resolve_reference(&target)
+                        };
+                        url.and_then(|url| {
+                            osc8.set_link_url(writer, url, &environment.hostname).ok()
+                        })
+                        .and(Some(InlineLink(link_capability)))
                     }
                 })
                 .unwrap_or(InlineText);

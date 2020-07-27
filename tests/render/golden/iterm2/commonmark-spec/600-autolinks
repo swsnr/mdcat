@@ -1,1 +1,1 @@
-]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/render/md/commonmark-spec/foo@bar.example.com[34mfoo@bar.example.com[0m]8;;
+]8;;mailto:foo@bar.example.com[34mfoo@bar.example.com[0m]8;;

@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Fixed
+- Render email autolinks (i.e. `<hello@example.com>`) as `mailto:` links.
+
 ## [0.20.0] – 2020-07-05
 ### Added
 - `mdcat::TerminalCapabilities` now exposes constructors for specific terminal emulators.

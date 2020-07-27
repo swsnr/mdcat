@@ -1,6 +1,6 @@
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
 tempor invidunt ut labore et dolore magna aliquyam erat
-(<http://www.example.com/autolink>), sed diam voluptua.
+(<http://www.example.com/autolink>), sed diam voluptua (<hello@example.com>).
 
 Lorem ipsum dolor sit amet, [consetetur
 sadipscing](http://www.example.com/inline) elitr, sed diam nonumy eirmod tempor
