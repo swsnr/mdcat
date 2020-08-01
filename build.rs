@@ -7,17 +7,20 @@
 use std::ffi::OsString;
 use std::path::Path;
 
-include!("src/cli.rs");
+mod mdcat {
+    include!("src/bin/mdcat/args.rs");
+}
 
 fn main() {
     let out_dir = std::env::var_os("OUT_DIR").expect("OUT_DIR not set");
 
-    println!("cargo:rerun-if-changed=src/cli.rs");
+    println!("cargo:rerun-if-changed=src/bin/mdcat/args.rs");
     gen_completions(&out_dir);
 }
 
 fn gen_completions(out_dir: &OsString) {
-    let mut a = app("80");
+    use clap::*;
+    let mut a = mdcat::app("80");
 
     let completions = Path::new(out_dir).join("completions");
     std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");

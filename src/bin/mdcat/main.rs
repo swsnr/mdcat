@@ -21,7 +21,7 @@ use syntect::parsing::SyntaxSet;
 
 use mdcat::{ResourceAccess, TerminalCapabilities, TerminalSize};
 
-mod cli;
+mod args;
 
 /// Read input for `filename`.
 ///
@@ -125,7 +125,7 @@ fn main() {
     let size = TerminalSize::detect().unwrap_or_default();
     let columns = size.width.to_string();
 
-    let matches = cli::app(&columns).get_matches();
+    let matches = args::app(&columns).get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
 
     if arguments.detect_only {
