@@ -8,8 +8,15 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- Add `--paginate` flag to paginate the output of mdcat (see [GH-152]);
+  with this flag mdcat sends it output to `less -R` or any alternative pager set in `$MDCAT_PAGER` or `$PAGER`.
+  This flag also disables all terminal-specific formatting as the pager likely won't support it.
+
 ### Fixed
 - Render email autolinks (i.e. `<hello@example.com>`) as `mailto:` links.
+
+[GH-152]: https://github.com/lunaryorn/mdcat/issues/152
 
 ## [0.20.0] – 2020-07-05
 ### Added

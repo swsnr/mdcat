@@ -16,8 +16,13 @@ pub(crate) fn app<'a, 'b>(default_columns: &'a str) -> App<'a, 'b> {
         .setting(AppSettings::DeriveDisplayOrder)
         .setting(AppSettings::ColoredHelp)
         .after_help(
-            "mdcat uses the standardized CommonMark dialect.  It formats
-markdown documents for viewing in text terminals:
+            "\
+mdcat looks at $MDCAT_PAGER and $PAGER if --paginate is given, and fallback to
+less -R if both are unset.  An empty variable value disables paging regardless
+of --paginate.
+
+mdcat uses the standardized CommonMark dialect.  It formats markdown documents
+for viewing in text terminals:
 
 • Colours for headings, block quotes, etc
 • Syntax highlighting for code blocks
@@ -31,6 +36,20 @@ v. 2.0. If a copy of the MPL was not distributed with this file,
 You can obtain one at http://mozilla.org/MPL/2.0/.
 
 Report issues to <https://github.com/lunaryorn/mdcat>.",
+        )
+        .arg(
+            Arg::with_name("paginate")
+                .short("p")
+                .long("--paginate")
+                .help("Paginate the output of mdcat with a pager like less.")
+                .next_line_help(true),
+        )
+        .arg(
+            Arg::with_name("no_pager")
+                .short("P")
+                .long("--no-pager")
+                .help("Do not page output.  Default if invoked as mdcat")
+                .overrides_with("paginate"),
         )
         .arg(
             Arg::with_name("filenames")
