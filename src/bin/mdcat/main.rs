@@ -88,6 +88,13 @@ struct Arguments {
     paginate: bool,
 }
 
+fn is_mdless() -> bool {
+    std::env::current_exe()
+        .ok()
+        .and_then(|p| p.file_stem().map(|stem| stem == "mdless"))
+        .unwrap_or(false)
+}
+
 impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches<'_>) -> clap::Result<Self> {
@@ -101,7 +108,8 @@ impl Arguments {
         let dump_events = matches.is_present("dump_events");
         let detect_only = matches.is_present("detect_only");
         let fail_fast = matches.is_present("fail_fast");
-        let paginate = matches.is_present("paginate") && !matches.is_present("no_pager");
+        let paginate =
+            (is_mdless() || matches.is_present("paginate")) && !matches.is_present("no_pager");
 
         let columns = value_t!(matches, "columns", usize)?;
         let resource_access = if matches.is_present("local_only") {
