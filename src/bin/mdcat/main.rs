@@ -14,14 +14,16 @@ use mdcat::{Environment, Settings};
 use pulldown_cmark::{Options, Parser};
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::{stdin, stdout};
+use std::io::stdin;
 use std::io::{Error, Result};
 use std::path::PathBuf;
 use syntect::parsing::SyntaxSet;
 
+use crate::output::Output;
 use mdcat::{ResourceAccess, TerminalCapabilities, TerminalSize};
 
-mod cli;
+mod args;
+mod output;
 
 /// Read input for `filename`.
 ///
@@ -47,7 +49,12 @@ fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
     }
 }
 
-fn process_file(filename: &str, settings: &Settings, dump_events: bool) -> Result<()> {
+fn process_file(
+    filename: &str,
+    settings: &Settings,
+    dump_events: bool,
+    output: &mut Output,
+) -> Result<()> {
     let (base_dir, input) = read_input(filename)?;
     let parser = Parser::new_ext(
         &input,
@@ -56,9 +63,9 @@ fn process_file(filename: &str, settings: &Settings, dump_events: bool) -> Resul
     let env = Environment::for_local_directory(&base_dir)?;
 
     if dump_events {
-        mdcat::dump_states(settings, &env, &mut stdout(), parser)
+        mdcat::dump_states(settings, &env, &mut output.writer(), parser)
     } else {
-        mdcat::push_tty(settings, &env, &mut stdout(), parser)
+        mdcat::push_tty(settings, &env, &mut output.writer(), parser)
     }
     .or_else(|error| {
         if error.kind() == std::io::ErrorKind::BrokenPipe {
@@ -78,20 +85,19 @@ struct Arguments {
     dump_events: bool,
     detect_only: bool,
     fail_fast: bool,
+    paginate: bool,
+}
+
+fn is_mdless() -> bool {
+    std::env::current_exe()
+        .ok()
+        .and_then(|p| p.file_stem().map(|stem| stem == "mdless"))
+        .unwrap_or(false)
 }
 
 impl Arguments {
     /// Create command line arguments from matches.
     fn from_matches(matches: &clap::ArgMatches<'_>) -> clap::Result<Self> {
-        let terminal_capabilities = if matches.is_present("no_colour") {
-            // If the user disabled colours assume a dumb terminal
-            TerminalCapabilities::none()
-        } else if matches.is_present("ansi_only") {
-            TerminalCapabilities::ansi()
-        } else {
-            TerminalCapabilities::detect()
-        };
-
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
         {
@@ -102,11 +108,24 @@ impl Arguments {
         let dump_events = matches.is_present("dump_events");
         let detect_only = matches.is_present("detect_only");
         let fail_fast = matches.is_present("fail_fast");
+        let paginate =
+            (is_mdless() || matches.is_present("paginate")) && !matches.is_present("no_pager");
+
         let columns = value_t!(matches, "columns", usize)?;
         let resource_access = if matches.is_present("local_only") {
             ResourceAccess::LocalOnly
         } else {
             ResourceAccess::RemoteAllowed
+        };
+
+        let terminal_capabilities = if matches.is_present("no_colour") {
+            // If the user disabled colours assume a dumb terminal
+            TerminalCapabilities::none()
+        } else if paginate || matches.is_present("ansi_only") {
+            // A pager won't support any terminal-specific features
+            TerminalCapabilities::ansi()
+        } else {
+            TerminalCapabilities::detect()
         };
 
         Ok(Arguments {
@@ -117,6 +136,7 @@ impl Arguments {
             detect_only,
             fail_fast,
             terminal_capabilities,
+            paginate,
         })
     }
 }
@@ -125,7 +145,7 @@ fn main() {
     let size = TerminalSize::detect().unwrap_or_default();
     let columns = size.width.to_string();
 
-    let matches = cli::app(&columns).get_matches();
+    let matches = args::app(&columns).get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
 
     if arguments.detect_only {
@@ -138,33 +158,46 @@ fn main() {
             terminal_capabilities,
             columns,
             resource_access,
+            paginate,
             ..
         } = arguments;
 
-        let settings = Settings {
-            terminal_capabilities,
-            terminal_size: TerminalSize {
-                width: columns,
-                ..size
-            },
-            resource_access,
-            syntax_set: SyntaxSet::load_defaults_newlines(),
-        };
-        let exit_code = filenames
-            .iter()
-            .try_fold(0, |code, filename| {
-                process_file(filename, &settings, dump_events)
-                    .map(|_| code)
-                    .or_else(|error| {
-                        eprintln!("Error: {}: {}", filename, error);
-                        if fail_fast {
-                            Err(error)
-                        } else {
-                            Ok(1)
-                        }
+        let exit_code = match Output::new(paginate) {
+            Ok(mut output) => {
+                let settings = Settings {
+                    terminal_capabilities,
+                    terminal_size: TerminalSize {
+                        width: columns,
+                        ..size
+                    },
+                    resource_access,
+                    syntax_set: SyntaxSet::load_defaults_newlines(),
+                };
+                filenames
+                    .iter()
+                    .try_fold(0, |code, filename| {
+                        process_file(filename, &settings, dump_events, &mut output)
+                            .map(|_| code)
+                            .or_else(|error| {
+                                eprintln!("Error: {}: {}", filename, error);
+                                if fail_fast {
+                                    Err(error)
+                                } else {
+                                    Ok(1)
+                                }
+                            })
                     })
-            })
-            .unwrap_or(1);
+                    .unwrap_or(1)
+                //
+                // // Drop output early to make sure that we wait for the pager to exit; otherwise we'd kill
+                // // the pager when exiting below.
+                // std::mem::drop(output);
+            }
+            Err(error) => {
+                eprintln!("Error: {:#}", error);
+                128
+            }
+        };
         std::process::exit(exit_code);
     }
 }
