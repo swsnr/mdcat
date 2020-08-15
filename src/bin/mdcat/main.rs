@@ -188,10 +188,6 @@ fn main() {
                             })
                     })
                     .unwrap_or(1)
-                //
-                // // Drop output early to make sure that we wait for the pager to exit; otherwise we'd kill
-                // // the pager when exiting below.
-                // std::mem::drop(output);
             }
             Err(error) => {
                 eprintln!("Error: {:#}", error);
