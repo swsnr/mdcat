@@ -639,7 +639,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "mdcat"
-version = "0.21.0"
+version = "0.21.1"
 dependencies = [
  "ansi_term 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "anyhow 1.0.32 (registry+https://github.com/rust-lang/crates.io-index)",
