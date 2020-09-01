@@ -13,18 +13,16 @@ mod cli {
     use std::io::Read;
     use std::process::{Command, Output, Stdio};
 
+    fn cargo_mdcat() -> Command {
+        Command::new(env!("CARGO_BIN_EXE_mdcat"))
+    }
+
     fn run_cargo_mdcat<I, S>(args: I) -> Output
     where
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        Command::new("cargo")
-            .arg("run")
-            .arg("-q")
-            .arg("--")
-            .args(args)
-            .output()
-            .unwrap()
+        cargo_mdcat().args(args).output().unwrap()
     }
 
     #[test]
@@ -71,10 +69,7 @@ mod cli {
 
     #[test]
     fn ignore_broken_pipe() {
-        let mut child = Command::new("cargo")
-            .arg("run")
-            .arg("-q")
-            .arg("--")
+        let mut child = cargo_mdcat()
             .arg("sample/common-mark.md")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
