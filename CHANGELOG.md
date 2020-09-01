@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Fixed
+- Update pulldown cmark to correctly ignore footnote refs (see [GH-155]).
+
+[GH-155]: https://github.com/lunaryorn/mdcat/issues/155
+
 ## [0.21.0] – 2020-08-12
 
 ### Added
