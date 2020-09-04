@@ -71,7 +71,7 @@ to fetch images from HTTP(S).
 Some package repositories include `mdcat`:
 
 * [Homebrew]: `brew install mdcat`
-* Arch Linux: [mdcat in AUR][aur]
+* Arch Linux: `pacman -S mdcat`
 * Void Linux: `xbps-install -S mdcat`
 
 [Homebrew]: https://brew.sh
