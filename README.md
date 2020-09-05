@@ -73,6 +73,7 @@ Some package repositories include `mdcat`:
 * [Homebrew]: `brew install mdcat`
 * Arch Linux: `pacman -S mdcat`
 * Void Linux: `xbps-install -S mdcat`
+* Nixpkgs: `nix-env -i mdcat`
 
 [Homebrew]: https://brew.sh
 [aur]: https://aur.archlinux.org/packages/mdcat/
