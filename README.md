@@ -76,7 +76,6 @@ Some package repositories include `mdcat`:
 * Nixpkgs: `nix-env -i mdcat`
 
 [Homebrew]: https://brew.sh
-[aur]: https://aur.archlinux.org/packages/mdcat/
 
 ### Building with rustup
 
