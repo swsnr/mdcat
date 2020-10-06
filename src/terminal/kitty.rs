@@ -32,11 +32,24 @@ use std::process::{Command, Stdio};
 use std::str;
 use url::Url;
 
-/// Whether we run in Kitty or not.
-pub fn is_kitty() -> bool {
+/// Whether we run in Kitty or not. It also returns the version.
+pub fn is_kitty() -> Option<(u8, u8, u8)> {
     std::env::var("TERM")
-        .map(|value| value == "xterm-kitty")
-        .unwrap_or(false)
+        .ok()
+        .filter(|value| value == "xterm-kitty")?;
+
+    let output = Command::new("kitty").arg("--version").output().ok()?;
+    if output.status.success() {
+        // Output is in the form of `kitty <major>.<minor>.<patch> created...`.
+        let output = std::str::from_utf8(&output.stdout).ok()?;
+        let mut version = output.split_ascii_whitespace().nth(1)?.split('.');
+        let major = version.next()?.parse().ok()?;
+        let minor = version.next()?.parse().ok()?;
+        let patch = version.next()?.parse().ok()?;
+        Some((major, minor, patch))
+    } else {
+        None
+    }
 }
 
 /// Retrieve the terminal size in pixels by calling the command-line tool `kitty`.

@@ -128,11 +128,15 @@ impl TerminalCapabilities {
     }
 
     /// Terminal capabilities of Kitty.
-    pub fn kitty() -> TerminalCapabilities {
+    pub fn kitty(version: (u8, u8, u8)) -> TerminalCapabilities {
         TerminalCapabilities {
             name: "Kitty".to_string(),
             style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: None,
+            links: if version >= (0, 19, 0) {
+                Some(LinkCapability::OSC8(self::osc::OSC8Links))
+            } else {
+                None
+            },
             image: Some(ImageCapability::Kitty(self::kitty::KittyImages)),
             marks: None,
         }
@@ -155,8 +159,8 @@ impl TerminalCapabilities {
             Self::iterm2()
         } else if self::terminology::is_terminology() {
             Self::terminology()
-        } else if self::kitty::is_kitty() {
-            Self::kitty()
+        } else if let Some(version) = self::kitty::is_kitty() {
+            Self::kitty(version)
         } else if get_vte_version().filter(|&v| v >= (50, 0)).is_some() {
             Self::vte50()
         } else {
