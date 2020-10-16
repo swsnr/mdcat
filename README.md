@@ -20,14 +20,13 @@ right), and [PragmataPro] as font.
 
 ## Features
 
-`mdcat` works best with [iTerm2] or a compatible terminal emulator, and a good
-terminal font with italic characters.  Then it
+`mdcat` works best with [iTerm2] or [Kitty], and a good terminal font with italic characters.
+Then it
 
 * nicely renders all basic CommonMark syntax (no [tables][GH-2] or [footnotes][GH-1] though),
 * highlights code blocks with [syntect],
 * shows [links][osc8] and images inline in supported terminals (see above, where "Pixabay" is a clickable link!),
-* adds jump marks for headings in [iTerm2] (jump forwards and backwards with
-  <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
+* adds jump marks for headings in [iTerm2] (jump forwards and backwards with <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
 
 | Terminal                   |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
 | :------------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
@@ -39,8 +38,7 @@ terminal font with italic characters.  Then it
 | [iTerm2][]                 | ✓             | ✓                   | ✓     | ✓      | ✓          |
 | [kitty][]                  | ✓             | ✓                   | ✓     | ✓      |            |
 
-¹) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including
-Gnome Terminal, Xfce Terminal, Tilix, etc.
+¹) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
 
 Not supported:
 
