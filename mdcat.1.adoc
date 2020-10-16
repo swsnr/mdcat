@@ -1,0 +1,196 @@
+= mdcat(1)
+Sebastian Wiesner <sebastian@swsnr.de>
+:doctype: manpage
+:revnumber: 0.21.1
+:revdate: 2020-09-01
+:mansource: mdcat {revnumber}
+:manmanual: mdcat
+
+== Name
+
+mdcat - render CommonMark Markdown to text terminals
+
+== Synopsis
+
+*mdcat* [_OPTIONS_] [FILE]...
+
+*mdless* [_OPTIONS_] [FILE]...
+
+== Description
+
+mdcat renders Markdown ``FILE``s in CommonMark dialect to text terminals with sophisticated formatting.
+If no `FILE` is given, or if `FILE` is '-', it reads from standard input.
+
+=== CommonMark and terminal support
+
+mdcat supports all basic CommonMark syntax plus a few extensions, highlights syntax in code blocks, and shows inline links and even inline images in some terminal emulators.
+In iTerm2 it also adds jump marks for section headings.
+
+=== Pagination
+
+mdcat can render output in a pager; this is the default when run as `mdless`.
+The environment variables `$MDCAT_PAGER` and `$PAGER` control the pager used.
+
+=== Image support
+
+In iTerm2, Kitty and Terminology mdcat prints inline images.
+mdcat supports most standard pixel formats by default.
+
+=== SVG support
+
+In Terminology mdcat also renders SVG images, using the built-in support of Terminology.
+
+In iTerm2 and Kitty mdcat requires `rsvg-convert` to render SVG images to pixel graphics before displaying them;
+if `rsvg-convert` is not found in `$PATH` mdcat does not render SVG images in these terminals.
+
+=== HTTP/HTTPS support
+
+mdcat fetches images from HTTP(S) URLs for rendering if the underlying terminal supports image rendering;
+pass `--local` to disable this and force mdcat to only use images from the local filesystem.
+In this case remote images render as hyperlinks.
+
+Depending on the build of `mdcat` this feature requires the `curl` command in `$PATH`.
+See `mdcat --version` for details.
+
+== Options
+
+-p::
+--paginate::
+    Paginate the output of mdcat with a pager like less.
++
+**Note:** When paginating mdcat only uses basic ANSI formatting (no images, no hyperlinks) because oager programs normally do not support any sophisticated ANSI formatting features.
++
+This is the default when run as `mdless`.
+
+-P::
+--no-pager::
+    Do not paginate output.
++
+This is the default when run as `mdcat`.
+
+-c::
+--no-colour::
+    Disable all colours and other styles.
+
+--columns::
+    Maximum number of columns to use for text output.
+    Defaults to the size of the underlying terminal.
+
+-l::
+--local::
+    Do not access remote resources.
+
+--fail::
+    Fail immediately at the first FILE which fails to read.
+    By default mdcat continues with the next file.
+
+-h::
+--help::
+    Show a help message to the user and exit.
+
+-V::
+--version::
+    Show the version of mdcat and exit.
+    The long flag also includes information about the builtin features.
+
+
+== Exit status
+
+mdcat exits with 0 if no error occurred, or 1 otherwise.
+
+If run as `mdless` or if `--paginate` is given and the pager fails to start mdcat exists with 128.
+
+== Environment
+
+TERM::
+    If this variable is `xterm-kitty` assume that the terminal is Kitty.
+
+TERM_PROGRAM::
+    If this variable is `iTerm.app` mdcat assumes that the terminal is iTerm2.
+
+TERMINOLOGY::
+    If this variable is `1` mdcat assumes that the terminal is Terminology.
+
+VTE_VERSION::
+    The version of a VTE-based terminal (such as Gnome Terminal).
++
+The value of this variable contains four digits (e.g. `6201`) which denote the major and minor version of VTE.
+If the value denotes a version greater than `5000` mdcat assumes that the terminal is a modern VTE terminal with support for hyperlinks.
+Otherwise mdcat treats the underlying terminal as plain ANSI terminal.
+
+COLUMNS::
+    The number of character columns on screen.
++
+mdcat only uses this variable if it fails to query the size from the underlying terminal.
+
+ROWS::
+    The number of character rows on screen.
++
+mdcat only uses this variable if it fails to query the size from the underlying terminal.
+
+MDCAT_PAGER::
+    The pager program to use for `mdless` or if `--paginate` is given.
++
+The pager program must support basic ANSI formatting sequences, like e.g. `less -R`.
++
+The value of this variable is subject to shell-like word-splitting.
+It is **not** subject to any kind of expansion or substitution (e.g. parameter expansion, process subsitution, etc.).
++
+If set to an empty value mdcat completely disables pagination.
+
+PAGER::
+    The pager program to use if `$MDCAT_PAGER` is unset.
++
+Subject to the same rules as `$MDCAT_PAGER`.
++
+If both `$PAGER` and `$MDCAT_PAGER` are unset use `less -R` as pager.
+
+== Conforming to
+
+=== CommonMark support and extensions
+
+mdcat supports version 0.29 of the https://spec.commonmark.org/[CommonMark Spec], plus https://github.github.com/gfm/#task-list-items-extension-[Task lists] and https://github.github.com/gfm/#strikethrough-extension-[strikethrough], through https://github.com/raphlinus/pulldown-cmark[pulldown-cmark].
+
+mdcat does **not** yet support footnotes and https://github.github.com/gfm/#tables-extension-[tables].
+mdcat parses HTML blocks and inline tags but does not apply special rendering; it prints HTML as is.
+
+=== Terminal support
+
+Unless `--no-colour` is given mdcat translates CommonMark text into ANSI formatted text, with standard SGR formatting codes.
+It uses bold (SGR 1), italic (SGR 3) and strikethrough (SGR 9) formatting, and the standard 4-bit color sequences.
+It does not use 8-bit or 24-bit color sequences, though this may change in future releases.
+
+Additionally mdcat uses https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda[OSC 8] hyperlinks and other proprietary escape code if it detects specific terminal emulators:
+
+* https://iterm2.com/[iTerm2]: OSC 8 hyperlinks, https://iterm2.com/documentation-images.html[iTerm2 inline images], and
+https://iterm2.com/documentation-escape-codes.html[Marks].
+* https://github.com/kovidgoyal/kitty[Kitty]: OSC 8 hyperlinks and https://sw.kovidgoyal.net/kitty/graphics-protocol.html[Kitty Graphics].
+* http://terminolo.gy[Terminology]: OSC 8 hyperlinks and Terminology inline images.
+* https://wiki.gnome.org/Apps/Terminal/VTE[VTE 3 based] (0.50 or newer): OSC 8 hyperlinks.
+
+== Bugs
+
+Please report bugs to https://github.com/lunaryorn/mdcat/issues.
+
+Currently mdcat does not yet wrap text to column limits, and does not provide means to customize styles and colours.
+
+== Examples
+
+mdcat hello - world::
+    Render markdown in `hello`, then from standard input, then from `world`.
+
+mdless hello:: Render markdown from `mdless` through a pager.
+
+== See also
+
+*cat(1)*, *bat(1)*
+
+== Copyright
+
+Copyright Sebastian Wiesner <sebastian@swsnr.de> and contributors
+
+Binaries are subject to the terms of the Mozilla Public License, v. 2.0.
+See https://github.com/lunaryorn/mdcat/blob/main/LICENSE.
+
+Most of the source is subject to the terms of the Mozilla Public License, v. 2.0, unless otherwise noted;
+some files are subject to the terms of the Apache 2.0 license, see http://www.apache.org/licenses/LICENSE-2.0.
