@@ -18,7 +18,7 @@ mod osc;
 mod terminology;
 
 pub use self::ansi::AnsiStyle;
-pub use self::size::Size as TerminalSize;
+pub use self::size::TerminalSize;
 
 /// The capability of basic styling.
 #[derive(Debug, Copy, Clone)]

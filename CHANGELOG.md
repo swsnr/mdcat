@@ -13,10 +13,14 @@ To publish a new release run `scripts/release` from the project directory.
     Kitty supports hyperlinks since [version 0.19][kitty-0.19], see [Kitty GH-68].
     Note that `mdcat` *unconditionally* prints hyperlinks if it detects a kitty terminal.
     It makes no attempt to detect whether the Kitty version is compatible or the [`allow_hyperlinks`] setting is enabled.
+    
+### Changed
+- `mdcat` now asks the controlling terminal for the terminal size and thus correctly detects the terminal size even if standard input, standard output and standard error are all redirected (see [GH-166]).
 
 [kitty-0.19]: https://sw.kovidgoyal.net/kitty/changelog.html#id2
 [kitty GH-68]: https://github.com/kovidgoyal/kitty/issues/68
 [`allow_hyperlinks`]: https://sw.kovidgoyal.net/kitty/conf.html?highlight=hyperlinks#opt-kitty.allow_hyperlinks
+[GH-166]: https://github.com/lunaryorn/mdcat/pull/166
 
 ## [0.21.1] – 2020-09-01
 

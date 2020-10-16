@@ -97,7 +97,7 @@ pub fn write_event<'a, W: Write>(
             write_rule(
                 writer,
                 &settings.terminal_capabilities,
-                settings.terminal_size.width,
+                settings.terminal_size.columns,
             )?;
             writeln!(writer)?;
             TopLevel(TopLevelAttrs::margin_before()).and_data(data)
@@ -172,7 +172,7 @@ pub fn write_event<'a, W: Write>(
             write_rule(
                 writer,
                 &settings.terminal_capabilities,
-                settings.terminal_size.width - (attrs.indent as usize),
+                settings.terminal_size.columns - (attrs.indent as usize),
             )?;
             writeln!(writer)?;
             stack
@@ -291,7 +291,7 @@ pub fn write_event<'a, W: Write>(
             write_rule(
                 writer,
                 &settings.terminal_capabilities,
-                settings.terminal_size.width - (attrs.indent as usize),
+                settings.terminal_size.columns - (attrs.indent as usize),
             )?;
             writeln!(writer)?;
             stack

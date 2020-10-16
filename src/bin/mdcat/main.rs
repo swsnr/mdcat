@@ -143,7 +143,7 @@ impl Arguments {
 
 fn main() {
     let size = TerminalSize::detect().unwrap_or_default();
-    let columns = size.width.to_string();
+    let columns = size.columns.to_string();
 
     let matches = args::app(&columns).get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
@@ -166,10 +166,7 @@ fn main() {
             Ok(mut output) => {
                 let settings = Settings {
                     terminal_capabilities,
-                    terminal_size: TerminalSize {
-                        width: columns,
-                        ..size
-                    },
+                    terminal_size: TerminalSize { columns, ..size },
                     resource_access,
                     syntax_set: SyntaxSet::load_defaults_newlines(),
                 };
