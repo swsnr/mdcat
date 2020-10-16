@@ -734,6 +734,7 @@ dependencies = [
  "goldenfile",
  "image",
  "lazy_static",
+ "libc",
  "mime",
  "pretty_assertions",
  "pulldown-cmark",

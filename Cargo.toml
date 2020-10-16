@@ -21,7 +21,6 @@ base64 = "^0.12"
 gethostname = "^0.2"
 image = "^0.23"
 mime = "^0.3"
-term_size = "^0.3"
 url = "^2.1"
 fehler = "^1"
 anyhow = "^1"
@@ -49,6 +48,12 @@ features = ['simd']
 version = "^4.4"
 default-features = false
 features = ["parsing", "assets", "dump-load", "regex-fancy"]
+
+[target.'cfg(unix)'.dependencies]
+libc = "^0.2"
+
+[target.'cfg(windows)'.dependencies]
+term_size = "^0.3"
 
 [dev-dependencies]
 pretty_assertions = "^0.6"

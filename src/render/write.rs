@@ -64,7 +64,7 @@ pub fn write_border<W: Write>(
     capabilities: &TerminalCapabilities,
     terminal_size: &TerminalSize,
 ) -> std::io::Result<()> {
-    let separator = "\u{2500}".repeat(terminal_size.width.min(20));
+    let separator = "\u{2500}".repeat(terminal_size.columns.min(20));
     let style = Style::new().fg(Colour::Green);
     write_styled(writer, capabilities, &style, separator)?;
     writeln!(writer)

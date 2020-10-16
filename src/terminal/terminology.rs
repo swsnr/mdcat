@@ -53,7 +53,7 @@ impl TerminologyImages {
         // We need to compute image proportion to draw the appropriate
         // rectangle. If we can't compute the image proportion (e.g. it's an
         // external URL), we fallback to a rectangle that is half of the screen.
-        let columns = max_size.width;
+        let columns = max_size.columns;
 
         let lines = Some(url)
             .filter(|url| url.scheme() == "file")
@@ -65,7 +65,7 @@ impl TerminologyImages {
                 // 1:2 proportion
                 (h * (columns / 2) as f64 / w) as usize
             })
-            .unwrap_or(max_size.height / 2);
+            .unwrap_or(max_size.rows / 2);
 
         let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, url.as_str());
         for _ in 0..lines {
