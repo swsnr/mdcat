@@ -8,6 +8,16 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- Enable OSC8 hyperlinks in Kitty (see [GH-165]).
+    Kitty supports hyperlinks since [version 0.19][kitty-0.19], see [Kitty GH-68].
+    Note that `mdcat` *unconditionally* prints hyperlinks if it detects a kitty terminal.
+    It makes no attempt to detect whether the Kitty version is compatible or the [`allow_hyperlinks`] setting is enabled.
+
+[kitty-0.19]: https://sw.kovidgoyal.net/kitty/changelog.html#id2
+[kitty GH-68]: https://github.com/kovidgoyal/kitty/issues/68
+[`allow_hyperlinks`]: https://sw.kovidgoyal.net/kitty/conf.html?highlight=hyperlinks#opt-kitty.allow_hyperlinks
+
 ## [0.21.1] – 2020-09-01
 
 ### Fixed
@@ -31,7 +41,7 @@ To publish a new release run `scripts/release` from the project directory.
 ## [0.20.0] – 2020-07-05
 ### Added
 - `mdcat::TerminalCapabilities` now exposes constructors for specific terminal emulators.
-- Render reference link definitions as inline links if possible (see [GH-149]).  
+- Render reference link definitions as inline links if possible (see [GH-149]).
     This mainly affects image links inside inline links which get rendered as reference links.
 - `mdcat::Environment` now contains all environment information required to render properly, namely the local hostname and the base URL.
 
@@ -81,7 +91,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Fix typo in release workflow.
 
 ## [0.18.0] – 2020-05-31
-### Added 
+### Added
 - Add `mdcat::Error` as type alias to `std::io::Error`.
 
 ### Changed
@@ -124,7 +134,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Do not fail with broken pipe error when rending large images (see [GH-134] by
   [@fspillner]).
 
-[GH-134]: https://github.com/lunaryorn/mdcat/issues/134  
+[GH-134]: https://github.com/lunaryorn/mdcat/issues/134
 [GH-138]: https://github.com/lunaryorn/mdcat/issues/138
 
 ## [0.16.1] – 2020-05-15

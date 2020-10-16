@@ -132,7 +132,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "Kitty".to_string(),
             style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: None,
+            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
             image: Some(ImageCapability::Kitty(self::kitty::KittyImages)),
             marks: None,
         }

@@ -37,7 +37,7 @@ terminal font with italic characters.  Then it
 | Generic VTE 0.50 or newer¹ | ✓             | ✓                   | ✓     |        |            |
 | [Terminology][]            | ✓             | ✓                   | ✓     | ✓      |            |
 | [iTerm2][]                 | ✓             | ✓                   | ✓     | ✓      | ✓          |
-| [kitty][]                  | ✓             | ✓                   |       | ✓      |            |
+| [kitty][]                  | ✓             | ✓                   | ✓     | ✓      |            |
 
 ¹) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including
 Gnome Terminal, Xfce Terminal, Tilix, etc.
@@ -110,6 +110,6 @@ Binaries are subject to the terms of the Mozilla Public
 License, v. 2.0, see [LICENSE](LICENSE).
 
 Most of the source is subject to the terms of the Mozilla Public
-License, v. 2.0, see [LICENSE](LICENSE), unless otherwise noted; 
+License, v. 2.0, see [LICENSE](LICENSE), unless otherwise noted;
 some files are subject to the terms of the Apache 2.0 license,
 see <http://www.apache.org/licenses/LICENSE-2.0>
