@@ -35,10 +35,11 @@ Then it
 | Windows 10 console         | ✓             | ✓                   |       |        |            |
 | Generic VTE 0.50 or newer¹ | ✓             | ✓                   | ✓     |        |            |
 | [Terminology][]            | ✓             | ✓                   | ✓     | ✓      |            |
-| [iTerm2][]                 | ✓             | ✓                   | ✓     | ✓      | ✓          |
-| [kitty][]                  | ✓             | ✓                   | ✓     | ✓      |            |
+| [iTerm2][]                 | ✓             | ✓                   | ✓     | ✓ 2)   | ✓          |
+| [kitty][]                  | ✓             | ✓                   | ✓     | ✓ 2)   |            |
 
-¹) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
+1) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
+2) SVG images require `rsvg-convert` from librsvg.
 
 Not supported:
 
@@ -51,43 +52,25 @@ Not supported:
 [ConEmu]: https://conemu.github.io
 [kitty]: https://sw.kovidgoyal.net/kitty/index.html
 
+## Usage
+
+Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
+
 ## Installation
 
-### Binaries
-
-The [Releases] page provides pre-build binaries for Linux, macOS and Windows.
-
-**Note:** The Linux build is statically linked and requires the `curl` command
-to fetch images from HTTP(S).
-
-**Tip:** You can copy or hard-link `mdcat` to `mdless` for a variant of `mdcat` which paginates by default (like `mdcat -p`).
+* The [Releases] page provides pre-build binaries for Linux, macOS and Windows.
+    * **Note:** The Linux build is statically linked and requires the `curl` command to fetch images from HTTP(S).
+    * **Tip:** You can copy or hard-link `mdcat` to `mdless` for a variant of `mdcat` which paginates by default (like `mdcat -p`).
+* 3rd party packages:
+    * [Homebrew]: `brew install mdcat`
+    * [Arch Linux]: `pacman -S mdcat`
+    * Void Linux: `xbps-install -S mdcat`
+    * Nixpkgs: `nix-env -i mdcat`
+* You can also build `mdcat` manually with `cargo install mdcat`.
 
 [Releases]: https://github.com/lunaryorn/mdcat/releases
-
-### 3rd party packages
-
-Some package repositories include `mdcat`:
-
-* [Homebrew]: `brew install mdcat`
-* [Arch Linux]: `pacman -S mdcat`
-* Void Linux: `xbps-install -S mdcat`
-* Nixpkgs: `nix-env -i mdcat`
-
 [Homebrew]: https://brew.sh
 [Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
-
-### Building with rustup
-
-You can also build `mdcat` manually with `cargo install mdcat`.
-
-## SVG support
-
-`mdcat` needs `rsvg-convert` to show SVG images in [iTerm2] and [kitty];
-otherwise `mdcat` only shows the image title and URL for SVG images.  On macOS
-you can install the `librsvg` formula from Homebrew, on Linux the tool is
-typically part of the `librsvg-bin` package (or similar).
-
-[Terminology] renders SVG directly and needs no additional tools.
 
 ## Future plans
 
