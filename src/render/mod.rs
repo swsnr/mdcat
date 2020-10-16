@@ -9,6 +9,7 @@
 use std::io::prelude::*;
 
 use ansi_term::{Colour, Style};
+use anyhow::anyhow;
 use fehler::throws;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
@@ -588,10 +589,13 @@ pub fn write_event<'a, W: Write>(
                     })
                     .map(|_| RenderedImage)
                     .ok(),
-                (Some(Kitty(kitty)), Some(ref url)) => kitty
-                    .read_and_render(url, settings.resource_access)
-                    .and_then(|contents| {
-                        kitty.write_inline_image(writer, contents)?;
+                (Some(Kitty(kitty)), Some(ref url)) => settings
+                    .terminal_size
+                    .pixels
+                    .ok_or_else(|| anyhow!("Terminal pixel size not available"))
+                    .and_then(|size| {
+                        let image = kitty.read_and_render(url, settings.resource_access, size)?;
+                        kitty.write_inline_image(writer, image)?;
                         Ok(RenderedImage)
                     })
                     .ok(),

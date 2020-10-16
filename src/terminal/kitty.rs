@@ -21,14 +21,14 @@
 
 use crate::resources::read_url;
 use crate::svg::render_svg;
+use crate::terminal::size::PixelSize;
 use crate::{magic, ResourceAccess};
-use anyhow::{anyhow, Context, Error, Result};
+use anyhow::{Context, Error};
 use fehler::throws;
 use image::imageops::FilterType;
 use image::ColorType;
 use image::{DynamicImage, GenericImageView};
 use std::io::Write;
-use std::process::{Command, Stdio};
 use std::str;
 use url::Url;
 
@@ -37,56 +37,6 @@ pub fn is_kitty() -> bool {
     std::env::var("TERM")
         .map(|value| value == "xterm-kitty")
         .unwrap_or(false)
-}
-
-/// Retrieve the terminal size in pixels by calling the command-line tool `kitty`.
-///
-/// ```console
-/// $ kitty +kitten icat --print-window-size
-/// ```
-///
-/// We cannot use the terminal size information from Context.output.size, because
-/// the size information are in columns / rows instead of pixel.
-fn get_terminal_size() -> Result<KittyDimension> {
-    let process = Command::new("kitty")
-        .arg("+kitten")
-        .arg("icat")
-        .arg("--print-window-size")
-        .stdout(Stdio::piped())
-        .spawn()
-        .with_context(|| "Failed to spawn kitty +kitten icat --print-window-size")?;
-
-    let output = process.wait_with_output()?;
-
-    if output.status.success() {
-        let terminal_size_str = std::str::from_utf8(&output.stdout).with_context(|| {
-            format!(
-                "kitty +kitten icat --print-window-size returned non-utf8: {:?}",
-                output.stdout
-            )
-        })?;
-        let terminal_size = terminal_size_str.split('x').collect::<Vec<&str>>();
-
-        terminal_size[0]
-            .parse::<u32>()
-            .and_then(|width| {
-                terminal_size[1]
-                    .parse::<u32>()
-                    .map(|height| KittyDimension { width, height })
-            })
-            .with_context(|| {
-                format!(
-                    "Failed to parse kitty width and height from output: {}",
-                    terminal_size_str
-                )
-            })
-    } else {
-        Err(anyhow!(
-            "kitty +kitten icat --print-window-size failed with status {}: {}",
-            output.status,
-            String::from_utf8_lossy(&output.stderr)
-        ))
-    }
 }
 
 /// Provides access to printing images for kitty.
@@ -134,9 +84,9 @@ impl KittyImages {
             format!("f={}", image.format.control_data_value()),
         ];
 
-        if let Some(dimension) = image.dimension {
-            cmd_header.push(format!("s={}", dimension.width));
-            cmd_header.push(format!("v={}", dimension.height));
+        if let Some(size) = image.size {
+            cmd_header.push(format!("s={}", size.x));
+            cmd_header.push(format!("v={}", size.y));
         }
 
         let image_data = base64::encode(&image.contents);
@@ -163,9 +113,16 @@ impl KittyImages {
     }
 
     /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
-    /// It scales the image down, if the image size exceeds the terminal window size.
+    ///
+    /// If the image size exceeds `terminal_size` in either dimension scale the
+    /// image down to `terminal_size` (preserving aspect ratio).
     #[throws]
-    pub fn read_and_render(self, url: &Url, access: ResourceAccess) -> KittyImage {
+    pub fn read_and_render(
+        self,
+        url: &Url,
+        access: ResourceAccess,
+        terminal_size: PixelSize,
+    ) -> KittyImage {
         let contents = read_url(url, access)?;
         let mime = magic::detect_mime_type(&contents)
             .with_context(|| format!("Failed to detect mime type for URL {}", url))?;
@@ -179,9 +136,8 @@ impl KittyImages {
             image::load_from_memory(&contents)
                 .with_context(|| format!("Failed to load image from URL {}", url))?
         };
-        let terminal_size = get_terminal_size()?;
 
-        if magic::is_png(&mime) && terminal_size.contains(&image.dimensions().into()) {
+        if magic::is_png(&mime) && PixelSize::from_xy(image.dimensions()) <= terminal_size {
             self.render_as_png(contents)
         } else {
             self.render_as_rgb_or_rgba(image, terminal_size)
@@ -193,17 +149,15 @@ impl KittyImages {
         KittyImage {
             contents,
             format: KittyFormat::PNG,
-            dimension: None,
+            size: None,
         }
     }
 
     /// Render the image as RGB/RGBA format and wrap the image bytes in `KittyImage`.
-    /// It scales the image down if its size exceeds the terminal size.
-    fn render_as_rgb_or_rgba(
-        self,
-        image: DynamicImage,
-        terminal_size: KittyDimension,
-    ) -> KittyImage {
+    ///
+    /// If the image size exceeds `terminal_size` in either dimension scale the
+    /// image down to `terminal_size` (preserving aspect ratio).
+    fn render_as_rgb_or_rgba(self, image: DynamicImage, terminal_size: PixelSize) -> KittyImage {
         let format = match image.color() {
             ColorType::L8
             | ColorType::Rgb8
@@ -217,17 +171,17 @@ impl KittyImages {
             _ => KittyFormat::RGBA,
         };
 
-        let image = if terminal_size.contains(&KittyDimension::from(image.dimensions())) {
+        let image = if PixelSize::from_xy(image.dimensions()) <= terminal_size {
             image
         } else {
             image.resize(
-                terminal_size.width,
-                terminal_size.height,
+                terminal_size.x as u32,
+                terminal_size.y as u32,
                 FilterType::Nearest,
             )
         };
 
-        let image_dimension = image.dimensions().into();
+        let size = PixelSize::from_xy(image.dimensions());
 
         KittyImage {
             contents: match format {
@@ -235,7 +189,7 @@ impl KittyImages {
                 _ => image.into_rgba().into_raw(),
             },
             format,
-            dimension: Some(image_dimension),
+            size: Some(size),
         }
     }
 }
@@ -244,7 +198,7 @@ impl KittyImages {
 pub struct KittyImage {
     contents: Vec<u8>,
     format: KittyFormat,
-    dimension: Option<KittyDimension>,
+    size: Option<PixelSize>,
 }
 
 /// The image format (PNG, RGB or RGBA) of the image bytes.
@@ -265,28 +219,5 @@ impl KittyFormat {
             KittyFormat::RGB => "24",
             KittyFormat::RGBA => "32",
         }
-    }
-}
-
-/// The dimension encapsulate the width and height in the pixel unit.
-struct KittyDimension {
-    width: u32,
-    height: u32,
-}
-
-impl KittyDimension {
-    /// Check whether this dimension entirely contains the specified dimension.
-    fn contains(&self, other: &KittyDimension) -> bool {
-        self.width >= other.width && self.height >= other.height
-    }
-}
-
-impl From<(u32, u32)> for KittyDimension {
-    /// Convert a tuple struct (`u32`, `u32`) ordered by width and height
-    /// into a `KittyDimension`.
-    fn from(dimension: (u32, u32)) -> KittyDimension {
-        let (width, height) = dimension;
-
-        KittyDimension { width, height }
     }
 }

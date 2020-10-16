@@ -16,6 +16,8 @@ To publish a new release run `scripts/release` from the project directory.
     
 ### Changed
 - `mdcat` now asks the controlling terminal for the terminal size and thus correctly detects the terminal size even if standard input, standard output and standard error are all redirected (see [GH-166]).
+- `mdcat` no longer requires `kitty icat` to detect the size of kitty windows (see [GH-166]).
+    Consequently mdcat can now show images on Kitty terminals even over SSH.
 
 [kitty-0.19]: https://sw.kovidgoyal.net/kitty/changelog.html#id2
 [kitty GH-68]: https://github.com/kovidgoyal/kitty/issues/68

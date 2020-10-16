@@ -6,7 +6,14 @@
 
 //! Terminal size.
 
-/// The size of a terminal window in pixels
+use std::cmp::Ordering;
+
+/// The size of a terminal window in pixels.
+///
+/// This type is partially ordered; a value is smaller than another if all fields
+/// are smaller, and greater if all fields are greater.
+///
+/// If either field is greater and the other smaller values aren't orderable.
 #[derive(Debug, Copy, Clone)]
 pub struct PixelSize {
     /// The width of the window, in pixels.
@@ -15,8 +22,38 @@ pub struct PixelSize {
     pub y: u32,
 }
 
+impl PixelSize {
+    /// Create a pixel size for a `(x, y)` pair.
+    pub fn from_xy((x, y): (u32, u32)) -> Self {
+        Self {
+            x: x as u32,
+            y: y as u32,
+        }
+    }
+}
+
+impl PartialEq for PixelSize {
+    fn eq(&self, other: &Self) -> bool {
+        matches!(self.partial_cmp(other), Some(Ordering::Equal))
+    }
+}
+
+impl PartialOrd for PixelSize {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        if self.x == other.x && self.y == other.y {
+            Some(Ordering::Equal)
+        } else if self.x < other.x && self.y < other.y {
+            Some(Ordering::Less)
+        } else if self.x > other.x && self.y > other.y {
+            Some(Ordering::Greater)
+        } else {
+            None
+        }
+    }
+}
+
 /// The size of a terminal.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TerminalSize {
     /// The width of the terminal, in characters aka columns.
     pub columns: usize,
