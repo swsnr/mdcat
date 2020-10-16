@@ -1,6 +1,6 @@
 # mdcat
 
-`cat` for Markdown (that is, [CommonMark][]):
+Fancy `cat` for Markdown (that is, [CommonMark][]):
 
 ```
 $ mdcat sample.md
