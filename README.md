@@ -69,11 +69,12 @@ to fetch images from HTTP(S).
 Some package repositories include `mdcat`:
 
 * [Homebrew]: `brew install mdcat`
-* Arch Linux: `pacman -S mdcat`
+* [Arch Linux]: `pacman -S mdcat`
 * Void Linux: `xbps-install -S mdcat`
 * Nixpkgs: `nix-env -i mdcat`
 
 [Homebrew]: https://brew.sh
+[Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
 
 ### Building with rustup
 
