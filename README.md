@@ -79,7 +79,7 @@ Some package repositories include `mdcat`:
 
 You can also build `mdcat` manually with `cargo install mdcat`.
 
-### SVG support
+## SVG support
 
 `mdcat` needs `rsvg-convert` to show SVG images in [iTerm2] and [kitty];
 otherwise `mdcat` only shows the image title and URL for SVG images.  On macOS
@@ -88,7 +88,7 @@ typically part of the `librsvg-bin` package (or similar).
 
 [Terminology] renders SVG directly and needs no additional tools.
 
-### Future plans
+## Future plans
 
 - [ ] Figure out a better way to show HTML [GH-3].
 - [ ] CommonMark extensions: Footnotes [GH-1].
