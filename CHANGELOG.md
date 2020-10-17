@@ -13,6 +13,7 @@ To publish a new release run `scripts/release` from the project directory.
     Kitty supports hyperlinks since [version 0.19][kitty-0.19], see [Kitty GH-68].
     Note that `mdcat` *unconditionally* prints hyperlinks if it detects a kitty terminal.
     It makes no attempt to detect whether the Kitty version is compatible or the [`allow_hyperlinks`] setting is enabled.
+- `mdcat --version` (but not `mdcat -V`) now informs whether HTTP/HTTPS support is builtin or requires `curl`.
     
 ### Changed
 - `mdcat` now asks the controlling terminal for the terminal size and thus correctly detects the terminal size even if standard input, standard output and standard error are all redirected (see [GH-166]).

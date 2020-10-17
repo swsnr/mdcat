@@ -141,11 +141,26 @@ impl Arguments {
     }
 }
 
+#[cfg(feature = "reqwest")]
+fn long_version() -> &'static str {
+    concat!(clap::crate_version!(), "\nBuiltin HTTP/HTTPS support")
+}
+
+#[cfg(not(feature = "reqwest"))]
+fn long_version() -> &'static str {
+    concat!(
+        clap::crate_version!(),
+        "\ncurl required for HTTP/HTTPS support"
+    )
+}
+
 fn main() {
     let size = TerminalSize::detect().unwrap_or_default();
     let columns = size.columns.to_string();
 
-    let matches = args::app(&columns).get_matches();
+    let matches = args::app(&columns)
+        .long_version(long_version())
+        .get_matches();
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
 
     if arguments.detect_only {
