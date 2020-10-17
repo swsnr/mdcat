@@ -32,6 +32,7 @@ if [[ "${ci_status}" != "success" ]]; then
 fi
 
 latest_version="$(git tag --sort '-v:refname' | grep '^mdcat-' | head -n1 | cut -d'-' -f2)"
+release_date="$(date +%Y-%m-%d)"
 
 # Substitute version in Cargo.toml
 sed -i'' "1,/^version =/ s/^version = .*$/version = \"${next_version}\"/" Cargo.toml
@@ -40,13 +41,18 @@ cargo metadata --format-version 1 >/dev/null
 # Add both files to Git
 git add Cargo.toml Cargo.lock
 
+# Substitute version and release date in manpage
+sed -i'' "1,/^:revnumber:/ s/^:revnumber: .*$/:revnumber: ${next_version}/" mdcat.1.adoc
+sed -i'' "1,/^:revdate:/ s/^:revdate: .*$/:revdate: ${release_date}/" mdcat.1.adoc
+git add mdcat.1.adoc
+
 # Update the changelog:
 # 1. Append a headline for the current version right after [Unreleased] headline
 # 2. Append link references for the new version and the new unreleased version
 # 3. Delete the old link reference for the Unreleased header
 sed -e "/^## \[Unreleased\]\$/ a\\
 \\
-## [${next_version}] – $(date +%Y-%m-%d)" \
+## [${next_version}] – ${release_date}" \
     -e "\$a\\
 [${next_version}]: https://github.com/lunaryorn/mdcat/compare/mdcat-${latest_version}...mdcat-${next_version}\\
 [Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-${next_version}...HEAD" \
