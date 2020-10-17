@@ -9,12 +9,11 @@ use clap::*;
 pub(crate) fn app<'a, 'b>(default_columns: &'a str) -> App<'a, 'b> {
     app_from_crate!()
         // Merge flags and options w/ arguments together, include args in usage
-        // string and show options in the order of declaration.  And also:
-        // COLOURS <3
+        // string and show options in the order of declaration.
         .setting(AppSettings::UnifiedHelpMessage)
         .setting(AppSettings::DontCollapseArgsInUsage)
         .setting(AppSettings::DeriveDisplayOrder)
-        .setting(AppSettings::ColoredHelp)
+        .set_term_width(80)
         .after_help(
             "\
 mdcat looks at $MDCAT_PAGER and $PAGER if --paginate is given, and fallback to
@@ -41,8 +40,7 @@ Report issues to <https://github.com/lunaryorn/mdcat>.",
             Arg::with_name("paginate")
                 .short("p")
                 .long("--paginate")
-                .help("Paginate the output of mdcat with a pager like less.")
-                .next_line_help(true),
+                .help("Paginate the output of mdcat with a pager like less."),
         )
         .arg(
             Arg::with_name("no_pager")

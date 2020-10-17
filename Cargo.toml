@@ -37,7 +37,6 @@ features = ["gzip", "blocking"]
 [dependencies.clap]
 version = "^2.33"
 default-features = false
-features = ["color", "wrap_help"]
 
 [dependencies.pulldown-cmark]
 version = "^0.8"
