@@ -35,7 +35,7 @@ mod cli {
             output.status,
         );
         assert!(output.stderr.is_empty());
-        assert!(stdout.contains("mdcat uses the standardized CommonMark dialect"));
+        assert!(stdout.contains("See 'man 1 mdcat' for more information."));
     }
 
     #[test]

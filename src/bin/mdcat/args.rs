@@ -16,23 +16,7 @@ pub(crate) fn app<'a, 'b>(default_columns: &'a str) -> App<'a, 'b> {
         .set_term_width(80)
         .after_help(
             "\
-mdcat looks at $MDCAT_PAGER and $PAGER if --paginate is given, and fallback to
-less -R if both are unset.  An empty variable value disables paging regardless
-of --paginate.
-
-mdcat uses the standardized CommonMark dialect.  It formats markdown documents
-for viewing in text terminals:
-
-• Colours for headings, block quotes, etc
-• Syntax highlighting for code blocks
-• In some terminals: Inline images and inline links
-• In iTerm2: Jump marks for headings
-
-Copyright (C) Sebastian Wiesner and contributors
-
-This program is subject to the terms of the Mozilla Public License,
-v. 2.0. If a copy of the MPL was not distributed with this file,
-You can obtain one at http://mozilla.org/MPL/2.0/.
+See 'man 1 mdcat' for more information.
 
 Report issues to <https://github.com/lunaryorn/mdcat>.",
         )
