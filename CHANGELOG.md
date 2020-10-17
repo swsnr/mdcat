@@ -14,6 +14,7 @@ To publish a new release run `scripts/release` from the project directory.
     Note that `mdcat` *unconditionally* prints hyperlinks if it detects a kitty terminal.
     It makes no attempt to detect whether the Kitty version is compatible or the [`allow_hyperlinks`] setting is enabled.
 - `mdcat --version` (but not `mdcat -V`) now informs whether HTTP/HTTPS support is builtin or requires `curl`.
+- mdcat now includes a manpage (see [GH-167]).
     
 ### Changed
 - `mdcat` now asks the controlling terminal for the terminal size and thus correctly detects the terminal size even if standard input, standard output and standard error are all redirected (see [GH-166]).
@@ -25,6 +26,7 @@ To publish a new release run `scripts/release` from the project directory.
 [kitty GH-68]: https://github.com/kovidgoyal/kitty/issues/68
 [`allow_hyperlinks`]: https://sw.kovidgoyal.net/kitty/conf.html?highlight=hyperlinks#opt-kitty.allow_hyperlinks
 [GH-166]: https://github.com/lunaryorn/mdcat/pull/166
+[GH-167]: https://github.com/lunaryorn/mdcat/pull/167
 
 ## [0.21.1] – 2020-09-01
 
