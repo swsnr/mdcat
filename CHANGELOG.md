@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.22.1] – 2020-10-17
+
 ### Fixed
 
 - Include manpage source in Windows packages.
@@ -447,4 +449,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.21.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.20.0...mdcat-0.21.0
 [0.21.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.0...mdcat-0.21.1
 [0.22.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.1...mdcat-0.22.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.0...HEAD
+[0.22.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.0...mdcat-0.22.1
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.1...HEAD
