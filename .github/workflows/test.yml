@@ -95,6 +95,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-targets --locked --target ${{ matrix.target }} ${{ matrix.flags }}
+          name: clippy-${{ matrix.rust}}-${{ matrix.target }}
       # Test
       - name: Test
         uses: actions-rs/cargo@v1
