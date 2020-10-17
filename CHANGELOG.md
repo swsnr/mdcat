@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.22.0] – 2020-10-17
+
 ### Added
 - Enable OSC8 hyperlinks in Kitty (see [GH-165]).
     Kitty supports hyperlinks since [version 0.19][kitty-0.19], see [Kitty GH-68].
@@ -439,4 +441,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.20.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.19.0...mdcat-0.20.0
 [0.21.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.20.0...mdcat-0.21.0
 [0.21.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.0...mdcat-0.21.1
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.1...HEAD
+[0.22.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.1...mdcat-0.22.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.0...HEAD
