@@ -27,6 +27,9 @@ jobs:
           toolchain: stable
           override: true
           target: ${{ matrix.target }}
+      - uses: actions/setup-ruby@v1
+      - name: install asciidoctor for manpage build
+        run: gem install asciidoctor
       - name: Install musl
         run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
