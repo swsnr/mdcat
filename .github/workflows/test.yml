@@ -37,6 +37,16 @@ jobs:
           command: fmt
           args: -- --check
 
+  manpage:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-ruby@v1
+      - name: install asciidoctor
+        run: gem install asciidoctor
+      - name: build manpage
+        run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
