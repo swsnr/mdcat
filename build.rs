@@ -4,11 +4,45 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::ffi::OsString;
+use std::io::{Error, ErrorKind, Result};
 use std::path::Path;
+use std::process::Command;
 
 mod mdcat {
     include!("src/bin/mdcat/args.rs");
+}
+
+fn gen_completions<P: AsRef<Path>>(out_dir: P) {
+    use clap::*;
+    let mut a = mdcat::app("80");
+
+    let completions = out_dir.as_ref().join("completions");
+    std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
+
+    for shell in &[Shell::Bash, Shell::Zsh, Shell::Fish] {
+        a.gen_completions("mdcat", *shell, &completions);
+    }
+}
+
+fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
+    let target_file = out_dir.as_ref().join("mdcat.1");
+
+    let mut command = Command::new("asciidoctor");
+    command
+        .args(&["-b", "manpage", "-a", "reproducible"])
+        .arg("-o")
+        .arg(target_file)
+        .arg("mdcat.1.adoc");
+    let result = command.spawn()?.wait()?;
+
+    if result.success() {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Other,
+            format!("{:?} failed with exit code: {:?}", command, result.code()),
+        ))
+    }
 }
 
 fn main() {
@@ -16,16 +50,9 @@ fn main() {
 
     println!("cargo:rerun-if-changed=src/bin/mdcat/args.rs");
     gen_completions(&out_dir);
-}
 
-fn gen_completions(out_dir: &OsString) {
-    use clap::*;
-    let mut a = mdcat::app("80");
-
-    let completions = Path::new(out_dir).join("completions");
-    std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
-
-    for shell in &[Shell::Bash, Shell::Zsh, Shell::Fish] {
-        a.gen_completions("mdcat", *shell, &completions);
+    println!("cargo:rerun-if-changed=mdcat.1.adoc");
+    if let Err(error) = build_manpage(&out_dir) {
+        println!("cargo:warning=Failed to build manpage: {}", error);
     }
 }
