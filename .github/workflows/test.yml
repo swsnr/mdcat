@@ -21,7 +21,7 @@ jobs:
       - name: Lint scripts
         run: shellcheck -S style -o all scripts/*
 
-  lint:
+  rustfmt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -30,17 +30,12 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-          components: rustfmt, clippy
+          components: rustfmt
       - name: rustfmt --check
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: -- --check
-      - name: clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-targets
 
   test:
     runs-on: ${{ matrix.os }}
@@ -87,11 +82,18 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
           target: ${{ matrix.target }}
+          components: clippy
       # Build, including tests, to report build failures and measure build time separately from tests
       - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
+          args: --all-targets --locked --target ${{ matrix.target }} ${{ matrix.flags }}
+      # Lint
+      - name: Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-targets --locked --target ${{ matrix.target }} ${{ matrix.flags }}
       # Test
       - name: Test
