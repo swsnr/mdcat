@@ -18,7 +18,7 @@ package_windows() {
     local archive_file
     archive_file="${ARCHIVE_NAME}.zip"
     mv LICENSE LICENSE.txt
-    7z a "${archive_file}" "./target/${TARGET}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt "${OUTDIR}/completions" "${OUTDIR}/mdcat.1"
+    7z a "${archive_file}" "./target/${TARGET}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt "${OUTDIR}/completions" ./mdcat.1.adoc
     echo ::set-output "name=file::${archive_file}"
     echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
 }

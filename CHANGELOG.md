@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Fixed
+
+- Include manpage source in Windows packages.
+    Currently the manpage doesn't build on Windows CI.
+
 ## [0.22.0] – 2020-10-17
 
 ### Added
