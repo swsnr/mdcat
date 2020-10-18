@@ -8,13 +8,13 @@ $ mdcat sample.md
 
 ![mdcat showcase with different colour themes][sxs]
 
-mdcat in [iTerm2], with [Dracula], and [Solarized] Light and Dark (from left to
+mdcat in [kitty], with Tango Light, [Dracula], and [Solarized] Light (from left to
 right), and [PragmataPro] as font.
 
 [CommonMark]: http://commonmark.org
 [Solarized]: http://ethanschoonover.com/solarized
 [dracula]: https://draculatheme.com/iterm/
-[iterm2]: https://www.iterm2.com
+[kitty]: https://sw.kovidgoyal.net/kitty/index.html
 [PragmataPro]: https://www.fsd.it/shop/fonts/pragmatapro/
 [sxs]: ./screenshots/side-by-side.png
 
@@ -50,7 +50,7 @@ Not supported:
 [osc8]: https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 [Terminology]: http://terminolo.gy
 [ConEmu]: https://conemu.github.io
-[kitty]: https://sw.kovidgoyal.net/kitty/index.html
+[iterm2]: https://www.iterm2.com
 
 ## Usage
 

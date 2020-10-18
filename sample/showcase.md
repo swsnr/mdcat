@@ -15,12 +15,12 @@ fn main() {
 }
 ```
 
-## iTerm2 specials
+## Specials
 
-iTerm2 adds jump marks for headlines and images:
+`mdcat` prints images and hyperlinks:
 
-![A unicorn](./unicorn.png)
+![Rust](./rust-logo-128x128.png)
 
-Source: [Pixabay](https://pixabay.com/de/einhorn-regenbogen-magische-magie-2087450/), CC0
+Source: [Rust](https://www.rust-lang.org/)
 
 Enjoy ❤️
