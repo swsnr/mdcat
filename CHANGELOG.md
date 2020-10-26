@@ -8,6 +8,16 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Replace `reqwest` with `ureq` to fetch images via HTTP/HTTPS (see [GH-169]);
+    the latter has considerably less dependencies and builds faster.
+    It also builds statically out of the box, hence the static musl builds no longer require `curl` to fetch images.
+    
+### Removed
+- The `reqwest` cargo feature, see above and [GH-169].
+
+[GH-169]: https://github.com/lunaryorn/mdcat/pull/169
+
 ## [0.22.1] – 2020-10-17
 
 ### Fixed

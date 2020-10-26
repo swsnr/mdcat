@@ -40,42 +40,31 @@ fn is_local(url: &Url) -> bool {
     url.scheme() == "file" && url.to_file_path().is_ok()
 }
 
-#[cfg(feature = "reqwest")]
 #[throws]
 fn fetch_http(url: &Url) -> Vec<u8> {
-    let mut response =
-        reqwest::blocking::get(url.clone()).with_context(|| format!("Failed to GET {}", url))?;
-    if response.status().is_success() {
+    let mut request = ureq::get(url.as_str());
+    request.set("User-Agent", concat!("mdcat/", env!("CARGO_PKG_VERSION")));
+    if let Some(proxy) = env_proxy::for_url(url).to_string() {
+        request.set_proxy(
+            ureq::Proxy::new(&proxy)
+                .with_context(|| format!("Failed to set proxy for URL {} to {}", url, &proxy))?,
+        );
+    }
+
+    let response = request.call();
+    if response.ok() {
         let mut buffer = Vec::new();
         response
+            .into_reader()
             .read_to_end(&mut buffer)
             .with_context(|| format!("Failed to read from URL {}", url))?;
         buffer
     } else {
         throw!(anyhow!(
-            "HTTP error status {} by GET {}",
-            response.status(),
-            url
-        ))
-    }
-}
-
-#[cfg(not(feature = "reqwest"))]
-#[throws]
-fn fetch_http(url: &Url) -> Vec<u8> {
-    let output = std::process::Command::new("curl")
-        .arg("-fsSL")
-        .arg(url.to_string())
-        .output()
-        .with_context(|| format!("curl -fsSL {} failed to spawn", url))?;
-
-    if output.status.success() {
-        output.stdout
-    } else {
-        throw!(anyhow!(
-            "curl -fsSL {} failed: {}",
+            "GET {} failed with HTTP error status {} (synthetic error: {:?})",
             url,
-            String::from_utf8_lossy(&output.stderr)
+            response.status_line(),
+            response.synthetic_error()
         ))
     }
 }
@@ -163,23 +152,7 @@ mod tests {
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {:?}", result);
         let error = result.unwrap_err().to_string();
-        if cfg!(feature = "reqwest") {
-            assert_eq!(
-                error,
-                "HTTP error status 404 Not Found by GET https://eu.httpbin.org/status/404"
-            )
-        } else {
-            assert!(
-                error.contains("curl -fsSL https://eu.httpbin.org/status/404 failed:"),
-                "Error did not contain expected string: {}",
-                error
-            );
-            assert!(
-                error.contains("URL returned error: 404"),
-                "Error did not contain expected string: {}",
-                error
-            );
-        }
+        assert_eq!(error, "GET https://eu.httpbin.org/status/404 failed with HTTP error status HTTP/1.1 404 NOT FOUND (synthetic error: None)")
     }
 
     #[test]
