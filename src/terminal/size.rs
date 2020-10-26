@@ -85,10 +85,8 @@ extern "C" {
 /// Open the underlying controlling terminal via ctermid and open, and issue a
 /// TIOCGWINSZ ioctl to the device.
 ///
-/// We do this manually because term_size currently neither exports the pixel
-/// size nor queries the controlling terminal, see
-/// <https://github.com/clap-rs/term_size-rs/issues/34> and
-/// <https://github.com/clap-rs/term_size-rs/issues/33>.
+/// We do this manually because terminal_size currently doesn't support pixel
+/// size see <https://github.com/eminence/terminal-size/issues/22>.
 #[cfg(unix)]
 #[inline]
 fn from_terminal_impl() -> Option<TerminalSize> {
@@ -136,9 +134,10 @@ fn from_terminal_impl() -> Option<TerminalSize> {
 #[cfg(windows)]
 #[inline]
 fn from_terminal_impl() -> Option<TerminalSize> {
-    term_size::dimensions().map(|(w, h)| TerminalSize {
-        rows: h,
-        columns: w,
+    use terminal_size::{terminal_size, Height, Width};
+    terminal_size().map(|(Width(w), Height(h))| TerminalSize {
+        rows: h as usize,
+        columns: w as usize,
         pixels: None,
     })
 }
@@ -169,9 +168,9 @@ impl TerminalSize {
     ///
     /// On unix this issues a ioctl to the controlling terminal.
     ///
-    /// On Windows this uses the [term_size] crate which does some magic windows API calls.
+    /// On Windows this uses the [terminal_size] crate which does some magic windows API calls.
     ///
-    /// [term_size]: https://docs.rs/term_size/
+    /// [term_size]: https://docs.rs/terminal_size/
     pub fn from_terminal() -> Option<Self> {
         from_terminal_impl()
     }

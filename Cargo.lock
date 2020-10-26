@@ -573,7 +573,7 @@ dependencies = [
  "pulldown-cmark",
  "shell-words",
  "syntect",
- "term_size",
+ "terminal_size",
  "test-generator",
  "ureq",
  "url",
@@ -1220,10 +1220,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "term_size"
-version = "0.3.2"
+name = "terminal_size"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e4129646ca0ed8f45d09b929036bafad5377103edd06e50bf574b353d2b08d9"
+checksum = "9a14cd9f8c72704232f0bfc8455c0e861f0ad4eb60cc9ec8a170e231414c1e13"
 dependencies = [
  "libc",
  "winapi",

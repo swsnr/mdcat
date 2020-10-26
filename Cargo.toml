@@ -43,7 +43,7 @@ features = ["parsing", "assets", "dump-load", "regex-fancy"]
 libc = "^0.2"
 
 [target.'cfg(windows)'.dependencies]
-term_size = "^0.3"
+terminal_size = "^0.1"
 
 [dev-dependencies]
 pretty_assertions = "^0.6"
