@@ -49,9 +49,6 @@ mdcat fetches images from HTTP(S) URLs for rendering if the underlying terminal 
 pass `--local` to disable this and force mdcat to only use images from the local filesystem.
 In this case remote images render as hyperlinks.
 
-Depending on the build of `mdcat` this feature requires the `curl` command in `$PATH`.
-See `mdcat --version` for details.
-
 == Options
 
 -p::
@@ -144,6 +141,24 @@ PAGER::
 Subject to the same rules as `$MDCAT_PAGER`.
 +
 If both `$PAGER` and `$MDCAT_PAGER` are unset use `less -R` as pager.
+
+http_proxy::
+https_proxy::
+HTTPS_PROXY::
+all_proxy::
+ALL_PROXY::
+    Proxies for HTTP, HTTPS, or both protocols, to use when fetching images.
++
+Each variable provides the proxy for the corresponding protocol as URL, e.g. ``http://proxy.example.com:3128``.
++
+The lowercase name takes precedence; note that `$http_proxy` deliberately has no uppercase variant.
+
+no_proxy::
+NO_PROXY::
+    A comma-separated list of host/domain names or IP address not to use a proxy for.
++
+Matches partial hostnames (e.g. `example.org` also disables proxy for `www.example.org`), but always at name boundaries.
+
 
 == Conforming to
 

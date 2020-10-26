@@ -59,7 +59,6 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 ## Installation
 
 * The [Releases] page provides pre-build binaries for Linux, macOS and Windows.
-    * **Note:** The Linux build is statically linked and requires the `curl` command to fetch images from HTTP(S).
     * **Tip:** You can copy or hard-link `mdcat` to `mdless` for a variant of `mdcat` which paginates by default (like `mdcat -p`).
 * 3rd party packages:
     * [Homebrew]: `brew install mdcat`
