@@ -144,8 +144,7 @@ impl Arguments {
 fn long_version() -> &'static str {
     concat!(
         clap::crate_version!(),
-        "\nBuiltin HTTP/HTTPS support
-
+        "
 Copyright (C) Sebastian Wiesner and contributors
 
 This program is subject to the terms of the Mozilla Public License,
