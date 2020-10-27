@@ -45,6 +45,7 @@ To publish a new release run `scripts/release` from the project directory.
 [kitty-0.19]: https://sw.kovidgoyal.net/kitty/changelog.html#id2
 [kitty GH-68]: https://github.com/kovidgoyal/kitty/issues/68
 [`allow_hyperlinks`]: https://sw.kovidgoyal.net/kitty/conf.html?highlight=hyperlinks#opt-kitty.allow_hyperlinks
+[GH-165]: https://github.com/lunaryorn/mdcat/pull/165
 [GH-166]: https://github.com/lunaryorn/mdcat/pull/166
 [GH-167]: https://github.com/lunaryorn/mdcat/pull/167
 
