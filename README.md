@@ -65,11 +65,13 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * [Arch Linux]: `pacman -S mdcat`
     * Void Linux: `xbps-install -S mdcat`
     * Nixpkgs: `nix-env -i mdcat`
+    * [Scoop]: `scoop install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
 [Releases]: https://github.com/lunaryorn/mdcat/releases
 [Homebrew]: https://brew.sh
 [Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
+[scoop]: https://github.com/lukesampson/scoop
 
 ## Future plans
 
