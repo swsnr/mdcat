@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.22.2] – 2021-01-01
+
 ### Changed
 - Replace `reqwest` with `ureq` to fetch images via HTTP/HTTPS (see [GH-168] and [GH-169]);
     the latter has considerably less dependencies and builds faster.
@@ -462,4 +464,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.21.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.0...mdcat-0.21.1
 [0.22.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.1...mdcat-0.22.0
 [0.22.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.0...mdcat-0.22.1
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.1...HEAD
+[0.22.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.1...mdcat-0.22.2
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.2...HEAD
