@@ -12,6 +12,9 @@ license = "MPL-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2018"
 
+[features]
+default = ["ureq"]
+
 [dependencies]
 ansi_term = "^0.12"
 base64 = "^0.13"
@@ -23,7 +26,6 @@ fehler = "^1"
 anyhow = "^1"
 shell-words = "^1"
 env_proxy = "^0.4"
-ureq = { version = "^1.5", features = ["tls", "native-certs"] }
 
 [dependencies.clap]
 version = "^2.33"
@@ -38,6 +40,11 @@ features = ['simd']
 version = "^4.5"
 default-features = false
 features = ["parsing", "assets", "dump-load", "regex-fancy"]
+
+[dependencies.ureq]
+version = "^1.5"
+optional = true
+features = ["tls", "native-certs"]
 
 [target.'cfg(unix)'.dependencies]
 libc = "^0.2"

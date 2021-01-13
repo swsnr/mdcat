@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+
+- Add `ureq` cargo feature so mdcat can be built on platforms not supported by
+    ureq's dependencies. Such builds will lack the ability to fetch images.
+
 ## [0.22.2] – 2021-01-01
 
 ### Changed

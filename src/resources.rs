@@ -40,6 +40,7 @@ fn is_local(url: &Url) -> bool {
     url.scheme() == "file" && url.to_file_path().is_ok()
 }
 
+#[cfg(feature = "ureq")]
 #[throws]
 fn fetch_http(url: &Url) -> Vec<u8> {
     let mut request = ureq::get(url.as_str());
@@ -69,6 +70,14 @@ fn fetch_http(url: &Url) -> Vec<u8> {
     }
 }
 
+#[cfg(not(feature = "ureq"))]
+// Necessary due to https://github.com/withoutboats/fehler/issues/42
+#[allow(unreachable_code)]
+#[throws]
+fn fetch_http(_url: &Url) -> Vec<u8> {
+    throw!(anyhow!("Fetching isn't supported in this build"))
+}
+
 /// Read the contents of the given `url` if supported.
 ///
 /// Fail if we don’t know how to read from `url`, or if we fail to read from
@@ -76,7 +85,7 @@ fn fetch_http(url: &Url) -> Vec<u8> {
 ///
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs if enabled at
-/// build system.
+/// build time.
 pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
     if !access.permits(url) {
         throw!(anyhow!(
@@ -105,6 +114,7 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "ureq")]
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -130,6 +140,7 @@ mod tests {
         assert!(ResourceAccess::RemoteAllowed.permits(&resource));
     }
 
+    #[cfg(feature = "ureq")]
     #[test]
     fn read_url_with_http_url_fails_if_local_only_access() {
         let url = "https://eu.httpbin.org/status/404"
@@ -144,6 +155,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "ureq")]
     #[test]
     fn read_url_with_http_url_fails_when_status_404() {
         let url = "https://eu.httpbin.org/status/404"
@@ -155,6 +167,7 @@ mod tests {
         assert_eq!(error, "GET https://eu.httpbin.org/status/404 failed with HTTP error status HTTP/1.1 404 NOT FOUND (synthetic error: None)")
     }
 
+    #[cfg(feature = "ureq")]
     #[test]
     fn read_url_with_http_url_returns_content_when_status_200() {
         let url = "https://eu.httpbin.org/bytes/100"

@@ -66,6 +66,9 @@ jobs:
             os: ubuntu-latest
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            flags: --no-default-features
           - target: x86_64-apple-darwin
             os: macOS-latest
           - target: x86_64-pc-windows-msvc
@@ -97,22 +100,22 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --all-targets --locked --target ${{ matrix.target }}
+          args: --all-targets --locked --target ${{ matrix.target }} ${{ matrix.flags }}
       # Lint
       - name: Clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-targets --locked --target ${{ matrix.target }}
+          args: --all-targets --locked --target ${{ matrix.target }} ${{ matrix.flags }}
           name: clippy-${{ matrix.rust}}-${{ matrix.target }}
       # Test
       - name: Test
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --locked --target ${{ matrix.target }}
+          args: --locked --target ${{ matrix.target }} ${{ matrix.flags }}
       - name: Format sample
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --target ${{ matrix.target }} -- sample/common-mark.md
+          args: --target ${{ matrix.target }} ${{ matrix.flags }} -- sample/common-mark.md
