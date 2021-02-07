@@ -22,10 +22,9 @@ use super::super::svg;
 
 /// Whether we run inside iTerm2 or not.
 pub fn is_iterm2() -> bool {
-    cfg!(unix)
-        && std::env::var("TERM_PROGRAM")
-            .map(|value| value.contains("iTerm.app"))
-            .unwrap_or(false)
+    std::env::var("TERM_PROGRAM")
+        .map(|value| value.contains("iTerm.app"))
+        .unwrap_or(false)
 }
 
 /// Iterm2 marks.
