@@ -36,6 +36,8 @@ The environment variables `$MDCAT_PAGER` and `$PAGER` control the pager used.
 In iTerm2, Kitty and Terminology mdcat prints inline images.
 mdcat supports most standard pixel formats by default.
 
+mdcat silently ignores images larger than 100 MiB.
+
 === SVG support
 
 In Terminology mdcat also renders SVG images, using the built-in support of Terminology.

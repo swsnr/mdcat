@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+### Added
+- Refuse to read more than 100MiB from external resources, e.g. images; mdcat cannot display images of that size reasonably anyway (see [GH-176]).
+
+[GH-176]: https://github.com/lunaryorn/mdcat/pull/176
 
 ## [0.22.2] – 2021-01-01
 
