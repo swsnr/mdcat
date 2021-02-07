@@ -10,6 +10,7 @@ use anyhow::{anyhow, Context, Error, Result};
 use fehler::{throw, throws};
 use std::fs::File;
 use std::io::prelude::*;
+use ureq::AgentBuilder;
 use url::Url;
 
 /// What kind of resources mdcat may access when rendering.
@@ -42,31 +43,31 @@ fn is_local(url: &Url) -> bool {
 
 #[throws]
 fn fetch_http(url: &Url) -> Vec<u8> {
-    let mut request = ureq::get(url.as_str());
-    request.set("User-Agent", concat!("mdcat/", env!("CARGO_PKG_VERSION")));
-    if let Some(proxy) = env_proxy::for_url(url).to_string() {
-        request.set_proxy(
-            ureq::Proxy::new(&proxy)
-                .with_context(|| format!("Failed to set proxy for URL {} to {}", url, &proxy))?,
-        );
-    }
+    let proxy = match env_proxy::for_url(url).to_string() {
+        None => None,
+        Some(proxy_url) => {
+            let proxy = ureq::Proxy::new(&proxy_url).with_context(|| {
+                format!("Failed to set proxy for URL {} to {}", url, &proxy_url)
+            })?;
+            Some(proxy)
+        }
+    };
 
-    let response = request.call();
-    if response.ok() {
-        let mut buffer = Vec::new();
-        response
-            .into_reader()
-            .read_to_end(&mut buffer)
-            .with_context(|| format!("Failed to read from URL {}", url))?;
-        buffer
-    } else {
-        throw!(anyhow!(
-            "GET {} failed with HTTP error status {} (synthetic error: {:?})",
-            url,
-            response.status_line(),
-            response.synthetic_error()
-        ))
-    }
+    let mut buffer = Vec::new();
+    proxy
+        .map_or(AgentBuilder::new(), |proxy| {
+            AgentBuilder::new().proxy(proxy)
+        })
+        .build()
+        .request_url("GET", url)
+        .set("User-Agent", concat!("mdcat/", env!("CARGO_PKG_VERSION")))
+        .call()
+        .with_context(|| format!("Failed to GET {}", url))?
+        .into_reader()
+        .read_to_end(&mut buffer)
+        .with_context(|| format!("Failed to read {}", url))?;
+
+    buffer
 }
 
 /// Read the contents of the given `url` if supported.
@@ -151,8 +152,8 @@ mod tests {
             .unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {:?}", result);
-        let error = result.unwrap_err().to_string();
-        assert_eq!(error, "GET https://eu.httpbin.org/status/404 failed with HTTP error status HTTP/1.1 404 NOT FOUND (synthetic error: None)")
+        let error = format!("{:#}", result.unwrap_err());
+        assert_eq!(error, "Failed to GET https://eu.httpbin.org/status/404: https://eu.httpbin.org/status/404: status code 404")
     }
 
     #[test]

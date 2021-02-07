@@ -23,7 +23,7 @@ fehler = "^1"
 anyhow = "^1"
 shell-words = "^1"
 env_proxy = "^0.4"
-ureq = { version = "^1.5", features = ["tls", "native-certs"] }
+ureq = { version = "^2.0", features = ["tls", "native-certs"] }
 
 [dependencies.clap]
 version = "^2.33"
