@@ -10,7 +10,11 @@ To publish a new release run `scripts/release` from the project directory.
 ### Added
 - Refuse to read more than 100MiB from external resources, e.g. images; mdcat cannot display images of that size reasonably anyway (see [GH-176]).
 
+### Fixed
+- Fix type error on FreeBSD (see [GH-177]).
+
 [GH-176]: https://github.com/lunaryorn/mdcat/pull/176
+[GH-177]: https://github.com/lunaryorn/mdcat/issues/177
 
 ## [0.22.2] – 2021-01-01
 

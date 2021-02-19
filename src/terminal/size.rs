@@ -105,7 +105,11 @@ fn from_terminal_impl() -> Option<TerminalSize> {
             None
         } else {
             let fd = libc::open(cterm_path, libc::O_RDONLY);
-            let result = libc::ioctl(fd, libc::TIOCGWINSZ, &mut winsize);
+            // disable this check for the ioctl(2) call because different libcs
+            // can have different types for the request parameter, see
+            // https://github.com/lunaryorn/mdcat/issues/177
+            #[allow(clippy::useless_conversion)]
+            let result = libc::ioctl(fd, libc::TIOCGWINSZ.into(), &mut winsize);
             libc::close(fd);
             if result == -1 || winsize.ws_row == 0 || winsize.ws_col == 0 {
                 None
