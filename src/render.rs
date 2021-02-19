@@ -515,7 +515,7 @@ pub fn write_event<'a, W: Write>(
                 .terminal_capabilities
                 .links
                 .and_then(|link_capability| match link_capability {
-                    LinkCapability::OSC8(ref osc8) => {
+                    LinkCapability::Osc8(ref osc8) => {
                         let url = if let LinkType::Email = link_type {
                             // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
                             Url::parse(&format!("mailto:{}", target)).ok()
@@ -544,7 +544,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, Inline(InlineLink(capability), _)), End(Link(_, _, _))) => {
             match capability {
-                LinkCapability::OSC8(ref osc8) => {
+                LinkCapability::Osc8(ref osc8) => {
                     osc8.clear_link(writer)?;
                 }
             }
@@ -605,7 +605,7 @@ pub fn write_event<'a, W: Write>(
                     } else {
                         match settings.terminal_capabilities.links {
                             Some(capability) => match capability {
-                                LinkCapability::OSC8(osc8) => {
+                                LinkCapability::Osc8(osc8) => {
                                     osc8.set_link_url(writer, url, &environment.hostname)?;
                                     Some(Inline(
                                         InlineLink(capability),
@@ -642,7 +642,7 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
             if let InlineLink(capability) = state {
                 match capability {
-                    LinkCapability::OSC8(ref osc8) => {
+                    LinkCapability::Osc8(ref osc8) => {
                         osc8.clear_link(writer)?;
                     }
                 }

@@ -148,7 +148,7 @@ impl KittyImages {
     fn render_as_png(self, contents: Vec<u8>) -> KittyImage {
         KittyImage {
             contents,
-            format: KittyFormat::PNG,
+            format: KittyFormat::Png,
             size: None,
         }
     }
@@ -163,12 +163,12 @@ impl KittyImages {
             | ColorType::Rgb8
             | ColorType::L16
             | ColorType::Rgb16
-            | ColorType::Bgr8 => KittyFormat::RGB,
+            | ColorType::Bgr8 => KittyFormat::Rgb,
             // Default to RGBA format: We cannot match all colour types because
             // ColorType is marked non-exhaustive, but RGBA is a safe default
             // because we can convert any image to RGBA, at worth with additional
             // runtime costs.
-            _ => KittyFormat::RGBA,
+            _ => KittyFormat::Rgba,
         };
 
         let image = if PixelSize::from_xy(image.dimensions()) <= terminal_size {
@@ -185,7 +185,7 @@ impl KittyImages {
 
         KittyImage {
             contents: match format {
-                KittyFormat::RGB => image.into_rgb8().into_raw(),
+                KittyFormat::Rgb => image.into_rgb8().into_raw(),
                 _ => image.into_rgba8().into_raw(),
             },
             format,
@@ -203,9 +203,9 @@ pub struct KittyImage {
 
 /// The image format (PNG, RGB or RGBA) of the image bytes.
 enum KittyFormat {
-    PNG,
-    RGB,
-    RGBA,
+    Png,
+    Rgb,
+    Rgba,
 }
 
 impl KittyFormat {
@@ -215,9 +215,9 @@ impl KittyFormat {
     /// [documentation]: https://sw.kovidgoyal.net/kitty/graphics-protocol.html#transferring-pixel-data
     fn control_data_value(&self) -> &str {
         match *self {
-            KittyFormat::PNG => "100",
-            KittyFormat::RGB => "24",
-            KittyFormat::RGBA => "32",
+            KittyFormat::Png => "100",
+            KittyFormat::Rgb => "24",
+            KittyFormat::Rgba => "32",
         }
     }
 }

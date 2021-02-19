@@ -18,7 +18,7 @@ pub(super) enum MarginControl {
     /// Always add no margin.
     NoMargin,
     /// Add margin unless the current event is a HTML event.
-    NoMarginForHTMLOnly,
+    NoMarginForHtmlOnly,
 }
 
 /// State attributes for inline text.
@@ -123,7 +123,7 @@ impl StyledBlockAttrs {
 
     pub(super) fn without_margin_for_html_only(self) -> Self {
         StyledBlockAttrs {
-            margin_before: MarginControl::NoMarginForHTMLOnly,
+            margin_before: MarginControl::NoMarginForHtmlOnly,
             ..self
         }
     }
@@ -233,7 +233,7 @@ impl TopLevelAttrs {
 
     pub(super) fn no_margin_for_html_only() -> Self {
         TopLevelAttrs {
-            margin_before: MarginControl::NoMarginForHTMLOnly,
+            margin_before: MarginControl::NoMarginForHtmlOnly,
         }
     }
 }

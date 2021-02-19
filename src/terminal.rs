@@ -33,7 +33,7 @@ pub enum LinkCapability {
     /// The terminal supports [OSC 8] inline links.
     ///
     /// [OSC 8]: https://git.io/vd4ee
-    OSC8(self::osc::OSC8Links),
+    Osc8(self::osc::Osc8Links),
 }
 
 /// The capability of the terminal to set marks.
@@ -108,7 +108,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "iTerm2".to_string(),
             style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
+            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
             image: Some(ImageCapability::ITerm2(self::iterm2::ITerm2Images)),
             marks: Some(MarkCapability::ITerm2(self::iterm2::ITerm2Marks)),
         }
@@ -119,7 +119,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "Terminology".to_string(),
             style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
+            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
             image: Some(ImageCapability::Terminology(
                 self::terminology::TerminologyImages,
             )),
@@ -132,7 +132,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "Kitty".to_string(),
             style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
+            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
             image: Some(ImageCapability::Kitty(self::kitty::KittyImages)),
             marks: None,
         }
@@ -143,7 +143,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "VTE 50".to_string(),
             style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: Some(LinkCapability::OSC8(self::osc::OSC8Links)),
+            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
             image: None,
             marks: None,
         }

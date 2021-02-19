@@ -20,7 +20,7 @@ pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> () {
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
-pub struct OSC8Links;
+pub struct Osc8Links;
 
 /// Whether the given `url` needs to get an explicit host.
 ///
@@ -49,7 +49,7 @@ fn url_needs_explicit_host(url: &Url) -> bool {
         }
 }
 
-impl OSC8Links {
+impl Osc8Links {
     /// Set a link to the given `destination` URL for subsequent text.
     ///
     /// Take ownership of `destination` to resolve `file://` URLs for localhost

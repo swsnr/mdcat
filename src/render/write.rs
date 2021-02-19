@@ -89,7 +89,7 @@ pub fn write_link_refs<W: Write>(
             if let Some(url) = environment.resolve_reference(&link.target) {
                 use crate::LinkCapability::*;
                 match &capabilities.links {
-                    Some(OSC8(links)) => {
+                    Some(Osc8(links)) => {
                         links.set_link_url(writer, url, &environment.hostname)?;
                         write_styled(writer, capabilities, &style, link.target)?;
                         links.clear_link(writer)?;
