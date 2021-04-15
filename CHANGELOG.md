@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Update dependencies
+
 ## [0.22.3] – 2021-02-22
 ### Added
 - Refuse to read more than 100MiB from external resources, e.g. images; mdcat cannot display images of that size reasonably anyway (see [GH-176]).
