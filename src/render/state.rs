@@ -298,7 +298,7 @@ including the document causing this panic.",
         } = self;
         match states.pop() {
             None => State::TopLevel(top_level),
-            Some(state) => StateStack { states, top_level }.current(state),
+            Some(state) => StateStack { top_level, states }.current(state),
         }
     }
 }

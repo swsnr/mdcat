@@ -130,12 +130,12 @@ impl Arguments {
 
         Ok(Arguments {
             filenames,
-            columns,
+            terminal_capabilities,
             resource_access,
+            columns,
             dump_events,
             detect_only,
             fail_fast,
-            terminal_capabilities,
             paginate,
         })
     }

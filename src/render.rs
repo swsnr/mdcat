@@ -260,7 +260,7 @@ pub fn write_event<'a, W: Write>(
             stack
                 .current(Inline(
                     ListItem(kind, StartItem),
-                    InlineAttrs { indent, style },
+                    InlineAttrs { style, indent },
                 ))
                 .and_data(data)
         }
@@ -348,7 +348,7 @@ pub fn write_event<'a, W: Write>(
                 ListItemKind::Ordered(no) => (indent - 4, ListItemKind::Ordered(no + 1)),
             };
             stack
-                .current(Inline(ListItem(kind, state), InlineAttrs { indent, style }))
+                .current(Inline(ListItem(kind, state), InlineAttrs { style, indent }))
                 .and_data(data)
         }
 
@@ -630,7 +630,7 @@ pub fn write_event<'a, W: Write>(
                 } else {
                     style.fg(Colour::Purple)
                 };
-                Inline(InlineText, InlineAttrs { indent, style })
+                Inline(InlineText, InlineAttrs { style, indent })
             });
             stack
                 .push(Inline(state, attrs))
