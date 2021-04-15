@@ -487,7 +487,7 @@ checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
 
 [[package]]
 name = "mdcat"
-version = "0.22.3"
+version = "0.22.4"
 dependencies = [
  "ansi_term",
  "anyhow",

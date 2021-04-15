@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.22.4] – 2021-04-15
+
 ### Changed
 - Update dependencies
 
@@ -479,4 +481,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.22.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.0...mdcat-0.22.1
 [0.22.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.1...mdcat-0.22.2
 [0.22.3]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.2...mdcat-0.22.3
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.3...HEAD
+[0.22.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.3...mdcat-0.22.4
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.4...HEAD
