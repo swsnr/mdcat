@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- Support for [WezTerm](https://wezfurlong.org/wezterm/) (see [GH-182]).
+
+[GH-182]: https://github.com/lunaryorn/mdcat/pull/182
+
 ## [0.22.4] – 2021-04-15
 
 ### Changed
