@@ -37,6 +37,7 @@ Then it
 | [Terminology][]            | ✓             | ✓                   | ✓     | ✓      |            |
 | [iTerm2][]                 | ✓             | ✓                   | ✓     | ✓ 2)   | ✓          |
 | [kitty][]                  | ✓             | ✓                   | ✓     | ✓ 2)   |            |
+| [WezTerm][]                | ✓             | ✓                   | ✓     | ✓ 2)   |            |
 
 1) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
 2) SVG images require `rsvg-convert` from librsvg.
@@ -51,6 +52,7 @@ Not supported:
 [Terminology]: http://terminolo.gy
 [ConEmu]: https://conemu.github.io
 [iterm2]: https://www.iterm2.com
+[WezTerm]: https://wezfurlong.org/wezterm/
 
 ## Usage
 
