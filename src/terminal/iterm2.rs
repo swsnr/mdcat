@@ -73,7 +73,7 @@ impl ITerm2Images {
     /// Render the binary content of the (rendered) image or an IO error if
     /// reading or rendering failed.
     pub fn read_and_render(self, url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
-        let contents = read_url(&url, access)?;
+        let contents = read_url(url, access)?;
         let mimetype = magic::detect_mime_type(&contents)
             .with_context(|| format!("Failed to guess mime type for URL {}", url))?;
         if magic::is_svg(&mimetype) {

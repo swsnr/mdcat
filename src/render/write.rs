@@ -166,7 +166,7 @@ pub fn write_start_heading<W: Write>(
     let style = style.fg(Colour::Blue).bold();
     write_styled(
         writer,
-        &capabilities,
+        capabilities,
         &style,
         "\u{2504}".repeat(level as usize),
     )?;

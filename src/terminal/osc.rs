@@ -64,7 +64,7 @@ impl Osc8Links {
         hostname: &str,
     ) -> Result<()> {
         if url_needs_explicit_host(&destination) {
-            destination.set_host(Some(&hostname)).unwrap();
+            destination.set_host(Some(hostname)).unwrap();
         }
         self.set_link(writer, destination.as_str())
     }

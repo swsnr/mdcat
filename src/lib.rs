@@ -117,7 +117,7 @@ where
     let (final_state, final_data) = events.try_fold(
         (State::default(), StateData::default()),
         |(state, data), event| {
-            write_event(writer, settings, environment, &theme, state, data, event)
+            write_event(writer, settings, environment, theme, state, data, event)
         },
     )?;
     finish(writer, settings, environment, final_state, final_data)?;
@@ -149,7 +149,7 @@ where
                 .fg(Colour::Purple)
                 .paint(format!("{:?}", event));
             writeln!(writer, "{} {} {}", s, sep, e)?;
-            write_event(&mut sink, settings, environment, &theme, state, data, event)
+            write_event(&mut sink, settings, environment, theme, state, data, event)
         },
     )?;
     writeln!(writer, "{:?}", final_state)?;
