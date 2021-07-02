@@ -174,7 +174,7 @@ impl TerminalSize {
     ///
     /// On Windows this uses the [terminal_size] crate which does some magic windows API calls.
     ///
-    /// [term_size]: https://docs.rs/terminal_size/
+    /// [terminal_size]: https://docs.rs/terminal_size/
     pub fn from_terminal() -> Option<Self> {
         from_terminal_impl()
     }

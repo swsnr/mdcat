@@ -80,6 +80,11 @@ fn get_vte_version() -> Option<(u8, u8)> {
     })
 }
 
+/// Checks if the current terminal is WezTerm.
+fn is_wezterm() -> bool {
+    std::env::var("TERM").map_or(false, |value| value == "wezterm")
+}
+
 impl TerminalCapabilities {
     /// A terminal which supports nothing.
     pub fn none() -> TerminalCapabilities {
@@ -149,6 +154,23 @@ impl TerminalCapabilities {
         }
     }
 
+    /// Terminal capabilities of WezTerm (Wez's Terminal Emulator).
+    ///
+    /// WezTerm is a GPU-accelerated cross-platform
+    /// terminal emulator and multiplexer written by @wez
+    /// and implemented in Rust.
+    ///
+    /// See <https://wezfurlong.org/wezterm/> for more details.
+    pub fn wezterm() -> TerminalCapabilities {
+        TerminalCapabilities {
+            name: "WezTerm".to_string(),
+            style: Some(StyleCapability::Ansi(AnsiStyle)),
+            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
+            image: Some(ImageCapability::ITerm2(self::iterm2::ITerm2Images)),
+            marks: None,
+        }
+    }
+
     /// Detect the capabilities of the current terminal.
     pub fn detect() -> TerminalCapabilities {
         if self::iterm2::is_iterm2() {
@@ -157,6 +179,8 @@ impl TerminalCapabilities {
             Self::terminology()
         } else if self::kitty::is_kitty() {
             Self::kitty()
+        } else if is_wezterm() {
+            Self::wezterm()
         } else if get_vte_version().filter(|&v| v >= (50, 0)).is_some() {
             Self::vte50()
         } else {
