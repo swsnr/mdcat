@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.23.0] – 2021-07-04
+
 ### Added
 - Support for [WezTerm](https://wezfurlong.org/wezterm/) (see [GH-182]).
 - Add PowerShell completions (see [GH-183] and [GH-184]).
@@ -490,4 +492,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.22.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.1...mdcat-0.22.2
 [0.22.3]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.2...mdcat-0.22.3
 [0.22.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.3...mdcat-0.22.4
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.4...HEAD
+[0.23.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.4...mdcat-0.23.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...HEAD
