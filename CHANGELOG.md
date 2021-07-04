@@ -10,8 +10,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ### Added
 - Support for [WezTerm](https://wezfurlong.org/wezterm/) (see [GH-182]).
+- Add PowerShell completions (see [GH-183] and [GH-184]).
 
 [GH-182]: https://github.com/lunaryorn/mdcat/pull/182
+[GH-183]: https://github.com/lunaryorn/mdcat/issues/183
+[GH-184]: https://github.com/lunaryorn/mdcat/pull/184
 
 ## [0.22.4] – 2021-04-15
 
@@ -34,7 +37,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Replace `reqwest` with `ureq` to fetch images via HTTP/HTTPS (see [GH-168] and [GH-169]);
     the latter has considerably less dependencies and builds faster.
     It also builds statically out of the box, hence the static musl builds no longer require `curl` to fetch images.
-    
+
 ### Removed
 - The `reqwest` cargo feature (see [GH-168] and [GH-169]).
 
@@ -57,7 +60,7 @@ To publish a new release run `scripts/release` from the project directory.
     It makes no attempt to detect whether the Kitty version is compatible or the [`allow_hyperlinks`] setting is enabled.
 - `mdcat --version` (but not `mdcat -V`) now informs whether HTTP/HTTPS support is builtin or requires `curl`.
 - mdcat now includes a manpage (see [GH-167]).
-    
+
 ### Changed
 - `mdcat` now asks the controlling terminal for the terminal size and thus correctly detects the terminal size even if standard input, standard output and standard error are all redirected (see [GH-166]).
 - `mdcat` no longer requires `kitty icat` to detect the size of kitty windows (see [GH-166]).
