@@ -9,11 +9,12 @@ To publish a new release run `scripts/release` from the project directory.
 ## [Unreleased]
 
 ### Added
-- Add PowerShell completions (see [GH-184])
 - Support for [WezTerm](https://wezfurlong.org/wezterm/) (see [GH-182]).
+- Add PowerShell completions (see [GH-183] and [GH-184]).
 
-[GH-184]: https://github.com/lunaryorn/mdcat/pull/184
 [GH-182]: https://github.com/lunaryorn/mdcat/pull/182
+[GH-183]: https://github.com/lunaryorn/mdcat/issues/183
+[GH-184]: https://github.com/lunaryorn/mdcat/pull/184
 
 ## [0.22.4] – 2021-04-15
 
