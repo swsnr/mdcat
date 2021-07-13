@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Use `TERM_PROGRAM` for determining WezTerm terminal (see [GH-185]).
+
+[GH-185]: https://github.com/lunaryorn/mdcat/pull/185
+
 ## [0.23.0] – 2021-07-04
 
 ### Added
