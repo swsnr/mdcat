@@ -33,7 +33,7 @@ The environment variables `$MDCAT_PAGER` and `$PAGER` control the pager used.
 
 === Image support
 
-In iTerm2, Kitty and Terminology mdcat prints inline images.
+In iTerm2, Kitty, Terminology and WezTerm mdcat prints inline images.
 mdcat supports most standard pixel formats by default.
 
 mdcat silently ignores images larger than 100 MiB.
@@ -42,7 +42,7 @@ mdcat silently ignores images larger than 100 MiB.
 
 In Terminology mdcat also renders SVG images, using the built-in support of Terminology.
 
-In iTerm2 and Kitty mdcat requires `rsvg-convert` to render SVG images to pixel graphics before displaying them;
+In iTerm2, Kitty and WezTerm mdcat requires `rsvg-convert` to render SVG images to pixel graphics before displaying them;
 if `rsvg-convert` is not found in `$PATH` mdcat does not render SVG images in these terminals.
 
 === HTTP/HTTPS support
@@ -57,7 +57,7 @@ In this case remote images render as hyperlinks.
 --paginate::
     Paginate the output of mdcat with a pager like less.
 +
-**Note:** When paginating mdcat only uses basic ANSI formatting (no images, no hyperlinks) because oager programs normally do not support any sophisticated ANSI formatting features.
+**Note:** When paginating mdcat only uses basic ANSI formatting (no images, no hyperlinks) because pager programs normally do not support any sophisticated ANSI formatting features.
 +
 This is the default when run as `mdless`.
 
@@ -102,13 +102,14 @@ If run as `mdless` or if `--paginate` is given and the pager fails to start mdca
 == Environment
 
 TERM::
-    If this variable is `xterm-kitty` assume that the terminal is Kitty.
+    If this variable is `xterm-kitty`, assume that the terminal is Kitty.
 
 TERM_PROGRAM::
-    If this variable is `iTerm.app` mdcat assumes that the terminal is iTerm2.
+    If this variable is `iTerm.app`, mdcat assumes that the terminal is iTerm2.
+    If this variable is `WezTerm`, mdcat assumes that the terminal is WezTerm.
 
 TERMINOLOGY::
-    If this variable is `1` mdcat assumes that the terminal is Terminology.
+    If this variable is `1`, mdcat assumes that the terminal is Terminology.
 
 VTE_VERSION::
     The version of a VTE-based terminal (such as Gnome Terminal).
@@ -135,7 +136,7 @@ The pager program must support basic ANSI formatting sequences, like e.g. `less 
 The value of this variable is subject to shell-like word-splitting.
 It is **not** subject to any kind of expansion or substitution (e.g. parameter expansion, process subsitution, etc.).
 +
-If set to an empty value mdcat completely disables pagination.
+If set to an empty value, mdcat completely disables pagination.
 
 PAGER::
     The pager program to use if `$MDCAT_PAGER` is unset.
@@ -173,7 +174,7 @@ mdcat parses HTML blocks and inline tags but does not apply special rendering; i
 
 === Terminal support
 
-Unless `--no-colour` is given mdcat translates CommonMark text into ANSI formatted text, with standard SGR formatting codes.
+Unless `--no-colour` is given, mdcat translates CommonMark text into ANSI formatted text, with standard SGR formatting codes.
 It uses bold (SGR 1), italic (SGR 3) and strikethrough (SGR 9) formatting, and the standard 4-bit color sequences.
 It does not use 8-bit or 24-bit color sequences, though this may change in future releases.
 
@@ -184,6 +185,7 @@ https://iterm2.com/documentation-escape-codes.html[Marks].
 * https://github.com/kovidgoyal/kitty[Kitty]: OSC 8 hyperlinks and https://sw.kovidgoyal.net/kitty/graphics-protocol.html[Kitty Graphics].
 * http://terminolo.gy[Terminology]: OSC 8 hyperlinks and Terminology inline images.
 * https://wiki.gnome.org/Apps/Terminal/VTE[VTE 3 based] (0.50 or newer): OSC 8 hyperlinks.
+* https://wezfurlong.org/wezterm/[WezTerm]: OSC 8 hyperlinks and iTerm2 inline images.
 
 == Bugs
 
