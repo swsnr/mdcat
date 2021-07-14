@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.23.1] – 2021-07-14
+
 ### Changed
 - Use `TERM_PROGRAM` for determining WezTerm terminal (see [GH-185]).
 
@@ -498,4 +500,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.22.3]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.2...mdcat-0.22.3
 [0.22.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.3...mdcat-0.22.4
 [0.23.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.4...mdcat-0.23.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...HEAD
+[0.23.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...mdcat-0.23.1
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.1...HEAD
