@@ -9,7 +9,7 @@ To publish a new release run `scripts/release` from the project directory.
 ## [Unreleased]
 
 ### Changed
-- WezTerm is now detected by `TERM` and `TERM_PROGRAM` enviroment variable (see [GH-186]).
+- WezTerm is now detected by `TERM` and `TERM_PROGRAM` environment variables (see [GH-186]).
 
 [GH-186]: https://github.com/lunaryorn/mdcat/pull/186
 
