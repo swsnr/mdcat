@@ -83,6 +83,7 @@ fn get_vte_version() -> Option<(u8, u8)> {
 /// Checks if the current terminal is WezTerm.
 fn is_wezterm() -> bool {
     std::env::var("TERM_PROGRAM").map_or(false, |value| value == "WezTerm")
+        || std::env::var("TERM").map_or(false, |value| value == "wezterm")
 }
 
 impl TerminalCapabilities {

@@ -102,6 +102,7 @@ If run as `mdless` or if `--paginate` is given and the pager fails to start mdca
 == Environment
 
 TERM::
+    If this variable is `wezterm`, mdcat assumes that the terminal is WezTerm.
     If this variable is `xterm-kitty`, assume that the terminal is Kitty.
 
 TERM_PROGRAM::
