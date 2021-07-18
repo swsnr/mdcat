@@ -25,7 +25,7 @@ Then it
 
 * nicely renders all basic CommonMark syntax (no [tables][GH-2] or [footnotes][GH-1] though),
 * highlights code blocks with [syntect],
-* shows [links][osc8] and images inline in supported terminals (see above, where "Pixabay" is a clickable link!),
+* shows [links][osc8] and images inline in supported terminals (see above, where "Rust" is a clickable link!),
 * adds jump marks for headings in [iTerm2] (jump forwards and backwards with <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
 
 | Terminal                   |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
