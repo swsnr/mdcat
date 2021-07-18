@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.23.2] – 2021-07-18
+
 ### Changed
 - WezTerm is now detected by `TERM` and `TERM_PROGRAM` environment variables (see [GH-186]).
 
@@ -506,4 +508,5 @@ To publish a new release run `scripts/release` from the project directory.
 [0.22.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.3...mdcat-0.22.4
 [0.23.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.4...mdcat-0.23.0
 [0.23.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...mdcat-0.23.1
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.1...HEAD
+[0.23.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.1...mdcat-0.23.2
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.2...HEAD
