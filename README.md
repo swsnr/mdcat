@@ -8,7 +8,7 @@ $ mdcat sample.md
 
 ![mdcat showcase with different colour themes][sxs]
 
-mdcat in [kitty], with Tango Light, [Dracula], and [Solarized] Light (from left to
+mdcat in [kitty], with Tango Light, [Solarized] Light, and [Dracula] (from left to
 right), and [PragmataPro] as font.
 
 [CommonMark]: http://commonmark.org
