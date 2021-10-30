@@ -14,7 +14,7 @@ To publish a new release run `scripts/release` from the project directory.
 ## [0.24.0] – 2021-10-30
 
 ### Added
-- Support for [foot](https://codeberg.org/dnkl/foot/) (see [GH-190]) 
+- Support for [foot](https://codeberg.org/dnkl/foot/) (see [GH-190]).
 
 [GH-190]: https://github.com/lunaryorn/mdcat/pull/190
 
