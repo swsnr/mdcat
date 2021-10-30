@@ -10,6 +10,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ### Fixed
 - Fix semi-broken release.
+- Document support for foot in manpage.
 
 ## [0.24.0] – 2021-10-30
 

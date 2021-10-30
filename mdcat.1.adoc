@@ -187,6 +187,7 @@ https://iterm2.com/documentation-escape-codes.html[Marks].
 * http://terminolo.gy[Terminology]: OSC 8 hyperlinks and Terminology inline images.
 * https://wiki.gnome.org/Apps/Terminal/VTE[VTE 3 based] (0.50 or newer): OSC 8 hyperlinks.
 * https://wezfurlong.org/wezterm/[WezTerm]: OSC 8 hyperlinks and iTerm2 inline images.
+* https://codeberg.org/dnkl/foot/[foot]: OSC 8 hyperlinks.
 
 == Bugs
 
