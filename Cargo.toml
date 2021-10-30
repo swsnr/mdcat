@@ -57,3 +57,20 @@ clap = { version = "^2.33", default-features = false }
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller
 lto = true
+
+[package.metadata.release]
+allow-branch = ["main"]
+pre-release-commit-message = "Release {{version}}"
+post-release-commit-message = "Bump version to {{next_version}}"
+tag-prefix = "mdcat-"
+tag-name = "{{prefix}}{{version}}"
+tag-message = "mdcat {{version}}"
+pre-release-replacements = [
+    # Update version and release date in manpage
+    { file="mdcat.1.adoc", search="(?m)^:revnumber:.*$", replace = ":revnumber: {{version}}" },
+    { file="mdcat.1.adoc", search="(?m)^:revdate:.*$", replace = ":revdate: {{date}}" },
+    # Update the changelog
+    { file="CHANGELOG.md", search="## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] – {{date}}", exactly = 1 },
+    { file="CHANGELOG.md", search="HEAD", replace = "{{tag_name}}", exactly = 1 },
+    { file="CHANGELOG.md", search="\\[Unreleased\\]: ", replace = "[Unreleased]: https://github.com/lunaryorn/mdcat/compare/{{tag_name}}...HEAD\n[{{version}}]: ", exactly = 1 },
+]
