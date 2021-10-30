@@ -86,6 +86,11 @@ fn is_wezterm() -> bool {
         || std::env::var("TERM").map_or(false, |value| value == "wezterm")
 }
 
+/// Checks if the current terminal is foot.
+fn is_foot() -> bool {
+    std::env::var("TERM").map_or(false, |value| value == "foot")
+}
+
 impl TerminalCapabilities {
     /// A terminal which supports nothing.
     pub fn none() -> TerminalCapabilities {
@@ -172,6 +177,18 @@ impl TerminalCapabilities {
         }
     }
 
+    /// Terminal capabilities of foot
+    /// Foot is a fast, lightweight and minimalistic Wayland terminal emulator
+    pub fn foot() -> TerminalCapabilities {
+        TerminalCapabilities {
+            name: "foot".to_string(),
+            style: Some(StyleCapability::Ansi(AnsiStyle)),
+            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
+            image: None,
+            marks: None,
+        }
+    }
+
     /// Detect the capabilities of the current terminal.
     pub fn detect() -> TerminalCapabilities {
         if self::iterm2::is_iterm2() {
@@ -182,6 +199,8 @@ impl TerminalCapabilities {
             Self::kitty()
         } else if is_wezterm() {
             Self::wezterm()
+        } else if is_foot() {
+            Self::foot()
         } else if get_vte_version().filter(|&v| v >= (50, 0)).is_some() {
             Self::vte50()
         } else {
