@@ -7,7 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
+
+### Added
 - Support for [foot](https://codeberg.org/dnkl/foot/) (see [GH-190]) 
+
+[GH-190]: https://github.com/lunaryorn/mdcat/pull/190
+
 ## [0.23.2] – 2021-07-18
 
 ### Changed
@@ -31,7 +36,6 @@ To publish a new release run `scripts/release` from the project directory.
 [GH-182]: https://github.com/lunaryorn/mdcat/pull/182
 [GH-183]: https://github.com/lunaryorn/mdcat/issues/183
 [GH-184]: https://github.com/lunaryorn/mdcat/pull/184
-[GH-190]: https://github.com/lunaryorn/mdcat/pull/190
 
 ## [0.22.4] – 2021-04-15
 
