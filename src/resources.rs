@@ -157,7 +157,10 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
             Err(_) => Err(anyhow!("Cannot convert URL {} to file path", url)),
         },
         "http" | "https" => fetch_http(url),
-        _ => Err(anyhow!("Cannot read from URL {}, protocol not supported")),
+        _ => Err(anyhow!(
+            "Cannot read from URL {}, protocol not supported",
+            url,
+        )),
     }
 }
 
