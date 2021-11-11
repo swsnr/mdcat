@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- Added support for `$TERM=foot-extra`
+
 ## [0.24.1] – 2021-10-30
 
 ### Fixed

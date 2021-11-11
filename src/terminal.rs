@@ -88,7 +88,7 @@ fn is_wezterm() -> bool {
 
 /// Checks if the current terminal is foot.
 fn is_foot() -> bool {
-    std::env::var("TERM").map_or(false, |value| value == "foot")
+    std::env::var("TERM").map_or(false, |value| value == "foot" || value == "foot-extra")
 }
 
 impl TerminalCapabilities {
