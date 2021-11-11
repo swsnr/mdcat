@@ -9,7 +9,9 @@ To publish a new release run `scripts/release` from the project directory.
 ## [Unreleased]
 
 ### Added
-- Added support for `$TERM=foot-extra`
+- Added support for `$TERM=foot-extra` (see [GH-193])
+
+[GH-193]: https://github.com/lunaryorn/mdcat/pull/193
 
 ## [0.24.1] – 2021-10-30
 
