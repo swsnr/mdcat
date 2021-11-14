@@ -104,6 +104,7 @@ If run as `mdless` or if `--paginate` is given and the pager fails to start mdca
 TERM::
     If this variable is `wezterm`, mdcat assumes that the terminal is WezTerm. By default WezTerm does not set TERM to wezterm but mdcat can still detect it trough TERM_PROGRAM.
     If this variable is `xterm-kitty`, mdcat assumes that the terminal is Kitty.
+    If this variable starts with `foot`, mdcat assumes that the terminal is foot.
 
 TERM_PROGRAM::
     If this variable is `iTerm.app`, mdcat assumes that the terminal is iTerm2.
