@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.24.2] – 2021-11-19
+
 ### Added
 - Added support for `$TERM=foot*` (see [GH-193]).
 
@@ -532,5 +534,6 @@ To publish a new release run `scripts/release` from the project directory.
 [0.23.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...mdcat-0.23.1
 [0.23.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.1...mdcat-0.23.2
 [0.24.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.2...mdcat-0.24.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.1...HEAD
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.2...HEAD
+[0.24.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.1...mdcat-0.24.2
 [0.24.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.0...mdcat-0.24.1
