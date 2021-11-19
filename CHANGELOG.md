@@ -9,8 +9,12 @@ To publish a new release run `scripts/release` from the project directory.
 ## [Unreleased]
 
 ### Added
-- Added support for `$TERM=foot*` (see [GH-193])
+- Added support for `$TERM=foot*` (see [GH-193]).
 
+### Fixed
+- Fix compiler error with newer `anyhow` versions (see [GH-192]).
+
+[GH-192]: https://github.com/lunaryorn/mdcat/pull/192
 [GH-193]: https://github.com/lunaryorn/mdcat/pull/193
 
 ## [0.24.1] – 2021-10-30
