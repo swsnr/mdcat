@@ -40,7 +40,7 @@ default-features = false
 features = ["parsing", "assets", "dump-load", "regex-fancy"]
 
 [target.'cfg(unix)'.dependencies]
-libc = "^0.2.108"
+libc = "^0.2"
 
 [target.'cfg(windows)'.dependencies]
 terminal_size = "^0.1"

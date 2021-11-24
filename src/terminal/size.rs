@@ -73,6 +73,13 @@ impl Default for TerminalSize {
     }
 }
 
+#[cfg(unix)]
+extern "C" {
+    // Need to wrap ctermid explicitly because it's not (yet?) in libc, see
+    // <https://github.com/rust-lang/libc/issues/1928>
+    pub fn ctermid(c: *mut libc::c_char) -> *mut libc::c_char;
+}
+
 /// Query terminal size on Unix.
 ///
 /// Open the underlying controlling terminal via ctermid and open, and issue a
@@ -93,7 +100,7 @@ fn from_terminal_impl() -> Option<TerminalSize> {
         // ctermid uses a static buffer if given NULL.  This isn't thread safe but
         // a) we open the path right away, and b) a process only has a single
         // controlling terminal anyway, so we're pretty safe here I guess.
-        let cterm_path = libc::ctermid(std::ptr::null_mut());
+        let cterm_path = ctermid(std::ptr::null_mut());
         if cterm_path.is_null() {
             None
         } else {
