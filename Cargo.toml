@@ -10,7 +10,7 @@ version = "0.24.2"
 categories = ["command-line-utilities", "text-processing"]
 license = "MPL-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 ansi_term = "^0.12"
