@@ -8,7 +8,7 @@ use std::io::{Error, Result, Write};
 
 use ansi_term::{Colour, Style};
 use fehler::throws;
-use pulldown_cmark::CodeBlockKind;
+use pulldown_cmark::{CodeBlockKind, HeadingLevel};
 use syntect::highlighting::{HighlightState, Highlighter, Theme};
 use syntect::parsing::{ParseState, ScopeStack};
 
@@ -161,7 +161,7 @@ pub fn write_start_heading<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
     style: Style,
-    level: u32,
+    level: HeadingLevel,
 ) -> StackedState {
     let style = style.fg(Colour::Blue).bold();
     write_styled(

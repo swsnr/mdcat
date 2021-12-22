@@ -59,7 +59,7 @@ pub fn write_event<'a, W: Write>(
                 .current(Inline(InlineText, InlineAttrs::default()))
                 .and_data(data)
         }
-        (TopLevel(attrs), Start(Heading(level))) => {
+        (TopLevel(attrs), Start(Heading(level, _, _))) => {
             let (data, links) = data.take_links();
             write_link_refs(writer, environment, &settings.terminal_capabilities, links)?;
             if attrs.margin_before != NoMargin {
@@ -180,7 +180,7 @@ pub fn write_event<'a, W: Write>(
                 .current(attrs.with_margin_before().into())
                 .and_data(data)
         }
-        (Stacked(stack, StyledBlock(attrs)), Start(Heading(level))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Heading(level, _, _))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -299,7 +299,7 @@ pub fn write_event<'a, W: Write>(
                 .current(Inline(ListItem(kind, ItemBlock), attrs))
                 .and_data(data)
         }
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Heading(level))) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Heading(level, _, _))) => {
             if state != StartItem {
                 writeln!(writer)?;
                 write_indent(writer, attrs.indent)?;
@@ -501,7 +501,7 @@ pub fn write_event<'a, W: Write>(
             writeln!(writer)?;
             (stack.pop(), data)
         }
-        (Stacked(stack, Inline(_, _)), End(Heading(_))) => {
+        (Stacked(stack, Inline(_, _)), End(Heading(_, _, _))) => {
             writeln!(writer)?;
             (stack.pop(), data)
         }
