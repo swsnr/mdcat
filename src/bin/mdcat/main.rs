@@ -14,7 +14,7 @@ use mdcat::{Environment, Settings};
 use pulldown_cmark::{Options, Parser};
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::stdin;
+use std::io::{stdin, BufWriter};
 use std::io::{Error, Result};
 use std::path::PathBuf;
 use syntect::parsing::SyntaxSet;
@@ -62,11 +62,13 @@ fn process_file(
     );
     let env = Environment::for_local_directory(&base_dir)?;
 
+    let mut sink = BufWriter::new(output.writer());
     if dump_events {
-        mdcat::dump_states(settings, &env, &mut output.writer(), parser)
+        mdcat::dump_states(settings, &env, &mut sink, parser)
     } else {
-        mdcat::push_tty(settings, &env, &mut output.writer(), parser)
+        mdcat::push_tty(settings, &env, &mut sink, parser)
     }
+    .and_then(|_| sink.flush())
     .or_else(|error| {
         if error.kind() == std::io::ErrorKind::BrokenPipe {
             Ok(())

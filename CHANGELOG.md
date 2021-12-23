@@ -10,6 +10,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ### Changed
 - Update pulldown-cmark to 0.9.
+- Buffer writes to terminal and pager, to reduce the amount of syscalls.
 
 ## [0.24.2] – 2021-11-19
 
