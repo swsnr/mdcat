@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.25.0] – 2021-12-23
+
 ### Changed
 - Update pulldown-cmark to 0.9.
 - Buffer writes to terminal and pager, to reduce the amount of syscalls.
@@ -538,6 +540,7 @@ To publish a new release run `scripts/release` from the project directory.
 [0.23.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...mdcat-0.23.1
 [0.23.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.1...mdcat-0.23.2
 [0.24.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.2...mdcat-0.24.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.2...HEAD
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.25.0...HEAD
+[0.25.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.2...mdcat-0.25.0
 [0.24.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.1...mdcat-0.24.2
 [0.24.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.0...mdcat-0.24.1
