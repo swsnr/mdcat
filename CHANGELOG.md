@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Update pulldown-cmark to 0.9.1 which fixes a minor parsing issue.
+
 ## [0.25.0] – 2021-12-23
 
 ### Changed
