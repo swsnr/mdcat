@@ -7,6 +7,7 @@
 //! Rendering algorithm.
 
 use std::io::prelude::*;
+use std::io::Error;
 
 use ansi_term::{Colour, Style};
 use anyhow::anyhow;
@@ -14,9 +15,9 @@ use fehler::throws;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, LinkType};
-use std::io::Error;
 use syntect::highlighting::{HighlightIterator, Highlighter, Theme};
 use syntect::util::LinesWithEndings;
+use tracing::{event, instrument, Level};
 use url::Url;
 
 use crate::terminal::*;
@@ -36,6 +37,7 @@ pub use state::State;
 
 #[allow(clippy::cognitive_complexity)]
 #[throws]
+#[instrument(level = "trace", skip(writer, settings, environment, theme))]
 pub fn write_event<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
@@ -49,6 +51,8 @@ pub fn write_event<'a, W: Write>(
     use self::ListItemState::*;
     use self::StackedState::*;
     use State::*;
+
+    event!(Level::TRACE, event = ?event, "rendering");
     match (state, event) {
         // Top level items
         (TopLevel(attrs), Start(Paragraph)) => {
@@ -581,10 +585,17 @@ pub fn write_event<'a, W: Write>(
                 }
                 (Some(ITerm2(iterm2)), Some(ref url)) => iterm2
                     .read_and_render(url, settings.resource_access)
+                    .map_err(|error| {
+                        event!(Level::ERROR, ?error, %url, ?settings.resource_access, "failed to render image in iterm2: {:#}", error);
+                        error
+                    })
                     .and_then(|contents| {
                         // Use the last segment as file name for iterm2.
                         let name = url.path_segments().and_then(|s| s.last());
-                        iterm2.write_inline_image(writer, name, &contents)?;
+                        iterm2.write_inline_image(writer, name, &contents).map_err(|error| {
+                            event!(Level::ERROR, ?error, "failed to write iterm image: {:#}", error);
+                            error
+                        })?;
                         Ok(RenderedImage)
                     })
                     .map(|_| RenderedImage)
@@ -592,17 +603,28 @@ pub fn write_event<'a, W: Write>(
                 (Some(Kitty(kitty)), Some(ref url)) => settings
                     .terminal_size
                     .pixels
-                    .ok_or_else(|| anyhow!("Terminal pixel size not available"))
+                    .ok_or_else(|| {
+                        event!(Level::ERROR, "Kitty surprisingly did not report pixel size, cannot render image");
+                        anyhow!("Terminal pixel size not available")
+                    })
                     .and_then(|size| {
-                        let image = kitty.read_and_render(url, settings.resource_access, size)?;
-                        kitty.write_inline_image(writer, image)?;
+                        let image = kitty.read_and_render(url, settings.resource_access, size).map_err(|error| {
+                            event!(Level::ERROR, ?error, %url, ?settings.resource_access, "failed to render image in kitty: {:#}", error);
+                            error
+                        })?;
+                        kitty.write_inline_image(writer, image).map_err(|error| {
+                            event!(Level::ERROR, ?error, "failed to write iterm kitty: {:#}", error);
+                            error
+                        })?;
                         Ok(RenderedImage)
                     })
                     .ok(),
                 (None, Some(url)) => {
                     if let InlineLink(_) = state {
+                        event!(Level::WARN, url = %url, "Terminal did not support images, want to render image as link but cannot: Already inside a link");
                         None
                     } else {
+                        event!(Level::INFO, url = %url, "Terminal did not support images, rendering image as link");
                         match settings.terminal_capabilities.links {
                             Some(capability) => match capability {
                                 LinkCapability::Osc8(osc8) => {
@@ -623,6 +645,7 @@ pub fn write_event<'a, W: Write>(
                 (_, None) => None,
             }
             .unwrap_or_else(|| {
+                event!(Level::WARN, "Rendering image {} as inline text, without link", link);
                 // Inside an inline link keep the blue foreground colour; we cannot nest links so we
                 // should clarify that clicking the link follows the link target and not the image.
                 let style = if let InlineLink(_) = state {
@@ -679,6 +702,7 @@ Please do report an issue at <https://codeberg.org/flausch/mdcat/issues/new> inc
 }
 
 #[throws]
+#[instrument(level = "trace", skip(writer, settings, environment))]
 pub fn finish<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
@@ -688,6 +712,11 @@ pub fn finish<'a, W: Write>(
 ) -> () {
     match state {
         State::TopLevel(_) => {
+            event!(
+                Level::TRACE,
+                "Writing {} pending link definitions",
+                data.pending_link_definitions.len()
+            );
             write_link_refs(
                 writer,
                 environment,

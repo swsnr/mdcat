@@ -7,6 +7,7 @@
 //! Provide utilities for references.
 
 use crate::Environment;
+use tracing::{event, Level};
 use url::Url;
 
 /// A base to resolve references with.
@@ -18,7 +19,16 @@ pub trait UrlBase {
 impl UrlBase for Url {
     /// Resolve a reference against this URL.
     fn resolve_reference(&self, reference: &str) -> Option<Url> {
-        Url::parse(reference).or_else(|_| self.join(reference)).ok()
+        match Url::parse(reference).or_else(|_| self.join(reference)) {
+            Ok(url) => {
+                event!(Level::TRACE, baseurl = %self, reference, %url, "reference resolved");
+                Some(url)
+            }
+            Err(error) => {
+                event!(Level::TRACE, baseurl = %self, reference, ?error, "failed to resolve reference");
+                None
+            }
+        }
     }
 }
 

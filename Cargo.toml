@@ -24,6 +24,8 @@ image = "0.24.0"
 mime = "^0.3"
 pulldown-cmark = { version = "0.9.1", default-features = false, features = ['simd'] }
 shell-words = "^1"
+tracing = { version = "0.1.30", features = ["release_max_level_warn"] }
+tracing-subscriber = { version = "0.3.8", features = ["env-filter"] }
 ureq = { version = "^2.0", features = ["tls", "native-certs"] }
 url = "^2.2"
 

@@ -15,6 +15,7 @@ use fehler::throws;
 use pulldown_cmark::Event;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
+use tracing::instrument;
 
 // Expose some select things for use in main
 pub use crate::resources::ResourceAccess;
@@ -102,6 +103,7 @@ impl Environment {
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
 #[throws]
+#[instrument(level = "debug", skip_all, fields(environment.hostname = environment.hostname.as_str(), environment.base_url = &environment.base_url.as_str()))]
 pub fn push_tty<'a, 'e, W, I>(
     settings: &Settings,
     environment: &Environment,

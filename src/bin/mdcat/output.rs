@@ -4,9 +4,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use anyhow::{bail, Context, Result};
 use std::io::Write;
 use std::process::*;
+
+use anyhow::{bail, Context, Result};
+use tracing::{event, Level};
 
 /// The output for mdcat
 pub enum Output {
@@ -39,10 +41,23 @@ fn parse_env_var(name: &str) -> Result<Option<Vec<String>>> {
 }
 
 fn pager_from_env() -> Result<Vec<String>> {
-    match parse_env_var("MDCAT_PAGER")? {
-        Some(command) => Ok(command),
-        None => Ok(parse_env_var("PAGER")?.unwrap_or_else(|| vec!["less".into(), "-R".into()])),
+    for envvar in ["MDCAT_PAGER", "PAGER"] {
+        event!(Level::TRACE, envvar, "looking for pager in environment");
+        match parse_env_var(envvar) {
+            // Continue looking
+            Ok(None) => {}
+            Ok(Some(command)) => {
+                event!(Level::INFO, envvar, "Using {:?} as pager", command);
+                return Ok(command);
+            }
+            Err(error) => {
+                event!(Level::ERROR, envvar, %error, "Parsing failed: {:#}", error);
+                return Err(error);
+            }
+        }
     }
+    event!(Level::DEBUG, "Falling back to default pager less -R");
+    Ok(vec!["less".into(), "-R".into()])
 }
 
 impl Output {
@@ -67,15 +82,29 @@ impl Output {
     pub fn new(try_paginate: bool) -> Result<Output> {
         if try_paginate {
             match pager_from_env()?.split_first() {
-                None => Ok(Output::Stdout(std::io::stdout())),
-                Some((command, args)) => Command::new(command)
-                    .args(args)
-                    .stdin(Stdio::piped())
-                    .spawn()
-                    .with_context(|| {
-                        format!("Failed to spawn pager {} with args {:?}", command, args)
-                    })
-                    .map(Output::Pager),
+                None => {
+                    event!(
+                        Level::WARN,
+                        "Empty pager command, falling back to standard output"
+                    );
+                    Ok(Output::Stdout(std::io::stdout()))
+                }
+                Some((command, args)) => {
+                    event!(
+                        Level::TRACE,
+                        "Paginating with command {}, args {:?}",
+                        command,
+                        args
+                    );
+                    Command::new(command)
+                        .args(args)
+                        .stdin(Stdio::piped())
+                        .spawn()
+                        .with_context(|| {
+                            format!("Failed to spawn pager {} with args {:?}", command, args)
+                        })
+                        .map(Output::Pager)
+                }
             }
         } else {
             Ok(Output::Stdout(std::io::stdout()))

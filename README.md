@@ -81,6 +81,13 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 [scoop]: https://github.com/lukesampson/scoop
 [chocolatey]: https://github.com/chocolatey
 
+## Troubleshooting
+
+`mdcat` can output extensive tracing information when asked to.
+Run a **debug build** of `mdcat` with `$RUST_LOG=trace` for complete tracing information, or with `$RUST_LOG=mdcat::render=trace` to trace only rendering.
+
+**Note:** Tracing information is mostly elided in release builds; use a debug build for complete output.
+
 ## Future plans
 
 - [ ] Figure out a better way to show HTML [#3].

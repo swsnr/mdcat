@@ -8,17 +8,19 @@
 
 //! Show CommonMark documents on TTYs.
 
-use fehler::throws;
-use mdcat::{Environment, Settings};
-use pulldown_cmark::{Options, Parser};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{stdin, BufWriter};
 use std::io::{Error, Result};
 use std::path::PathBuf;
+
+use fehler::throws;
+use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
+use tracing::{event, instrument, Level};
 
 use crate::output::Output;
+use mdcat::{Environment, Settings};
 use mdcat::{ResourceAccess, TerminalCapabilities, TerminalSize};
 
 mod args;
@@ -48,6 +50,7 @@ fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
     }
 }
 
+#[instrument(skip(output, settings), level = "debug")]
 fn process_file(
     filename: &str,
     settings: &Settings,
@@ -55,6 +58,11 @@ fn process_file(
     output: &mut Output,
 ) -> Result<()> {
     let (base_dir, input) = read_input(filename)?;
+    event!(
+        Level::TRACE,
+        "Read input, using {} as base directory",
+        base_dir.display()
+    );
     let parser = Parser::new_ext(
         &input,
         Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
@@ -67,17 +75,23 @@ fn process_file(
     } else {
         mdcat::push_tty(settings, &env, &mut sink, parser)
     }
-    .and_then(|_| sink.flush())
+    .and_then(|_| {
+        event!(Level::TRACE, "Finished rendering, flushing output");
+        sink.flush()
+    })
     .or_else(|error| {
         if error.kind() == std::io::ErrorKind::BrokenPipe {
+            event!(Level::TRACE, "Ignoring broken pipe");
             Ok(())
         } else {
+            event!(Level::ERROR, ?error, "Failed to process file: {:#}", error);
             Err(error)
         }
     })
 }
 
 /// Represent command line arguments.
+#[derive(Debug)]
 struct Arguments {
     filenames: Vec<String>,
     terminal_capabilities: TerminalCapabilities,
@@ -102,6 +116,7 @@ impl Arguments {
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
         {
+            trace!("Enable ANSI support in windows terminal");
             ansi_term::enable_ansi_support().ok();
         }
 
@@ -155,13 +170,22 @@ You can obtain one at http://mozilla.org/MPL/2.0/."
 }
 
 fn main() {
+    // Setup tracing
+    tracing_subscriber::fmt::Subscriber::builder()
+        .pretty()
+        .with_env_filter(tracing_subscriber::filter::EnvFilter::from_default_env())
+        .with_writer(std::io::stderr)
+        .init();
+
     let size = TerminalSize::detect().unwrap_or_default();
     let columns = size.columns.to_string();
 
     let matches = args::app(&columns)
         .long_version(long_version())
         .get_matches();
+    event!(Level::TRACE, "clap parsed: {:?}", matches);
     let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
+    event!(Level::TRACE, "mdcat arguments: {:?}", arguments);
 
     if arguments.detect_only {
         println!("Terminal: {}", arguments.terminal_capabilities.name);
@@ -185,6 +209,13 @@ fn main() {
                     resource_access,
                     syntax_set: SyntaxSet::load_defaults_newlines(),
                 };
+                event!(
+                    Level::TRACE,
+                    ?settings.terminal_size,
+                    ?settings.terminal_capabilities,
+                    ?settings.resource_access,
+                    "settings"
+                );
                 filenames
                     .iter()
                     .try_fold(0, |code, filename| {
@@ -206,6 +237,7 @@ fn main() {
                 128
             }
         };
+        event!(Level::TRACE, "Exiting with final exit code {}", exit_code);
         std::process::exit(exit_code);
     }
 }

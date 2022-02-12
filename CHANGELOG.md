@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- Add extensive tracing output, to aid debugging (see [#147]).
+
+[#147]: https://codeberg.org/flausch/mdcat/issues/147
+
 ## [0.26.1] – 2022-02-12
 
 ### Changed
