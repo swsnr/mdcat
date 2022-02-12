@@ -6,7 +6,7 @@
 
 use clap::*;
 
-pub(crate) fn app<'a>(default_columns: &'a str) -> App<'a> {
+pub(crate) fn app(default_columns: &str) -> App<'_> {
     app_from_crate!()
         .setting(AppSettings::DontCollapseArgsInUsage)
         .setting(AppSettings::DeriveDisplayOrder)
