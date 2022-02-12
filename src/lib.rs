@@ -125,38 +125,6 @@ where
     finish(writer, settings, environment, final_state, final_data)?;
 }
 
-/// Write as push_tty would, but ignore actual output and instead write states and events.
-#[throws]
-pub fn dump_states<'a, 'e, W, I>(
-    settings: &Settings,
-    environment: &Environment,
-    writer: &'a mut W,
-    mut events: I,
-) -> ()
-where
-    I: Iterator<Item = Event<'e>>,
-    W: Write,
-{
-    use ansi_term::*;
-    use render::*;
-
-    let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
-    let mut sink = std::io::sink();
-    let (final_state, _) = events.try_fold(
-        (State::default(), StateData::default()),
-        |(state, data), event| {
-            let s = Style::new().fg(Colour::Blue).paint(format!("{:?}", state));
-            let sep = Style::new().fg(Colour::Yellow).paint("|>");
-            let e = Style::new()
-                .fg(Colour::Purple)
-                .paint(format!("{:?}", event));
-            writeln!(writer, "{} {} {}", s, sep, e)?;
-            write_event(&mut sink, settings, environment, theme, state, data, event)
-        },
-    )?;
-    writeln!(writer, "{:?}", final_state)?;
-}
-
 #[cfg(test)]
 mod tests {
     use pulldown_cmark::Parser;

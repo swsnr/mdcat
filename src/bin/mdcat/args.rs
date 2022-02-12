@@ -56,12 +56,6 @@ Report issues to <https://codeberg.org/flausch/mdcat>.",
                 .help("Do not load remote resources like images"),
         )
         .arg(
-            Arg::new("dump_events")
-                .long("dump-events")
-                .help("Dump Markdown parser events and exit")
-                .hide(true),
-        )
-        .arg(
             Arg::new("fail_fast")
                 .long("fail")
                 .help("Exit immediately if any error occurs processing an input file"),

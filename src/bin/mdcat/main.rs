@@ -51,12 +51,7 @@ fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
 }
 
 #[instrument(skip(output, settings), level = "debug")]
-fn process_file(
-    filename: &str,
-    settings: &Settings,
-    dump_events: bool,
-    output: &mut Output,
-) -> Result<()> {
+fn process_file(filename: &str, settings: &Settings, output: &mut Output) -> Result<()> {
     let (base_dir, input) = read_input(filename)?;
     event!(
         Level::TRACE,
@@ -70,24 +65,21 @@ fn process_file(
     let env = Environment::for_local_directory(&base_dir)?;
 
     let mut sink = BufWriter::new(output.writer());
-    if dump_events {
-        mdcat::dump_states(settings, &env, &mut sink, parser)
-    } else {
-        mdcat::push_tty(settings, &env, &mut sink, parser)
-    }
-    .and_then(|_| {
-        event!(Level::TRACE, "Finished rendering, flushing output");
-        sink.flush()
-    })
-    .or_else(|error| {
-        if error.kind() == std::io::ErrorKind::BrokenPipe {
-            event!(Level::TRACE, "Ignoring broken pipe");
-            Ok(())
-        } else {
-            event!(Level::ERROR, ?error, "Failed to process file: {:#}", error);
-            Err(error)
-        }
-    })
+    // mdcat::push_tty(settings, &env, &mut sink, parser).expect("FUCK");
+    mdcat::push_tty(settings, &env, &mut sink, parser)
+        .and_then(|_| {
+            event!(Level::TRACE, "Finished rendering, flushing output");
+            sink.flush()
+        })
+        .or_else(|error| {
+            if error.kind() == std::io::ErrorKind::BrokenPipe {
+                event!(Level::TRACE, "Ignoring broken pipe");
+                Ok(())
+            } else {
+                event!(Level::ERROR, ?error, "Failed to process file: {:#}", error);
+                Err(error)
+            }
+        })
 }
 
 /// Represent command line arguments.
@@ -97,7 +89,6 @@ struct Arguments {
     terminal_capabilities: TerminalCapabilities,
     resource_access: ResourceAccess,
     columns: usize,
-    dump_events: bool,
     detect_only: bool,
     fail_fast: bool,
     paginate: bool,
@@ -121,7 +112,6 @@ impl Arguments {
         }
 
         let filenames = matches.values_of_t("filenames")?;
-        let dump_events = matches.is_present("dump_events");
         let detect_only = matches.is_present("detect_only");
         let fail_fast = matches.is_present("fail_fast");
         let paginate =
@@ -149,7 +139,6 @@ impl Arguments {
             terminal_capabilities,
             resource_access,
             columns,
-            dump_events,
             detect_only,
             fail_fast,
             paginate,
@@ -192,7 +181,6 @@ fn main() {
     } else {
         let Arguments {
             filenames,
-            dump_events,
             fail_fast,
             terminal_capabilities,
             columns,
@@ -219,7 +207,7 @@ fn main() {
                 filenames
                     .iter()
                     .try_fold(0, |code, filename| {
-                        process_file(filename, &settings, dump_events, &mut output)
+                        process_file(filename, &settings, &mut output)
                             .map(|_| code)
                             .or_else(|error| {
                                 eprintln!("Error: {}: {}", filename, error);
