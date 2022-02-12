@@ -25,20 +25,20 @@ Then it
 
 * nicely renders all basic CommonMark syntax (no [tables][#2] or [footnotes][#1] though),
 * highlights code blocks with [syntect],
-* shows [links][osc8] and images inline in supported terminals (see above, where "Rust" is a clickable link!),
+* shows [links][osc8], and also images inline in supported terminals (see above, where "Rust" is a clickable link!),
 * adds jump marks for headings in [iTerm2] (jump forwards and backwards with <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
 
-| Terminal                   |  Basic syntax | Syntax highlighting | Links | Images | Jump marks |
-| :------------------------- | :-----------: | :-----------------: | :---: | :----: | :--------: |
-| Basic ANSI                 | ✓             | ✓                   |       |        |            |
-| Windows [ConEmu][]         | ✓             | ✓                   |       |        |            |
-| Windows 10 console         | ✓             | ✓                   |       |        |            |
-| Generic VTE 0.50 or newer¹ | ✓             | ✓                   | ✓     |        |            |
-| [Terminology][]            | ✓             | ✓                   | ✓     | ✓      |            |
-| [iTerm2][]                 | ✓             | ✓                   | ✓     | ✓ 2)   | ✓          |
-| [kitty][]                  | ✓             | ✓                   | ✓     | ✓ 2)   |            |
-| [WezTerm][]                | ✓             | ✓                   | ✓     | ✓ 2)   |            |
-| [foot][]                   | ✓             | ✓                   | ✓     |        |            |
+| Terminal                   |  Basic syntax | Syntax highlighting | Images | Jump marks |
+| :------------------------- | :-----------: | :-----------------: | :----: | :--------: |
+| Basic ANSI                 | ✓             | ✓                   |        |            |
+| Windows [ConEmu][]         | ✓             | ✓                   |        |            |
+| Windows 10 console         | ✓             | ✓                   |        |            |
+| Generic VTE 0.50 or newer¹ | ✓             | ✓                   |        |            |
+| [Terminology][]            | ✓             | ✓                   | ✓      |            |
+| [iTerm2][]                 | ✓             | ✓                   | ✓ 2)   | ✓          |
+| [kitty][]                  | ✓             | ✓                   | ✓ 2)   |            |
+| [WezTerm][]                | ✓             | ✓                   | ✓ 2)   |            |
+| [foot][]                   | ✓             | ✓                   |        |            |
 
 1) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
 2) SVG images require `rsvg-convert` from librsvg.
