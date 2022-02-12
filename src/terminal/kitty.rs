@@ -159,11 +159,7 @@ impl KittyImages {
     /// image down to `terminal_size` (preserving aspect ratio).
     fn render_as_rgb_or_rgba(self, image: DynamicImage, terminal_size: PixelSize) -> KittyImage {
         let format = match image.color() {
-            ColorType::L8
-            | ColorType::Rgb8
-            | ColorType::L16
-            | ColorType::Rgb16
-            | ColorType::Bgr8 => KittyFormat::Rgb,
+            ColorType::L8 | ColorType::Rgb8 | ColorType::L16 | ColorType::Rgb16 => KittyFormat::Rgb,
             // Default to RGBA format: We cannot match all colour types because
             // ColorType is marked non-exhaustive, but RGBA is a safe default
             // because we can convert any image to RGBA, at worth with additional
