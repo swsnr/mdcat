@@ -1,3 +1,1 @@
-[34mfoo[0m[34m[1][0m bar
-
-[34m[1]: [0m[34m/url[0m
+]8;;file://HOSTNAME/ROOT/url[34mfoo[0m]8;; bar

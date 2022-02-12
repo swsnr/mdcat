@@ -1,7 +1,3 @@
-[34mfoo[0m[34m[1][0m,
-[34mbar[0m[34m[2][0m,
-[34mbaz[0m[34m[3][0m
-
-[34m[1]: [0m[34m/foo-url[0m[34m foo[0m
-[34m[2]: [0m[34m/bar-url[0m[34m bar[0m
-[34m[3]: [0m[34m/baz-url[0m
+]8;;file://HOSTNAME/ROOT/foo-url[34mfoo[0m]8;;,
+]8;;file://HOSTNAME/ROOT/bar-url[34mbar[0m]8;;,
+]8;;file://HOSTNAME/ROOT/baz-url[34mbaz[0m]8;;

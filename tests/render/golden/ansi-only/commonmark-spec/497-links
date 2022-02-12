@@ -1,9 +1,5 @@
-[34mlink[0m[34m[1][0m
+]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/render/md/commonmark-spec/#fragment[34mlink[0m]8;;
 
-[34mlink[0m[34m[2][0m
+]8;;http://example.com/#fragment[34mlink[0m]8;;
 
-[34mlink[0m[34m[3][0m
-
-[34m[1]: [0m[34m#fragment[0m
-[34m[2]: [0m[34mhttp://example.com#fragment[0m
-[34m[3]: [0m[34mhttp://example.com?foo=3#frag[0m
+]8;;http://example.com/?foo=3#frag[34mlink[0m]8;;

@@ -1,4 +1,3 @@
-[35mmoon[0m[35m[1][0m[34m[2][0m
+]8;;file://HOSTNAME/ROOT/uri[34mmoon[0m[35m[1][0m]8;;
 
-[35m[1]: [0m[35mmoon.jpg[0m
-[34m[2]: [0m[34m/uri[0m
+[35m[1]: [0m]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/render/md/commonmark-spec/moon.jpg[35mmoon.jpg[0m]8;;

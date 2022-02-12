@@ -8,6 +8,15 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Always output links as OSC-8 hyperlinks unless `--dump` is given.
+  In particular, mdcat now prints hyperlinks if invoked as `mdless` or with `-p`, as recent `less` versions support OCS-8 hyperlinks (see [GH-191]).
+
+[GH-191]: https://github.com/lunaryorn/mdcat/issues/191
+
+### Removed
+- mdcat no longer attempts to detect OSC8 link support of the underlying terminal.
+
 ## [0.25.1] – 2022-01-17
 
 ### Changed
@@ -22,7 +31,7 @@ To publish a new release run `scripts/release` from the project directory.
 ## [0.24.2] – 2021-11-19
 
 ### Added
-- Added support for `$TERM=foot*` (see [GH-193]).
+- Support for `$TERM=foot*` (see [GH-193]).
 
 ### Fixed
 - Fix compiler error with newer `anyhow` versions (see [GH-192]).

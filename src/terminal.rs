@@ -69,26 +69,10 @@ pub struct TerminalCapabilities {
     pub marks: Option<MarkCapability>,
 }
 
-/// Get the version of the underlying VTE terminal if any.
-fn get_vte_version() -> Option<(u8, u8)> {
-    std::env::var("VTE_VERSION").ok().and_then(|value| {
-        value[..2]
-            .parse::<u8>()
-            .into_iter()
-            .zip(value[2..4].parse::<u8>())
-            .next()
-    })
-}
-
 /// Checks if the current terminal is WezTerm.
 fn is_wezterm() -> bool {
     std::env::var("TERM_PROGRAM").map_or(false, |value| value == "WezTerm")
         || std::env::var("TERM").map_or(false, |value| value == "wezterm")
-}
-
-/// Checks if the current terminal is foot.
-fn is_foot() -> bool {
-    std::env::var("TERM").map_or(false, |value| value.starts_with("foot"))
 }
 
 impl TerminalCapabilities {
@@ -108,7 +92,7 @@ impl TerminalCapabilities {
         TerminalCapabilities {
             name: "Ansi".to_string(),
             style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: None,
+            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
             image: None,
             marks: None,
         }
@@ -149,17 +133,6 @@ impl TerminalCapabilities {
         }
     }
 
-    /// Terminal capabilities of VET 0.50 or newer.
-    pub fn vte50() -> TerminalCapabilities {
-        TerminalCapabilities {
-            name: "VTE 50".to_string(),
-            style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
-            image: None,
-            marks: None,
-        }
-    }
-
     /// Terminal capabilities of WezTerm (Wez's Terminal Emulator).
     ///
     /// WezTerm is a GPU-accelerated cross-platform
@@ -177,18 +150,6 @@ impl TerminalCapabilities {
         }
     }
 
-    /// Terminal capabilities of foot
-    /// Foot is a fast, lightweight and minimalistic Wayland terminal emulator
-    pub fn foot() -> TerminalCapabilities {
-        TerminalCapabilities {
-            name: "foot".to_string(),
-            style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: Some(LinkCapability::Osc8(self::osc::Osc8Links)),
-            image: None,
-            marks: None,
-        }
-    }
-
     /// Detect the capabilities of the current terminal.
     pub fn detect() -> TerminalCapabilities {
         if self::iterm2::is_iterm2() {
@@ -199,10 +160,6 @@ impl TerminalCapabilities {
             Self::kitty()
         } else if is_wezterm() {
             Self::wezterm()
-        } else if is_foot() {
-            Self::foot()
-        } else if get_vte_version().filter(|&v| v >= (50, 0)).is_some() {
-            Self::vte50()
         } else {
             Self::ansi()
         }

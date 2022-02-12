@@ -1,13 +1,9 @@
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
 tempor invidunt ut labore et dolore magna aliquyam erat
-([34mhttp://www.example.com/autolink[0m), sed diam voluptua ([34mhello@example.com[0m).
+(]8;;http://www.example.com/autolink[34mhttp://www.example.com/autolink[0m]8;;), sed diam voluptua (]8;;mailto:hello@example.com[34mhello@example.com[0m]8;;).
 
-Lorem ipsum dolor sit amet, [34mconsetetur[0m
-[34msadipscing[0m[34m[1][0m elitr, sed diam nonumy eirmod tempor
+Lorem ipsum dolor sit amet, ]8;;http://www.example.com/inline[34mconsetetur[0m
+[34msadipscing[0m]8;; elitr, sed diam nonumy eirmod tempor
 invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos
-et accusam et [34mjusto duo dolores[0m[34m[2][0m et ea rebum. Stet clita kasd gubergren, no
-sea [34mtakimata sanctus[0m[34m[3][0m est Lorem ipsum dolor sit amet.
-
-[34m[1]: [0m[34mhttp://www.example.com/inline[0m
-[34m[2]: [0m[34mhttp://www.example.com/reference[0m
-[34m[3]: [0m[34m./showcase.md[0m
+et accusam et ]8;;http://www.example.com/reference[34mjusto duo dolores[0m]8;; et ea rebum. Stet clita kasd gubergren, no
+sea ]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/render/md/samples/showcase.md[34mtakimata sanctus[0m]8;; est Lorem ipsum dolor sit amet.

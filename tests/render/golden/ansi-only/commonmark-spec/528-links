@@ -1,4 +1,1 @@
-[foo [34mbar[0m[34m[1][0m][34mref[0m[34m[2][0m
-
-[34m[1]: [0m[34m/uri[0m
-[34m[2]: [0m[34m/uri[0m
+[foo ]8;;file://HOSTNAME/ROOT/uri[34mbar[0m]8;;]]8;;file://HOSTNAME/ROOT/uri[34mref[0m]8;;
