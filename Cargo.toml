@@ -2,8 +2,8 @@
 name = "mdcat"
 description = "cat for markdown: Show markdown documents in terminals"
 readme = "README.md"
-homepage = "https://github.com/lunaryorn/mdcat"
-repository = "https://github.com/lunaryorn/mdcat"
+homepage = "https://codeberg.org/flausch/mdcat"
+repository = "https://codeberg.org/flausch/mdcat"
 documentation = "https://docs.rs/mdcat"
 keywords = ["markdown", "less", "cat"]
 version = "0.26.0"
@@ -66,5 +66,5 @@ pre-release-replacements = [
     # Update the changelog
     { file="CHANGELOG.md", search="## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] – {{date}}", exactly = 1 },
     { file="CHANGELOG.md", search="HEAD", replace = "{{tag_name}}", exactly = 1 },
-    { file="CHANGELOG.md", search="\\[Unreleased\\]: ", replace = "[Unreleased]: https://github.com/lunaryorn/mdcat/compare/{{tag_name}}...HEAD\n[{{version}}]: ", exactly = 1 },
+    { file="CHANGELOG.md", search="\\[Unreleased\\]: ", replace = "[Unreleased]: https://codeberg.org/flausch/mdcat/compare/{{tag_name}}...HEAD\n[{{version}}]: ", exactly = 1 },
 ]

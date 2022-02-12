@@ -23,7 +23,7 @@ right), and [PragmataPro] as font.
 `mdcat` works best with [iTerm2] or [Kitty], and a good terminal font with italic characters.
 Then it
 
-* nicely renders all basic CommonMark syntax (no [tables][GH-2] or [footnotes][GH-1] though),
+* nicely renders all basic CommonMark syntax (no [tables][#2] or [footnotes][#1] though),
 * highlights code blocks with [syntect],
 * shows [links][osc8] and images inline in supported terminals (see above, where "Rust" is a clickable link!),
 * adds jump marks for headings in [iTerm2] (jump forwards and backwards with <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
@@ -45,8 +45,8 @@ Then it
 
 Not supported:
 
-* CommonMark extensions: [Footnotes][GH-1] and [tables][GH-2]
-* [Re-filling paragraphs][GH-4]
+* CommonMark extensions: [Footnotes][#1] and [tables][#2]
+* [Re-filling paragraphs][#4]
 
 [syntect]: https://github.com/trishume/syntect
 [osc8]: https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
@@ -74,7 +74,7 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * [Chocolatey]: `choco install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
-[Releases]: https://github.com/lunaryorn/mdcat/releases
+[Releases]: https://codeberg.org/flausch/mdcat/releases
 [Homebrew]: https://brew.sh
 [MacPorts]: https://www.macports.org
 [Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
@@ -83,15 +83,15 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 
 ## Future plans
 
-- [ ] Figure out a better way to show HTML [GH-3].
-- [ ] CommonMark extensions: Footnotes [GH-1].
-- [ ] CommonMark extensions: Tables [GH-2].
-- [ ] Ignore soft wraps and wrap inline text a column limit instead [GH-4].
+- [ ] Figure out a better way to show HTML [#3].
+- [ ] CommonMark extensions: Footnotes [#1].
+- [ ] CommonMark extensions: Tables [#2].
+- [ ] Ignore soft wraps and wrap inline text a column limit instead [#4].
 
-[GH-1]: https://github.com/lunaryorn/mdcat/issues/1
-[GH-2]: https://github.com/lunaryorn/mdcat/issues/2
-[GH-3]: https://github.com/lunaryorn/mdcat/issues/3
-[GH-4]: https://github.com/lunaryorn/mdcat/issues/4
+[#1]: https://codeberg.org/flausch/mdcat/issues/1
+[#2]: https://codeberg.org/flausch/mdcat/issues/2
+[#3]: https://codeberg.org/flausch/mdcat/issues/3
+[#4]: https://codeberg.org/flausch/mdcat/issues/4
 
 ## License
 

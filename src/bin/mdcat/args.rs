@@ -15,7 +15,7 @@ pub(crate) fn app(default_columns: &str) -> App<'_> {
             "\
 See 'man 1 mdcat' for more information.
 
-Report issues to <https://github.com/lunaryorn/mdcat>.",
+Report issues to <https://codeberg.org/flausch/mdcat>.",
         )
         .arg(
             Arg::new("paginate")
