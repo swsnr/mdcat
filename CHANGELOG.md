@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.26.1] – 2022-02-12
+
 ### Changed
 - Moved repository to <https://codeberg.org/flausch/mdcat>.
 
@@ -516,7 +518,8 @@ To publish a new release run `scripts/release` from the project directory.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.0...HEAD
+[Unreleased]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.1...HEAD
+[0.26.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.0...mdcat-0.26.1
 [0.26.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.25.1...mdcat-0.26.0
 [0.25.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.25.0...mdcat-0.25.1
 [0.25.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.24.2...mdcat-0.25.0
