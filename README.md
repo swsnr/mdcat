@@ -62,8 +62,6 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 
 ## Installation
 
-* The [Releases] page provides pre-build binaries for Linux, macOS and Windows.
-    * **Tip:** You can copy or hard-link `mdcat` to `mdless` for a variant of `mdcat` which paginates by default (like `mdcat -p`).
 * 3rd party packages:
     * [Homebrew]: `brew install mdcat`
     * [MacPorts]: `sudo port install mdcat`
@@ -74,7 +72,6 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * [Chocolatey]: `choco install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
-[Releases]: https://codeberg.org/flausch/mdcat/releases
 [Homebrew]: https://brew.sh
 [MacPorts]: https://www.macports.org
 [Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
