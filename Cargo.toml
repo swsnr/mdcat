@@ -14,25 +14,18 @@ edition = "2021"
 
 [dependencies]
 ansi_term = "^0.12"
+anyhow = "^1"
 base64 = "^0.13"
+clap = { version = "^2.33", default-features = false }
+env_proxy = "^0.4"
+fehler = "^1"
 gethostname = "^0.2"
 image = "0.24.0"
 mime = "^0.3"
-url = "^2.2"
-fehler = "^1"
-anyhow = "^1"
+pulldown-cmark = { version = "0.9.1", default-features = false, features = ['simd'] }
 shell-words = "^1"
-env_proxy = "^0.4"
 ureq = { version = "^2.0", features = ["tls", "native-certs"] }
-
-[dependencies.clap]
-version = "^2.33"
-default-features = false
-
-[dependencies.pulldown-cmark]
-version = "0.9.1"
-default-features = false
-features = ['simd']
+url = "^2.2"
 
 [dependencies.syntect]
 version = "^4.5"
