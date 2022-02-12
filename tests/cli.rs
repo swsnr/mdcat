@@ -77,7 +77,6 @@ mod cli {
             .unwrap();
 
         let mut stderr = Vec::new();
-        // use std::os::unix::io::AsRawFd;
         drop(child.stdout.take());
         child
             .stderr
@@ -85,6 +84,8 @@ mod cli {
             .unwrap()
             .read_to_end(&mut stderr)
             .unwrap();
+
+        assert!(child.wait().unwrap().success());
 
         use pretty_assertions::assert_eq;
         assert_eq!(String::from_utf8_lossy(&stderr), "")
