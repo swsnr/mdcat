@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.26.0] – 2022-02-12
+
 ### Changed
 - Always output links as OSC-8 hyperlinks unless `--dump` is given.
   In particular, mdcat now prints hyperlinks if invoked as `mdless` or with `-p`, as recent `less` versions support OCS-8 hyperlinks (see [GH-191]).
@@ -554,7 +556,8 @@ To publish a new release run `scripts/release` from the project directory.
 [0.23.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...mdcat-0.23.1
 [0.23.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.1...mdcat-0.23.2
 [0.24.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.2...mdcat-0.24.0
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.25.1...HEAD
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.26.0...HEAD
+[0.26.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.25.1...mdcat-0.26.0
 [0.25.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.25.0...mdcat-0.25.1
 [0.25.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.2...mdcat-0.25.0
 [0.24.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.1...mdcat-0.24.2
