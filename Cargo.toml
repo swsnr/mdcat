@@ -16,7 +16,7 @@ edition = "2021"
 ansi_term = "^0.12"
 anyhow = "^1"
 base64 = "^0.13"
-clap = { version = "^2.33", default-features = false }
+clap = { version = "3.0.14", default-features = false, features = ["std", "cargo"] }
 env_proxy = "^0.4"
 fehler = "^1"
 gethostname = "^0.2"
@@ -45,7 +45,8 @@ test-generator = "^0.3"
 
 [build-dependencies]
 # To generate completions during build
-clap = { version = "^2.33", default-features = false }
+clap = { version = "3.0.14", default-features = false, features = ["std", "cargo"] }
+clap_complete = "3.0.6"
 
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller

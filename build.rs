@@ -12,16 +12,22 @@ mod mdcat {
     include!("src/bin/mdcat/args.rs");
 }
 
-fn gen_completions<P: AsRef<Path>>(out_dir: P) {
-    use clap::*;
-    let mut a = mdcat::app("80");
+fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
+    use clap_complete::*;
 
     let completions = out_dir.as_ref().join("completions");
     std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
 
-    for shell in &[Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
-        a.gen_completions("mdcat", *shell, &completions);
+    for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
+        generate_to(
+            shell,
+            &mut mdcat::app("80"),
+            "mdcat",
+            out_dir.as_ref().as_os_str(),
+        )?;
     }
+
+    Ok(())
 }
 
 fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
@@ -49,7 +55,9 @@ fn main() {
     let out_dir = std::env::var_os("OUT_DIR").expect("OUT_DIR not set");
 
     println!("cargo:rerun-if-changed=src/bin/mdcat/args.rs");
-    gen_completions(&out_dir);
+    if let Err(error) = gen_completions(&out_dir) {
+        println!("cargo:warning=Failed to build completions: {}", error);
+    }
 
     println!("cargo:rerun-if-changed=mdcat.1.adoc");
     if let Err(error) = build_manpage(&out_dir) {

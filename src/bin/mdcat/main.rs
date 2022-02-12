@@ -8,7 +8,6 @@
 
 //! Show CommonMark documents on TTYs.
 
-use clap::{value_t, values_t};
 use fehler::throws;
 use mdcat::{Environment, Settings};
 use pulldown_cmark::{Options, Parser};
@@ -99,21 +98,21 @@ fn is_mdless() -> bool {
 
 impl Arguments {
     /// Create command line arguments from matches.
-    fn from_matches(matches: &clap::ArgMatches<'_>) -> clap::Result<Self> {
+    fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
         {
             ansi_term::enable_ansi_support().ok();
         }
 
-        let filenames = values_t!(matches, "filenames", String)?;
+        let filenames = matches.values_of_t("filenames")?;
         let dump_events = matches.is_present("dump_events");
         let detect_only = matches.is_present("detect_only");
         let fail_fast = matches.is_present("fail_fast");
         let paginate =
             (is_mdless() || matches.is_present("paginate")) && !matches.is_present("no_pager");
 
-        let columns = value_t!(matches, "columns", usize)?;
+        let columns = matches.value_of_t("columns")?;
         let resource_access = if matches.is_present("local_only") {
             ResourceAccess::LocalOnly
         } else {
