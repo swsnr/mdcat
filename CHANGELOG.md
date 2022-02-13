@@ -11,7 +11,12 @@ To publish a new release run `scripts/release` from the project directory.
 ### Added
 - Add extensive tracing output, to aid debugging (see [#147]).
 
+### Changed
+- mdcat no longer invokes `file` to detect SVG images, but now requires the presence of a system-wide magic database (see [#154]).
+  Disable default features to restore the previous behaviour to invoke `file` to detect mimetypes.
+
 [#147]: https://codeberg.org/flausch/mdcat/issues/147
+[#154]: https://codeberg.org/flausch/mdcat/issues/154
 
 ## [0.26.1] – 2022-02-12
 

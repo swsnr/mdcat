@@ -124,9 +124,7 @@ impl KittyImages {
         terminal_size: PixelSize,
     ) -> KittyImage {
         let contents = read_url(url, access)?;
-        let mime = magic::detect_mime_type(&contents)
-            .with_context(|| format!("Failed to detect mime type for URL {}", url))?;
-        let image = if magic::is_svg(&mime) {
+        let image = if magic::is_svg(&contents) {
             image::load_from_memory(
                 &render_svg(&contents)
                     .with_context(|| format!("Failed to render SVG at {} to PNG", url))?,
@@ -137,7 +135,7 @@ impl KittyImages {
                 .with_context(|| format!("Failed to load image from URL {}", url))?
         };
 
-        if magic::is_png(&mime) && PixelSize::from_xy(image.dimensions()) <= terminal_size {
+        if magic::is_png(&contents) && PixelSize::from_xy(image.dimensions()) <= terminal_size {
             self.render_as_png(contents)
         } else {
             self.render_as_rgb_or_rgba(image, terminal_size)

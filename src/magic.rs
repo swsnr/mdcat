@@ -6,24 +6,44 @@
 
 //! Magic util functions for detecting image types.
 
-use anyhow::{anyhow, Context, Result};
 use mime::Mime;
-use std::io::prelude::*;
-use std::io::ErrorKind;
-use std::process::*;
 
-/// Whether the given MIME type denotes an SVG image.
-pub fn is_svg(mime: &Mime) -> bool {
-    mime.type_() == mime::IMAGE && mime.subtype().as_str() == "svg"
+/// Whether the given data is SVG data.
+pub fn is_svg(buffer: &[u8]) -> bool {
+    is_mimetype(buffer, &mime::IMAGE_SVG)
 }
 
-/// Whether the given MIME type denotes a PNG image.
-pub fn is_png(mime: &Mime) -> bool {
-    *mime == mime::IMAGE_PNG
+/// Whether the given data is a PNG image.
+pub fn is_png(buffer: &[u8]) -> bool {
+    is_mimetype(buffer, &mime::IMAGE_PNG)
 }
 
-/// Detect mime type with `file`.
-pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime> {
+fn is_mimetype(buffer: &[u8], mime: &Mime) -> bool {
+    is_mimetype_impl(buffer, mime)
+}
+
+#[cfg(feature = "tree_magic_mini")]
+fn is_mimetype_impl(buffer: &[u8], expected_type: &Mime) -> bool {
+    tree_magic_mini::match_u8(expected_type.as_ref(), buffer)
+}
+
+#[cfg(not(feature = "tree_magic_mini"))]
+fn is_mimetype_impl(buffer: &[u8], expected_type: &Mime) -> bool {
+    is_mimetype_file(buffer, mime).unwrap_or_else(|error| {
+        event!(Level::WARN, ?error, "checking for {} failed", mime);
+        false
+    })
+}
+
+#[cfg(not(feature = "tree_magic_mini"))]
+fn is_mimetype_file(buffer: &[u8], expected_type: &Mime) -> Result<bool> {
+    use std::io::prelude::*;
+    use std::io::ErrorKind;
+    use std::process::*;
+
+    use anyhow::{anyhow, Context, Result};
+    use tracing::{event, Level};
+
     let mut process = Command::new("file")
         .arg("--brief")
         .arg("--mime-type")
@@ -56,9 +76,10 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime> {
                 )
             })?
             .trim();
-        stdout
-            .parse()
-            .with_context(|| format!("Failed to parse mime type from output: {}", stdout))
+        let detected_type = stdout
+            .parse::<Mime>()
+            .with_context(|| format!("Failed to parse mime type from output: {}", stdout))?;
+        Ok(detected_type == *expected_type)
     } else {
         Err(anyhow!(
             "file --brief --mime-type failed with status {}: {}",
@@ -71,24 +92,17 @@ pub fn detect_mime_type(buffer: &[u8]) -> Result<Mime> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pretty_assertions::assert_eq;
 
     #[test]
     fn detect_mimetype_of_png_image() {
         let data = include_bytes!("../sample/rust-logo-128x128.png");
-        let result = detect_mime_type(data);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
-        assert_eq!(result.unwrap(), mime::IMAGE_PNG);
+        assert!(is_png(data));
     }
 
     #[test]
     fn detect_mimetype_of_svg_image() {
         let data = include_bytes!("../sample/rust-logo.svg");
-        let result = detect_mime_type(data);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
-        let mime = result.unwrap();
-        assert_eq!(mime.type_(), mime::IMAGE);
-        assert_eq!(mime.subtype().as_str(), "svg");
+        assert!(is_svg(data));
     }
 
     #[test]
@@ -96,8 +110,7 @@ mod tests {
         let data = std::iter::repeat(b'\0')
             .take(1_048_576)
             .collect::<Vec<u8>>();
-        let result = detect_mime_type(&data);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
+        assert!(!is_svg(&data));
     }
 
     #[test]
@@ -105,7 +118,6 @@ mod tests {
         let data = std::iter::repeat(b'\0')
             .take(1_048_576 * 2)
             .collect::<Vec<u8>>();
-        let result = detect_mime_type(&data);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
+        assert!(!is_svg(&data));
     }
 }

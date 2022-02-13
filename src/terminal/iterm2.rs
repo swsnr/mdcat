@@ -74,9 +74,7 @@ impl ITerm2Images {
     /// reading or rendering failed.
     pub fn read_and_render(self, url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
         let contents = read_url(url, access)?;
-        let mimetype = magic::detect_mime_type(&contents)
-            .with_context(|| format!("Failed to guess mime type for URL {}", url))?;
-        if magic::is_svg(&mimetype) {
+        if magic::is_svg(&contents) {
             svg::render_svg(&contents)
                 .with_context(|| format!("Failed to render SVG at URL {}", url))
         } else {
