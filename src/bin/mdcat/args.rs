@@ -34,6 +34,7 @@ Report issues to <https://codeberg.org/flausch/mdcat>.",
             Arg::new("filenames")
                 .multiple_occurrences(true)
                 .help("The file to read.  If - read from standard input instead")
+                .value_hint(ValueHint::FilePath)
                 .default_value("-"),
         )
         .arg(
