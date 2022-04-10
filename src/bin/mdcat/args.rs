@@ -6,10 +6,10 @@
 
 use clap::*;
 
-pub(crate) fn app(default_columns: &str) -> App<'_> {
-    app_from_crate!()
-        .setting(AppSettings::DontCollapseArgsInUsage)
+pub(crate) fn app(default_columns: &str) -> Command<'_> {
+    command!()
         .setting(AppSettings::DeriveDisplayOrder)
+        .dont_collapse_args_in_usage(true)
         .term_width(80)
         .after_help(
             "\

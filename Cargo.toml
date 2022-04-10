@@ -19,7 +19,7 @@ default = ["tree_magic_mini"]
 ansi_term = "^0.12"
 anyhow = "^1"
 base64 = "^0.13"
-clap = { version = "3.0.14", default-features = false, features = ["std", "cargo"] }
+clap = { version = "3.1.8", default-features = false, features = ["std", "cargo"] }
 env_proxy = "^0.4"
 fehler = "^1"
 gethostname = "^0.2"
@@ -29,12 +29,12 @@ pulldown-cmark = { version = "0.9.1", default-features = false, features = ['sim
 shell-words = "^1"
 tracing = { version = "0.1.30", features = ["release_max_level_warn"] }
 tracing-subscriber = { version = "0.3.8", features = ["env-filter"] }
-ureq = { version = "^2.0", features = ["tls", "native-certs"] }
+ureq = { version = "2.4.0", features = ["tls", "native-certs"] }
 url = "^2.2"
 tree_magic_mini = {version = "3.0.3", optional = true}
 
 [dependencies.syntect]
-version = "^4.5"
+version = "4.6.0"
 default-features = false
 features = ["parsing", "assets", "dump-load", "regex-fancy"]
 
@@ -45,14 +45,14 @@ libc = "^0.2"
 terminal_size = "^0.1"
 
 [dev-dependencies]
-pretty_assertions = "^1"
+pretty_assertions = "1.2.1"
 lazy_static = "^1.4"
 test-generator = "^0.3"
 
 [build-dependencies]
 # To generate completions during build
-clap = { version = "3.0.14", default-features = false, features = ["std", "cargo"] }
-clap_complete = "3.0.6"
+clap = { version = "3.1.8", default-features = false, features = ["std", "cargo"] }
+clap_complete = "3.1.1"
 
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller
