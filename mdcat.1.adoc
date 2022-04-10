@@ -156,10 +156,10 @@ NO_PROXY::
 +
 Matches partial hostnames (e.g. `example.org` also disables proxy for `www.example.org`), but always at name boundaries.
 
-RUST_LOG::
+MDCAT_LOG::
     Directives to configure output of tracing information.
 +
-See <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/struct.EnvFilter.html#directives> for syntax details; use `RUST_LOG=trace` for complete debugging information, and `RUST_LOG=mdcat::render=trace` to trace rendering only.
+See <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/struct.EnvFilter.html#directives> for syntax details; use `MDCAT_LOG=trace` for complete debugging information, and `MDCAT_LOG=mdcat::render=trace` to trace rendering only.
 
 == Conforming to
 

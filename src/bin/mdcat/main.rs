@@ -162,7 +162,7 @@ fn main() {
     // Setup tracing
     tracing_subscriber::fmt::Subscriber::builder()
         .pretty()
-        .with_env_filter(tracing_subscriber::filter::EnvFilter::from_default_env())
+        .with_env_filter(tracing_subscriber::filter::EnvFilter::from_env("MDCAT_LOG"))
         .with_writer(std::io::stderr)
         .init();
 
