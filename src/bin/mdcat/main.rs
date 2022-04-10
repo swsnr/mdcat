@@ -18,6 +18,8 @@ use fehler::throws;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use tracing::{event, instrument, Level};
+use tracing_subscriber::filter::LevelFilter;
+use tracing_subscriber::EnvFilter;
 
 use crate::output::Output;
 use mdcat::{Environment, Settings};
@@ -160,9 +162,15 @@ You can obtain one at http://mozilla.org/MPL/2.0/."
 
 fn main() {
     // Setup tracing
+    let filter = EnvFilter::builder()
+        // Disable all logging by default, to avoid interfering with regular output at all cost.
+        // tracing is a debugging tool here so we expect it to be enabled explicitly.
+        .with_default_directive(LevelFilter::OFF.into())
+        .with_env_var("MDCAT_LOG")
+        .from_env_lossy();
     tracing_subscriber::fmt::Subscriber::builder()
         .pretty()
-        .with_env_filter(tracing_subscriber::filter::EnvFilter::from_env("MDCAT_LOG"))
+        .with_env_filter(filter)
         .with_writer(std::io::stderr)
         .init();
 
