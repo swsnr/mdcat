@@ -81,7 +81,7 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 ## Troubleshooting
 
 `mdcat` can output extensive tracing information when asked to.
-Run a **debug build** of `mdcat` with `$RUST_LOG=trace` for complete tracing information, or with `$RUST_LOG=mdcat::render=trace` to trace only rendering.
+Run a **debug build** of `mdcat` with `$MDCAT_LOG=trace` for complete tracing information, or with `$MDCAT_LOG=mdcat::render=trace` to trace only rendering.
 
 **Note:** Tracing information is mostly elided in release builds; use a debug build for complete output.
 
