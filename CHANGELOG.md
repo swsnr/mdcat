@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Fixed
+- Build error on Windows (see [#201]).
+
+[#201]: https://codeberg.org/flausch/mdcat/pulls/201
+
 ## [0.27.0] – 2022-04-10
 
 ### Added

@@ -109,7 +109,7 @@ impl Arguments {
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
         {
-            trace!("Enable ANSI support in windows terminal");
+            event!(Level::TRACE, "Enable ANSI support in windows terminal");
             ansi_term::enable_ansi_support().ok();
         }
 
