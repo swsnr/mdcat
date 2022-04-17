@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.27.1] – 2022-04-17
+
 ### Fixed
 - Build error on Windows (see [#201]).
 
@@ -539,7 +541,8 @@ To publish a new release run `scripts/release` from the project directory.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.0...HEAD
+[Unreleased]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.1...HEAD
+[0.27.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.0...mdcat-0.27.1
 [0.27.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.1...mdcat-0.27.0
 [0.26.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.0...mdcat-0.26.1
 [0.26.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.25.1...mdcat-0.26.0
