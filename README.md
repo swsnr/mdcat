@@ -72,6 +72,12 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * [Chocolatey]: `choco install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
+## Requirements
+
+- For image type detection either:
+    - a system-wide [shared mime database](https://www.freedesktop.org/wiki/Specifications/shared-mime-info-spec/), or,
+    - if `mdcat` is built without default features, the `file` tool with support for `--brief` and `--mime-type` flags.
+
 [Homebrew]: https://brew.sh
 [MacPorts]: https://www.macports.org
 [Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
