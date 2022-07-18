@@ -16,42 +16,42 @@ edition = "2021"
 default = ["tree_magic_mini"]
 
 [dependencies]
-ansi_term = "^0.12"
-anyhow = "^1"
-base64 = "^0.13"
-clap = { version = "3.1.8", default-features = false, features = ["std", "cargo"] }
-env_proxy = "^0.4"
-fehler = "^1"
-gethostname = "^0.2"
+ansi_term = "0.12.1"
+anyhow = "1.0.58"
+base64 = "0.13.0"
+clap = { version = "3.2.12", default-features = false, features = ["std", "cargo", "deprecated"] }
+env_proxy = "0.4.1"
+fehler = "1.0.0"
+gethostname = "0.2.3"
 image = "0.24.0"
-mime = "^0.3"
+mime = "0.3.16"
 pulldown-cmark = { version = "0.9.1", default-features = false, features = ['simd'] }
-shell-words = "^1"
-tracing = { version = "0.1.30", features = ["release_max_level_warn"] }
-tracing-subscriber = { version = "0.3.8", features = ["env-filter"] }
-ureq = { version = "2.4.0", features = ["tls", "native-certs"] }
-url = "^2.2"
-tree_magic_mini = {version = "3.0.3", optional = true}
+shell-words = "1.1.0"
+tracing = { version = "0.1.35", features = ["release_max_level_warn"] }
+tracing-subscriber = { version = "0.3.14", features = ["env-filter"] }
+ureq = { version = "2.5.0", features = ["tls", "native-certs"] }
+url = "2.2.2"
+tree_magic_mini = { version = "3.0.3", optional = true }
 
 [dependencies.syntect]
-version = "4.6.0"
+version = "5.0.0"
 default-features = false
-features = ["parsing", "assets", "dump-load", "regex-fancy"]
+features = ["parsing", "regex-fancy", "default-themes", "default-syntaxes"]
 
 [target.'cfg(unix)'.dependencies]
-libc = "^0.2"
+libc = "0.2.126"
 
 [target.'cfg(windows)'.dependencies]
-terminal_size = "^0.1"
+terminal_size = "0.2.1"
 
 [dev-dependencies]
 pretty_assertions = "1.2.1"
-lazy_static = "^1.4"
-test-generator = "^0.3"
+lazy_static = "1.4.0"
+test-generator = "0.3.0"
 
 [build-dependencies]
 # To generate completions during build
-clap = { version = "3.1.8", default-features = false, features = ["std", "cargo"] }
+clap = { version = "3.2.12", default-features = false, features = ["std", "cargo", "deprecated"] }
 clap_complete = "3.1.1"
 
 [profile.release]

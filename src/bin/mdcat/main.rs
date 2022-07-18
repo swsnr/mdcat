@@ -113,23 +113,36 @@ impl Arguments {
             ansi_term::enable_ansi_support().ok();
         }
 
-        let filenames = matches.values_of_t("filenames")?;
-        let detect_only = matches.is_present("detect_only");
-        let fail_fast = matches.is_present("fail_fast");
-        let paginate =
-            (is_mdless() || matches.is_present("paginate")) && !matches.is_present("no_pager");
+        let filenames = matches
+            .get_many::<String>("filenames")
+            .expect("default filename not set!")
+            .cloned()
+            .collect();
+        let detect_only = matches.get_one("detect_only").copied().unwrap_or_default();
+        let fail_fast = matches.get_one("fail_fast").copied().unwrap_or_default();
+        let paginate = (is_mdless()
+            || matches
+                .get_one::<bool>("paginate")
+                .copied()
+                .unwrap_or_default())
+            && !matches
+                .get_one::<bool>("no_pager")
+                .copied()
+                .unwrap_or_default();
 
-        let columns = matches.value_of_t("columns")?;
-        let resource_access = if matches.is_present("local_only") {
+        let columns = *matches
+            .get_one::<usize>("columns")
+            .expect("--columns default value missing!");
+        let resource_access = if matches.get_one("local_only").copied().unwrap_or_default() {
             ResourceAccess::LocalOnly
         } else {
             ResourceAccess::RemoteAllowed
         };
 
-        let terminal_capabilities = if matches.is_present("no_colour") {
+        let terminal_capabilities = if matches.get_one("no_colour").copied().unwrap_or_default() {
             // If the user disabled colours assume a dumb terminal
             TerminalCapabilities::none()
-        } else if paginate || matches.is_present("ansi_only") {
+        } else if paginate || matches.get_one("ansi_only").copied().unwrap_or_default() {
             // A pager won't support any terminal-specific features
             TerminalCapabilities::ansi()
         } else {

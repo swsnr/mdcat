@@ -380,7 +380,10 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, HighlightBlock(mut attrs)), Text(text)) => {
             let highlighter = Highlighter::new(theme);
             for line in LinesWithEndings::from(&text) {
-                let ops = attrs.parse_state.parse_line(line, &settings.syntax_set);
+                let ops = attrs
+                    .parse_state
+                    .parse_line(line, &settings.syntax_set)
+                    .expect("syntect parsing shouldn't fail in mdcat");
                 highlighting::write_as_ansi(
                     writer,
                     attrs.ansi,

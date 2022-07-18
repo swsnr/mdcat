@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Update all dependencies, in particular syntect to 5.0.0.
+
 ## [0.27.1] – 2022-04-17
 
 ### Fixed
