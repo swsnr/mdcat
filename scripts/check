@@ -32,6 +32,9 @@ cargo test --locked --all-targets ${CARGOFLAGS:-}
 # Vulnerabilities
 cargo audit
 
+# Undesired crates and licenses
+cargo deny check
+
 # Build manpage
 asciidoctor -b manpage -a reproducible mdcat.1.adoc
 
