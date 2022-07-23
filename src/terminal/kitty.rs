@@ -23,8 +23,7 @@ use crate::resources::read_url;
 use crate::svg::render_svg;
 use crate::terminal::size::PixelSize;
 use crate::{magic, ResourceAccess};
-use anyhow::{Context, Error};
-use fehler::throws;
+use anyhow::{Context, Result};
 use image::imageops::FilterType;
 use image::ColorType;
 use image::{DynamicImage, GenericImageView};
@@ -45,8 +44,7 @@ pub struct KittyImages;
 
 impl KittyImages {
     /// Write an inline image for kitty.
-    #[throws]
-    pub fn write_inline_image<W: Write>(self, writer: &mut W, image: KittyImage) -> () {
+    pub fn write_inline_image<W: Write>(self, writer: &mut W, image: KittyImage) -> Result<()> {
         // Kitty's escape sequence is like: Put the command key/value pairs together like "{}={}(,*)"
         // and write them along with the image bytes in 4096 bytes chunks to the stdout.
         // Documentation gives the following python example:
@@ -110,19 +108,20 @@ impl KittyImages {
 
             cmd_header.clear();
         }
+
+        Ok(())
     }
 
     /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
     ///
     /// If the image size exceeds `terminal_size` in either dimension scale the
     /// image down to `terminal_size` (preserving aspect ratio).
-    #[throws]
     pub fn read_and_render(
         self,
         url: &Url,
         access: ResourceAccess,
         terminal_size: PixelSize,
-    ) -> KittyImage {
+    ) -> Result<KittyImage> {
         let contents = read_url(url, access)?;
         let image = if magic::is_svg(&contents) {
             image::load_from_memory(
@@ -136,9 +135,9 @@ impl KittyImages {
         };
 
         if magic::is_png(&contents) && PixelSize::from_xy(image.dimensions()) <= terminal_size {
-            self.render_as_png(contents)
+            Ok(self.render_as_png(contents))
         } else {
-            self.render_as_rgb_or_rgba(image, terminal_size)
+            Ok(self.render_as_rgb_or_rgba(image, terminal_size))
         }
     }
 

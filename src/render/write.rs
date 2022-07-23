@@ -4,10 +4,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::io::{Error, Result, Write};
+use std::io::{Result, Write};
 
 use ansi_term::{Colour, Style};
-use fehler::throws;
 use pulldown_cmark::{CodeBlockKind, HeadingLevel};
 use syntect::highlighting::{HighlightState, Highlighter, Theme};
 use syntect::parsing::{ParseState, ScopeStack};
@@ -20,7 +19,7 @@ use crate::{
 };
 
 #[inline]
-pub fn write_indent<W: Write>(writer: &mut W, level: u16) -> std::io::Result<()> {
+pub fn write_indent<W: Write>(writer: &mut W, level: u16) -> Result<()> {
     write!(writer, "{}", " ".repeat(level as usize))
 }
 
@@ -38,12 +37,13 @@ pub fn write_styled<W: Write, S: AsRef<str>>(
 }
 
 #[inline]
-#[throws]
-pub fn write_mark<W: Write>(writer: &mut W, capabilities: &TerminalCapabilities) -> () {
+pub fn write_mark<W: Write>(writer: &mut W, capabilities: &TerminalCapabilities) -> Result<()> {
     if let Some(mark) = capabilities.marks {
         match mark {
-            MarkCapability::ITerm2(marks) => marks.set_mark(writer)?,
+            MarkCapability::ITerm2(marks) => marks.set_mark(writer),
         }
+    } else {
+        Ok(())
     }
 }
 
@@ -70,13 +70,12 @@ pub fn write_border<W: Write>(
     writeln!(writer)
 }
 
-#[throws]
 pub fn write_link_refs<W: Write>(
     writer: &mut W,
     environment: &Environment,
     capabilities: &TerminalCapabilities,
     links: Vec<LinkReferenceDefinition>,
-) -> () {
+) -> Result<()> {
     if !links.is_empty() {
         writeln!(writer)?;
         for link in links {
@@ -105,10 +104,10 @@ pub fn write_link_refs<W: Write>(
             }
             writeln!(writer)?;
         }
-    }
+    };
+    Ok(())
 }
 
-#[throws]
 pub fn write_start_code_block<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
@@ -116,7 +115,7 @@ pub fn write_start_code_block<'a, W: Write>(
     style: Style,
     block_kind: CodeBlockKind<'a>,
     theme: &Theme,
-) -> StackedState {
+) -> Result<StackedState> {
     write_indent(writer, indent)?;
     write_border(
         writer,
@@ -129,40 +128,39 @@ pub fn write_start_code_block<'a, W: Write>(
     match (&settings.terminal_capabilities.style, block_kind) {
         (Some(StyleCapability::Ansi(ansi)), CodeBlockKind::Fenced(name)) if !name.is_empty() => {
             match settings.syntax_set.find_syntax_by_token(&name) {
-                None => LiteralBlockAttrs {
+                None => Ok(LiteralBlockAttrs {
                     indent,
                     style: style.fg(Colour::Yellow),
                 }
-                .into(),
+                .into()),
                 Some(syntax) => {
                     let parse_state = ParseState::new(syntax);
                     let highlight_state =
                         HighlightState::new(&Highlighter::new(theme), ScopeStack::new());
-                    HighlightBlockAttrs {
+                    Ok(HighlightBlockAttrs {
                         ansi: *ansi,
                         indent,
                         highlight_state,
                         parse_state,
                     }
-                    .into()
+                    .into())
                 }
             }
         }
-        (_, _) => LiteralBlockAttrs {
+        (_, _) => Ok(LiteralBlockAttrs {
             indent,
             style: style.fg(Colour::Yellow),
         }
-        .into(),
+        .into()),
     }
 }
 
-#[throws]
 pub fn write_start_heading<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
     style: Style,
     level: HeadingLevel,
-) -> StackedState {
+) -> Result<StackedState> {
     let style = style.fg(Colour::Blue).bold();
     write_styled(
         writer,
@@ -172,5 +170,8 @@ pub fn write_start_heading<W: Write>(
     )?;
 
     // Headlines never wrap, so indent doesn't matter
-    StackedState::Inline(InlineState::InlineText, InlineAttrs { style, indent: 0 })
+    Ok(StackedState::Inline(
+        InlineState::InlineText,
+        InlineAttrs { style, indent: 0 },
+    ))
 }

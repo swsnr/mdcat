@@ -10,11 +10,10 @@
 
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::Result;
 use std::io::{stdin, BufWriter};
-use std::io::{Error, Result};
 use std::path::PathBuf;
 
-use fehler::throws;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use tracing::{event, instrument, Level};
@@ -32,14 +31,13 @@ mod output;
 ///
 /// If `filename` is `-` read from standard input, otherwise try to open and
 /// read the given file.
-#[throws]
-fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
+fn read_input<T: AsRef<str>>(filename: T) -> Result<(PathBuf, String)> {
     let cd = std::env::current_dir()?;
     let mut buffer = String::new();
 
     if filename.as_ref() == "-" {
         stdin().read_to_string(&mut buffer)?;
-        (cd, buffer)
+        Ok((cd, buffer))
     } else {
         let mut source = File::open(filename.as_ref())?;
         source.read_to_string(&mut buffer)?;
@@ -48,7 +46,7 @@ fn read_input<T: AsRef<str>>(filename: T) -> (PathBuf, String) {
             .parent()
             .map(|p| p.to_path_buf())
             .unwrap_or(cd);
-        (base_dir, buffer)
+        Ok((base_dir, buffer))
     }
 }
 

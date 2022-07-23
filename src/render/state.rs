@@ -316,8 +316,8 @@ impl State {
         StateStack::new(top_level)
     }
 
-    pub(super) fn and_data<T>(self, data: T) -> (Self, T) {
-        (self, data)
+    pub(super) fn and_data<T>(self, data: T) -> StateAndData<T> {
+        StateAndData(self, data)
     }
 }
 
@@ -330,5 +330,14 @@ impl Default for State {
 impl From<TopLevelAttrs> for State {
     fn from(attrs: TopLevelAttrs) -> Self {
         State::TopLevel(attrs)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct StateAndData<T>(pub State, pub T);
+
+impl<T> StateAndData<T> {
+    pub fn ok<E>(self) -> Result<Self, E> {
+        Ok(self)
     }
 }

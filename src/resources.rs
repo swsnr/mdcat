@@ -6,8 +6,7 @@
 
 //! Access to resources referenced from markdown documents.
 
-use anyhow::{anyhow, Context, Error, Result};
-use fehler::{throw, throws};
+use anyhow::{anyhow, Context, Result};
 use std::fs::File;
 use std::io::prelude::*;
 use ureq::AgentBuilder;
@@ -44,8 +43,7 @@ fn is_local(url: &Url) -> bool {
 /// Read size limit for resources.
 static RESOURCE_READ_LIMIT: u64 = 104_857_600;
 
-#[throws]
-fn fetch_http(url: &Url) -> Vec<u8> {
+fn fetch_http(url: &Url) -> Result<Vec<u8>> {
     let proxy = match env_proxy::for_url(url).to_string() {
         None => None,
         Some(proxy_url) => {
@@ -79,13 +77,13 @@ fn fetch_http(url: &Url) -> Vec<u8> {
                 .with_context(|| format!("Failed to read from {}", url))?;
 
             if RESOURCE_READ_LIMIT < buffer.len() as u64 {
-                throw!(anyhow!(
+                Err(anyhow!(
                     "Contents of {} exceeded {}, rejected",
                     url,
                     RESOURCE_READ_LIMIT
                 ))
             } else {
-                buffer
+                Ok(buffer)
             }
         }
         // If we've got a content-size use it to read exactly as many bytes as the server told us to do (within limits)
@@ -94,23 +92,23 @@ fn fetch_http(url: &Url) -> Vec<u8> {
                 .parse::<usize>()
                 .with_context(|| format!("{} reports invalid content size {}", url, value))?;
             if RESOURCE_READ_LIMIT < size as u64 {
-                throw!(anyhow!(
+                Err(anyhow!(
                     "{} reports size {} which exceeds limit {}, refusing to read",
                     url,
                     size,
                     RESOURCE_READ_LIMIT
                 ))
+            } else {
+                let mut buffer = vec![0; size];
+                response
+                    .into_reader()
+                    // Just to be on the safe side limit the read operation explicitly, just in case we got the above check wrong
+                    .take(RESOURCE_READ_LIMIT)
+                    .read_exact(buffer.as_mut_slice())
+                    .with_context(|| format!("Failed to read from {}", url))?;
+
+                Ok(buffer)
             }
-
-            let mut buffer = vec![0; size];
-            response
-                .into_reader()
-                // Just to be on the safe side limit the read operation explicitly, just in case we got the above check wrong
-                .take(RESOURCE_READ_LIMIT)
-                .read_exact(buffer.as_mut_slice())
-                .with_context(|| format!("Failed to read from {}", url))?;
-
-            buffer
         }
     }
 }
@@ -127,11 +125,11 @@ fn fetch_http(url: &Url) -> Vec<u8> {
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs.
 pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
     if !access.permits(url) {
-        throw!(anyhow!(
+        return Err(anyhow!(
             "Access denied to URL {} by policy {:?}",
             url,
             access
-        ))
+        ));
     }
     match url.scheme() {
         "file" => match url.to_file_path() {

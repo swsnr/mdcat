@@ -6,17 +6,16 @@
 
 //! OSC commands on terminals.
 
-use fehler::throws;
-use std::io::{Error, Result, Write};
+use std::io::{Result, Write};
 
 use url::{Host, Url};
 
 /// Write an OSC `command` to this terminal.
-#[throws]
-pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> () {
+pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> Result<()> {
     writer.write_all(&[0x1b, 0x5d])?;
     writer.write_all(command.as_bytes())?;
     writer.write_all(&[0x07])?;
+    Ok(())
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]

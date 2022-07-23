@@ -338,26 +338,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fehler"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5729fe49ba028cd550747b6e62cd3d841beccab5390aa398538c31a2d983635"
-dependencies = [
- "fehler-macros",
-]
-
-[[package]]
-name = "fehler-macros"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccb5acb1045ebbfa222e2c50679e392a71dd77030b78fb0189f2d9c5974400f9"
-dependencies = [
- "proc-macro2 1.0.40",
- "quote 1.0.20",
- "syn 1.0.98",
-]
-
-[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -628,7 +608,6 @@ dependencies = [
  "clap",
  "clap_complete",
  "env_proxy",
- "fehler",
  "gethostname",
  "image",
  "lazy_static",

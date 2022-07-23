@@ -11,7 +11,6 @@
 use std::io::{ErrorKind, Result, Write};
 use std::path::Path;
 
-use fehler::throws;
 use pulldown_cmark::Event;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
@@ -102,27 +101,26 @@ impl Environment {
 ///
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
-#[throws]
 #[instrument(level = "debug", skip_all, fields(environment.hostname = environment.hostname.as_str(), environment.base_url = &environment.base_url.as_str()))]
 pub fn push_tty<'a, 'e, W, I>(
     settings: &Settings,
     environment: &Environment,
     writer: &'a mut W,
     mut events: I,
-) -> ()
+) -> Result<()>
 where
     I: Iterator<Item = Event<'e>>,
     W: Write,
 {
     let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
     use render::*;
-    let (final_state, final_data) = events.try_fold(
-        (State::default(), StateData::default()),
-        |(state, data), event| {
+    let StateAndData(final_state, final_data) = events.try_fold(
+        StateAndData(State::default(), StateData::default()),
+        |StateAndData(state, data), event| {
             write_event(writer, settings, environment, theme, state, data, event)
         },
     )?;
-    finish(writer, settings, environment, final_state, final_data)?;
+    finish(writer, settings, environment, final_state, final_data)
 }
 
 #[cfg(test)]
@@ -131,14 +129,13 @@ mod tests {
 
     use super::*;
 
-    #[throws(anyhow::Error)]
-    fn render_string(input: &str, settings: &Settings) -> String {
+    fn render_string(input: &str, settings: &Settings) -> anyhow::Result<String> {
         let source = Parser::new(input);
         let mut sink = Vec::new();
         let env =
             Environment::for_local_directory(&std::env::current_dir().expect("Working directory"))?;
         push_tty(settings, &env, &mut sink, source)?;
-        String::from_utf8_lossy(&sink).into()
+        Ok(String::from_utf8_lossy(&sink).into())
     }
 
     mod layout {

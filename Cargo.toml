@@ -21,7 +21,6 @@ anyhow = "1.0.58"
 base64 = "0.13.0"
 clap = { version = "3.2.12", default-features = false, features = ["std", "cargo", "deprecated"] }
 env_proxy = "0.4.1"
-fehler = "1.0.0"
 gethostname = "0.2.3"
 image = "0.24.0"
 mime = "0.3.16"
