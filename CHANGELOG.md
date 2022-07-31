@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.28.0] – 2022-07-31
+
 ### Changed
 - Update all dependencies, in particular syntect to 5.0.0 and pulldown-cmark to 0.9.2.
 
@@ -544,7 +546,8 @@ To publish a new release run `scripts/release` from the project directory.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.1...HEAD
+[Unreleased]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.28.0...HEAD
+[0.28.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.1...mdcat-0.28.0
 [0.27.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.0...mdcat-0.27.1
 [0.27.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.1...mdcat-0.27.0
 [0.26.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.0...mdcat-0.26.1
