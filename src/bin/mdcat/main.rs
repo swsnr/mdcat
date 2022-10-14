@@ -103,7 +103,7 @@ fn is_mdless() -> bool {
 
 impl Arguments {
     /// Create command line arguments from matches.
-    fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
+    fn from_matches(matches: &clap::ArgMatches) -> Self {
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
         {
@@ -147,7 +147,7 @@ impl Arguments {
             TerminalCapabilities::detect()
         };
 
-        Ok(Arguments {
+        Arguments {
             filenames,
             terminal_capabilities,
             resource_access,
@@ -155,13 +155,13 @@ impl Arguments {
             detect_only,
             fail_fast,
             paginate,
-        })
+        }
     }
 }
 
 fn long_version() -> &'static str {
     concat!(
-        clap::crate_version!(),
+        env!("CARGO_PKG_VERSION"),
         "
 Copyright (C) Sebastian Wiesner and contributors
 
@@ -188,11 +188,11 @@ fn main() {
     let size = TerminalSize::detect().unwrap_or_default();
     let columns = size.columns.to_string();
 
-    let matches = args::app(&columns)
+    let matches = args::app(columns)
         .long_version(long_version())
         .get_matches();
     event!(Level::TRACE, "clap parsed: {:?}", matches);
-    let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
+    let arguments = Arguments::from_matches(&matches);
     event!(Level::TRACE, "mdcat arguments: {:?}", arguments);
 
     if arguments.detect_only {

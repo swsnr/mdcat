@@ -6,10 +6,8 @@
 
 use clap::*;
 
-pub(crate) fn app(default_columns: &str) -> Command<'_> {
+pub(crate) fn app(default_columns: String) -> Command {
     command!()
-        .setting(AppSettings::DeriveDisplayOrder)
-        .dont_collapse_args_in_usage(true)
         .term_width(80)
         .after_help(
             "\
@@ -20,14 +18,14 @@ Report issues to <https://codeberg.org/flausch/mdcat>.",
         .arg(
             Arg::new("paginate")
                 .short('p')
-                .long("--paginate")
+                .long("paginate")
                 .action(ArgAction::SetTrue)
                 .help("Paginate the output of mdcat with a pager like less."),
         )
         .arg(
             Arg::new("no_pager")
                 .short('P')
-                .long("--no-pager")
+                .long("no-pager")
                 .action(ArgAction::SetTrue)
                 .help("Do not page output.  Default if invoked as mdcat")
                 .overrides_with("paginate"),
@@ -35,7 +33,6 @@ Report issues to <https://codeberg.org/flausch/mdcat>.",
         .arg(
             Arg::new("filenames")
                 .action(ArgAction::Append)
-                .multiple_values(true)
                 .help("The file to read.  If - read from standard input instead")
                 .value_parser(clap::builder::NonEmptyStringValueParser::new())
                 .value_hint(ValueHint::FilePath)
@@ -44,8 +41,8 @@ Report issues to <https://codeberg.org/flausch/mdcat>.",
         .arg(
             Arg::new("no_colour")
                 .short('c')
-                .long("--no-colour")
-                .aliases(&["nocolour", "no-color", "nocolor"])
+                .long("no-colour")
+                .aliases(["nocolour", "no-color", "nocolor"])
                 .action(ArgAction::SetTrue)
                 .help("Disable all colours and other styles."),
         )
@@ -88,5 +85,5 @@ Report issues to <https://codeberg.org/flausch/mdcat>.",
 
 #[test]
 fn verify_app() {
-    app("80").debug_assert();
+    app("80".to_owned()).debug_assert();
 }

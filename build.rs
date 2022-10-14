@@ -21,7 +21,7 @@ fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
     for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
         generate_to(
             shell,
-            &mut mdcat::app("80"),
+            &mut mdcat::app("80".to_owned()),
             "mdcat",
             out_dir.as_ref().as_os_str(),
         )?;

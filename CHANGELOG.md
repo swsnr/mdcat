@@ -11,6 +11,7 @@ To publish a new release run `scripts/release` from the project directory.
 ### Changed
 - Move repository back to <https://github.com/lunaryorn/mdcat>.
 - Restore release binaries.
+- Update dependencies, in particular clap to 4.0.15.
 
 ### Removed
 - Support for `tree_magic_mini` for mime-type detection; mdcat now only uses the `file` tool (see [GH-204]).
