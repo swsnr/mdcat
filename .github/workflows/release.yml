@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: ./scripts/package '${{ steps.version.outputs.version }}' '${{ matrix.target }}' '${{ steps.build.outputs.outdir }}'
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.package.outputs.name }}
           path: ${{ steps.package.outputs.file }}
