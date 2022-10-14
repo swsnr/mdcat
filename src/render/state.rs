@@ -11,7 +11,7 @@ use syntect::highlighting::HighlightState;
 use syntect::parsing::ParseState;
 
 /// Whether to add a margin.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub(super) enum MarginControl {
     /// Always add a margin.
     Margin,
@@ -51,13 +51,13 @@ where
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ListItemKind {
     Unordered,
     Ordered(u64),
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ListItemState {
     /// The first line after the list bullet/
     StartItem,
@@ -67,7 +67,7 @@ pub enum ListItemState {
     ItemBlock,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum InlineState {
     /// Inline text.
     ///
@@ -161,7 +161,7 @@ where
 }
 
 /// Attributes for highlighted blocks, that is, code blocks.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HighlightBlockAttrs {
     pub(super) ansi: AnsiStyle,
     pub(super) parse_state: ParseState,
@@ -219,7 +219,7 @@ impl From<LiteralBlockAttrs> for StackedState {
 }
 
 /// State attributes for top level.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TopLevelAttrs {
     pub(super) margin_before: MarginControl,
 }

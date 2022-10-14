@@ -18,7 +18,7 @@ pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> Result<()> {
     Ok(())
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Osc8Links;
 
 /// Whether the given `url` needs to get an explicit host.

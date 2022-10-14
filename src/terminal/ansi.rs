@@ -10,7 +10,7 @@ use ansi_term::Style;
 use std::io::{Result, Write};
 
 /// Access to a terminal’s basic ANSI styling functionality.
-#[derive(PartialEq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub struct AnsiStyle;
 
 impl AnsiStyle {

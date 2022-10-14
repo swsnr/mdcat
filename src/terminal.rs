@@ -28,7 +28,7 @@ pub enum StyleCapability {
 }
 
 /// How the terminal supports inline links.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum LinkCapability {
     /// The terminal supports [OSC 8] inline links.
     ///
