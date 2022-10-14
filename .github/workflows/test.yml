@@ -1,0 +1,78 @@
+name: "Test & Lint"
+
+on:
+  push:
+    # Don't run CI for tags; there's always a branch for the tag as well so
+    # there's no point in testing it separately
+    tags_ignore: '*'
+  pull_request:
+
+jobs:
+  check-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          curl -fsSL -o ./shfmt https://github.com/mvdan/sh/releases/download/v3.1.2/shfmt_v3.1.2_linux_amd64
+          chmod 700 ./shfmt
+      - run: ./shfmt -i 4 -l -d scripts/*
+      - run: shellcheck -S style -o all scripts/*
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt -- --check
+
+  manpage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-ruby@v1
+      - run: gem install asciidoctor
+      - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        target:
+          # Statically linked linux builds
+          - x86_64-unknown-linux-musl
+          # macOS
+          - x86_64-apple-darwin
+          # Windows
+          - x86_64-pc-windows-msvc
+        rust: [stable, beta]
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macOS-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+        exclude:
+          # Test beta only with Linux target; it's just about basic forward
+          # compatibility after all.
+          - target: x86_64-apple-darwin
+            rust: beta
+          - target: x86_64-pc-windows-msvc
+            rust: beta
+    steps:
+      - uses: actions/checkout@v3
+      # Install musl tools for musl target
+      - run: sudo apt-get install musl-tools
+        if: "contains(matrix.target, 'musl')"
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+          components: clippy
+      # Build, including tests, to report build failures and measure build time separately from tests
+      - run: cargo build --all-targets --locked --target ${{ matrix.target }}
+      - run: cargo clippy --all-targets --locked --target ${{ matrix.target }}
+      - run: cargo test --locked --target ${{ matrix.target }}
+      - run: cargo run --target ${{ matrix.target }} -- sample/common-mark.md
