@@ -147,7 +147,7 @@ fn ansi_only(markdown_file: &str) {
     test_with_golden_file(
         markdown_file,
         "tests/render/golden/ansi-only",
-        &*SETTINGS_ANSI_ONLY,
+        &SETTINGS_ANSI_ONLY,
     )
 }
 
@@ -158,6 +158,6 @@ fn iterm2(markdown_file: &str) {
     test_with_golden_file(
         markdown_file,
         "tests/render/golden/iterm2",
-        &*SETTINGS_ITERM2,
+        &SETTINGS_ITERM2,
     )
 }

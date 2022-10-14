@@ -27,7 +27,7 @@ mod cli {
 
     #[test]
     fn show_help() {
-        let output = run_cargo_mdcat(&["--help"]);
+        let output = run_cargo_mdcat(["--help"]);
         let stdout = std::str::from_utf8(&output.stdout).unwrap();
         assert!(
             output.status.success(),
@@ -40,7 +40,7 @@ mod cli {
 
     #[test]
     fn file_list_fail_late() {
-        let output = run_cargo_mdcat(&["does-not-exist", "sample/common-mark.md"]);
+        let output = run_cargo_mdcat(["does-not-exist", "sample/common-mark.md"]);
         let stderr = std::str::from_utf8(&output.stderr).unwrap();
         let stdout = std::str::from_utf8(&output.stdout).unwrap();
         assert!(!output.status.success());
@@ -55,7 +55,7 @@ mod cli {
 
     #[test]
     fn file_list_fail_fast() {
-        let output = run_cargo_mdcat(&["--fail", "does-not-exist", "sample/common-mark.md"]);
+        let output = run_cargo_mdcat(["--fail", "does-not-exist", "sample/common-mark.md"]);
         let stderr = std::str::from_utf8(&output.stderr).unwrap();
         assert!(!output.status.success());
         // We failed to read the first file and exited early, so nothing was printed at all
