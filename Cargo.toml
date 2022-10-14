@@ -47,7 +47,7 @@ test-generator = "0.3.0"
 [build-dependencies]
 # To generate completions during build
 clap = { version = "3.2.12", default-features = false, features = ["std", "cargo", "deprecated"] }
-clap_complete = "3.1.1"
+clap_complete = "4.0.2"
 
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller
