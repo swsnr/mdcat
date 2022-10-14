@@ -10,6 +10,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ### Changed
 - Move repository back to <https://github.com/lunaryorn/mdcat>.
+- Restore release binaries.
 
 ## [0.28.0] – 2022-07-31
 
