@@ -16,7 +16,7 @@ edition = "2021"
 ansi_term = "0.12.1"
 anyhow = "1.0.58"
 base64 = "0.13.0"
-clap = { version = "3.2.12", default-features = false, features = ["std", "cargo", "deprecated"] }
+clap = { version = "4.0.15", default-features = false, features = ["std", "cargo", "deprecated"] }
 env_proxy = "0.4.1"
 gethostname = "0.2.3"
 image = "0.24.0"
@@ -46,7 +46,7 @@ test-generator = "0.3.0"
 
 [build-dependencies]
 # To generate completions during build
-clap = { version = "3.2.12", default-features = false, features = ["std", "cargo", "deprecated"] }
+clap = { version = "4.0.15", default-features = false, features = ["std", "cargo", "deprecated"] }
 clap_complete = "3.1.1"
 
 [profile.release]
