@@ -82,93 +82,11 @@ fn process_file(filename: &str, settings: &Settings, output: &mut Output) -> Res
         })
 }
 
-/// Represent command line arguments.
-#[derive(Debug)]
-struct Arguments {
-    filenames: Vec<String>,
-    terminal_capabilities: TerminalCapabilities,
-    resource_access: ResourceAccess,
-    columns: usize,
-    detect_only: bool,
-    fail_fast: bool,
-    paginate: bool,
-}
-
 fn is_mdless() -> bool {
     std::env::current_exe()
         .ok()
         .and_then(|p| p.file_stem().map(|stem| stem == "mdless"))
         .unwrap_or(false)
-}
-
-impl Arguments {
-    /// Create command line arguments from matches.
-    fn from_matches(matches: &clap::ArgMatches) -> clap::Result<Self> {
-        // On Windows 10 we need to enable ANSI term explicitly.
-        #[cfg(windows)]
-        {
-            event!(Level::TRACE, "Enable ANSI support in windows terminal");
-            ansi_term::enable_ansi_support().ok();
-        }
-
-        let filenames = matches
-            .get_many::<String>("filenames")
-            .expect("default filename not set!")
-            .cloned()
-            .collect();
-        let detect_only = matches.get_one("detect_only").copied().unwrap_or_default();
-        let fail_fast = matches.get_one("fail_fast").copied().unwrap_or_default();
-        let paginate = (is_mdless()
-            || matches
-                .get_one::<bool>("paginate")
-                .copied()
-                .unwrap_or_default())
-            && !matches
-                .get_one::<bool>("no_pager")
-                .copied()
-                .unwrap_or_default();
-
-        let columns = *matches
-            .get_one::<usize>("columns")
-            .expect("--columns default value missing!");
-        let resource_access = if matches.get_one("local_only").copied().unwrap_or_default() {
-            ResourceAccess::LocalOnly
-        } else {
-            ResourceAccess::RemoteAllowed
-        };
-
-        let terminal_capabilities = if matches.get_one("no_colour").copied().unwrap_or_default() {
-            // If the user disabled colours assume a dumb terminal
-            TerminalCapabilities::none()
-        } else if paginate || matches.get_one("ansi_only").copied().unwrap_or_default() {
-            // A pager won't support any terminal-specific features
-            TerminalCapabilities::ansi()
-        } else {
-            TerminalCapabilities::detect()
-        };
-
-        Ok(Arguments {
-            filenames,
-            terminal_capabilities,
-            resource_access,
-            columns,
-            detect_only,
-            fail_fast,
-            paginate,
-        })
-    }
-}
-
-fn long_version() -> &'static str {
-    concat!(
-        clap::crate_version!(),
-        "
-Copyright (C) Sebastian Wiesner and contributors
-
-This program is subject to the terms of the Mozilla Public License,
-v. 2.0. If a copy of the MPL was not distributed with this file,
-You can obtain one at http://mozilla.org/MPL/2.0/."
-    )
 }
 
 fn main() {
@@ -185,35 +103,46 @@ fn main() {
         .with_writer(std::io::stderr)
         .init();
 
-    let size = TerminalSize::detect().unwrap_or_default();
-    let columns = size.columns.to_string();
+    use crate::args::Args;
+    use clap::Parser;
 
-    let matches = args::app(&columns)
-        .long_version(long_version())
-        .get_matches();
-    event!(Level::TRACE, "clap parsed: {:?}", matches);
-    let arguments = Arguments::from_matches(&matches).unwrap_or_else(|e| e.exit());
-    event!(Level::TRACE, "mdcat arguments: {:?}", arguments);
+    let args = Args::parse();
+    event!(Level::TRACE, ?args, "mdcat arguments");
 
-    if arguments.detect_only {
-        println!("Terminal: {}", arguments.terminal_capabilities.name);
+    let paginate = is_mdless() || args.paginate;
+    let terminal_capabilities = if args.no_colour {
+        // If the user disabled colours assume a dumb terminal
+        TerminalCapabilities::none()
+    } else if paginate || args.ansi_only {
+        // A pager won't support any terminal-specific features
+        TerminalCapabilities::ansi()
     } else {
-        let Arguments {
-            filenames,
-            fail_fast,
-            terminal_capabilities,
-            columns,
-            resource_access,
-            paginate,
-            ..
-        } = arguments;
+        TerminalCapabilities::detect()
+    };
+
+    let size = TerminalSize::detect().unwrap_or_default();
+    let columns = args.columns.unwrap_or(size.columns);
+
+    if args.detect_only {
+        println!("Terminal: {}", terminal_capabilities.name);
+    } else {
+        // On Windows 10 we need to enable ANSI term explicitly.
+        #[cfg(windows)]
+        {
+            event!(Level::TRACE, "Enable ANSI support in windows terminal");
+            ansi_term::enable_ansi_support().ok();
+        }
 
         let exit_code = match Output::new(paginate) {
             Ok(mut output) => {
                 let settings = Settings {
                     terminal_capabilities,
                     terminal_size: TerminalSize { columns, ..size },
-                    resource_access,
+                    resource_access: if args.local_only {
+                        ResourceAccess::LocalOnly
+                    } else {
+                        ResourceAccess::RemoteAllowed
+                    },
                     syntax_set: SyntaxSet::load_defaults_newlines(),
                 };
                 event!(
@@ -223,14 +152,14 @@ fn main() {
                     ?settings.resource_access,
                     "settings"
                 );
-                filenames
+                args.filenames
                     .iter()
                     .try_fold(0, |code, filename| {
                         process_file(filename, &settings, &mut output)
                             .map(|_| code)
                             .or_else(|error| {
                                 eprintln!("Error: {}: {}", filename, error);
-                                if fail_fast {
+                                if args.fail_fast {
                                     Err(error)
                                 } else {
                                     Ok(1)
@@ -246,5 +175,16 @@ fn main() {
         };
         event!(Level::TRACE, "Exiting with final exit code {}", exit_code);
         std::process::exit(exit_code);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::args::Args;
+    use clap::CommandFactory;
+
+    #[test]
+    fn verify_app() {
+        Args::command().debug_assert();
     }
 }
