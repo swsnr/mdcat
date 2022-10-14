@@ -35,6 +35,12 @@ jobs:
       - run: gem install asciidoctor
       - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
 
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: EmbarkStudios/cargo-deny-action@v1
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
