@@ -39,6 +39,21 @@ mod cli {
     }
 
     #[test]
+    fn long_version_includes_license() {
+        let output = run_cargo_mdcat(["--version"]);
+        let stdout = std::str::from_utf8(&output.stdout).unwrap();
+        assert!(
+            output.status.success(),
+            "non-zero exit code: {:?}",
+            output.status,
+        );
+        assert!(output.stderr.is_empty());
+        assert!(
+            stdout.contains("This program is subject to the terms of the Mozilla Public License,")
+        );
+    }
+
+    #[test]
     fn file_list_fail_late() {
         let output = run_cargo_mdcat(["does-not-exist", "sample/common-mark.md"]);
         let stderr = std::str::from_utf8(&output.stderr).unwrap();
