@@ -6,7 +6,10 @@
 
 //! Magic util functions for detecting image types.
 
+use anyhow::Result;
+use anyhow::{anyhow, Context};
 use mime::Mime;
+use tracing::{event, Level};
 
 /// Whether the given data is SVG data.
 pub fn is_svg(buffer: &[u8]) -> bool {
@@ -19,30 +22,25 @@ pub fn is_png(buffer: &[u8]) -> bool {
 }
 
 fn is_mimetype(buffer: &[u8], mime: &Mime) -> bool {
-    is_mimetype_impl(buffer, mime)
+    get_mimetype_for_buffer_with_file(buffer).map_or_else(
+        |error| {
+            event!(
+                Level::WARN,
+                ?error,
+                "checking for mime type {} failed: {}",
+                mime,
+                error
+            );
+            false
+        },
+        |detected| detected == *mime,
+    )
 }
 
-#[cfg(feature = "tree_magic_mini")]
-fn is_mimetype_impl(buffer: &[u8], expected_type: &Mime) -> bool {
-    tree_magic_mini::match_u8(expected_type.as_ref(), buffer)
-}
-
-#[cfg(not(feature = "tree_magic_mini"))]
-fn is_mimetype_impl(buffer: &[u8], expected_type: &Mime) -> bool {
-    is_mimetype_file(buffer, mime).unwrap_or_else(|error| {
-        event!(Level::WARN, ?error, "checking for {} failed", mime);
-        false
-    })
-}
-
-#[cfg(not(feature = "tree_magic_mini"))]
-fn is_mimetype_file(buffer: &[u8], expected_type: &Mime) -> Result<bool> {
+fn get_mimetype_for_buffer_with_file(buffer: &[u8]) -> Result<Mime> {
     use std::io::prelude::*;
     use std::io::ErrorKind;
     use std::process::*;
-
-    use anyhow::{anyhow, Context, Result};
-    use tracing::{event, Level};
 
     let mut process = Command::new("file")
         .arg("--brief")
@@ -79,7 +77,7 @@ fn is_mimetype_file(buffer: &[u8], expected_type: &Mime) -> Result<bool> {
         let detected_type = stdout
             .parse::<Mime>()
             .with_context(|| format!("Failed to parse mime type from output: {}", stdout))?;
-        Ok(detected_type == *expected_type)
+        Ok(detected_type)
     } else {
         Err(anyhow!(
             "file --brief --mime-type failed with status {}: {}",
