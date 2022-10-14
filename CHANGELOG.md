@@ -12,6 +12,11 @@ To publish a new release run `scripts/release` from the project directory.
 - Move repository back to <https://github.com/lunaryorn/mdcat>.
 - Restore release binaries.
 
+### Removed
+- Support for `tree_magic_mini` for mime-type detection; mdcat now only uses the `file` tool (see [GH-204]).
+
+[GH-204]: https://github.com/lunaryorn/mdcat/pull/204
+
 ## [0.28.0] – 2022-07-31
 
 ### Changed

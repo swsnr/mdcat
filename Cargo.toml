@@ -12,9 +12,6 @@ license = "MPL-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2021"
 
-[features]
-default = ["tree_magic_mini"]
-
 [dependencies]
 ansi_term = "0.12.1"
 anyhow = "1.0.58"
@@ -30,7 +27,6 @@ tracing = { version = "0.1.35", features = ["release_max_level_warn"] }
 tracing-subscriber = { version = "0.3.14", features = ["env-filter"] }
 ureq = { version = "2.5.0", features = ["tls", "native-certs"] }
 url = "2.2.2"
-tree_magic_mini = { version = "3.0.3", optional = true }
 
 [dependencies.syntect]
 version = "5.0.0"

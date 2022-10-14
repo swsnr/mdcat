@@ -74,9 +74,7 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 
 ## Requirements
 
-- For image type detection either:
-    - a system-wide [shared mime database](https://www.freedesktop.org/wiki/Specifications/shared-mime-info-spec/), or,
-    - if `mdcat` is built without default features, the `file` tool with support for `--brief` and `--mime-type` flags.
+For image type detection either the `file` tool with support for `--brief` and `--mime-type` flags must be available in `$PATH`.
 
 [Homebrew]: https://brew.sh
 [MacPorts]: https://www.macports.org
