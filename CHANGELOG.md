@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Move repository back to <https://github.com/lunaryorn/mdcat>.
+
 ## [0.28.0] – 2022-07-31
 
 ### Changed
@@ -47,7 +50,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Always output links as OSC-8 hyperlinks unless `--dump` is given.
   In particular, mdcat now prints hyperlinks if invoked as `mdless` or with `-p`, as recent `less` versions support OCS-8 hyperlinks (see [#191]).
 
-[#191]: https://codeberg.org/flausch/mdcat/issues/191
+[#191]: https://github.com/lunaryorn/mdcat/issues/191
 
 ### Removed
 - mdcat no longer attempts to detect OSC8 link support of the underlying terminal.
@@ -71,8 +74,8 @@ To publish a new release run `scripts/release` from the project directory.
 ### Fixed
 - Fix compiler error with newer `anyhow` versions (see [#192]).
 
-[#192]: https://codeberg.org/flausch/mdcat/pulls/192
-[#193]: https://codeberg.org/flausch/mdcat/pulls/193
+[#192]: https://github.com/lunaryorn/mdcat/pull/192
+[#193]: https://github.com/lunaryorn/mdcat/pull/193
 
 ## [0.24.1] – 2021-10-30
 
@@ -85,21 +88,21 @@ To publish a new release run `scripts/release` from the project directory.
 ### Added
 - Support for [foot](https://codeberg.org/dnkl/foot/) (see [#190]).
 
-[#190]: https://codeberg.org/flausch/mdcat/pulls/190
+[#190]: https://github.com/lunaryorn/mdcat/pull/190
 
 ## [0.23.2] – 2021-07-18
 
 ### Changed
 - WezTerm is now detected by `TERM` and `TERM_PROGRAM` environment variables (see [#186]).
 
-[#186]: https://codeberg.org/flausch/mdcat/pulls/186
+[#186]: https://github.com/lunaryorn/mdcat/pull/186
 
 ## [0.23.1] – 2021-07-14
 
 ### Changed
 - Use `TERM_PROGRAM` for determining WezTerm terminal (see [#185]).
 
-[#185]: https://codeberg.org/flausch/mdcat/pulls/185
+[#185]: https://github.com/lunaryorn/mdcat/pull/185
 
 ## [0.23.0] – 2021-07-04
 
@@ -107,9 +110,9 @@ To publish a new release run `scripts/release` from the project directory.
 - Support for [WezTerm](https://wezfurlong.org/wezterm/) (see [#182]).
 - Add PowerShell completions (see [#183] and [#184]).
 
-[#182]: https://codeberg.org/flausch/mdcat/pulls/182
-[#183]: https://codeberg.org/flausch/mdcat/issues/183
-[#184]: https://codeberg.org/flausch/mdcat/pulls/184
+[#182]: https://github.com/lunaryorn/mdcat/pull/182
+[#183]: https://github.com/lunaryorn/mdcat/issues/183
+[#184]: https://github.com/lunaryorn/mdcat/pull/184
 
 ## [0.22.4] – 2021-04-15
 
@@ -123,8 +126,8 @@ To publish a new release run `scripts/release` from the project directory.
 ### Fixed
 - Fix type error on FreeBSD (see [#177]).
 
-[#176]: https://codeberg.org/flausch/mdcat/pulls/176
-[#177]: https://codeberg.org/flausch/mdcat/issues/177
+[#176]: https://github.com/lunaryorn/mdcat/pull/176
+[#177]: https://github.com/lunaryorn/mdcat/issues/177
 
 ## [0.22.2] – 2021-01-01
 
@@ -136,8 +139,8 @@ To publish a new release run `scripts/release` from the project directory.
 ### Removed
 - The `reqwest` cargo feature (see [#168] and [#169]).
 
-[#168]: https://codeberg.org/flausch/mdcat/issues/168
-[#169]: https://codeberg.org/flausch/mdcat/pulls/169
+[#168]: https://github.com/lunaryorn/mdcat/issues/168
+[#169]: https://github.com/lunaryorn/mdcat/pull/169
 
 ## [0.22.1] – 2020-10-17
 
@@ -165,16 +168,16 @@ To publish a new release run `scripts/release` from the project directory.
 [kitty-0.19]: https://sw.kovidgoyal.net/kitty/changelog.html#id2
 [kitty #68]: https://github.com/kovidgoyal/kitty/issues/68
 [`allow_hyperlinks`]: https://sw.kovidgoyal.net/kitty/conf.html?highlight=hyperlinks#opt-kitty.allow_hyperlinks
-[#165]: https://codeberg.org/flausch/mdcat/pulls/165
-[#166]: https://codeberg.org/flausch/mdcat/pulls/166
-[#167]: https://codeberg.org/flausch/mdcat/pulls/167
+[#165]: https://github.com/lunaryorn/mdcat/pull/165
+[#166]: https://github.com/lunaryorn/mdcat/pull/166
+[#167]: https://github.com/lunaryorn/mdcat/pull/167
 
 ## [0.21.1] – 2020-09-01
 
 ### Fixed
 - Update pulldown cmark to correctly ignore footnote refs (see [#155]).
 
-[#155]: https://codeberg.org/flausch/mdcat/issues/155
+[#155]: https://github.com/lunaryorn/mdcat/issues/155
 
 ## [0.21.0] – 2020-08-12
 
@@ -187,7 +190,7 @@ To publish a new release run `scripts/release` from the project directory.
 ### Fixed
 - Render email autolinks (i.e. `<hello@example.com>`) as `mailto:` links.
 
-[#152]: https://codeberg.org/flausch/mdcat/issues/152
+[#152]: https://github.com/lunaryorn/mdcat/issues/152
 
 ## [0.20.0] – 2020-07-05
 ### Added
@@ -208,9 +211,9 @@ To publish a new release run `scripts/release` from the project directory.
 - On ITerm2 only use the last segment of image URLs as filename for inline images (see [#149]).
     Previously mdcat used the full URL based on a misunderstanding of the [Inline Images Protocol].
 
-[#140]: https://codeberg.org/flausch/mdcat/issues/140
-[#141]: https://codeberg.org/flausch/mdcat/issues/141
-[#149]: https://codeberg.org/flausch/mdcat/issues/149
+[#140]: https://github.com/lunaryorn/mdcat/issues/140
+[#141]: https://github.com/lunaryorn/mdcat/issues/141
+[#149]: https://github.com/lunaryorn/mdcat/issues/149
 [Inline Images Protocol]: https://iterm2.com/documentation-images.html
 
 ## [0.19.0] – 2020-06-19
@@ -220,7 +223,7 @@ To publish a new release run `scripts/release` from the project directory.
 ### Changed
 - Blockquotes no longer have green foreground text (see [#144]).
 
-[#144]: https://codeberg.org/flausch/mdcat/issues/144
+[#144]: https://github.com/lunaryorn/mdcat/issues/144
 
 ## [0.18.4] – 2020-06-14
 ### Fixed
@@ -231,7 +234,7 @@ To publish a new release run `scripts/release` from the project directory.
 ### Fixed
 - Properly ignore alt text of inline images (see [#148]).
 
-[#148]: https://codeberg.org/flausch/mdcat/issues/148
+[#148]: https://github.com/lunaryorn/mdcat/issues/148
 
 ## [0.18.2] – 2020-05-31
 ### Fixed
@@ -263,18 +266,18 @@ To publish a new release run `scripts/release` from the project directory.
 - Correctly indent block quotes (see [#142]).
 - Colorize the entire text of links (see [#142]).
 
-[#142]: https://codeberg.org/flausch/mdcat/issues/142
-[#139]: https://codeberg.org/flausch/mdcat/issues/139
+[#142]: https://github.com/lunaryorn/mdcat/issues/142
+[#139]: https://github.com/lunaryorn/mdcat/issues/139
 [anyhow]: https://docs.rs/crate/anyhow
-[#146]: https://codeberg.org/flausch/mdcat/issues/146
+[#146]: https://github.com/lunaryorn/mdcat/issues/146
 
 ## [0.17.1] – 2020-05-24
 ### Fixed
 - Correctly scale down large images on [kitty] (see [#124] and [#133] by
   [@fspillner]).
 
-[#124]: https://codeberg.org/flausch/mdcat/issues/124
-[#133]: https://codeberg.org/flausch/mdcat/pulls/133
+[#124]: https://github.com/lunaryorn/mdcat/issues/124
+[#133]: https://github.com/lunaryorn/mdcat/pull/133
 
 ## [0.17.0] – 2020-05-20
 ### Changed
@@ -285,8 +288,8 @@ To publish a new release run `scripts/release` from the project directory.
 - Do not fail with broken pipe error when rending large images (see [#134] by
   [@fspillner]).
 
-[#134]: https://codeberg.org/flausch/mdcat/issues/134
-[#138]: https://codeberg.org/flausch/mdcat/issues/138
+[#134]: https://github.com/lunaryorn/mdcat/issues/134
+[#138]: https://github.com/lunaryorn/mdcat/issues/138
 
 ## [0.16.1] – 2020-05-15
 ### Changed
@@ -297,7 +300,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Ignore broken pipes; `mdcat | head` no longer errors when `head` closes stdout
   of mdcat early (see [#136]).
 
-[#136]: https://codeberg.org/flausch/mdcat/issues/136
+[#136]: https://github.com/lunaryorn/mdcat/issues/136
 
 ## [0.16.0] – 2020-04-11
 ### Changed
@@ -305,8 +308,8 @@ To publish a new release run `scripts/release` from the project directory.
   building (see [#131]).  This crate now builds without Clang which fixes
   Clang-related build issues (see [#90])
 
-[#90]: https://codeberg.org/flausch/mdcat/issues/90
-[#131]: https://codeberg.org/flausch/mdcat/pulls/131
+[#90]: https://github.com/lunaryorn/mdcat/issues/90
+[#131]: https://github.com/lunaryorn/mdcat/pull/131
 
 ## [0.15.1] – 2020-02-15
 ### Changed
@@ -327,9 +330,9 @@ To publish a new release run `scripts/release` from the project directory.
   retrieving remote resources, and fall back to the `curl` command if `reqwest`
   is disabled.
 
-[#114]: https://codeberg.org/flausch/mdcat/pulls/114
-[#115]: https://codeberg.org/flausch/mdcat/pulls/115
-[#54]: https://codeberg.org/flausch/mdcat/issues/54
+[#114]: https://github.com/lunaryorn/mdcat/pull/114
+[#115]: https://github.com/lunaryorn/mdcat/pull/115
+[#54]: https://github.com/lunaryorn/mdcat/issues/54
 [@norman-abramovitz]: https://github.com/norman-abramovitz
 
 ## [0.14.0] – 2019-12-18
@@ -346,9 +349,9 @@ To publish a new release run `scripts/release` from the project directory.
 - No longer depend on `immeta`.
 
 [kitty]: https://sw.kovidgoyal.net/kitty/
-[#65]: https://codeberg.org/flausch/mdcat/issues/65
-[#84]: https://codeberg.org/flausch/mdcat/issues/84
-[#104]: https://codeberg.org/flausch/mdcat/pulls/104
+[#65]: https://github.com/lunaryorn/mdcat/issues/65
+[#84]: https://github.com/lunaryorn/mdcat/issues/84
+[#104]: https://github.com/lunaryorn/mdcat/pull/104
 [@fspillner]: https://github.com/fspillner
 
 ## [0.13.0] – 2019-03-30
@@ -357,15 +360,15 @@ To publish a new release run `scripts/release` from the project directory.
 - Render strike-through text (see [#71]).  Some terminals do not support this
   feature, and mdcat does not have a fallback currently (see [#73]).
 
-[#73]: https://codeberg.org/flausch/mdcat/issues/73
-[#72]: https://codeberg.org/flausch/mdcat/issues/72
-[#71]: https://codeberg.org/flausch/mdcat/issues/71
+[#73]: https://github.com/lunaryorn/mdcat/issues/73
+[#72]: https://github.com/lunaryorn/mdcat/issues/72
+[#71]: https://github.com/lunaryorn/mdcat/issues/71
 
 ## [0.12.1] – 2018-12-24
 ### Fixed
 - Do not add newline after inline text with styles disabled (see [#49]).
 
-[#49]: https://codeberg.org/flausch/mdcat/issues/49
+[#49]: https://github.com/lunaryorn/mdcat/issues/49
 
 ## [0.12.0] – 2018-12-20
 ### Added
@@ -390,10 +393,10 @@ To publish a new release run `scripts/release` from the project directory.
   [#42] and [#44]).
 
 [OSC 8 file URLs]: https://git.io/vd4ee#file-uris-and-the-hostname
-[#42]: https://codeberg.org/flausch/mdcat/pulls/42
-[#44]: https://codeberg.org/flausch/mdcat/pulls/44
-[#45]: https://codeberg.org/flausch/mdcat/pulls/45
-[#46]: https://codeberg.org/flausch/mdcat/issues/46
+[#42]: https://github.com/lunaryorn/mdcat/pull/42
+[#44]: https://github.com/lunaryorn/mdcat/pull/44
+[#45]: https://github.com/lunaryorn/mdcat/pull/45
+[#46]: https://github.com/lunaryorn/mdcat/issues/46
 
 ## [0.11.0] – 2018-10-25
 ### Changed
@@ -404,7 +407,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Travis CI builds Windows binaries now.
 - Test formatting output.
 
-[#41]: https://codeberg.org/flausch/mdcat/issues/41
+[#41]: https://github.com/lunaryorn/mdcat/issues/41
 
 ## [0.10.1] – 2018-09-09
 ### Fixed
@@ -417,10 +420,10 @@ To publish a new release run `scripts/release` from the project directory.
 - Published Linux binary statically links musl now, and has no runtime
   dependencies (see [#29] and [#38]).
 
-[#29]: https://codeberg.org/flausch/mdcat/issues/29
-[#36]: https://codeberg.org/flausch/mdcat/pulls/36
-[#37]: https://codeberg.org/flausch/mdcat/issues/37
-[#38]: https://codeberg.org/flausch/mdcat/pulls/38
+[#29]: https://github.com/lunaryorn/mdcat/issues/29
+[#36]: https://github.com/lunaryorn/mdcat/pull/36
+[#37]: https://github.com/lunaryorn/mdcat/issues/37
+[#38]: https://github.com/lunaryorn/mdcat/pull/38
 
 ## [0.9.2] – 2018-08-26
 ### Fixed
@@ -433,7 +436,7 @@ To publish a new release run `scripts/release` from the project directory.
 ### Fixed
 - Correctly build macOS and Linux binaries on Travis CI.
 
-[#28]: https://codeberg.org/flausch/mdcat/issues/28
+[#28]: https://github.com/lunaryorn/mdcat/issues/28
 
 ## [0.9.0] – 2018-08-26
 ### Added
@@ -445,16 +448,16 @@ To publish a new release run `scripts/release` from the project directory.
 - Allow to disable specific terminal backends (see [#35]).
 - Update minimum Rust version to 1.27.
 
-[#33]: https://codeberg.org/flausch/mdcat/pulls/33
-[#34]: https://codeberg.org/flausch/mdcat/pulls/34
-[#35]: https://codeberg.org/flausch/mdcat/pulls/35
+[#33]: https://github.com/lunaryorn/mdcat/pull/33
+[#34]: https://github.com/lunaryorn/mdcat/pull/34
+[#35]: https://github.com/lunaryorn/mdcat/pull/35
 
 ## [0.8.0] – 2018-02-15
 ### Added
 - Render SVG images in iTerm2 with `rsvg-convert` (requires `librsvg`).
 - Expose `TerminalWrite` in `mdcat` crate (see [#20] by [@Byron]).
 
-[#20]: https://codeberg.org/flausch/mdcat/pulls/20
+[#20]: https://github.com/lunaryorn/mdcat/pull/20
 [@Byron]: https://github.com/Byron
 
 ## [0.7.0] – 2018-02-08
@@ -469,15 +472,15 @@ To publish a new release run `scripts/release` from the project directory.
 ### Changed
 - Adhere to Semantic Versioning, but stay pre-1.0 so anything still goes.
 
-[#18]: https://codeberg.org/flausch/mdcat/issues/18
+[#18]: https://github.com/lunaryorn/mdcat/issues/18
 
 ## [0.6.0] – 2018-02-02
 ### Added
 - Show inline images in [Terminology] (see [#16] by [@vinipsmaker]).
 
 [Terminology]: http://terminolo.gy
-[#16]: https://codeberg.org/flausch/mdcat/pulls/16
-[@vinipsmaker]: https://codeberg.org/flausch/vinipsmaker
+[#16]: https://github.com/lunaryorn/mdcat/pull/16
+[@vinipsmaker]: https://github.com/vinipsmaker
 
 ### Changed
 - Improve `--help` output: Hide some redundant options, add a bug reporting URL
@@ -489,9 +492,9 @@ To publish a new release run `scripts/release` from the project directory.
 - Show links inline in iTerm2 and terminals based on VTE 0.50 or newer (see
   [#8], [#14] and [#15]).
 
-[#8]: https://codeberg.org/flausch/mdcat/issues/8
-[#14]: https://codeberg.org/flausch/mdcat/issues/14
-[#15]: https://codeberg.org/flausch/mdcat/issues/15
+[#8]: https://github.com/lunaryorn/mdcat/issues/8
+[#14]: https://github.com/lunaryorn/mdcat/issues/14
+[#15]: https://github.com/lunaryorn/mdcat/issues/15
 
 ### Changed
 - Improve `--help` output.
@@ -500,7 +503,7 @@ To publish a new release run `scripts/release` from the project directory.
 - Remove redundant default value from `--colour` help text (see [#10], by [@wezm]).
 - Replace light black with green; the former doesn't work with Solarized Dark.
 
-[#10]: https://codeberg.org/flausch/mdcat/pulls/10
+[#10]: https://github.com/lunaryorn/mdcat/pull/10
 [@wezm]: https://github.com/wezm
 
 ## [0.4.0] – 2018-01-21
@@ -546,56 +549,56 @@ To publish a new release run `scripts/release` from the project directory.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.28.0...HEAD
-[0.28.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.1...mdcat-0.28.0
-[0.27.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.27.0...mdcat-0.27.1
-[0.27.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.1...mdcat-0.27.0
-[0.26.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.26.0...mdcat-0.26.1
-[0.26.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.25.1...mdcat-0.26.0
-[0.25.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.25.0...mdcat-0.25.1
-[0.25.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.24.2...mdcat-0.25.0
-[0.24.2]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.24.1...mdcat-0.24.2
-[0.24.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.24.0...mdcat-0.24.1
-[0.24.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.23.2...mdcat-0.24.0
-[0.23.2]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.23.1...mdcat-0.23.2
-[0.23.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.23.0...mdcat-0.23.1
-[0.23.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.22.4...mdcat-0.23.0
-[0.22.4]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.22.3...mdcat-0.22.4
-[0.22.3]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.22.2...mdcat-0.22.3
-[0.22.2]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.22.1...mdcat-0.22.2
-[0.22.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.22.0...mdcat-0.22.1
-[0.22.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.21.1...mdcat-0.22.0
-[0.21.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.21.0...mdcat-0.21.1
-[0.21.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.20.0...mdcat-0.21.0
-[0.20.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.19.0...mdcat-0.20.0
-[0.19.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.18.4...mdcat-0.19.0
-[0.18.4]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.18.3...mdcat-0.18.4
-[0.18.3]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.18.2...mdcat-0.18.3
-[0.18.2]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.18.1...mdcat-0.18.2
-[0.18.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.18.0...mdcat-0.18.1
-[0.18.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.17.1...mdcat-0.18.0
-[0.17.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.17.0...mdcat-0.17.1
-[0.17.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.16.1...mdcat-0.17.0
-[0.16.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.16.0...mdcat-0.16.1
-[0.16.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.15.1...mdcat-0.16.0
-[0.15.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.15.0...mdcat-0.15.1
-[0.15.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.14.0...mdcat-0.15.0
-[0.14.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.13.0...mdcat-0.14.0
-[0.13.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.12.1...mdcat-0.13.0
-[0.12.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.12.0...mdcat-0.12.1
-[0.12.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.11.0...mdcat-0.12.0
-[0.11.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.10.1...mdcat-0.11.0
-[0.10.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.10.0...mdcat-0.10.1
-[0.10.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.9.2...mdcat-0.10.0
-[0.9.2]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.9.1...mdcat-0.9.2
-[0.9.1]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.9.0...mdcat-0.9.1
-[0.9.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.8.0...mdcat-0.9.0
-[0.8.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.7.0...mdcat-0.8.0
-[0.7.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.6.0...mdcat-0.7.0
-[0.6.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.5.0...mdcat-0.6.0
-[0.5.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.4.0...mdcat-0.5.0
-[0.4.0]: https://codeberg.org/flausch/mdcat/compare/mdcat-0.3.0...mdcat-0.4.0
-[0.3.0]: https://codeberg.org/flausch/mdcat/compare/mdless-0.2.0...mdcat-0.3.0
-[0.2.0]: https://codeberg.org/flausch/mdcat/compare/mdless-0.1.1...mdless-0.2.0
-[0.1.1]: https://codeberg.org/flausch/mdcat/compare/mdless-0.1.0...mdless-0.1.1
-[0.1.0]: https://codeberg.org/flausch/mdcat/releases/tag/mdless-0.1.0
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.28.0...HEAD
+[0.28.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.27.1...mdcat-0.28.0
+[0.27.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.27.0...mdcat-0.27.1
+[0.27.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.26.1...mdcat-0.27.0
+[0.26.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.26.0...mdcat-0.26.1
+[0.26.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.25.1...mdcat-0.26.0
+[0.25.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.25.0...mdcat-0.25.1
+[0.25.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.2...mdcat-0.25.0
+[0.24.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.1...mdcat-0.24.2
+[0.24.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.24.0...mdcat-0.24.1
+[0.24.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.2...mdcat-0.24.0
+[0.23.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.1...mdcat-0.23.2
+[0.23.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.23.0...mdcat-0.23.1
+[0.23.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.4...mdcat-0.23.0
+[0.22.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.3...mdcat-0.22.4
+[0.22.3]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.2...mdcat-0.22.3
+[0.22.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.1...mdcat-0.22.2
+[0.22.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.22.0...mdcat-0.22.1
+[0.22.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.1...mdcat-0.22.0
+[0.21.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.21.0...mdcat-0.21.1
+[0.21.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.20.0...mdcat-0.21.0
+[0.20.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.19.0...mdcat-0.20.0
+[0.19.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.4...mdcat-0.19.0
+[0.18.4]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.3...mdcat-0.18.4
+[0.18.3]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.2...mdcat-0.18.3
+[0.18.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.1...mdcat-0.18.2
+[0.18.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.18.0...mdcat-0.18.1
+[0.18.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.17.1...mdcat-0.18.0
+[0.17.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.17.0...mdcat-0.17.1
+[0.17.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.1...mdcat-0.17.0
+[0.16.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.16.0...mdcat-0.16.1
+[0.16.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.1...mdcat-0.16.0
+[0.15.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.15.0...mdcat-0.15.1
+[0.15.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.14.0...mdcat-0.15.0
+[0.14.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.13.0...mdcat-0.14.0
+[0.13.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.1...mdcat-0.13.0
+[0.12.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.12.0...mdcat-0.12.1
+[0.12.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.11.0...mdcat-0.12.0
+[0.11.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.1...mdcat-0.11.0
+[0.10.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.10.0...mdcat-0.10.1
+[0.10.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.2...mdcat-0.10.0
+[0.9.2]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.1...mdcat-0.9.2
+[0.9.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.9.0...mdcat-0.9.1
+[0.9.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.8.0...mdcat-0.9.0
+[0.8.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.7.0...mdcat-0.8.0
+[0.7.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.6.0...mdcat-0.7.0
+[0.6.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.5.0...mdcat-0.6.0
+[0.5.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.4.0...mdcat-0.5.0
+[0.4.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.3.0...mdcat-0.4.0
+[0.3.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.2.0...mdcat-0.3.0
+[0.2.0]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.1...mdless-0.2.0
+[0.1.1]: https://github.com/lunaryorn/mdcat/compare/mdless-0.1.0...mdless-0.1.1
+[0.1.0]: https://github.com/lunaryorn/mdcat/releases/tag/mdless-0.1.0

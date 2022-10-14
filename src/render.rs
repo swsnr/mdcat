@@ -726,7 +726,7 @@ pub fn write_event<'a, W: Write>(
         (s, e) => panic!(
             "Event {:?} impossible in state {:?}
 
-Please do report an issue at <https://codeberg.org/flausch/mdcat/issues/new> including
+Please do report an issue at <https://github.com/lunaryorn/mdcat/issues/new> including
 
 * a copy of this message, and
 * the markdown document which caused this error.",
