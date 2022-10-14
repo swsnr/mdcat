@@ -22,7 +22,7 @@ pub fn is_png(buffer: &[u8]) -> bool {
 }
 
 fn is_mimetype(buffer: &[u8], mime: &Mime) -> bool {
-    get_mimetype_for_buffer_with_file(buffer).map_or_else(
+    get_mimetype_for_buffer(buffer).map_or_else(
         |error| {
             event!(
                 Level::WARN,
@@ -37,7 +37,8 @@ fn is_mimetype(buffer: &[u8], mime: &Mime) -> bool {
     )
 }
 
-fn get_mimetype_for_buffer_with_file(buffer: &[u8]) -> Result<Mime> {
+#[cfg(not(windows))]
+fn get_mimetype_for_buffer(buffer: &[u8]) -> Result<Mime> {
     use std::io::prelude::*;
     use std::io::ErrorKind;
     use std::process::*;
@@ -85,6 +86,45 @@ fn get_mimetype_for_buffer_with_file(buffer: &[u8]) -> Result<Mime> {
             String::from_utf8_lossy(&output.stderr)
         ))
     }
+}
+
+#[cfg(windows)]
+fn get_mimetype_for_buffer(buffer: &[u8]) -> Result<Mime> {
+    use std::ffi::c_void;
+    use windows::core::PWSTR;
+
+    let mut ret = PWSTR::null();
+    unsafe {
+        // SAFETY: We pass a proper null pointer as return value, and an initialized
+        // buffer with corresponding length as data buffer.
+        windows::Win32::System::Com::Urlmon::FindMimeFromData(
+            None,
+            None,
+            Some(buffer.as_ptr() as *const c_void),
+            buffer.len().try_into().unwrap(),
+            None,
+            0,
+            &mut ret,
+            0,
+        )
+        .with_context(|| {
+            "Failed to determine mime type of buffer through windows API".to_string()
+        })?;
+    }
+
+    let mime_raw = if !ret.is_null() {
+        unsafe {
+            // SAFETY: We explicitly check that ret is not null, and thus can safely convert its contents now.
+            ret.to_string()
+                .with_context(|| "Response from windows API contained invalid UTF-16".to_string())
+        }
+    } else {
+        Err(anyhow!("Windows API did not return a mime type!"))
+    }?;
+    let detected_type = mime_raw
+        .parse::<Mime>()
+        .with_context(|| format!("Failed to parse mime type from windows API: {}", mime_raw))?;
+    Ok(detected_type)
 }
 
 #[cfg(test)]

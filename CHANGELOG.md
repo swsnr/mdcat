@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- On Windows detect image mime types through windows API (see [GH-204]).
+
 ### Changed
 - Move repository back to <https://github.com/lunaryorn/mdcat>.
 - Restore release binaries.
