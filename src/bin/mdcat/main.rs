@@ -82,13 +82,6 @@ fn process_file(filename: &str, settings: &Settings, output: &mut Output) -> Res
         })
 }
 
-fn is_mdless() -> bool {
-    std::env::current_exe()
-        .ok()
-        .and_then(|p| p.file_stem().map(|stem| stem == "mdless"))
-        .unwrap_or(false)
-}
-
 fn main() {
     // Setup tracing
     let filter = EnvFilter::builder()
@@ -106,14 +99,13 @@ fn main() {
     use crate::args::Args;
     use clap::Parser;
 
-    let args = Args::parse();
-    event!(Level::TRACE, ?args, "mdcat arguments");
+    let args = Args::parse().command;
+    event!(target: "mdcat::main", Level::TRACE, ?args, "mdcat arguments");
 
-    let paginate = is_mdless() || args.paginate;
     let terminal_capabilities = if args.no_colour {
         // If the user disabled colours assume a dumb terminal
         TerminalCapabilities::none()
-    } else if paginate || args.ansi_only {
+    } else if args.paginate() || args.ansi_only {
         // A pager won't support any terminal-specific features
         TerminalCapabilities::ansi()
     } else {
@@ -129,11 +121,11 @@ fn main() {
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
         {
-            event!(Level::TRACE, "Enable ANSI support in windows terminal");
+            event!(target: "mdcat::main", Level::TRACE, "Enable ANSI support in windows terminal");
             ansi_term::enable_ansi_support().ok();
         }
 
-        let exit_code = match Output::new(paginate) {
+        let exit_code = match Output::new(args.paginate()) {
             Ok(mut output) => {
                 let settings = Settings {
                     terminal_capabilities,
@@ -146,6 +138,7 @@ fn main() {
                     syntax_set: SyntaxSet::load_defaults_newlines(),
                 };
                 event!(
+                    target: "mdcat::main",
                     Level::TRACE,
                     ?settings.terminal_size,
                     ?settings.terminal_capabilities,
@@ -173,7 +166,7 @@ fn main() {
                 128
             }
         };
-        event!(Level::TRACE, "Exiting with final exit code {}", exit_code);
+        event!(target: "mdcat::main", Level::TRACE, "Exiting with final exit code {}", exit_code);
         std::process::exit(exit_code);
     }
 }

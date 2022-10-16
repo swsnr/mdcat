@@ -21,6 +21,8 @@ mdcat - render CommonMark Markdown to text terminals
 mdcat renders Markdown ``FILE``s in CommonMark dialect to text terminals with sophisticated formatting.
 If no `FILE` is given, or if `FILE` is '-', it reads from standard input.
 
+If invoked as `mdless` automatically use a pager to display the output, see below.
+
 === CommonMark and terminal support
 
 mdcat supports all basic CommonMark syntax plus a few extensions, highlights syntax in code blocks, and shows inline links and even inline images in some terminal emulators.
@@ -30,6 +32,9 @@ In iTerm2 it also adds jump marks for section headings.
 
 mdcat can render output in a pager; this is the default when run as `mdless`.
 The environment variables `$MDCAT_PAGER` and `$PAGER` control the pager used.
+
+Note that common pagers do not support proprietary terminal codes for e.g. image support, so mdcat falls back to pure ANSI formatting when pagination is enabled.
+In particular this disables all image support which relies on proprietary escape codes.
 
 === Image support
 
