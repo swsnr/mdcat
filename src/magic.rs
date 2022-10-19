@@ -18,7 +18,19 @@ pub fn is_svg(buffer: &[u8]) -> bool {
 
 /// Whether the given data is a PNG image.
 pub fn is_png(buffer: &[u8]) -> bool {
-    is_mimetype(buffer, &mime::IMAGE_PNG)
+    match image::guess_format(buffer) {
+        Ok(image::ImageFormat::Png) => true,
+        Ok(_) => false,
+        Err(error) => {
+            event!(
+                Level::WARN,
+                ?error,
+                "failed to guess image format: {}",
+                error
+            );
+            false
+        }
+    }
 }
 
 fn is_mimetype(buffer: &[u8], mime: &Mime) -> bool {
