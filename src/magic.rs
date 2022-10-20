@@ -13,28 +13,38 @@ use tracing::{event, Level};
 
 /// Whether the given data is SVG data.
 pub fn is_svg(buffer: &[u8]) -> bool {
-    is_mimetype(buffer, &mime::IMAGE_SVG)
+    // If `buffer` contains a valid pixel image it's definitely not an SVG, so
+    // let's avoid the expensive call to "file" here.
+    image::guess_format(buffer).is_err()
+        && get_mimetype_for_buffer_with_file(buffer).map_or_else(
+            |error| {
+                event!(
+                    Level::WARN,
+                    ?error,
+                    "failed to determine mime type: {}",
+                    error
+                );
+                false
+            },
+            |detected| detected == mime::IMAGE_SVG,
+        )
 }
 
 /// Whether the given data is a PNG image.
 pub fn is_png(buffer: &[u8]) -> bool {
-    is_mimetype(buffer, &mime::IMAGE_PNG)
-}
-
-fn is_mimetype(buffer: &[u8], mime: &Mime) -> bool {
-    get_mimetype_for_buffer_with_file(buffer).map_or_else(
-        |error| {
+    match image::guess_format(buffer) {
+        Ok(image::ImageFormat::Png) => true,
+        Ok(_) => false,
+        Err(error) => {
             event!(
                 Level::WARN,
                 ?error,
-                "checking for mime type {} failed: {}",
-                mime,
+                "failed to guess image format: {}",
                 error
             );
             false
-        },
-        |detected| detected == *mime,
-    )
+        }
+    }
 }
 
 fn get_mimetype_for_buffer_with_file(buffer: &[u8]) -> Result<Mime> {
