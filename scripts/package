@@ -19,8 +19,8 @@ package_windows() {
     archive_file="${ARCHIVE_NAME}.zip"
     mv LICENSE LICENSE.txt
     7z a "${archive_file}" "./target/${TARGET}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt "${OUTDIR}/completions" ./mdcat.1.adoc
-    echo ::set-output "name=file::${archive_file}"
-    echo ::set-output "name=name::${ARCHIVE_NAME}.zip"
+    echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"
+    echo "name=${ARCHIVE_NAME}.zip" >>"${GITHUB_OUTPUT}"
 }
 
 package_unix() {
@@ -35,8 +35,8 @@ package_unix() {
     cp -r "${OUTDIR}/completions" "${pkg_dir}/${ARCHIVE_NAME}"
     cp "${OUTDIR}/mdcat.1" "${pkg_dir}/${ARCHIVE_NAME}"
     tar -czf "${PWD}/${archive_file}" -C "${pkg_dir}" "${ARCHIVE_NAME}"
-    echo ::set-output "name=file::${archive_file}"
-    echo ::set-output "name=name::${ARCHIVE_NAME}.tar.gz"
+    echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"
+    echo "name=${ARCHIVE_NAME}.tar.gz" >>"${GITHUB_OUTPUT}"
 }
 
 if [[ "${TARGET}" == *windows* ]]; then

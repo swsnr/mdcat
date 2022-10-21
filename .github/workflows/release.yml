@@ -27,28 +27,21 @@ jobs:
       - run: gem install asciidoctor
       - run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
-      - name: Build in release configuration
-        shell: bash
+      - shell: bash
         id: build
         run: |
             OUTDIR="$(cargo build --locked --target '${{ matrix.target }}' --release --message-format=json-render-diagnostics |
                 jq -r 'select(.out_dir) | select(.package_id | startswith("mdcat ")) | .out_dir')"
-            echo "::set-output name=outdir::$OUTDIR"
-      - name: Strip binary
-        run: strip 'target/${{ matrix.target }}/release/mdcat'
+            echo "outdir=$OUTDIR" >>"$GITHUB_OUTPUT"
+      - run: strip 'target/${{ matrix.target }}/release/mdcat'
         if: "!contains(matrix.target, 'windows')"
-      - name: Get version
-        id: version
+      - id: version
         shell: bash
-        run: |
-          VERSION="$(cargo pkgid | cut -d'#' -f2 | cut -d: -f2)"
-          echo "::set-output name=version::$VERSION"
-      - name: Build package
-        id: package
+        run: echo "version=$(cargo pkgid | cut -d'#' -f2 | cut -d: -f2)" >>"${GITHUB_OUTPUT}"
+      - id: package
         shell: bash
         run: ./scripts/package '${{ steps.version.outputs.version }}' '${{ matrix.target }}' '${{ steps.build.outputs.outdir }}'
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.package.outputs.name }}
           path: ${{ steps.package.outputs.file }}
@@ -58,27 +51,19 @@ jobs:
     needs: build-binaries
     steps:
       - uses: actions/checkout@v2
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v3
         with:
           path: ./artifacts
-      - name: Aggregate assets
-        run: |
-          mkdir ./assets
-          mv ./artifacts/*/*.{zip,tar.gz} ./assets
-      - name: Compute checksums
-        # We create checksum files in the parent directory to avoid checksumming the checksums
-        run: |
-          b2sum * > ../B2SUMS.txt
-          sha512sum * > ../SHA512SUM.txt
-          mv ../B2SUMS.txt ../SHA512SUM.txt .
+      - run: mkdir ./assets
+      - run: mv ./artifacts/*/*.{zip,tar.gz} ./assets
+      - run: b2sum *.{zip,tar.gz} > B2SUMS.txt
         working-directory: assets
-      - name: Get version
-        id: version
+      - run: sha512sum *.{zip,tar.gz} > SHA512SUM.txt
+        working-directory: assets
+      - id: version
         shell: bash
         run: |
-          VERSION="$(cargo pkgid | cut -d'#' -f2 | cut -d: -f2)"
-          echo "::set-output name=version::$VERSION"
+          echo "version=$(cargo pkgid | cut -d'#' -f2 | cut -d: -f2)" >>"${GITHUB_OUTPUT}
       - name: Extract changelog
         shell: bash
         run: |
@@ -86,8 +71,7 @@ jobs:
             '/^\[[^]]*\]/{print $0}/^## \[[0-9]/ && match($0, /\[[0-9][^]]*\]/){if (r == substr($0, RSTART+1, RLENGTH-2)) { p=1; next } else { p=0 } }p' \
             CHANGELOG.md > ./CHANGELOG-release.md
           cat CHANGELOG-release.md
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v1
         with:
           name: mdcat-${{ steps.version.outputs.version }}
           body_path: ./CHANGELOG-release.md
