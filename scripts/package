@@ -19,8 +19,10 @@ package_windows() {
     archive_file="${ARCHIVE_NAME}.zip"
     mv LICENSE LICENSE.txt
     7z a "${archive_file}" "./target/${TARGET}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt "${OUTDIR}/completions" ./mdcat.1.adoc
-    echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"
-    echo "name=${ARCHIVE_NAME}.zip" >>"${GITHUB_OUTPUT}"
+    if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+        echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"
+        echo "name=${ARCHIVE_NAME}.zip" >>"${GITHUB_OUTPUT}"
+    fi
 }
 
 package_unix() {
