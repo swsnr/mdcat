@@ -25,10 +25,7 @@ pub struct PixelSize {
 impl PixelSize {
     /// Create a pixel size for a `(x, y)` pair.
     pub fn from_xy((x, y): (u32, u32)) -> Self {
-        Self {
-            x: x as u32,
-            y: y as u32,
-        }
+        Self { x, y }
     }
 }
 

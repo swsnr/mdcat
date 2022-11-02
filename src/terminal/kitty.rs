@@ -167,11 +167,7 @@ impl KittyImages {
         let image = if PixelSize::from_xy(image.dimensions()) <= terminal_size {
             image
         } else {
-            image.resize(
-                terminal_size.x as u32,
-                terminal_size.y as u32,
-                FilterType::Nearest,
-            )
+            image.resize(terminal_size.x, terminal_size.y, FilterType::Nearest)
         };
 
         let size = PixelSize::from_xy(image.dimensions());
