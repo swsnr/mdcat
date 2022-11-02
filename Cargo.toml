@@ -14,7 +14,7 @@ edition = "2021"
 
 [dependencies]
 ansi_term = "0.12.1"
-anyhow = "1.0.58"
+anyhow = "1.0.66"
 base64 = "0.13.0"
 clap = { version = "4.0.15", features = ["derive"] }
 env_proxy = "0.4.1"
