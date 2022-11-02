@@ -17,7 +17,7 @@ fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
     use clap_complete::*;
 
     let completions = out_dir.as_ref().join("completions");
-    std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
+    std::fs::create_dir_all(completions).expect("Failed to create $OUT_DIR/completions");
 
     for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
         generate_to(
@@ -36,7 +36,7 @@ fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
 
     let mut command = Command::new("asciidoctor");
     command
-        .args(&["-b", "manpage", "-a", "reproducible"])
+        .args(["-b", "manpage", "-a", "reproducible"])
         .arg("-o")
         .arg(target_file)
         .arg("mdcat.1.adoc");
