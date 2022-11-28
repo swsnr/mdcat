@@ -17,14 +17,14 @@ fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
     use clap_complete::*;
 
     let completions = out_dir.as_ref().join("completions");
-    std::fs::create_dir_all(completions).expect("Failed to create $OUT_DIR/completions");
+    std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
 
     for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
         generate_to(
             shell,
             &mut mdcat::Args::command(),
             "mdcat",
-            out_dir.as_ref().as_os_str(),
+            &completions
         )?;
     }
 

@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Fixed
+- Include generated shell completions in release artifacts.
+
 ## [0.29.0] – 2022-10-21
 
 ### Changed
