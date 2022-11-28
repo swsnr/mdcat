@@ -20,12 +20,7 @@ fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
     std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
 
     for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
-        generate_to(
-            shell,
-            &mut mdcat::Args::command(),
-            "mdcat",
-            &completions
-        )?;
+        generate_to(shell, &mut mdcat::Args::command(), "mdcat", &completions)?;
     }
 
     Ok(())
