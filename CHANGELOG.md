@@ -8,8 +8,15 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- Generate completions for `mdless` (see [GH-216]).
+
 ### Fixed
 - Include generated shell completions in release artifacts.
+- Fix completions for mdcat (see [GH-214] and [GH-216])
+
+[GH-214]: https://github.com/lunaryorn/mdcat/issues/214
+[GH-216]: https://github.com/lunaryorn/mdcat/pull/216
 
 ## [0.29.0] – 2022-10-21
 
