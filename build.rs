@@ -18,9 +18,12 @@ fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
 
     let completions = out_dir.as_ref().join("completions");
     std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
-
-    for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
-        generate_to(shell, &mut mdcat::Args::command(), "mdcat", &completions)?;
+    for program in ["mdcat", "mdless"] {
+        for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
+            let mut command = mdcat::Args::command();
+            let subcommand = command.find_subcommand_mut(program).unwrap();
+            generate_to(shell, subcommand, program, &completions)?;
+        }
     }
 
     Ok(())
