@@ -31,7 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3
       - run: gem install asciidoctor
       - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
 
