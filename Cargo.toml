@@ -56,7 +56,6 @@ lto = true
 [package.metadata.release]
 allow-branch = ["main"]
 pre-release-commit-message = "Release {{version}}"
-post-release-commit-message = "Bump version to {{next_version}}"
 tag-prefix = "mdcat-"
 tag-name = "{{prefix}}{{version}}"
 tag-message = "mdcat {{version}}"
