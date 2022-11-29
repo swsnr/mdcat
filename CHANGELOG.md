@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.30.1] – 2022-11-29
+
 ### Fixed
 - Fix workflow syntax error to restore release artifacts.
 
@@ -573,7 +575,8 @@ To publish a new release run `scripts/release` from the project directory.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.30.0...HEAD
+[Unreleased]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.30.1...HEAD
+[0.30.1]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.30.0...mdcat-0.30.1
 [0.30.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.29.0...mdcat-0.30.0
 [0.29.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.28.0...mdcat-0.29.0
 [0.28.0]: https://github.com/lunaryorn/mdcat/compare/mdcat-0.27.1...mdcat-0.28.0
