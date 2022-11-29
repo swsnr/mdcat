@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Fixed
+- Fix workflow syntax error to restore release artifacts.
+
 ## [0.30.0] – 2022-11-29
 
 ### Added

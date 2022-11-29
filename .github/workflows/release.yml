@@ -64,7 +64,7 @@ jobs:
       - id: version
         shell: bash
         run: |
-          echo "version=$(cargo pkgid | cut -d'#' -f2 | cut -d: -f2)" >>"${GITHUB_OUTPUT}
+          echo "version=$(cargo pkgid | cut -d'#' -f2 | cut -d: -f2)" >>"${GITHUB_OUTPUT}"
       - name: Extract changelog
         shell: bash
         run: |
