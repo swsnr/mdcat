@@ -10,6 +10,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ### Changed
 - Update Github URL to <https://github.com/swsnr/mdcat>.
+- Update dependencies.
 
 ## [0.30.1] – 2022-11-29
 
