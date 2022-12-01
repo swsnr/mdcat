@@ -1,4 +1,9 @@
-targets = []
+targets = [
+  { triple = 'x86_64-unknown-linux-musl' },
+  { triple = 'x86_64-unknown-linux-gnu' },
+  { triple = 'x86_64-apple-darwin' },
+  { triple = 'x86_64-pc-windows-msvc' },
+]
 
 [advisories]
 db-path = "~/.cargo/advisory-db"
