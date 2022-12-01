@@ -8,6 +8,11 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Fixed
+- Fix release workflow to restore release artifacts (see [GH-218]).
+
+[GH-218]: https://github.com/swsnr/mdcat/pull/218
+
 ## [0.30.2] – 2022-12-01
 
 ### Changed

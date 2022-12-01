@@ -31,10 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3
-      - run: gem install asciidoctor
+      - run: sudo gem install asciidoctor
       - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
 
   cargo-deny:

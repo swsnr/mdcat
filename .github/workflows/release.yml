@@ -23,10 +23,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3
-      - run: gem install asciidoctor
+      - run: sudo gem install asciidoctor
+        if: "!contains(matrix.target, 'windows')"
       - run: sudo apt-get install musl-tools
         if: contains(matrix.target, 'linux-musl')
       - shell: bash
