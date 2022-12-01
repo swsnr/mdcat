@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [0.30.2] – 2022-12-01
+
 ### Changed
 - Update Github URL to <https://github.com/swsnr/mdcat>.
 - Update dependencies.
@@ -579,7 +581,8 @@ To publish a new release run `scripts/release` from the project directory.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.1...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.2...HEAD
+[0.30.2]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.1...mdcat-0.30.2
 [0.30.1]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.0...mdcat-0.30.1
 [0.30.0]: https://github.com/swsnr/mdcat/compare/mdcat-0.29.0...mdcat-0.30.0
 [0.29.0]: https://github.com/swsnr/mdcat/compare/mdcat-0.28.0...mdcat-0.29.0
