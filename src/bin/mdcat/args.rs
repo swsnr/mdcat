@@ -9,7 +9,7 @@ use clap::ValueHint;
 fn after_help() -> &'static str {
     "See 'man 1 mdcat' for more information.
 
-Report issues to <https://github.com/lunaryorn/mdcat>."
+Report issues to <https://github.com/swsnr/mdcat>."
 }
 
 fn long_version() -> &'static str {

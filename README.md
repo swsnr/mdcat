@@ -96,10 +96,10 @@ Run a **debug build** of `mdcat` with `$MDCAT_LOG=trace` for complete tracing in
 - [ ] CommonMark extensions: Tables [#2].
 - [ ] Ignore soft wraps and wrap inline text a column limit instead [#4].
 
-[#1]: https://github.com/lunaryorn/mdcat/issues/1
-[#2]: https://github.com/lunaryorn/mdcat/issues/2
-[#3]: https://github.com/lunaryorn/mdcat/issues/3
-[#4]: https://github.com/lunaryorn/mdcat/issues/4
+[#1]: https://github.com/swsnr/mdcat/issues/1
+[#2]: https://github.com/swsnr/mdcat/issues/2
+[#3]: https://github.com/swsnr/mdcat/issues/3
+[#4]: https://github.com/swsnr/mdcat/issues/4
 
 ## License
 

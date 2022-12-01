@@ -36,7 +36,7 @@ pub struct Osc8Links;
 /// * or a IPv4/IPv6 loopback address.
 ///
 /// [OSC 8]: https://git.io/vd4ee
-/// [gethostname]: https://github.com/lunaryorn/gethostname.rs
+/// [gethostname]: https://github.com/swsnr/gethostname.rs
 fn url_needs_explicit_host(url: &Url) -> bool {
     url.scheme() == "file"
         && match url.host() {
