@@ -17,7 +17,10 @@ package_windows() {
     local archive_file
     archive_file="${ARCHIVE_NAME}.zip"
     mv LICENSE LICENSE.txt
-    7z a "${archive_file}" "./target/${TARGET}/release/mdcat.exe" ./README.md ./CHANGELOG.md ./LICENSE.txt "${OUTDIR}/completions" ./mdcat.1.adoc
+    7z a "${archive_file}" \
+        "./target/${TARGET}/release/mdcat.exe" \
+        ./README.md ./CHANGELOG.md ./LICENSE.txt ./mdcat.1.adoc \
+        "${OUTDIR}/completions"
     if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
         echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"
         echo "name=${ARCHIVE_NAME}.zip" >>"${GITHUB_OUTPUT}"
@@ -32,9 +35,11 @@ package_unix() {
     pkg_dir=$(mktemp -d)
 
     mkdir "${pkg_dir}/${ARCHIVE_NAME}"
-    cp README.md CHANGELOG.md LICENSE "target/${TARGET}/release/mdcat" "${pkg_dir}/${ARCHIVE_NAME}"
-    cp -r "${OUTDIR}/completions" "${pkg_dir}/${ARCHIVE_NAME}"
-    cp "${OUTDIR}/mdcat.1" "${pkg_dir}/${ARCHIVE_NAME}"
+    cp -r \
+        README.md CHANGELOG.md LICENSE \
+        "target/${TARGET}/release/mdcat" \
+        "${OUTDIR}/mdcat.1" "${OUTDIR}/completions" \
+        "${pkg_dir}/${ARCHIVE_NAME}"
     tar -czf "${PWD}/${archive_file}" -C "${pkg_dir}" "${ARCHIVE_NAME}"
     echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"
     echo "name=${ARCHIVE_NAME}.tar.gz" >>"${GITHUB_OUTPUT}"
