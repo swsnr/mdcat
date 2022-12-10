@@ -9,6 +9,7 @@
 use anyhow::{anyhow, Context, Result};
 use std::fs::File;
 use std::io::prelude::*;
+use std::sync::Arc;
 use ureq::AgentBuilder;
 use url::Url;
 
@@ -58,6 +59,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
         .map_or(AgentBuilder::new(), |proxy| {
             AgentBuilder::new().proxy(proxy)
         })
+        .tls_connector(Arc::new(native_tls::TlsConnector::new()?))
         .build()
         .request_url("GET", url)
         .set("User-Agent", concat!("mdcat/", env!("CARGO_PKG_VERSION")))
