@@ -42,7 +42,7 @@ terminal_size = "0.2.1"
 [dev-dependencies]
 pretty_assertions = "1.2.1"
 lazy_static = "1.4.0"
-test-generator = "0.3.0"
+test-generator = "0.3.1"
 
 [build-dependencies]
 # To generate completions during build

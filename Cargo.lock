@@ -1160,9 +1160,9 @@ dependencies = [
 
 [[package]]
 name = "test-generator"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea97be90349ab3574f6e74d1566e1c5dd3a4bc74b89f4af4cc10ca010af103c0"
+checksum = "5b23be2add79223226e1cb6446cb3e37506a5927089870687a0f1149bb7a073a"
 dependencies = [
  "glob",
  "proc-macro2 0.4.30",
