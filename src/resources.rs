@@ -138,7 +138,9 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
                     .with_context(|| format!("Failed to read from file at {url}"))?;
 
                 if RESOURCE_READ_LIMIT < buffer.len() as u64 {
-                    Err(anyhow!("Contents of {url} exceeded {RESOURCE_READ_LIMIT}, rejected",))
+                    Err(anyhow!(
+                        "Contents of {url} exceeded {RESOURCE_READ_LIMIT}, rejected",
+                    ))
                 } else {
                     Ok(buffer)
                 }
@@ -146,7 +148,9 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
             Err(_) => Err(anyhow!("Cannot convert URL {url} to file path")),
         },
         "http" | "https" => fetch_http(url),
-        _ => Err(anyhow!("Cannot read from URL {url}, protocol not supported",)),
+        _ => Err(anyhow!(
+            "Cannot read from URL {url}, protocol not supported",
+        )),
     }
 }
 
