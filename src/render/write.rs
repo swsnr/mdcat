@@ -108,12 +108,12 @@ pub fn write_link_refs<W: Write>(
     Ok(())
 }
 
-pub fn write_start_code_block<'a, W: Write>(
+pub fn write_start_code_block<W: Write>(
     writer: &mut W,
     settings: &Settings,
     indent: u16,
     style: Style,
-    block_kind: CodeBlockKind<'a>,
+    block_kind: CodeBlockKind<'_>,
     theme: &Theme,
 ) -> Result<StackedState> {
     write_indent(writer, indent)?;
