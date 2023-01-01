@@ -62,8 +62,7 @@ mod cli {
         // We failed to read the first file but still printed the second.
         assert!(
             stderr.contains("Error: does-not-exist:") && stderr.contains("(os error 2)"),
-            "Stderr: {}",
-            stderr
+            "Stderr: {stderr}",
         );
         assert!(stdout.contains("CommonMark sample document"));
     }
@@ -76,8 +75,7 @@ mod cli {
         // We failed to read the first file and exited early, so nothing was printed at all
         assert!(
             stderr.contains("Error: does-not-exist:") && stderr.contains("(os error 2)"),
-            "Stderr: {}",
-            stderr
+            "Stderr: {stderr}",
         );
         assert!(output.stdout.is_empty());
     }

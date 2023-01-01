@@ -66,7 +66,7 @@ impl Environment {
             .map_err(|raw| {
                 Error::new(
                     ErrorKind::InvalidData,
-                    format!("gethostname() returned invalid unicode data: {:?}", raw),
+                    format!("gethostname() returned invalid unicode data: {raw:?}"),
                 )
             })
             .map(|hostname| Environment { base_url, hostname })

@@ -270,7 +270,7 @@ pub fn write_event<'a, W: Write>(
                     indent + 2
                 }
                 ListItemKind::Ordered(no) => {
-                    write!(writer, "{:>2}. ", no)?;
+                    write!(writer, "{no:>2}. ")?;
                     indent + 4
                 }
             };
@@ -552,7 +552,7 @@ pub fn write_event<'a, W: Write>(
                     LinkCapability::Osc8(ref osc8) => {
                         let url = if let LinkType::Email = link_type {
                             // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
-                            Url::parse(&format!("mailto:{}", target)).ok()
+                            Url::parse(&format!("mailto:{target}")).ok()
                         } else {
                             environment.resolve_reference(&target)
                         };
@@ -599,7 +599,7 @@ pub fn write_event<'a, W: Write>(
                 writer,
                 &settings.terminal_capabilities,
                 &attrs.style.fg(Colour::Blue),
-                format!("[{}]", index),
+                format!("[{index}]"),
             )?;
             stack.pop().and_data(data).ok()
         }
@@ -712,7 +712,7 @@ pub fn write_event<'a, W: Write>(
                     // Regardless of text style always colour the reference to make clear it points to
                     // an image
                     &attrs.style.fg(Colour::Purple),
-                    format!("[{}]", index),
+                    format!("[{index}]"),
                 )?;
                 stack.pop().and_data(data).ok()
             }
@@ -724,13 +724,12 @@ pub fn write_event<'a, W: Write>(
 
         // Impossible events
         (s, e) => panic!(
-            "Event {:?} impossible in state {:?}
+            "Event {e:?} impossible in state {s:?}
 
 Please do report an issue at <https://github.com/swsnr/mdcat/issues/new> including
 
 * a copy of this message, and
 * the markdown document which caused this error.",
-            e, s
         ),
     }
 }
@@ -759,7 +758,7 @@ pub fn finish<'a, W: Write>(
             Ok(())
         }
         _ => {
-            panic!("Must finish in state TopLevel but got: {:?}", state);
+            panic!("Must finish in state TopLevel but got: {state:?}");
         }
     }
 }

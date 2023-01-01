@@ -76,7 +76,7 @@ impl ITerm2Images {
         let contents = read_url(url, access)?;
         if magic::is_svg(&contents) {
             svg::render_svg(&contents)
-                .with_context(|| format!("Failed to render SVG at URL {}", url))
+                .with_context(|| format!("Failed to render SVG at URL {url}"))
         } else {
             Ok(contents)
         }

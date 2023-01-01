@@ -74,7 +74,7 @@ impl Osc8Links {
     }
 
     fn set_link<W: Write>(&self, writer: &mut W, destination: &str) -> Result<()> {
-        write_osc(writer, &format!("8;;{}", destination))
+        write_osc(writer, &format!("8;;{destination}"))
     }
 }
 

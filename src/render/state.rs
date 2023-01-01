@@ -271,11 +271,10 @@ impl StateStack {
     pub(crate) fn push(mut self, state: StackedState) -> StateStack {
         if MAX_STATES <= self.states.len() {
             panic!(
-                "More than {} levels of nesting reached.
+                "More than {MAX_STATES} levels of nesting reached.
 
 Report an issue to https://github.com/swsnr/mdcat/issues
 including the document causing this panic.",
-                MAX_STATES
             )
         }
         self.states.push(state);

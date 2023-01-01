@@ -151,7 +151,7 @@ fn main() {
                         process_file(filename, &settings, &mut output)
                             .map(|_| code)
                             .or_else(|error| {
-                                eprintln!("Error: {}: {}", filename, error);
+                                eprintln!("Error: {filename}: {error}");
                                 if args.fail_fast {
                                     Err(error)
                                 } else {
@@ -162,7 +162,7 @@ fn main() {
                     .unwrap_or(1)
             }
             Err(error) => {
-                eprintln!("Error: {:#}", error);
+                eprintln!("Error: {error:#}");
                 128
             }
         };

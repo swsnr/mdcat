@@ -101,7 +101,7 @@ impl Output {
                         .stdin(Stdio::piped())
                         .spawn()
                         .with_context(|| {
-                            format!("Failed to spawn pager {} with args {:?}", command, args)
+                            format!("Failed to spawn pager {command} with args {args:?}")
                         })
                         .map(Output::Pager)
                 }

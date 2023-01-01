@@ -55,7 +55,7 @@ pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
             (0x26, 0x8b, 0xd2) => ansi_style.foreground = Some(Colour::Blue),
             (0x2a, 0xa1, 0x98) => ansi_style.foreground = Some(Colour::Cyan),
             (0x85, 0x99, 0x00) => ansi_style.foreground = Some(Colour::Green),
-            (r, g, b) => panic!("Unexpected RGB colour: #{:2>0x}{:2>0x}{:2>0x}", r, g, b),
+            (r, g, b) => panic!("Unexpected RGB colour: #{r:2>0x}{g:2>0x}{b:2>0x}"),
         };
         let font = style.font_style;
         ansi_style.is_bold = font.contains(FontStyle::BOLD);

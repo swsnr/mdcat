@@ -126,12 +126,12 @@ impl KittyImages {
         let image = if magic::is_svg(&contents) {
             image::load_from_memory(
                 &render_svg(&contents)
-                    .with_context(|| format!("Failed to render SVG at {} to PNG", url))?,
+                    .with_context(|| format!("Failed to render SVG at {url} to PNG"))?,
             )
-            .with_context(|| format!("Failed to load SVG rendered from {}", url))?
+            .with_context(|| format!("Failed to load SVG rendered from {url}"))?
         } else {
             image::load_from_memory(&contents)
-                .with_context(|| format!("Failed to load image from URL {}", url))?
+                .with_context(|| format!("Failed to load image from URL {url}"))?
         };
 
         if magic::is_png(&contents) && PixelSize::from_xy(image.dimensions()) <= terminal_size {

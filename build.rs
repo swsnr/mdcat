@@ -55,11 +55,11 @@ fn main() {
 
     println!("cargo:rerun-if-changed=src/bin/mdcat/args.rs");
     if let Err(error) = gen_completions(&out_dir) {
-        println!("cargo:warning=Failed to build completions: {}", error);
+        println!("cargo:warning=Failed to build completions: {error}");
     }
 
     println!("cargo:rerun-if-changed=mdcat.1.adoc");
     if let Err(error) = build_manpage(&out_dir) {
-        println!("cargo:warning=Failed to build manpage: {}", error);
+        println!("cargo:warning=Failed to build manpage: {error}");
     }
 }

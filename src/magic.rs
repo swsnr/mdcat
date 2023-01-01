@@ -86,7 +86,7 @@ fn get_mimetype_for_buffer_with_file(buffer: &[u8]) -> Result<Mime> {
             .trim();
         let detected_type = stdout
             .parse::<Mime>()
-            .with_context(|| format!("Failed to parse mime type from output: {}", stdout))?;
+            .with_context(|| format!("Failed to parse mime type from output: {stdout}"))?;
         Ok(detected_type)
     } else {
         Err(anyhow!(

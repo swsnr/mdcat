@@ -62,7 +62,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
         .request_url("GET", url)
         .set("User-Agent", concat!("mdcat/", env!("CARGO_PKG_VERSION")))
         .call()
-        .with_context(|| format!("Failed to GET {}", url))?;
+        .with_context(|| format!("Failed to GET {url}"))?;
 
     match response.header("Content-Length") {
         // The server gave us no content size so read until the end of the stream, but not more than our read limit.
@@ -74,13 +74,11 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
                 .into_reader()
                 .take(RESOURCE_READ_LIMIT + 1)
                 .read_to_end(&mut buffer)
-                .with_context(|| format!("Failed to read from {}", url))?;
+                .with_context(|| format!("Failed to read from {url}"))?;
 
             if RESOURCE_READ_LIMIT < buffer.len() as u64 {
                 Err(anyhow!(
-                    "Contents of {} exceeded {}, rejected",
-                    url,
-                    RESOURCE_READ_LIMIT
+                    "Contents of {url} exceeded {RESOURCE_READ_LIMIT}, rejected",
                 ))
             } else {
                 Ok(buffer)
@@ -90,13 +88,10 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
         Some(value) => {
             let size = value
                 .parse::<usize>()
-                .with_context(|| format!("{} reports invalid content size {}", url, value))?;
+                .with_context(|| format!("{url} reports invalid content size {value}"))?;
             if RESOURCE_READ_LIMIT < size as u64 {
                 Err(anyhow!(
-                    "{} reports size {} which exceeds limit {}, refusing to read",
-                    url,
-                    size,
-                    RESOURCE_READ_LIMIT
+                    "{url} reports size {size} which exceeds limit {RESOURCE_READ_LIMIT}, refusing to read",
                 ))
             } else {
                 let mut buffer = vec![0; size];
@@ -105,7 +100,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
                     // Just to be on the safe side limit the read operation explicitly, just in case we got the above check wrong
                     .take(RESOURCE_READ_LIMIT)
                     .read_exact(buffer.as_mut_slice())
-                    .with_context(|| format!("Failed to read from {}", url))?;
+                    .with_context(|| format!("Failed to read from {url}"))?;
 
                 Ok(buffer)
             }
@@ -136,29 +131,22 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
             Ok(path) => {
                 let mut buffer = Vec::new();
                 File::open(path)
-                    .with_context(|| format!("Failed to open file at {}", url))?
+                    .with_context(|| format!("Failed to open file at {url}"))?
                     // Read a byte more than the limit differentiate an expected EOF from hitting the limit
                     .take(RESOURCE_READ_LIMIT + 1)
                     .read_to_end(&mut buffer)
-                    .with_context(|| format!("Failed to read from file at {}", url))?;
+                    .with_context(|| format!("Failed to read from file at {url}"))?;
 
                 if RESOURCE_READ_LIMIT < buffer.len() as u64 {
-                    Err(anyhow!(
-                        "Contents of {} exceeded {}, rejected",
-                        url,
-                        RESOURCE_READ_LIMIT
-                    ))
+                    Err(anyhow!("Contents of {url} exceeded {RESOURCE_READ_LIMIT}, rejected",))
                 } else {
                     Ok(buffer)
                 }
             }
-            Err(_) => Err(anyhow!("Cannot convert URL {} to file path", url)),
+            Err(_) => Err(anyhow!("Cannot convert URL {url} to file path")),
         },
         "http" | "https" => fetch_http(url),
-        _ => Err(anyhow!(
-            "Cannot read from URL {}, protocol not supported",
-            url,
-        )),
+        _ => Err(anyhow!("Cannot read from URL {url}, protocol not supported",)),
     }
 }
 
@@ -210,7 +198,7 @@ mod tests {
             .parse::<url::Url>()
             .unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
-        assert!(result.is_err(), "Unexpected success: {:?}", result);
+        assert!(result.is_err(), "Unexpected success: {result:?}");
         let error = format!("{:#}", result.unwrap_err());
         assert_eq!(error, "Failed to GET https://eu.httpbin.org/status/404: https://eu.httpbin.org/status/404: status code 404")
     }
@@ -221,7 +209,7 @@ mod tests {
             .parse::<url::Url>()
             .unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
-        assert!(result.is_ok(), "Unexpected error: {:?}", result);
+        assert!(result.is_ok(), "Unexpected error: {result:?}");
         assert_eq!(result.unwrap().len(), 100);
     }
 
@@ -231,7 +219,7 @@ mod tests {
             .parse::<url::Url>()
             .unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
-        assert!(result.is_err(), "Unexpected success: {:?}", result);
+        assert!(result.is_err(), "Unexpected success: {result:?}");
         let error = format!("{:#}", result.unwrap_err());
         assert_eq!(error, "https://eu.httpbin.org/response-headers?content-length=115343400 reports size 115343400 which exceeds limit 104857600, refusing to read")
     }
