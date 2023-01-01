@@ -38,13 +38,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    # Check default build
     - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        # The action uses --all-features by default, but we'd only like to check default
+        arguments: ""
+    # Check the static build for lib musl
+    - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        arguments: "--no-default-features --features static"
 
   test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         target:
+          # Default linux build
+          - x86_64-unknown-linux-gnu
           # Statically linked linux builds
           - x86_64-unknown-linux-musl
           # macOS
@@ -53,8 +63,11 @@ jobs:
           - x86_64-pc-windows-msvc
         rust: [stable, beta]
         include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
+            cargo_opts: "--no-default-features --features static"
           - target: x86_64-apple-darwin
             os: macOS-latest
           - target: x86_64-pc-windows-msvc
@@ -65,6 +78,8 @@ jobs:
           - target: x86_64-apple-darwin
             rust: beta
           - target: x86_64-pc-windows-msvc
+            rust: beta
+          - target: x86_64-pc-windows-musl
             rust: beta
     steps:
       - uses: actions/checkout@v3
@@ -77,7 +92,7 @@ jobs:
           targets: ${{ matrix.target }}
           components: clippy
       # Build, including tests, to report build failures and measure build time separately from tests
-      - run: cargo build --all-targets --locked --target ${{ matrix.target }}
-      - run: cargo clippy --all-targets --locked --target ${{ matrix.target }}
-      - run: cargo test --locked --target ${{ matrix.target }}
-      - run: cargo run --target ${{ matrix.target }} -- sample/common-mark.md
+      - run: cargo build --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo clippy --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo test --locked --target ${{ matrix.target }}  ${{ matrix.cargo_opts }}
+      - run: cargo run --target ${{ matrix.target }} ${{ matrix.cargo_opts }} -- sample/common-mark.md
