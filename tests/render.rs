@@ -13,15 +13,15 @@
 
 use std::path::Path;
 
+use anyhow::{Context, Result};
+use glob::glob;
+use lazy_static::lazy_static;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
-use test_generator::test_resources;
-
-use anyhow::{Context, Result};
-use lazy_static::lazy_static;
-use mdcat::Environment;
 use url::Url;
+
+use mdcat::Environment;
 
 lazy_static! {
     static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
@@ -122,7 +122,7 @@ fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
         })
         .unwrap()
         .with_extension("");
-    let expected_file = golden_file_directory.as_ref().join(basename);
+    let expected_file = golden_file_directory.as_ref().join(&basename);
 
     if std::env::var_os("MDCAT_UPDATE_GOLDEN_FILES").is_some() {
         std::fs::write(&expected_file, &actual)
@@ -137,27 +137,31 @@ fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
         let expected = std::fs::read_to_string(&expected_file)
             .with_context(|| format!("Failed to read golden file at {}", expected_file.display()))
             .unwrap();
-        assert_eq!(actual, expected);
+        assert_eq!(actual, expected, "Test case: {}", basename.display());
     }
 }
 
 /// Test basic rendering.
-#[test_resources("tests/render/md/*/*.md")]
-fn ansi_only(markdown_file: &str) {
-    test_with_golden_file(
-        markdown_file,
-        "tests/render/golden/ansi-only",
-        &SETTINGS_ANSI_ONLY,
-    )
+#[test]
+fn ansi_only() {
+    for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
+        test_with_golden_file(
+            markdown_file.unwrap(),
+            "tests/render/golden/ansi-only",
+            &SETTINGS_ANSI_ONLY,
+        )
+    }
 }
 
 /// Test the full shebang, but not on Windows, since the iTerm2 backend has some unimplemented stuff on Windows.
-#[test_resources("tests/render/md/*/*.md")]
 #[cfg(not(windows))]
-fn iterm2(markdown_file: &str) {
-    test_with_golden_file(
-        markdown_file,
-        "tests/render/golden/iterm2",
-        &SETTINGS_ITERM2,
-    )
+#[test]
+fn iterm2() {
+    for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
+        test_with_golden_file(
+            markdown_file.unwrap(),
+            "tests/render/golden/iterm2",
+            &SETTINGS_ITERM2,
+        )
+    }
 }
