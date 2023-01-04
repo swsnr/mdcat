@@ -14,6 +14,7 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
+            cargo_opts: "--no-default-features --features static"
           - os: macOS-latest
             target: x86_64-apple-darwin
           - os: windows-latest
@@ -30,7 +31,7 @@ jobs:
       - shell: bash
         id: build
         run: |
-            OUTDIR="$(cargo build --locked --target '${{ matrix.target }}' --release --message-format=json-render-diagnostics |
+            OUTDIR="$(cargo build --locked --target '${{ matrix.target }}' ${{ matrix.cargo_opts }} --release --message-format=json-render-diagnostics |
                 jq -r 'select(.out_dir) | select(.package_id | startswith("mdcat ")) | .out_dir')"
             echo "outdir=$OUTDIR" >>"$GITHUB_OUTPUT"
       - run: strip 'target/${{ matrix.target }}/release/mdcat'

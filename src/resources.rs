@@ -7,10 +7,39 @@
 //! Access to resources referenced from markdown documents.
 
 use anyhow::{anyhow, Context, Result};
+use once_cell::sync::Lazy;
+use reqwest::blocking::{Client, ClientBuilder};
 use std::fs::File;
 use std::io::prelude::*;
-use ureq::AgentBuilder;
+use std::time::Duration;
+use tracing::{event, Level};
 use url::Url;
+
+static CLIENT: Lazy<Option<Client>> = Lazy::new(|| {
+    ClientBuilder::new()
+        // Use env_proxy to extract proxy information from the environment; it's more flexible and
+        // accurate than reqwest's built-in env proxy support.
+        .proxy(reqwest::Proxy::custom(|url| {
+            env_proxy::for_url(url).to_url()
+        }))
+        // Use somewhat aggressive timeouts to avoid blocking rendering for long; we have graceful
+        // fallbacks since we have to support terminals without image capabilities anyways.
+        .connect_timeout(Some(Duration::from_secs(1)))
+        .timeout(Some(Duration::from_secs(1)))
+        .referer(false)
+        .user_agent(concat!("mdcat/", env!("CARGO_PKG_VERSION")))
+        .build()
+        .map_err(|error| {
+            event!(
+                Level::ERROR,
+                ?error,
+                "Failed to initialize HTTP client: {}",
+                error
+            );
+            error
+        })
+        .ok()
+});
 
 /// What kind of resources mdcat may access when rendering.
 ///
@@ -44,34 +73,21 @@ fn is_local(url: &Url) -> bool {
 static RESOURCE_READ_LIMIT: u64 = 104_857_600;
 
 fn fetch_http(url: &Url) -> Result<Vec<u8>> {
-    let proxy = match env_proxy::for_url(url).to_string() {
-        None => None,
-        Some(proxy_url) => {
-            let proxy = ureq::Proxy::new(&proxy_url).with_context(|| {
-                format!("Failed to set proxy for URL {} to {}", url, &proxy_url)
-            })?;
-            Some(proxy)
-        }
-    };
+    let response = CLIENT
+        .as_ref()
+        .with_context(|| "HTTP client not available".to_owned())?
+        .get(url.clone())
+        .send()
+        .with_context(|| format!("Failed to GET {url}"))?
+        .error_for_status()?;
 
-    let response = proxy
-        .map_or(AgentBuilder::new(), |proxy| {
-            AgentBuilder::new().proxy(proxy)
-        })
-        .build()
-        .request_url("GET", url)
-        .set("User-Agent", concat!("mdcat/", env!("CARGO_PKG_VERSION")))
-        .call()
-        .with_context(|| format!("Failed to GET {url}"))?;
-
-    match response.header("Content-Length") {
+    match response.content_length() {
         // The server gave us no content size so read until the end of the stream, but not more than our read limit.
         None => {
             // An educated guess for a good capacity,
             let mut buffer = Vec::with_capacity(1_048_576);
             // We read one byte more than our limit, so that we can differentiate between a regular EOF and one from hitting the limit.
             response
-                .into_reader()
                 .take(RESOURCE_READ_LIMIT + 1)
                 .read_to_end(&mut buffer)
                 .with_context(|| format!("Failed to read from {url}"))?;
@@ -85,18 +101,14 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
             }
         }
         // If we've got a content-size use it to read exactly as many bytes as the server told us to do (within limits)
-        Some(value) => {
-            let size = value
-                .parse::<usize>()
-                .with_context(|| format!("{url} reports invalid content size {value}"))?;
-            if RESOURCE_READ_LIMIT < size as u64 {
+        Some(size) => {
+            if RESOURCE_READ_LIMIT < size {
                 Err(anyhow!(
                     "{url} reports size {size} which exceeds limit {RESOURCE_READ_LIMIT}, refusing to read",
                 ))
             } else {
-                let mut buffer = vec![0; size];
+                let mut buffer = vec![0; size as usize];
                 response
-                    .into_reader()
                     // Just to be on the safe side limit the read operation explicitly, just in case we got the above check wrong
                     .take(RESOURCE_READ_LIMIT)
                     .read_exact(buffer.as_mut_slice())
@@ -203,8 +215,10 @@ mod tests {
             .unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {result:?}");
-        let error = format!("{:#}", result.unwrap_err());
-        assert_eq!(error, "Failed to GET https://eu.httpbin.org/status/404: https://eu.httpbin.org/status/404: status code 404")
+        assert_eq!(
+            format!("{:#}", result.unwrap_err()),
+            "HTTP status client error (404 Not Found) for url (https://eu.httpbin.org/status/404)"
+        )
     }
 
     #[test]
