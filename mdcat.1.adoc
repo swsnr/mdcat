@@ -90,6 +90,9 @@ This is the default when run as `mdcat`.
 --no-colour::
     Disable all colours and other styles.
 
+--ansi::
+    Skip terminal detection and only use ANSI formatting.
+
 --columns::
     Maximum number of columns to use for text output.
     Defaults to the size of the underlying terminal.

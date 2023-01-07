@@ -10,6 +10,7 @@ To publish a new release run `scripts/release` from the project directory.
 
 ### Added
 - Add `--detect-terminal` to print the name of the detected terminal program (see [GH-232]).
+- Add `--ansi` to skip terminal detection and use ANSI-formatting only (see [GH-232]).
 
 ### Changed
 

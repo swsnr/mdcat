@@ -101,7 +101,7 @@ pub struct CommonArgs {
     /// Print detected terminal name and exit.
     #[arg(long = "detect-terminal")]
     pub detect_and_exit: bool,
-    /// Limit to standard ANSI formatting.
-    #[arg(long, conflicts_with = "no_colour", hide = true)]
+    /// Skip terminal detection and only use ANSI formatting.
+    #[arg(long = "ansi", conflicts_with = "no_colour")]
     pub ansi_only: bool,
 }
