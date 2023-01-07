@@ -8,6 +8,8 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+## [1.0.0] – 2023-01-07
+
 ### Added
 - Add `--detect-terminal` to print the name of the detected terminal program (see [GH-232]).
 - Add `--ansi` to skip terminal detection and use ANSI-formatting only (see [GH-232]).
@@ -608,7 +610,8 @@ To publish a new release run `scripts/release` from the project directory.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.3...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-1.0.0...HEAD
+[1.0.0]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.3...mdcat-1.0.0
 [0.30.3]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.2...mdcat-0.30.3
 [0.30.2]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.1...mdcat-0.30.2
 [0.30.1]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.0...mdcat-0.30.1
