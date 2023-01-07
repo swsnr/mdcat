@@ -4,28 +4,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-//! The iTerm2 terminal.
+//! Support for specific iTerm2 features.
 //!
-//! iTerm2 is a powerful macOS terminal emulator with many formatting
-//! features, including images and inline links.
-//!
-//! See <https://www.iterm2.com> for more information.
+//! This module provides the iTerm2 marks and the iTerm2 image protocol.
 
-use super::osc::write_osc;
 use crate::resources::read_url;
+use crate::terminal::osc::write_osc;
 use crate::{magic, ResourceAccess};
 use anyhow::{Context, Result};
 use std::io::{self, Write};
 use url::Url;
 
-use super::super::svg;
-
-/// Whether we run inside iTerm2 or not.
-pub fn is_iterm2() -> bool {
-    std::env::var("TERM_PROGRAM")
-        .map(|value| value.contains("iTerm.app"))
-        .unwrap_or(false)
-}
+use crate::svg;
 
 /// Iterm2 marks.
 #[derive(Debug, Copy, Clone)]

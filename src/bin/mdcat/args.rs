@@ -98,10 +98,10 @@ pub struct CommonArgs {
     /// Exit immediately if any error occurs processing an input file.
     #[arg(long = "fail")]
     pub fail_fast: bool,
-    /// Only detect the terminal type and exit.
-    #[arg(long, hide = true)]
-    pub detect_only: bool,
-    /// Limit to standard ANSI formatting.
-    #[arg(long, conflicts_with = "no_colour", hide = true)]
+    /// Print detected terminal name and exit.
+    #[arg(long = "detect-terminal")]
+    pub detect_and_exit: bool,
+    /// Skip terminal detection and only use ANSI formatting.
+    #[arg(long = "ansi", conflicts_with = "no_colour")]
     pub ansi_only: bool,
 }

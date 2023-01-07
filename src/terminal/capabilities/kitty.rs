@@ -13,11 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! The kitty terminal.
-//!
-//! kitty is a fast, featureful, GPU based terminal emulator.
-//!
-//! See <https://sw.kovidgoyal.net/kitty/> for more information.
+//! Kitty terminal extensions.
 
 use crate::resources::read_url;
 use crate::svg::render_svg;
@@ -30,13 +26,6 @@ use image::{DynamicImage, GenericImageView};
 use std::io::Write;
 use std::str;
 use url::Url;
-
-/// Whether we run in Kitty or not.
-pub fn is_kitty() -> bool {
-    std::env::var("TERM")
-        .map(|value| value == "xterm-kitty")
-        .unwrap_or(false)
-}
 
 /// Provides access to printing images for kitty.
 #[derive(Debug, Copy, Clone)]

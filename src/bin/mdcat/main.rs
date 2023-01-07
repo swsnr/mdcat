@@ -21,8 +21,9 @@ use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
 use crate::output::Output;
+use mdcat::terminal::{TerminalProgram, TerminalSize};
+use mdcat::ResourceAccess;
 use mdcat::{Environment, Settings};
-use mdcat::{ResourceAccess, TerminalCapabilities, TerminalSize};
 
 mod args;
 mod output;
@@ -102,21 +103,17 @@ fn main() {
     let args = Args::parse().command;
     event!(target: "mdcat::main", Level::TRACE, ?args, "mdcat arguments");
 
-    let terminal_capabilities = if args.no_colour {
-        // If the user disabled colours assume a dumb terminal
-        TerminalCapabilities::none()
+    let terminal = if args.no_colour {
+        TerminalProgram::Dumb
     } else if args.paginate() || args.ansi_only {
         // A pager won't support any terminal-specific features
-        TerminalCapabilities::ansi()
+        TerminalProgram::Ansi
     } else {
-        TerminalCapabilities::detect()
+        TerminalProgram::detect()
     };
 
-    let size = TerminalSize::detect().unwrap_or_default();
-    let columns = args.columns.unwrap_or(size.columns);
-
-    if args.detect_only {
-        println!("Terminal: {}", terminal_capabilities.name);
+    if args.detect_and_exit {
+        println!("Terminal: {terminal}");
     } else {
         // On Windows 10 we need to enable ANSI term explicitly.
         #[cfg(windows)]
@@ -125,10 +122,13 @@ fn main() {
             ansi_term::enable_ansi_support().ok();
         }
 
+        let size = TerminalSize::detect().unwrap_or_default();
+        let columns = args.columns.unwrap_or(size.columns);
+
         let exit_code = match Output::new(args.paginate()) {
             Ok(mut output) => {
                 let settings = Settings {
-                    terminal_capabilities,
+                    terminal_capabilities: terminal.capabilities(),
                     terminal_size: TerminalSize { columns, ..size },
                     resource_access: if args.local_only {
                         ResourceAccess::LocalOnly

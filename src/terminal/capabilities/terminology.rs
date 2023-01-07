@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! [Terminology][] specific functions.
+//! Support for terminology extensions.
 //!
-//! [Terminology]: http://terminolo.gy
+//! This module implements the terminology image protocol.
 
-use super::TerminalSize;
+use crate::terminal::TerminalSize;
 use std::io::{Result, Write};
 use url::Url;
 

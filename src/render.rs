@@ -31,6 +31,7 @@ use state::*;
 use write::*;
 
 use crate::render::state::MarginControl::{Margin, NoMargin};
+use crate::terminal::capabilities::LinkCapability;
 pub use data::StateData;
 pub use state::State;
 pub use state::StateAndData;
@@ -607,7 +608,7 @@ pub fn write_event<'a, W: Write>(
         // Images
         (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
             let InlineAttrs { style, indent } = attrs;
-            use ImageCapability::*;
+            use crate::terminal::capabilities::ImageCapability::*;
             let resolved_link = environment.resolve_reference(&link);
             let image_state = match (settings.terminal_capabilities.image, resolved_link) {
                 (Some(Terminology(terminology)), Some(ref url)) => {
