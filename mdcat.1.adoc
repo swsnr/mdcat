@@ -28,17 +28,17 @@ If invoked as `mdless` automatically use a pager to display the output, see belo
 mdcat supports all basic CommonMark syntax plus a few extensions, highlights syntax in code blocks, and shows inline links and even inline images in some terminal programs.
 In iTerm2 it also adds jump marks for section headings.
 
-See <<Terminal support>> below for a list of supported terminal programs and their features.
+See section <<Terminal support>> below for a list of supported terminal programs and their features.
 
 === Terminal detection
 
-To enable formatting extensions such sa inline images, `mdcat` needs to detect the terminal program, by checking the following environment variables in the gven order:
+To enable formatting extensions such as inline images, `mdcat` needs to detect the terminal program, by checking the following environment variables in the given order:
 
 1. `$TERM`
 2. `$TERM_PROGRAM`
 3. `$TERMINOLOGY`
 
-See <<Environment>> below for a detailed description of each environment variable.
+See section <<Environment>> below for a detailed description of each environment variable.
 
 === Pagination
 
@@ -128,7 +128,7 @@ If run as `mdless` or if `--paginate` is given and the pager fails to start mdca
 
 TERM::
 
-    `mdcat` first checks this variable to identify the terminal program (see <<Terminal detection>>).
+    `mdcat` first checks this variable to identify the terminal program (see section <<Terminal detection>>).
 It understands the following values.
 +
     * `wezterm`: WezTerm.  Note that WezTerm sets `$TERM` to `xterm-256color` by default, and only uses `wezterm` for `$TERM` if explicitly configured to do so.
@@ -215,7 +215,7 @@ Unless `--no-colour` is given, mdcat translates CommonMark text into ANSI format
 It uses bold (SGR 1), italic (SGR 3) and strikethrough (SGR 9) formatting, and the standard 4-bit color sequences, as well as https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda[OSC 8] for hyperlinks.
 It does not use 8-bit or 24-bit color sequences, though this may change in future releases.
 
-Additionally, it uses proprietary escape code if it detects one of the following terminal emulators (see <<Terminal detection>> and <<Environment>> for details):
+Additionally, it uses proprietary escape code if it detects one of the following terminal emulators (see sections <<Terminal detection>> and <<Environment>> for details):
 
 * https://iterm2.com/[iTerm2]: Inline images (https://iterm2.com/documentation-images.html[iTerm2 protocol]) and
 https://iterm2.com/documentation-escape-codes.html[Marks].
