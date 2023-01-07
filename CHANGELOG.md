@@ -18,6 +18,7 @@ To publish a new release run `scripts/release` from the project directory.
     This implies that the default build now creates a binary linked against the system standard SSL library, i.e. openssl under Linux.
     A fully static build now requires `--no-default-features --features static` for `cargo build`.
 - Terminal detection always checks `$TERM` first and trusts its value if it denotes a specific terminal emulator (see [GH-232]).
+- Update all dependencies.
 
 ### Fixed
 
