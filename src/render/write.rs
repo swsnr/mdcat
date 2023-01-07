@@ -14,9 +14,9 @@ use syntect::parsing::{ParseState, ScopeStack};
 use crate::references::*;
 use crate::render::data::LinkReferenceDefinition;
 use crate::render::state::*;
-use crate::{
-    Environment, MarkCapability, Settings, StyleCapability, TerminalCapabilities, TerminalSize,
-};
+use crate::terminal::capabilities::{MarkCapability, StyleCapability, TerminalCapabilities};
+use crate::terminal::TerminalSize;
+use crate::{Environment, Settings};
 
 #[inline]
 pub fn write_indent<W: Write>(writer: &mut W, level: u16) -> Result<()> {
@@ -86,7 +86,7 @@ pub fn write_link_refs<W: Write>(
             // clickable.  This mostly helps images inside inline links which we had to write as
             // reference links because we can't nest inline links.
             if let Some(url) = environment.resolve_reference(&link.target) {
-                use crate::LinkCapability::*;
+                use crate::terminal::capabilities::LinkCapability::*;
                 match &capabilities.links {
                     Some(Osc8(links)) => {
                         links.set_link_url(writer, url, &environment.hostname)?;

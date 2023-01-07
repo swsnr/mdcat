@@ -841,6 +841,7 @@ dependencies = [
  "reqwest",
  "shell-words",
  "syntect",
+ "temp-env",
  "terminal_size",
  "tracing",
  "tracing-subscriber",
@@ -1532,6 +1533,15 @@ dependencies = [
  "serde_json",
  "thiserror",
  "walkdir",
+]
+
+[[package]]
+name = "temp-env"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a30d48359f77fbb6af3d7b928cc2d092e1dc90b44f397e979ef08ae15733ed65"
+dependencies = [
+ "once_cell",
 ]
 
 [[package]]

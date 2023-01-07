@@ -13,8 +13,15 @@ To publish a new release run `scripts/release` from the project directory.
 - Replace `ureq` with `reqwest` (see [GH-229]).
     This implies that the default build now creates a binary linked against the system standard SSL library, i.e. openssl under Linux.
     A fully static build now requires `--no-default-features --features static` for `cargo build`.
+- Terminal detection always checks `$TERM` first and trusts its value if it denotes a specific terminal emulator (see [GH-232]).
+
+### Fixed
+
+- Correctly detect kitty started from iTerm (see [GH-230] and [GH-232]).
 
 [GH-229]: https://github.com/swsnr/mdcat/pull/229
+[GH-230]: https://github.com/swsnr/mdcat/pull/230
+[GH-232]: https://github.com/swsnr/mdcat/pull/232
 
 ## [0.30.3] – 2022-12-01
 

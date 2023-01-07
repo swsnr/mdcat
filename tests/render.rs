@@ -21,19 +21,20 @@ use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use url::Url;
 
+use mdcat::terminal::TerminalProgram;
 use mdcat::Environment;
 
 lazy_static! {
     static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
     static ref SETTINGS_ANSI_ONLY: mdcat::Settings = mdcat::Settings {
-        terminal_capabilities: mdcat::TerminalCapabilities::ansi(),
-        terminal_size: mdcat::TerminalSize::default(),
+        terminal_capabilities: TerminalProgram::Ansi.capabilities(),
+        terminal_size: mdcat::terminal::TerminalSize::default(),
         resource_access: mdcat::ResourceAccess::LocalOnly,
         syntax_set: (*SYNTAX_SET).clone(),
     };
     static ref SETTINGS_ITERM2: mdcat::Settings = mdcat::Settings {
-        terminal_capabilities: mdcat::TerminalCapabilities::iterm2(),
-        terminal_size: mdcat::TerminalSize::default(),
+        terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
+        terminal_size: mdcat::terminal::TerminalSize::default(),
         resource_access: mdcat::ResourceAccess::LocalOnly,
         syntax_set: (*SYNTAX_SET).clone(),
     };

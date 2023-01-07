@@ -4,7 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use crate::{AnsiStyle, LinkCapability};
+use crate::terminal::capabilities::LinkCapability;
+use crate::terminal::AnsiStyle;
 use ansi_term::Style;
 use std::borrow::Borrow;
 use syntect::highlighting::HighlightState;

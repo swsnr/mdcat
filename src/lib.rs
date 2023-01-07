@@ -18,14 +18,15 @@ use tracing::instrument;
 
 // Expose some select things for use in main
 pub use crate::resources::ResourceAccess;
-pub use crate::terminal::*;
+use crate::terminal::capabilities::TerminalCapabilities;
+use crate::terminal::TerminalSize;
 use url::Url;
 
 mod magic;
 mod references;
 mod resources;
 mod svg;
-mod terminal;
+pub mod terminal;
 
 mod render;
 
@@ -143,6 +144,7 @@ mod tests {
         use pretty_assertions::assert_eq;
         use syntect::parsing::SyntaxSet;
 
+        use crate::terminal::TerminalProgram;
         use crate::*;
 
         use super::render_string;
@@ -153,7 +155,7 @@ mod tests {
                 &Settings {
                     resource_access: ResourceAccess::LocalOnly,
                     syntax_set: SyntaxSet::default(),
-                    terminal_capabilities: TerminalCapabilities::none(),
+                    terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),
                 },
             )
@@ -286,6 +288,7 @@ Hello Donald[2]
         use pretty_assertions::assert_eq;
         use syntect::parsing::SyntaxSet;
 
+        use crate::terminal::TerminalProgram;
         use crate::*;
 
         use super::render_string;
@@ -296,7 +299,7 @@ Hello Donald[2]
                 &Settings {
                     resource_access: ResourceAccess::LocalOnly,
                     syntax_set: SyntaxSet::default(),
-                    terminal_capabilities: TerminalCapabilities::none(),
+                    terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),
                 },
             )
