@@ -112,7 +112,7 @@ fn main() {
         TerminalProgram::detect()
     };
 
-    if args.detect_only {
+    if args.detect_and_exit {
         println!("Terminal: {terminal}");
     } else {
         // On Windows 10 we need to enable ANSI term explicitly.

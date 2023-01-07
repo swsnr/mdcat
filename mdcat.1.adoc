@@ -100,7 +100,10 @@ This is the default when run as `mdcat`.
 
 --fail::
     Fail immediately at the first FILE which fails to read.
-    By default mdcat continues with the next file.
+    By default, mdcat continues with the next file.
+
+--detect-terminal::
+    Detect the terminal program, print its name, and exit.
 
 -h::
 --help::

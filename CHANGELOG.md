@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Added
+- Add `--detect-terminal` to print the name of the detected terminal program (see [GH-232]).
+
 ### Changed
 
 - Replace `ureq` with `reqwest` (see [GH-229]).
