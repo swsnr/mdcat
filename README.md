@@ -72,6 +72,23 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * [Chocolatey]: `choco install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
+## Building
+
+Run `cargo build --release`.  The resulting `mdcat` executable links against the system's SSL library, i.e. openssl on Linux.
+To build a self-contained executable use `cargo build --features=static`; the resulting executable uses a pure Rust SSL implementation.
+It still uses the system's CA roots however.
+
+The build process also generates the following additional files in `$OUT_DIR`:
+
+* Completions for Bash, Zsh, Fish, and Powershell, for both `mdcat` and `mdless`, in `completions` sub-directory.
+* A `mdcat.1` manpage, build from `mdcat.1.adoc` with the `asciidoctor` command from [AsciiDoctor].
+  If `asciidoctor` is not found the build script prints a warning.
+
+These additional artifacts are included in the release builds.
+If you package mdcat you may want to include these files too.
+
+[AsciiDoctor]: https://asciidoctor.org/
+
 ## Requirements
 
 For image type detection either the `file` tool with support for `--brief` and `--mime-type` flags must be available in `$PATH`.
