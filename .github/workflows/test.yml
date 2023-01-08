@@ -32,7 +32,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: sudo gem install asciidoctor
-      - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
+      - run: asciidoctor -b manpage -a reproducible --warnings mdcat.1.adoc
+      - run: man -l --warnings=w --pager=cat mdcat.1
+        env:
+          MANWIDTH: 80
 
   cargo-deny:
     runs-on: ubuntu-latest
