@@ -38,7 +38,14 @@ fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
         .arg("-o")
         .arg(target_file)
         .arg("mdcat.1.adoc");
-    let result = command.spawn()?.wait()?;
+    let mut process = command.spawn().map_err(|err| match err.kind() {
+        ErrorKind::NotFound => Error::new(
+            ErrorKind::NotFound,
+            "asciidoctor not found; please install asciidoctor to build the manpage!",
+        ),
+        _ => err,
+    })?;
+    let result = process.wait()?;
 
     if result.success() {
         Ok(())
