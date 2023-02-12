@@ -8,6 +8,9 @@ To publish a new release run `scripts/release` from the project directory.
 
 ## [Unreleased]
 
+### Changed
+- Update all dependencies.
+
 ## [1.0.0] – 2023-01-07
 
 ### Added

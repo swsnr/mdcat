@@ -8,14 +8,17 @@
 //!
 //! This module provides the iTerm2 marks and the iTerm2 image protocol.
 
-use crate::resources::read_url;
-use crate::terminal::osc::write_osc;
-use crate::{magic, ResourceAccess};
-use anyhow::{Context, Result};
 use std::io::{self, Write};
+
+use anyhow::{Context, Result};
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
 use url::Url;
 
+use crate::resources::read_url;
 use crate::svg;
+use crate::terminal::osc::write_osc;
+use crate::{magic, ResourceAccess};
 
 /// Iterm2 marks.
 #[derive(Debug, Copy, Clone)]
@@ -46,12 +49,12 @@ impl ITerm2Images {
         write_osc(
             writer,
             &name.map_or_else(
-                || format!("1337;inline=1:{}", base64::encode(contents)),
+                || format!("1337;inline=1:{}", STANDARD.encode(contents)),
                 |name| {
                     format!(
                         "1337;File=name={};inline=1:{}",
-                        base64::encode(name.as_bytes()),
-                        base64::encode(contents)
+                        STANDARD.encode(name.as_bytes()),
+                        STANDARD.encode(contents)
                     )
                 },
             ),

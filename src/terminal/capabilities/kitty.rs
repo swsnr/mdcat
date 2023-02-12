@@ -14,18 +14,21 @@
 // limitations under the License.
 
 //! Kitty terminal extensions.
+use std::io::Write;
+use std::str;
+
+use anyhow::{Context, Result};
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
+use image::imageops::FilterType;
+use image::ColorType;
+use image::{DynamicImage, GenericImageView};
+use url::Url;
 
 use crate::resources::read_url;
 use crate::svg::render_svg;
 use crate::terminal::size::PixelSize;
 use crate::{magic, ResourceAccess};
-use anyhow::{Context, Result};
-use image::imageops::FilterType;
-use image::ColorType;
-use image::{DynamicImage, GenericImageView};
-use std::io::Write;
-use std::str;
-use url::Url;
 
 /// Provides access to printing images for kitty.
 #[derive(Debug, Copy, Clone)]
@@ -76,7 +79,7 @@ impl KittyImages {
             cmd_header.push(format!("v={}", size.y));
         }
 
-        let image_data = base64::encode(&image.contents);
+        let image_data = STANDARD.encode(&image.contents);
         let image_data_chunks = image_data.as_bytes().chunks(4096);
         let image_data_chunks_length = image_data_chunks.len();
 
