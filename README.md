@@ -91,7 +91,7 @@ If you package mdcat you may want to include these files too.
 
 ## Requirements
 
-For image type detection either the `file` tool with support for `--brief` and `--mime-type` flags must be available in `$PATH`.
+For image type detection the `file` tool with support for `--brief` and `--mime-type` flags must be available in `$PATH`.
 
 [Homebrew]: https://brew.sh
 [MacPorts]: https://www.macports.org
