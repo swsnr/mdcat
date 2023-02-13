@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-To publish a new release run `scripts/release` from the project directory.
+Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
