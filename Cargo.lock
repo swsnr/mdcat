@@ -812,6 +812,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "magic"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87142e3acb1f4daa62eaea96605421a534119d4777a9fb43fb2784798fd89665"
+dependencies = [
+ "bitflags",
+ "errno",
+ "libc",
+ "magic-sys",
+ "thiserror",
+]
+
+[[package]]
+name = "magic-sys"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eff86ae08895140d628119d407d568f3b657145ee8c265878064f717534bb3bc"
+dependencies = [
+ "libc",
+ "vcpkg",
+]
+
+[[package]]
 name = "matchers"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -835,6 +858,7 @@ dependencies = [
  "image",
  "lazy_static",
  "libc",
+ "magic",
  "mime",
  "once_cell",
  "pretty_assertions",

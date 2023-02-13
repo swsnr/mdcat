@@ -16,7 +16,7 @@ pub fn is_svg(buffer: &[u8]) -> bool {
     // If `buffer` contains a valid pixel image it's definitely not an SVG, so
     // let's avoid the expensive call to "file" here.
     image::guess_format(buffer).is_err()
-        && get_mimetype_for_buffer_with_file(buffer).map_or_else(
+        && get_mimetype_for_buffer(buffer).map_or_else(
             |error| {
                 event!(
                     Level::WARN,
@@ -45,6 +45,76 @@ pub fn is_png(buffer: &[u8]) -> bool {
             false
         }
     }
+}
+
+#[cfg(feature = "magic")]
+mod cookie {
+    use anyhow::{Context, Result};
+    use magic::{Cookie, CookieFlags};
+    use once_cell::sync::Lazy;
+    use tracing::{event, Level};
+
+    fn create() -> Result<Cookie> {
+        let flags = CookieFlags::MIME_TYPE
+        | CookieFlags::ERROR
+        // Disable all the things we don't need for SVG checking
+        | CookieFlags::NO_CHECK_COMPRESS
+        | CookieFlags::NO_CHECK_TAR
+        | CookieFlags::NO_CHECK_APPTYPE
+        | CookieFlags::NO_CHECK_ELF
+        | CookieFlags::NO_CHECK_ENCODING
+        | CookieFlags::NO_CHECK_JSON
+        | CookieFlags::NO_CHECK_CSV;
+        let cookie =
+            Cookie::open(flags).with_context(|| "Failed to create magic cookie".to_string())?;
+        cookie
+            .load::<&str>(Default::default())
+            .with_context(|| "Failed to load system magic database into cookie".to_string())?;
+        Ok(cookie)
+    }
+
+    fn create_or_log() -> Option<Cookie> {
+        match create() {
+            Ok(cookie) => Some(cookie),
+            Err(error) => {
+                event!(
+                    Level::ERROR,
+                    ?error,
+                    "Failed to initialize magic cookie: {}",
+                    error
+                );
+                None
+            }
+        }
+    }
+
+    thread_local!(pub static DEFAULT: Lazy<Option<Cookie>> = Lazy::new(create_or_log));
+}
+
+#[cfg(feature = "magic")]
+fn get_mimetype_for_buffer(buffer: &[u8]) -> Result<Mime> {
+    cookie::DEFAULT.with(|cookie| match cookie.as_ref() {
+        Some(cookie) => {
+            let result = cookie
+                .buffer(buffer)
+                .with_context(|| "Failed to check mimetype of buffer with magic cookie")?;
+            result
+                .parse::<Mime>()
+                .with_context(|| format!("Failed to parse mime type from result: {result}"))
+        }
+        None => {
+            event!(
+                Level::DEBUG,
+                "Magic cookie not available, falling back to 'file' program"
+            );
+            get_mimetype_for_buffer_with_file(buffer)
+        }
+    })
+}
+
+#[cfg(not(feature = "magic"))]
+fn get_mimetype_for_buffer(buffer: &[u8]) -> Result<Mime> {
+    get_mimetype_for_buffer_with_file(buffer)
 }
 
 fn get_mimetype_for_buffer_with_file(buffer: &[u8]) -> Result<Mime> {

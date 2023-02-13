@@ -68,6 +68,8 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
+            # On Linux link against libmagic, since it's almost always available
+            cargo_opts: "--features magic"
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
             cargo_opts: "--no-default-features --features static"
