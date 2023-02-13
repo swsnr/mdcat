@@ -8,8 +8,13 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Added
+- With `--features magic` use `libmagic` to check for SVG data, instead of shelling out to `file` (see [GH-236]).
+
 ### Changed
 - Update all dependencies.
+
+[GH-236]: https://github.com/swsnr/mdcat/pull/236
 
 ## [1.0.0] – 2023-01-07
 
