@@ -196,6 +196,7 @@ pub enum StackedState {
     ///
     /// We move to this state when we can render an image directly to the terminal, in order to
     /// suppress intermediate events, namely the image title.
+    #[cfg(feature = "render-image")]
     RenderedImage,
     /// Some inline markup.
     Inline(InlineState, InlineAttrs),

@@ -6,7 +6,9 @@
 
 //! Detect the terminal application mdcat is running on.
 
-use crate::terminal::capabilities::iterm2::{ITerm2Images, ITerm2Marks};
+#[cfg(feature = "render-image")]
+use crate::terminal::capabilities::iterm2::ITerm2Images;
+use crate::terminal::capabilities::iterm2::ITerm2Marks;
 use crate::terminal::capabilities::*;
 use crate::terminal::AnsiStyle;
 use std::fmt::{Display, Formatter};
@@ -116,23 +118,36 @@ impl TerminalProgram {
         let ansi = TerminalCapabilities {
             style: Some(StyleCapability::Ansi(AnsiStyle)),
             links: Some(LinkCapability::Osc8(crate::terminal::osc::Osc8Links)),
+            #[cfg(feature = "render-image")]
             image: None,
             marks: None,
         };
         match self {
             TerminalProgram::Dumb => TerminalCapabilities::default(),
             TerminalProgram::Ansi => ansi,
+            #[cfg(feature = "render-image")]
             TerminalProgram::ITerm2 => ansi
                 .with_mark_capability(MarkCapability::ITerm2(ITerm2Marks))
                 .with_image_capability(ImageCapability::ITerm2(ITerm2Images)),
+            #[cfg(not(feature = "render-image"))]
+            TerminalProgram::ITerm2 => {
+                ansi.with_mark_capability(MarkCapability::ITerm2(ITerm2Marks))
+            }
+            #[cfg(feature = "render-image")]
             TerminalProgram::Terminology => ansi.with_image_capability(
                 ImageCapability::Terminology(terminology::TerminologyImages),
             ),
+            #[cfg(feature = "render-image")]
             TerminalProgram::Kitty => {
                 ansi.with_image_capability(ImageCapability::Kitty(self::kitty::KittyImages))
             }
+            #[cfg(feature = "render-image")]
             TerminalProgram::WezTerm => {
                 ansi.with_image_capability(ImageCapability::ITerm2(ITerm2Images))
+            }
+            #[cfg(not(feature = "render-image"))]
+            TerminalProgram::Terminology | TerminalProgram::Kitty | TerminalProgram::WezTerm => {
+                ansi
             }
         }
     }

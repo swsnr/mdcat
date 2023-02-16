@@ -22,6 +22,7 @@ use tracing_subscriber::EnvFilter;
 
 use crate::output::Output;
 use mdcat::terminal::{TerminalProgram, TerminalSize};
+#[cfg(feature = "render-image")]
 use mdcat::ResourceAccess;
 use mdcat::{Environment, Settings};
 
@@ -130,6 +131,7 @@ fn main() {
                 let settings = Settings {
                     terminal_capabilities: terminal.capabilities(),
                     terminal_size: TerminalSize { columns, ..size },
+                    #[cfg(feature = "render-image")]
                     resource_access: if args.local_only {
                         ResourceAccess::LocalOnly
                     } else {
@@ -137,12 +139,21 @@ fn main() {
                     },
                     syntax_set: SyntaxSet::load_defaults_newlines(),
                 };
+                #[cfg(feature = "render-image")]
                 event!(
                     target: "mdcat::main",
                     Level::TRACE,
                     ?settings.terminal_size,
                     ?settings.terminal_capabilities,
                     ?settings.resource_access,
+                    "settings"
+                );
+                #[cfg(not(feature = "render-image"))]
+                event!(
+                    target: "mdcat::main",
+                    Level::TRACE,
+                    ?settings.terminal_size,
+                    ?settings.terminal_capabilities,
                     "settings"
                 );
                 args.filenames

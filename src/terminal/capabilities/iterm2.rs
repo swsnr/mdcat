@@ -10,15 +10,17 @@
 
 use std::io::{self, Write};
 
-use anyhow::{Context, Result};
-use base64::engine::general_purpose::STANDARD;
-use base64::Engine;
-use url::Url;
+#[cfg(feature = "render-image")]
+use {
+    anyhow::{Context, Result},
+    base64::engine::general_purpose::STANDARD,
+    base64::Engine,
+    url::Url,
+};
 
-use crate::resources::read_url;
-use crate::svg;
 use crate::terminal::osc::write_osc;
-use crate::{magic, ResourceAccess};
+#[cfg(feature = "render-image")]
+use crate::{magic, resources::read_url, svg, ResourceAccess};
 
 /// Iterm2 marks.
 #[derive(Debug, Copy, Clone)]
@@ -32,9 +34,11 @@ impl ITerm2Marks {
 }
 
 /// Iterm2 inline iamges.
+#[cfg(feature = "render-image")]
 #[derive(Debug, Copy, Clone)]
 pub struct ITerm2Images;
 
+#[cfg(feature = "render-image")]
 impl ITerm2Images {
     /// Write an iterm2 inline image command to `writer`.
     ///

@@ -17,14 +17,18 @@ use syntect::parsing::SyntaxSet;
 use tracing::instrument;
 
 // Expose some select things for use in main
+#[cfg(feature = "render-image")]
 pub use crate::resources::ResourceAccess;
 use crate::terminal::capabilities::TerminalCapabilities;
 use crate::terminal::TerminalSize;
 use url::Url;
 
+#[cfg(feature = "render-image")]
 mod magic;
 mod references;
+#[cfg(feature = "render-image")]
 mod resources;
+#[cfg(feature = "render-image")]
 mod svg;
 pub mod terminal;
 
@@ -43,6 +47,7 @@ pub struct Settings {
     /// The size of the terminal mdcat writes to.
     pub terminal_size: TerminalSize,
     /// Whether remote resource access is permitted.
+    #[cfg(feature = "render-image")]
     pub resource_access: ResourceAccess,
     /// Syntax set for syntax highlighting of code blocks.
     pub syntax_set: SyntaxSet,
@@ -153,6 +158,7 @@ mod tests {
             render_string(
                 markup,
                 &Settings {
+                    #[cfg(feature = "render-image")]
                     resource_access: ResourceAccess::LocalOnly,
                     syntax_set: SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),
@@ -297,6 +303,7 @@ Hello Donald[2]
             render_string(
                 markup,
                 &Settings {
+                    #[cfg(feature = "render-image")]
                     resource_access: ResourceAccess::LocalOnly,
                     syntax_set: SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),

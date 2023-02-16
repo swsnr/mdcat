@@ -9,7 +9,9 @@
 use crate::terminal::AnsiStyle;
 
 pub mod iterm2;
+#[cfg(feature = "render-image")]
 pub mod kitty;
+#[cfg(feature = "render-image")]
 pub mod terminology;
 
 /// The capability of basic styling.
@@ -36,6 +38,7 @@ pub enum MarkCapability {
 }
 
 /// The capability of the terminal to write images inline.
+#[cfg(feature = "render-image")]
 #[derive(Debug, Copy, Clone)]
 pub enum ImageCapability {
     /// The terminal understands the terminology way of inline images.
@@ -54,6 +57,7 @@ pub struct TerminalCapabilities {
     /// How the terminal supports links.
     pub links: Option<LinkCapability>,
     /// How the terminal supports images.
+    #[cfg(feature = "render-image")]
     pub image: Option<ImageCapability>,
     /// How the terminal supports marks.
     pub marks: Option<MarkCapability>,
@@ -65,6 +69,7 @@ impl Default for TerminalCapabilities {
         TerminalCapabilities {
             style: None,
             links: None,
+            #[cfg(feature = "render-image")]
             image: None,
             marks: None,
         }
@@ -72,6 +77,7 @@ impl Default for TerminalCapabilities {
 }
 
 impl TerminalCapabilities {
+    #[cfg(feature = "render-image")]
     pub(crate) fn with_image_capability(mut self, cap: ImageCapability) -> Self {
         self.image = Some(cap);
         self

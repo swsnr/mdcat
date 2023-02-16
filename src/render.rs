@@ -10,7 +10,6 @@ use std::io::prelude::*;
 use std::io::Result;
 
 use ansi_term::{Colour, Style};
-use anyhow::anyhow;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, LinkType};
@@ -607,10 +606,13 @@ pub fn write_event<'a, W: Write>(
 
         // Images
         (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
-            let InlineAttrs { style, indent } = attrs;
+            #[cfg(feature = "render-image")]
             use crate::terminal::capabilities::ImageCapability::*;
-            let resolved_link = environment.resolve_reference(&link);
-            let image_state = match (settings.terminal_capabilities.image, resolved_link) {
+
+            let InlineAttrs { style, indent } = attrs;
+            #[cfg(feature = "render-image")]
+            let image_state =
+                match (settings.terminal_capabilities.image, environment.resolve_reference(&link)) {
                 (Some(Terminology(terminology)), Some(ref url)) => {
                     terminology.write_inline_image(writer, settings.terminal_size, url)?;
                     Some(RenderedImage)
@@ -637,7 +639,7 @@ pub fn write_event<'a, W: Write>(
                     .pixels
                     .ok_or_else(|| {
                         event!(Level::ERROR, "Kitty surprisingly did not report pixel size, cannot render image");
-                        anyhow!("Terminal pixel size not available")
+                        anyhow::anyhow!("Terminal pixel size not available")
                     })
                     .and_then(|size| {
                         let image = kitty.read_and_render(url, settings.resource_access, size).map_err(|error| {
@@ -675,9 +677,16 @@ pub fn write_event<'a, W: Write>(
                     }
                 }
                 (_, None) => None,
-            }
-            .unwrap_or_else(|| {
-                event!(Level::WARN, "Rendering image {} as inline text, without link", link);
+            };
+            #[cfg(not(feature = "render-image"))]
+            let image_state = None;
+
+            let image_state = image_state.unwrap_or_else(|| {
+                event!(
+                    Level::WARN,
+                    "Rendering image {} as inline text, without link",
+                    link
+                );
                 // Inside an inline link keep the blue foreground colour; we cannot nest links so we
                 // should clarify that clicking the link follows the link target and not the image.
                 let style = if let InlineLink(_) = state {
@@ -693,9 +702,11 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
+        #[cfg(feature = "render-image")]
         (Stacked(stack, RenderedImage), Text(_)) => {
             Stacked(stack, RenderedImage).and_data(data).ok()
         }
+        #[cfg(feature = "render-image")]
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
             if let InlineLink(capability) = state {
