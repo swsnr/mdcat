@@ -164,7 +164,7 @@ mdcat only uses this variable if it fails to query the size from the underlying 
 MDCAT_PAGER::
     The pager program to use for `mdless` or if `--paginate` is given.
 +
-The pager program must support basic ANSI formatting sequences, like e.g. `less -R`.
+The pager program must support basic ANSI formatting sequences, like e.g. `less -r`.
 +
 The value of this variable is subject to shell-like word-splitting.
 It is **not** subject to any kind of expansion or substitution (e.g. parameter expansion, process subsitution, etc.).
@@ -176,7 +176,7 @@ PAGER::
 +
 Subject to the same rules as `$MDCAT_PAGER`.
 +
-If both `$PAGER` and `$MDCAT_PAGER` are unset use `less -R` as pager.
+If both `$PAGER` and `$MDCAT_PAGER` are unset use `less -r` as pager.
 
 http_proxy::
 https_proxy::

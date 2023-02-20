@@ -14,7 +14,11 @@ Use `cargo release` to create a new release.
 ### Changed
 - Update all dependencies.
 
+### Fixed
+- Use `less -r` instead of `less -R` in `mdless` if both `$PAGER` and `$MDCAT_PAGER` are unset (see [GH-238]).
+
 [GH-236]: https://github.com/swsnr/mdcat/pull/236
+[GH-238]: https://github.com/swsnr/mdcat/issues/238
 
 ## [1.0.0] – 2023-01-07
 

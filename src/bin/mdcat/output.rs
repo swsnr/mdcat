@@ -56,8 +56,8 @@ fn pager_from_env() -> Result<Vec<String>> {
             }
         }
     }
-    event!(Level::DEBUG, "Falling back to default pager less -R");
-    Ok(vec!["less".into(), "-R".into()])
+    event!(Level::DEBUG, "Falling back to default pager less -r");
+    Ok(vec!["less".into(), "-r".into()])
 }
 
 impl Output {
