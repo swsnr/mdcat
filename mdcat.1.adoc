@@ -55,7 +55,8 @@ mdcat supports most standard pixel formats by default.
 
 mdcat silently ignores images larger than 100 MiB.
 
-For some terminals mdcat needs to detect the mimetype; it uses the `file --brief --mime-type` for this purpose, and thus requires a compatible `file` utility in `$PATH`.
+For some terminals mdcat needs to detect the mimetype.
+If `mdcat` was not built with `libmagic` (see output of `--version` to check) it uses the `file --brief --mime-type` for this purpose, and thus requires a compatible `file` utility in `$PATH`.
 
 === SVG support
 
