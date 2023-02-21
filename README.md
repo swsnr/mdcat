@@ -41,7 +41,7 @@ Then it
 | [foot][]                   | ✓             | ✓                   |        |            |
 
 1) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
-2) SVG images require `rsvg-convert` from librsvg.
+2) SVG images are rendered with [resvg], see [SVG support].
 
 Not supported:
 
@@ -55,6 +55,8 @@ Not supported:
 [iterm2]: https://www.iterm2.com
 [WezTerm]: https://wezfurlong.org/wezterm/
 [foot]: https://codeberg.org/dnkl/foot/
+[resvg]: https://github.com/RazrFalcon/resvg
+[SVG support]: https://github.com/RazrFalcon/resvg#svg-support
 
 ## Usage
 
