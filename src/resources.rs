@@ -6,12 +6,17 @@
 
 //! Access to resources referenced from markdown documents.
 
-use anyhow::{anyhow, Context, Result};
-use once_cell::sync::Lazy;
-use reqwest::blocking::{Client, ClientBuilder};
 use std::fs::File;
 use std::io::prelude::*;
 use std::time::Duration;
+
+use anyhow::{anyhow, Context, Result};
+use mime::Mime;
+use once_cell::sync::Lazy;
+use reqwest::{
+    blocking::{Client, ClientBuilder},
+    header::CONTENT_TYPE,
+};
 use tracing::{event, Level};
 use url::Url;
 
@@ -72,7 +77,7 @@ fn is_local(url: &Url) -> bool {
 /// Read size limit for resources.
 static RESOURCE_READ_LIMIT: u64 = 104_857_600;
 
-fn fetch_http(url: &Url) -> Result<Vec<u8>> {
+fn fetch_http(url: &Url) -> Result<(Option<Mime>, Vec<u8>)> {
     let response = CLIENT
         .as_ref()
         .with_context(|| "HTTP client not available".to_owned())?
@@ -80,6 +85,23 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
         .send()
         .with_context(|| format!("Failed to GET {url}"))?
         .error_for_status()?;
+
+    let content_type = response.headers().get(CONTENT_TYPE);
+    event!(
+        Level::DEBUG,
+        "Raw Content-Type of remote resource {}: {:?}",
+        &url,
+        &content_type
+    );
+    let mime_type = content_type
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.parse::<Mime>().ok());
+    event!(
+        Level::DEBUG,
+        "Parsed Content-Type of remote resource {}: {:?}",
+        &url,
+        &mime_type
+    );
 
     match response.content_length() {
         // The server gave us no content size so read until the end of the stream, but not more than our read limit.
@@ -97,7 +119,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
                     "Contents of {url} exceeded {RESOURCE_READ_LIMIT}, rejected",
                 ))
             } else {
-                Ok(buffer)
+                Ok((mime_type, buffer))
             }
         }
         // If we've got a content-size use it to read exactly as many bytes as the server told us to do (within limits)
@@ -114,7 +136,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
                     .read_exact(buffer.as_mut_slice())
                     .with_context(|| format!("Failed to read from {url}"))?;
 
-                Ok(buffer)
+                Ok((mime_type, buffer))
             }
         }
     }
@@ -130,7 +152,7 @@ fn fetch_http(url: &Url) -> Result<Vec<u8>> {
 ///
 /// We currently support `file:` URLs which the underlying operation system can
 /// read (local on UNIX, UNC paths on Windows), and HTTP(S) URLs.
-pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
+pub fn read_url(url: &Url, access: ResourceAccess) -> Result<(Option<Mime>, Vec<u8>)> {
     if !access.permits(url) {
         return Err(anyhow!(
             "Access denied to URL {} by policy {:?}",
@@ -142,7 +164,7 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
         "file" => match url.to_file_path() {
             Ok(path) => {
                 let mut buffer = Vec::new();
-                File::open(path)
+                File::open(&path)
                     .with_context(|| format!("Failed to open file at {url}"))?
                     // Read a byte more than the limit differentiate an expected EOF from hitting the limit
                     .take(RESOURCE_READ_LIMIT + 1)
@@ -154,7 +176,15 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
                         "Contents of {url} exceeded {RESOURCE_READ_LIMIT}, rejected",
                     ))
                 } else {
-                    Ok(buffer)
+                    let mime_type = mime_guess::from_path(&path).first();
+                    if mime_type.is_none() {
+                        event!(
+                            Level::DEBUG,
+                            "Failed to guess mime type from {}",
+                            path.display()
+                        );
+                    }
+                    Ok((mime_type, buffer))
                 }
             }
             Err(_) => Err(anyhow!("Cannot convert URL {url} to file path")),
@@ -195,6 +225,19 @@ mod tests {
     }
 
     #[test]
+    fn read_url_with_local_path_returns_content_type() {
+        let cwd = Url::from_directory_path(std::env::current_dir().unwrap()).unwrap();
+
+        let resource = cwd.join("sample/rust-logo.svg").unwrap();
+        let (mime_type, _) = read_url(&resource, ResourceAccess::LocalOnly).unwrap();
+        assert_eq!(mime_type, Some(mime::IMAGE_SVG));
+
+        let resource = cwd.join("sample/rust-logo-128x128.png").unwrap();
+        let (mime_type, _) = read_url(&resource, ResourceAccess::LocalOnly).unwrap();
+        assert_eq!(mime_type, Some(mime::IMAGE_PNG));
+    }
+
+    #[test]
     fn read_url_with_http_url_fails_if_local_only_access() {
         let url = "https://eu.httpbin.org/status/404"
             .parse::<url::Url>()
@@ -228,17 +271,33 @@ mod tests {
             .unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_ok(), "Unexpected error: {result:?}");
-        assert_eq!(result.unwrap().len(), 100);
+        let (_, contents) = result.unwrap();
+        assert_eq!(contents.len(), 100);
+    }
+
+    #[test]
+    fn read_url_with_http_url_returns_content_type() {
+        let mut url = "https://eu.httpbin.org/response-headers"
+            .parse::<url::Url>()
+            .unwrap();
+        url.query_pairs_mut()
+            .append_pair("Content-Type", "image/svg+xml");
+        let result = read_url(&url, ResourceAccess::RemoteAllowed);
+        assert!(result.is_ok(), "Unexpected error: {result:?}");
+        let (mime_type, _) = result.unwrap();
+        assert_eq!(mime_type, Some(mime::IMAGE_SVG));
     }
 
     #[test]
     fn read_url_with_http_url_fails_when_size_limit_is_exceeded() {
-        let url = "https://eu.httpbin.org/response-headers?content-length=115343400"
+        let mut url = "https://eu.httpbin.org/response-headers"
             .parse::<url::Url>()
             .unwrap();
+        url.query_pairs_mut()
+            .append_pair("Content-Length", "115343400");
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {result:?}");
         let error = format!("{:#}", result.unwrap_err());
-        assert_eq!(error, "https://eu.httpbin.org/response-headers?content-length=115343400 reports size 115343400 which exceeds limit 104857600, refusing to read")
+        assert_eq!(error, "https://eu.httpbin.org/response-headers?Content-Length=115343400 reports size 115343400 which exceeds limit 104857600, refusing to read")
     }
 }
