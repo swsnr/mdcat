@@ -8,17 +8,17 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
-### Added
-- With `--features magic` use `libmagic` to check for SVG data, instead of shelling out to `file` (see [GH-236]).
-
 ### Changed
 - Update all dependencies.
+- No longer sniff mime type from contents to identify SVG images.
+  Instead rely on the `Content-Type` header for HTTP(S) images and the file extension for local resources (see [GH-239]).
 
 ### Fixed
 - Use `less -r` instead of `less -R` in `mdless` if both `$PAGER` and `$MDCAT_PAGER` are unset (see [GH-238]).
 
 [GH-236]: https://github.com/swsnr/mdcat/pull/236
 [GH-238]: https://github.com/swsnr/mdcat/issues/238
+[GH-239]: https://github.com/swsnr/mdcat/pull/239
 
 ## [1.0.0] – 2023-01-07
 

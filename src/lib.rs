@@ -22,7 +22,6 @@ use crate::terminal::capabilities::TerminalCapabilities;
 use crate::terminal::TerminalSize;
 use url::Url;
 
-mod magic;
 mod references;
 mod resources;
 mod svg;

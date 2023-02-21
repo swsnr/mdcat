@@ -28,7 +28,7 @@ use url::Url;
 use crate::resources::read_url;
 use crate::svg::render_svg;
 use crate::terminal::size::PixelSize;
-use crate::{magic, ResourceAccess};
+use crate::ResourceAccess;
 
 /// Provides access to printing images for kitty.
 #[derive(Debug, Copy, Clone)]
@@ -114,8 +114,8 @@ impl KittyImages {
         access: ResourceAccess,
         terminal_size: PixelSize,
     ) -> Result<KittyImage> {
-        let contents = read_url(url, access)?;
-        let image = if magic::is_svg(&contents) {
+        let (mime_type, contents) = read_url(url, access)?;
+        let image = if mime_type == Some(mime::IMAGE_SVG) {
             image::load_from_memory(
                 &render_svg(&contents)
                     .with_context(|| format!("Failed to render SVG at {url} to PNG"))?,
@@ -126,7 +126,9 @@ impl KittyImages {
                 .with_context(|| format!("Failed to load image from URL {url}"))?
         };
 
-        if magic::is_png(&contents) && PixelSize::from_xy(image.dimensions()) <= terminal_size {
+        if mime_type == Some(mime::IMAGE_PNG)
+            && PixelSize::from_xy(image.dimensions()) <= terminal_size
+        {
             Ok(self.render_as_png(contents))
         } else {
             Ok(self.render_as_rgb_or_rgba(image, terminal_size))

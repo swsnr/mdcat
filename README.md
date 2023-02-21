@@ -72,14 +72,18 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * [Chocolatey]: `choco install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
+[Homebrew]: https://brew.sh
+[MacPorts]: https://www.macports.org
+[Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
+[scoop]: https://github.com/lukesampson/scoop
+[chocolatey]: https://github.com/chocolatey
+
 ## Building
 
 Run `cargo build --release`.
 The resulting `mdcat` executable links against the system's SSL library, i.e. openssl on Linux.
 To build a self-contained executable use `cargo build --features=static`; the resulting executable uses a pure Rust SSL implementation.
 It still uses the system's CA roots however.
-
-Pass `--features magic` to use `libmagic` instead of the `file` program to check mimetypes.
 
 The build process also generates the following additional files in `$OUT_DIR`:
 
@@ -91,16 +95,6 @@ These additional artifacts are included in the release builds.
 If you package mdcat you may want to include these files too.
 
 [AsciiDoctor]: https://asciidoctor.org/
-
-## Requirements
-
-If `mdcat` wasn't built with the `magic` feature, image type detection requires the `file` tool with support for `--brief` and `--mime-type` flags to be available in `$PATH`.
-
-[Homebrew]: https://brew.sh
-[MacPorts]: https://www.macports.org
-[Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
-[scoop]: https://github.com/lukesampson/scoop
-[chocolatey]: https://github.com/chocolatey
 
 ## Troubleshooting
 
