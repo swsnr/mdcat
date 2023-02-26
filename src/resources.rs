@@ -198,8 +198,16 @@ pub fn read_url(url: &Url, access: ResourceAccess) -> Result<(Option<Mime>, Vec<
 
 #[cfg(test)]
 mod tests {
+    use std::{convert::Infallible, net::SocketAddr};
+
     use super::*;
+    use hyper::{
+        body::Bytes,
+        service::{make_service_fn, service_fn},
+        Body, Request, Response, Server,
+    };
     use pretty_assertions::assert_eq;
+    use tokio::{runtime::Runtime, sync::oneshot, task::JoinHandle};
 
     #[test]
     #[cfg(unix)]
@@ -239,65 +247,200 @@ mod tests {
 
     #[test]
     fn read_url_with_http_url_fails_if_local_only_access() {
-        let url = "https://eu.httpbin.org/status/404"
-            .parse::<url::Url>()
-            .unwrap();
+        let url = "https://github.com".parse::<url::Url>().unwrap();
         let error = read_url(&url, ResourceAccess::LocalOnly)
             .unwrap_err()
             .to_string();
         assert_eq!(
             error,
-            "Access denied to URL https://eu.httpbin.org/status/404 by policy LocalOnly"
+            "Access denied to URL https://github.com/ by policy LocalOnly"
         );
+    }
+
+    async fn mock_service(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+        let response = match req.uri().path() {
+            "/png" => Response::builder()
+                .status(200)
+                .header("content-type", "image/png")
+                .body(Body::from("would-be-a-png-image"))
+                .unwrap(),
+            "/empty-response" => Response::builder().status(201).body(Body::empty()).unwrap(),
+            "/drip-very-slow" => {
+                let (mut sender, body) = Body::channel();
+                let size = 30_000;
+                tokio::spawn(async move {
+                    for chunk in std::iter::repeat(Bytes::copy_from_slice(&[b'x'; 1000])).take(size)
+                    {
+                        if sender
+                            .send_data(Bytes::copy_from_slice(&chunk))
+                            .await
+                            .is_err()
+                        {
+                            break;
+                        }
+                        tokio::time::sleep(Duration::from_millis(500)).await;
+                    }
+                });
+                Response::builder()
+                    .status(200)
+                    .header("content-length", size * 1000)
+                    .header("content-type", "application/octet-stream")
+                    .body(body)
+                    .unwrap()
+            }
+            // Drip-feed a very very large response with a 1kb chunk per 250ms, with content-length
+            // set appropriately.
+            "/drip-large" => {
+                let (mut sender, body) = Body::channel();
+                let size = 150_000;
+                tokio::spawn(async move {
+                    for chunk in std::iter::repeat(Bytes::copy_from_slice(&[b'x'; 1000])).take(size)
+                    {
+                        if sender
+                            .send_data(Bytes::copy_from_slice(&chunk))
+                            .await
+                            .is_err()
+                        {
+                            break;
+                        }
+                        tokio::time::sleep(Duration::from_millis(250)).await;
+                    }
+                });
+                Response::builder()
+                    .status(200)
+                    .header("content-length", size * 1000)
+                    .header("content-type", "application/octet-stream")
+                    .body(body)
+                    .unwrap()
+            }
+            _ => Response::builder().status(404).body(Body::empty()).unwrap(),
+        };
+        Ok(response)
+    }
+
+    struct MockServer {
+        runtime: Runtime,
+        join_handle: Option<JoinHandle<()>>,
+        terminate_server: Option<oneshot::Sender<()>>,
+        local_addr: SocketAddr,
+    }
+
+    impl MockServer {
+        fn start() -> Self {
+            let addr: SocketAddr = "[::1]:0".parse().unwrap();
+            let runtime = tokio::runtime::Builder::new_multi_thread()
+                .worker_threads(2)
+                .enable_all()
+                .build()
+                .unwrap();
+            let (terminate_sender, terminate_receiver) = oneshot::channel();
+            let (addr_sender, addr_receiver) = oneshot::channel();
+            let join_handle = runtime.spawn(async move {
+                let make_service = make_service_fn(|_conn| async {
+                    Ok::<_, Infallible>(service_fn(mock_service))
+                });
+                let server = Server::bind(&addr).serve(make_service);
+                addr_sender.send(server.local_addr()).unwrap();
+                let shutdown = server.with_graceful_shutdown(async {
+                    terminate_receiver.await.ok().unwrap_or_default()
+                });
+                let _ = shutdown.await;
+            });
+            let local_addr = runtime.block_on(addr_receiver).unwrap();
+            Self {
+                join_handle: Some(join_handle),
+                runtime,
+                terminate_server: Some(terminate_sender),
+                local_addr,
+            }
+        }
+
+        fn url(&self) -> Url {
+            let mut url = Url::parse("http://localhost").unwrap();
+            url.set_port(Some(self.local_addr.port())).unwrap();
+            url.set_ip_host(self.local_addr.ip()).unwrap();
+            url
+        }
+    }
+
+    impl Drop for MockServer {
+        fn drop(&mut self) {
+            if let Some(terminate) = self.terminate_server.take() {
+                terminate.send(()).ok();
+            }
+            if let Some(handle) = self.join_handle.take() {
+                self.runtime.block_on(handle).ok();
+            }
+        }
     }
 
     #[test]
     fn read_url_with_http_url_fails_when_status_404() {
-        let url = "https://eu.httpbin.org/status/404"
-            .parse::<url::Url>()
-            .unwrap();
+        let server = MockServer::start();
+        let url = server.url().join("really-not-there").unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {result:?}");
         assert_eq!(
             format!("{:#}", result.unwrap_err()),
-            "HTTP status client error (404 Not Found) for url (https://eu.httpbin.org/status/404)"
+            format!("HTTP status client error (404 Not Found) for url ({url})")
         )
     }
 
     #[test]
-    fn read_url_with_http_url_returns_content_when_status_200() {
-        let url = "https://eu.httpbin.org/bytes/100"
-            .parse::<url::Url>()
-            .unwrap();
+    fn read_url_with_http_url_empty_response() {
+        let server = MockServer::start();
+        let url = server.url().join("/empty-response").unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_ok(), "Unexpected error: {result:?}");
-        let (_, contents) = result.unwrap();
-        assert_eq!(contents.len(), 100);
+        let (mime_type, contents) = result.unwrap();
+        assert_eq!(mime_type, None);
+        assert!(contents.is_empty(), "Contents not empty: {contents:?}");
     }
 
     #[test]
     fn read_url_with_http_url_returns_content_type() {
-        let mut url = "https://eu.httpbin.org/response-headers"
-            .parse::<url::Url>()
-            .unwrap();
-        url.query_pairs_mut()
-            .append_pair("Content-Type", "image/svg+xml");
+        let server = MockServer::start();
+        let url = server.url().join("/png").unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_ok(), "Unexpected error: {result:?}");
-        let (mime_type, _) = result.unwrap();
-        assert_eq!(mime_type, Some(mime::IMAGE_SVG));
+        let (mime_type, contents) = result.unwrap();
+        assert_eq!(mime_type, Some(mime::IMAGE_PNG));
+        assert_eq!(
+            std::str::from_utf8(&contents).unwrap(),
+            "would-be-a-png-image"
+        );
     }
 
     #[test]
-    fn read_url_with_http_url_fails_when_size_limit_is_exceeded() {
-        let mut url = "https://eu.httpbin.org/response-headers"
-            .parse::<url::Url>()
-            .unwrap();
-        url.query_pairs_mut()
-            .append_pair("Content-Length", "115343400");
+    #[ignore]
+    fn read_url_with_http_url_times_out_fast_on_slow_response() {
+        // FIXME: Add required timeout to client
+        let server = MockServer::start();
+        // Read from a small but slow response: We wouldn't hit the size limit, but we should time
+        // out aggressively.
+        let url = server.url().join("/drip-very-slow").unwrap();
         let result = read_url(&url, ResourceAccess::RemoteAllowed);
         assert!(result.is_err(), "Unexpected success: {result:?}");
         let error = format!("{:#}", result.unwrap_err());
-        assert_eq!(error, "https://eu.httpbin.org/response-headers?Content-Length=115343400 reports size 115343400 which exceeds limit 104857600, refusing to read")
+        assert_eq!(
+            error,
+            format!("{url} reports size 150000000 which exceeds limit 104857600, refusing to read")
+        );
+    }
+
+    #[test]
+    fn read_url_with_http_url_fails_fast_when_size_limit_is_exceeded() {
+        let server = MockServer::start();
+        // Read from a large and slow response: The response would take eternal to complete, but
+        // since we abort right after checking the size limit, this test fails fast instead of
+        // trying to read the entire request.
+        let url = server.url().join("/drip-large").unwrap();
+        let result = read_url(&url, ResourceAccess::RemoteAllowed);
+        assert!(result.is_err(), "Unexpected success: {result:?}");
+        let error = format!("{:#}", result.unwrap_err());
+        assert_eq!(
+            error,
+            format!("{url} reports size 150000000 which exceeds limit 104857600, refusing to read")
+        );
     }
 }
