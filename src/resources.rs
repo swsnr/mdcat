@@ -29,8 +29,8 @@ static CLIENT: Lazy<Option<Client>> = Lazy::new(|| {
         }))
         // Use somewhat aggressive timeouts to avoid blocking rendering for long; we have graceful
         // fallbacks since we have to support terminals without image capabilities anyways.
+        .timeout(Some(Duration::from_millis(100)))
         .connect_timeout(Some(Duration::from_secs(1)))
-        .timeout(Some(Duration::from_secs(1)))
         .referer(false)
         .user_agent(concat!("mdcat/", env!("CARGO_PKG_VERSION")))
         .build()
@@ -412,9 +412,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn read_url_with_http_url_times_out_fast_on_slow_response() {
-        // FIXME: Add required timeout to client
         let server = MockServer::start();
         // Read from a small but slow response: We wouldn't hit the size limit, but we should time
         // out aggressively.
@@ -424,7 +422,7 @@ mod tests {
         let error = format!("{:#}", result.unwrap_err());
         assert_eq!(
             error,
-            format!("{url} reports size 150000000 which exceeds limit 104857600, refusing to read")
+            format!("Failed to read from {url}: error decoding response body: operation timed out: operation timed out")
         );
     }
 
