@@ -10,6 +10,7 @@ Use `cargo release` to create a new release.
 
 ### Changed
 - Update all dependencies.
+  This removes a transitive dependency on a vulnerable version of `remove_dir_all`, see [GHSA-mc8h-8q98-g5hr].
 - No longer sniff mime type from contents to identify SVG images.
   Instead rely on the `Content-Type` header for HTTP(S) images and the file extension for local resources (see [GH-239]).
 - Render SVG images using the pure Rust `resvg` crate instead of `rsvg-convert`; mdcat no longer requires the latter tool at runtime (see [GH-240]).
@@ -23,6 +24,8 @@ Use `cargo release` to create a new release.
 [GH-239]: https://github.com/swsnr/mdcat/pull/239
 [GH-240]: https://github.com/swsnr/mdcat/pull/240
 [GH-241]: https://github.com/swsnr/mdcat/pull/241
+
+[GHSA-mc8h-8q98-g5hr]: https://github.com/advisories/GHSA-mc8h-8q98-g5hr
 
 ## [1.0.0] – 2023-01-07
 
