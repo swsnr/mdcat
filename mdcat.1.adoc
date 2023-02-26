@@ -59,8 +59,9 @@ mdcat silently ignores images larger than 100 MiB, under the assumption that ima
 
 In Terminology mdcat also renders SVG images, using the built-in support of Terminology.
 
-In iTerm2, Kitty and WezTerm mdcat requires `rsvg-convert` to render SVG images to pixel graphics before displaying them;
-if `rsvg-convert` is not found in `$PATH` mdcat does not render SVG images in these terminals.
+In iTerm2, Kitty and WezTerm mdcat renders SVG images into pixel graphics using the https://github.com/RazrFalcon/resvg[resvg] library.
+Currently this library only supports SVG 1, and only the static subset thereof; see https://github.com/RazrFalcon/resvg#svg-support[SVG support] for details.
+While this is sufficient for most simple SVG images, complex SVG images may fail to render or render incompletely.
 
 For local SVG files mdcat relies on the file extension to identify SVG images.
 For remote images from HTTP(S) URLs mdcat inspects the `Content-Type` header to identify SVG images.

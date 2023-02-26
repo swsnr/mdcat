@@ -6,43 +6,38 @@
 
 //! SVG "rendering" for mdcat.
 
-use std::io::prelude::*;
-use std::io::{Error, ErrorKind, Result};
-use std::process::{Command, Stdio};
+use anyhow::Context;
+use once_cell::sync::Lazy;
+use resvg::usvg_text_layout::{fontdb, TreeTextToPath};
+use resvg::{tiny_skia, usvg};
 
 /// Render an SVG image to a PNG pixel graphic for display.
-pub fn render_svg(svg: &[u8]) -> Result<Vec<u8>> {
-    render_svg_with_rsvg_convert(svg)
+pub fn render_svg(svg: &[u8]) -> anyhow::Result<Vec<u8>> {
+    render_svg_with_resvg(svg)
 }
 
-/// Render an SVG file with `rsvg-convert`.
-fn render_svg_with_rsvg_convert(svg: &[u8]) -> Result<Vec<u8>> {
-    let mut process = Command::new("rsvg-convert")
-        .arg("--dpi-x=72")
-        .arg("--dpi-y=72")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
+static FONTS: Lazy<fontdb::Database> = Lazy::new(|| {
+    let mut fontdb = fontdb::Database::new();
+    fontdb.load_system_fonts();
+    fontdb
+});
 
-    process
-        .stdin
-        .as_mut()
-        .expect("Forgot to pipe stdin?")
-        .write_all(svg)?;
-
-    let output = process.wait_with_output()?;
-
-    if output.status.success() {
-        Ok(output.stdout)
-    } else {
-        Err(Error::new(
-            ErrorKind::Other,
-            format!(
-                "rsvg-convert failed with status {}: {}",
-                output.status,
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        ))
-    }
+fn render_svg_with_resvg(svg: &[u8]) -> anyhow::Result<Vec<u8>> {
+    let opt = usvg::Options::default();
+    let mut tree =
+        usvg::Tree::from_data(svg, &opt).with_context(|| "Failed to parse SVG".to_string())?;
+    tree.convert_text(&FONTS);
+    let size = tree.size.to_screen_size();
+    let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
+        .with_context(|| "Failed to create target pixmap".to_string())?;
+    resvg::render(
+        &tree,
+        usvg::FitTo::Original,
+        tiny_skia::Transform::default(),
+        pixmap.as_mut(),
+    )
+    .with_context(|| "Failed to render SVG".to_string())?;
+    pixmap
+        .encode_png()
+        .with_context(|| "Failed to encode rendered pixmap to PNG".to_string())
 }
