@@ -15,10 +15,12 @@ Use `cargo release` to create a new release.
 
 ### Fixed
 - Use `less -r` instead of `less -R` in `mdless` if both `$PAGER` and `$MDCAT_PAGER` are unset (see [GH-238]).
+- Time out external resources if no data was read for 100ms. Previously mdcat waited for 1s before timing out (see GH-241).
 
 [GH-236]: https://github.com/swsnr/mdcat/pull/236
 [GH-238]: https://github.com/swsnr/mdcat/issues/238
 [GH-239]: https://github.com/swsnr/mdcat/pull/239
+[GH-241]: https://github.com/swsnr/mdcat/pull/241
 
 ## [1.0.0] – 2023-01-07
 
