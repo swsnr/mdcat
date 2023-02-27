@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [1.1.0] – 2023-02-27
+
 ### Changed
 - Update all dependencies.
   This removes a transitive dependency on a vulnerable version of `remove_dir_all`, see [GHSA-mc8h-8q98-g5hr].
@@ -629,7 +631,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-1.0.0...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.0...HEAD
+[1.1.0]: https://github.com/swsnr/mdcat/compare/mdcat-1.0.0...mdcat-1.1.0
 [1.0.0]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.3...mdcat-1.0.0
 [0.30.3]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.2...mdcat-0.30.3
 [0.30.2]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.1...mdcat-0.30.2
