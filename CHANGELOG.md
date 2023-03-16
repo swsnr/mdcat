@@ -8,6 +8,12 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Fixed
+- No longer elide tracing info below warn level in release builds (see [GH-242])..
+  This allows downstream consumers to keep tracing info included in their release builds.
+
+[GH-242]: https://github.com/swsnr/mdcat/issues/242
+
 ## [1.1.0] – 2023-02-27
 
 ### Changed

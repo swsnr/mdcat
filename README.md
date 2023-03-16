@@ -101,9 +101,7 @@ If you package mdcat you may want to include these files too.
 ## Troubleshooting
 
 `mdcat` can output extensive tracing information when asked to.
-Run a **debug build** of `mdcat` with `$MDCAT_LOG=trace` for complete tracing information, or with `$MDCAT_LOG=mdcat::render=trace` to trace only rendering.
-
-**Note:** Tracing information is mostly elided in release builds; use a debug build for complete output.
+Run `mdcat` with `$MDCAT_LOG=trace` for complete tracing information, or with `$MDCAT_LOG=mdcat::render=trace` to trace only rendering.
 
 ## Future plans
 
