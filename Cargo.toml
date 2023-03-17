@@ -11,6 +11,7 @@ categories = ["command-line-utilities", "text-processing"]
 license = "MPL-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2021"
+rust-version = "1.67"
 
 [features]
 default = ["native-tls"]

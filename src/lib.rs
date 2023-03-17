@@ -7,6 +7,10 @@
 #![deny(warnings, missing_docs, clippy::all)]
 
 //! Write markdown to TTYs.
+//!
+//! ## MSRV
+//!
+//! This library generally supports only the latest stable Rust version.
 
 use std::io::{ErrorKind, Result, Write};
 use std::path::Path;

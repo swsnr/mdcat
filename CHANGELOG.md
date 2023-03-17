@@ -8,10 +8,13 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.
+
 ## [1.1.1] – 2023-03-18
 
 ### Fixed
-- No longer elide tracing info below warn level in release builds (see [GH-242])..
+- No longer elide tracing info below warn level in release builds (see [GH-242]).
   This allows downstream consumers to keep tracing info included in their release builds.
 
 [GH-242]: https://github.com/swsnr/mdcat/issues/242
