@@ -236,11 +236,11 @@ mod tests {
     fn read_url_with_local_path_returns_content_type() {
         let cwd = Url::from_directory_path(std::env::current_dir().unwrap()).unwrap();
 
-        let resource = cwd.join("sample/rust-logo.svg").unwrap();
+        let resource = cwd.join("../sample/rust-logo.svg").unwrap();
         let (mime_type, _) = read_url(&resource, ResourceAccess::LocalOnly).unwrap();
         assert_eq!(mime_type, Some(mime::IMAGE_SVG));
 
-        let resource = cwd.join("sample/rust-logo-128x128.png").unwrap();
+        let resource = cwd.join("../sample/rust-logo-128x128.png").unwrap();
         let (mime_type, _) = read_url(&resource, ResourceAccess::LocalOnly).unwrap();
         assert_eq!(mime_type, Some(mime::IMAGE_PNG));
     }

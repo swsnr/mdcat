@@ -8,11 +8,15 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Added
+- Extract mdcat the library crate into a `pulldown-cmark-tty` dependency which allows using mdcat's functionality without incurring the CLI specific dependencies (see [GH-243]).
+
 ### Fixed
 - No longer elide tracing info below warn level in release builds (see [GH-242])..
   This allows downstream consumers to keep tracing info included in their release builds.
 
 [GH-242]: https://github.com/swsnr/mdcat/issues/242
+[GH-243]: https://github.com/swsnr/mdcat/pull/243
 
 ## [1.1.0] – 2023-02-27
 

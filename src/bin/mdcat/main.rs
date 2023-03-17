@@ -21,9 +21,9 @@ use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
 use crate::output::Output;
-use mdcat::terminal::{TerminalProgram, TerminalSize};
-use mdcat::ResourceAccess;
-use mdcat::{Environment, Settings};
+use pulldown_cmark_tty::terminal::{TerminalProgram, TerminalSize};
+use pulldown_cmark_tty::ResourceAccess;
+use pulldown_cmark_tty::{Environment, Settings};
 
 mod args;
 mod output;
@@ -67,7 +67,7 @@ fn process_file(filename: &str, settings: &Settings, output: &mut Output) -> Res
 
     let mut sink = BufWriter::new(output.writer());
     // mdcat::push_tty(settings, &env, &mut sink, parser).expect("FUCK");
-    mdcat::push_tty(settings, &env, &mut sink, parser)
+    pulldown_cmark_tty::push_tty(settings, &env, &mut sink, parser)
         .and_then(|_| {
             event!(Level::TRACE, "Finished rendering, flushing output");
             sink.flush()
@@ -115,13 +115,6 @@ fn main() {
     if args.detect_and_exit {
         println!("Terminal: {terminal}");
     } else {
-        // On Windows 10 we need to enable ANSI term explicitly.
-        #[cfg(windows)]
-        {
-            event!(target: "mdcat::main", Level::TRACE, "Enable ANSI support in windows terminal");
-            ansi_term::enable_ansi_support().ok();
-        }
-
         let size = TerminalSize::detect().unwrap_or_default();
         let columns = args.columns.unwrap_or(size.columns);
 

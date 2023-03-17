@@ -893,33 +893,16 @@ dependencies = [
 name = "mdcat"
 version = "1.1.0"
 dependencies = [
- "ansi_term",
  "anyhow",
- "base64",
  "clap",
  "clap_complete",
- "env_proxy",
- "gethostname",
- "glob",
- "hyper",
- "image",
- "lazy_static",
- "libc",
- "mime",
- "mime_guess",
- "once_cell",
  "pretty_assertions",
  "pulldown-cmark",
- "reqwest",
- "resvg",
+ "pulldown-cmark-tty",
  "shell-words",
  "syntect",
- "temp-env",
- "terminal_size",
- "tokio",
  "tracing",
  "tracing-subscriber",
- "url",
 ]
 
 [[package]]
@@ -1248,6 +1231,35 @@ dependencies = [
  "bitflags",
  "memchr",
  "unicase",
+]
+
+[[package]]
+name = "pulldown-cmark-tty"
+version = "1.1.0"
+dependencies = [
+ "ansi_term",
+ "anyhow",
+ "base64",
+ "env_proxy",
+ "gethostname",
+ "glob",
+ "hyper",
+ "image",
+ "lazy_static",
+ "libc",
+ "mime",
+ "mime_guess",
+ "once_cell",
+ "pretty_assertions",
+ "pulldown-cmark",
+ "reqwest",
+ "resvg",
+ "syntect",
+ "temp-env",
+ "terminal_size",
+ "tokio",
+ "tracing",
+ "url",
 ]
 
 [[package]]

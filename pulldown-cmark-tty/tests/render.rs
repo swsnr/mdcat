@@ -21,29 +21,26 @@ use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use url::Url;
 
-use mdcat::terminal::TerminalProgram;
-use mdcat::Environment;
+use pulldown_cmark_tty::terminal::TerminalProgram;
+use pulldown_cmark_tty::*;
 
 lazy_static! {
     static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
-    static ref SETTINGS_ANSI_ONLY: mdcat::Settings = mdcat::Settings {
+    static ref SETTINGS_ANSI_ONLY: Settings = Settings {
         terminal_capabilities: TerminalProgram::Ansi.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
-        resource_access: mdcat::ResourceAccess::LocalOnly,
+        terminal_size: terminal::TerminalSize::default(),
+        resource_access: ResourceAccess::LocalOnly,
         syntax_set: (*SYNTAX_SET).clone(),
     };
-    static ref SETTINGS_ITERM2: mdcat::Settings = mdcat::Settings {
+    static ref SETTINGS_ITERM2: Settings = Settings {
         terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
-        resource_access: mdcat::ResourceAccess::LocalOnly,
+        terminal_size: terminal::TerminalSize::default(),
+        resource_access: ResourceAccess::LocalOnly,
         syntax_set: (*SYNTAX_SET).clone(),
     };
 }
 
-fn render_to_string<P: AsRef<Path>>(
-    markdown_file: P,
-    settings: &mdcat::Settings,
-) -> Result<String> {
+fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_file).with_context(|| {
         format!(
             "Failed to read markdown from {}",
@@ -68,7 +65,7 @@ fn render_to_string<P: AsRef<Path>>(
         hostname: "HOSTNAME".to_string(),
         ..Environment::for_local_directory(&base_dir)?
     };
-    mdcat::push_tty(settings, &env, &mut sink, parser).with_context(|| {
+    push_tty(settings, &env, &mut sink, parser).with_context(|| {
         format!(
             "Failed to render contents of {}",
             markdown_file.as_ref().display()
@@ -106,7 +103,7 @@ fn replace_system_specific_urls(input: String) -> String {
 fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
     markdown_file: S,
     golden_file_directory: T,
-    settings: &mdcat::Settings,
+    settings: &Settings,
 ) {
     // Replace environment specific facts in
     let actual =
