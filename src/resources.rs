@@ -21,11 +21,12 @@ use tracing::{event, Level};
 use url::Url;
 
 static CLIENT: Lazy<Option<Client>> = Lazy::new(|| {
+    let proxies = system_proxy::env::from_curl_env();
     ClientBuilder::new()
         // Use env_proxy to extract proxy information from the environment; it's more flexible and
         // accurate than reqwest's built-in env proxy support.
-        .proxy(reqwest::Proxy::custom(|url| {
-            env_proxy::for_url(url).to_url()
+        .proxy(reqwest::Proxy::custom(move |url| {
+            proxies.lookup(url).map(Clone::clone)
         }))
         // Use somewhat aggressive timeouts to avoid blocking rendering for long; we have graceful
         // fallbacks since we have to support terminals without image capabilities anyways.

@@ -342,16 +342,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "env_proxy"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a5019be18538406a43b5419a5501461f0c8b49ea7dfda0cfc32f4e51fc44be1"
-dependencies = [
- "log",
- "url",
-]
-
-[[package]]
 name = "errno"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -898,7 +888,6 @@ dependencies = [
  "base64",
  "clap",
  "clap_complete",
- "env_proxy",
  "gethostname",
  "glob",
  "hyper",
@@ -914,6 +903,7 @@ dependencies = [
  "resvg",
  "shell-words",
  "syntect",
+ "system_proxy",
  "temp-env",
  "terminal_size",
  "tokio",
@@ -1676,6 +1666,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
 name = "strict-num"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1740,6 +1736,17 @@ dependencies = [
  "serde_json",
  "thiserror",
  "walkdir",
+]
+
+[[package]]
+name = "system_proxy"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b59c11fb98bd1a42633c99d977d3674d9e8a3a298659693ad0370d24d51bbec8"
+dependencies = [
+ "log",
+ "static_assertions",
+ "url",
 ]
 
 [[package]]
