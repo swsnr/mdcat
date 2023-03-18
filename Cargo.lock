@@ -904,7 +904,6 @@ dependencies = [
  "shell-words",
  "syntect",
  "system_proxy",
- "temp-env",
  "terminal_size",
  "tokio",
  "tracing",
@@ -1747,15 +1746,6 @@ dependencies = [
  "log",
  "static_assertions",
  "url",
-]
-
-[[package]]
-name = "temp-env"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c0c07fe42fe15dcf97c394cb8350483a6e5095affb3a99e0dfd5f664be15fc3"
-dependencies = [
- "once_cell",
 ]
 
 [[package]]
