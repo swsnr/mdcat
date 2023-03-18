@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [1.1.1] – 2023-03-18
+
 ### Fixed
 - No longer elide tracing info below warn level in release builds (see [GH-242])..
   This allows downstream consumers to keep tracing info included in their release builds.
@@ -637,7 +639,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.0...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.1...HEAD
+[1.1.1]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.0...mdcat-1.1.1
 [1.1.0]: https://github.com/swsnr/mdcat/compare/mdcat-1.0.0...mdcat-1.1.0
 [1.0.0]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.3...mdcat-1.0.0
 [0.30.3]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.2...mdcat-0.30.3
