@@ -66,7 +66,6 @@ fn process_file(filename: &str, settings: &Settings, output: &mut Output) -> Res
     let env = Environment::for_local_directory(&base_dir)?;
 
     let mut sink = BufWriter::new(output.writer());
-    // mdcat::push_tty(settings, &env, &mut sink, parser).expect("FUCK");
     mdcat::push_tty(settings, &env, &mut sink, parser)
         .and_then(|_| {
             event!(Level::TRACE, "Finished rendering, flushing output");
