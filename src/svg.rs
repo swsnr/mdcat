@@ -8,8 +8,8 @@
 
 use anyhow::Context;
 use once_cell::sync::Lazy;
-use resvg::usvg_text_layout::{fontdb, TreeTextToPath};
 use resvg::{tiny_skia, usvg};
+use usvg::{fontdb, TreeParsing, TreeTextToPath};
 
 /// Render an SVG image to a PNG pixel graphic for display.
 pub fn render_svg(svg: &[u8]) -> anyhow::Result<Vec<u8>> {
@@ -32,7 +32,7 @@ fn render_svg_with_resvg(svg: &[u8]) -> anyhow::Result<Vec<u8>> {
         .with_context(|| "Failed to create target pixmap".to_string())?;
     resvg::render(
         &tree,
-        usvg::FitTo::Original,
+        resvg::FitTo::Original,
         tiny_skia::Transform::default(),
         pixmap.as_mut(),
     )
