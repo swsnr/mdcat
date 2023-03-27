@@ -9,6 +9,9 @@ Use `cargo release` to create a new release.
 ## [Unreleased]
 
 ### Changed
+- Update all dependencies.
+
+### Changed
 - Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.
 
 ## [1.1.1] – 2023-03-18
