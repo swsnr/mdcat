@@ -884,7 +884,6 @@ dependencies = [
  "glob",
  "hyper",
  "image",
- "lazy_static",
  "libc",
  "mime",
  "mime_guess",

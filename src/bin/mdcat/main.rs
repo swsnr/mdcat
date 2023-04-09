@@ -134,7 +134,7 @@ fn main() {
                     } else {
                         ResourceAccess::RemoteAllowed
                     },
-                    syntax_set: SyntaxSet::load_defaults_newlines(),
+                    syntax_set: &SyntaxSet::load_defaults_newlines(),
                 };
                 event!(
                     target: "mdcat::main",

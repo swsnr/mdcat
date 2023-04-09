@@ -10,6 +10,7 @@ Use `cargo release` to create a new release.
 
 ### Changed
 - Update all dependencies.
+- `mdcat::Setings` now holds a reference to a syntax set, so the syntax set can now be shared among multiple different settings.
 
 ### Changed
 - Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.

@@ -15,7 +15,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use glob::glob;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
@@ -24,21 +24,19 @@ use url::Url;
 use mdcat::terminal::TerminalProgram;
 use mdcat::Environment;
 
-lazy_static! {
-    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
-    static ref SETTINGS_ANSI_ONLY: mdcat::Settings = mdcat::Settings {
-        terminal_capabilities: TerminalProgram::Ansi.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
-        resource_access: mdcat::ResourceAccess::LocalOnly,
-        syntax_set: (*SYNTAX_SET).clone(),
-    };
-    static ref SETTINGS_ITERM2: mdcat::Settings = mdcat::Settings {
-        terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
-        resource_access: mdcat::ResourceAccess::LocalOnly,
-        syntax_set: (*SYNTAX_SET).clone(),
-    };
-}
+static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
+static SETTINGS_ANSI_ONLY: Lazy<mdcat::Settings> = Lazy::new(|| mdcat::Settings {
+    terminal_capabilities: TerminalProgram::Ansi.capabilities(),
+    terminal_size: mdcat::terminal::TerminalSize::default(),
+    resource_access: mdcat::ResourceAccess::LocalOnly,
+    syntax_set: &SYNTAX_SET,
+});
+static SETTINGS_ITERM2: Lazy<mdcat::Settings> = Lazy::new(|| mdcat::Settings {
+    terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
+    terminal_size: mdcat::terminal::TerminalSize::default(),
+    resource_access: mdcat::ResourceAccess::LocalOnly,
+    syntax_set: &SYNTAX_SET,
+});
 
 fn render_to_string<P: AsRef<Path>>(
     markdown_file: P,

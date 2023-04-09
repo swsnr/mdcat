@@ -404,7 +404,7 @@ pub fn write_event<'a, W: Write>(
             for line in LinesWithEndings::from(&text) {
                 let ops = attrs
                     .parse_state
-                    .parse_line(line, &settings.syntax_set)
+                    .parse_line(line, settings.syntax_set)
                     .expect("syntect parsing shouldn't fail in mdcat");
                 highlighting::write_as_ansi(
                     writer,

@@ -40,7 +40,7 @@ pub type Error = std::io::Error;
 
 /// Settings for markdown rendering.
 #[derive(Debug)]
-pub struct Settings {
+pub struct Settings<'a> {
     /// Capabilities of the terminal mdcat writes to.
     pub terminal_capabilities: TerminalCapabilities,
     /// The size of the terminal mdcat writes to.
@@ -48,7 +48,7 @@ pub struct Settings {
     /// Whether remote resource access is permitted.
     pub resource_access: ResourceAccess,
     /// Syntax set for syntax highlighting of code blocks.
-    pub syntax_set: SyntaxSet,
+    pub syntax_set: &'a SyntaxSet,
 }
 
 /// The environment to render markdown in.
@@ -157,7 +157,7 @@ mod tests {
                 markup,
                 &Settings {
                     resource_access: ResourceAccess::LocalOnly,
-                    syntax_set: SyntaxSet::default(),
+                    syntax_set: &SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),
                 },
@@ -301,7 +301,7 @@ Hello Donald[2]
                 markup,
                 &Settings {
                     resource_access: ResourceAccess::LocalOnly,
-                    syntax_set: SyntaxSet::default(),
+                    syntax_set: &SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),
                 },
