@@ -16,6 +16,7 @@ use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, LinkType};
 use syntect::highlighting::{HighlightIterator, Highlighter, Theme};
 use syntect::util::LinesWithEndings;
+use textwrap::core::display_width;
 use tracing::{event, instrument, Level};
 use url::Url;
 
@@ -30,6 +31,7 @@ use crate::references::*;
 use state::*;
 use write::*;
 
+use crate::render::data::CurrentLine;
 use crate::render::state::MarginControl::{Margin, NoMargin};
 use crate::terminal::capabilities::LinkCapability;
 pub use data::StateData;
@@ -259,7 +261,7 @@ pub fn write_event<'a, W: Write>(
 
         // Lists
         (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Item)) => {
-            let InlineAttrs { indent, style } = attrs;
+            let InlineAttrs { indent, style, .. } = attrs;
             if state == ItemBlock {
                 // Add margin
                 writeln!(writer)?;
@@ -298,7 +300,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(CodeBlock(ck))) => {
             writeln!(writer)?;
-            let InlineAttrs { indent, style } = attrs;
+            let InlineAttrs { indent, style, .. } = attrs;
             stack
                 .push(Inline(ListItem(kind, ItemBlock), attrs))
                 .current(write_start_code_block(
@@ -362,7 +364,7 @@ pub fn write_event<'a, W: Write>(
                 .ok()
         }
         (Stacked(stack, Inline(ListItem(kind, state), attrs)), End(Item)) => {
-            let InlineAttrs { indent, style } = attrs;
+            let InlineAttrs { indent, style, .. } = attrs;
             if state != ItemBlock {
                 // End the inline text of this item
                 writeln!(writer)?;
@@ -428,20 +430,26 @@ pub fn write_event<'a, W: Write>(
 
         // Inline markup
         (Stacked(stack, Inline(state, attrs)), Start(Emphasis)) => {
-            let indent = attrs.indent;
-            let style = Style {
-                is_italic: !attrs.style.is_italic,
-                ..attrs.style
+            let InlineAttrs { style, indent } = attrs;
+            let new_style = Style {
+                is_italic: !style.is_italic,
+                ..style
             };
             stack
                 .push(Inline(state, attrs))
-                .current(Inline(state, InlineAttrs { style, indent }))
+                .current(Inline(
+                    state,
+                    InlineAttrs {
+                        style: new_style,
+                        indent,
+                    },
+                ))
                 .and_data(data)
                 .ok()
         }
         (Stacked(stack, Inline(_, _)), End(Emphasis)) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), Start(Strong)) => {
-            let indent = attrs.indent;
+            let InlineAttrs { indent, .. } = attrs;
             let style = attrs.style.bold();
             stack
                 .push(Inline(state, attrs))
@@ -451,8 +459,8 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, Inline(_, _)), End(Strong)) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), Start(Strikethrough)) => {
+            let InlineAttrs { indent, .. } = attrs;
             let style = attrs.style.strikethrough();
-            let indent = attrs.indent;
             stack
                 .push(Inline(state, attrs))
                 .current(Inline(state, InlineAttrs { style, indent }))
@@ -461,51 +469,95 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, Inline(_, _)), End(Strikethrough)) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), Code(code)) => {
-            write_styled(
+            let current_line = write_styled_and_wrapped(
                 writer,
                 &settings.terminal_capabilities,
                 &attrs.style.fg(Colour::Yellow),
+                settings.terminal_size.columns,
+                attrs.indent as usize,
+                data.current_line,
                 code,
             )?;
-            stack.current(Inline(state, attrs)).and_data(data).ok()
+            let data = StateData {
+                current_line,
+                ..data
+            };
+            Ok(stack.current(Inline(state, attrs)).and_data(data))
         }
         (Stacked(stack, Inline(ListItem(kind, state), attrs)), TaskListMarker(checked)) => {
-            let marker = if checked { "\u{2611} " } else { "\u{2610} " };
+            let marker = if checked { "\u{2611}" } else { "\u{2610}" };
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
                 &attrs.style,
                 marker,
             )?;
-            stack
+            let length = data.current_line.length + display_width(marker);
+            Ok(stack
                 .current(Inline(ListItem(kind, state), attrs))
-                .and_data(data)
-                .ok()
+                .and_data(data.current_line(CurrentLine {
+                    length,
+                    trailing_space: Some(" ".to_owned()),
+                })))
         }
         // Inline line breaks
         (Stacked(stack, Inline(state, attrs)), SoftBreak) => {
-            writeln!(writer)?;
-            write_indent(writer, attrs.indent)?;
-            stack.current(Inline(state, attrs)).and_data(data).ok()
+            let length = data.current_line.length;
+
+            Ok(stack
+                .current(Inline(state, attrs))
+                .and_data(data.current_line(CurrentLine {
+                    length,
+                    trailing_space: Some(" ".to_owned()),
+                })))
         }
         (Stacked(stack, Inline(state, attrs)), HardBreak) => {
             writeln!(writer)?;
             write_indent(writer, attrs.indent)?;
-            stack.current(Inline(state, attrs)).and_data(data).ok()
+
+            Ok(stack
+                .current(Inline(state, attrs))
+                .and_data(data.current_line(CurrentLine::empty())))
         }
         // Inline text
         (Stacked(stack, Inline(ListItem(kind, ItemBlock), attrs)), Text(text)) => {
             // Fresh text after a new block, so indent again.
             write_indent(writer, attrs.indent)?;
-            write_styled(writer, &settings.terminal_capabilities, &attrs.style, text)?;
-            stack
+            let current_line = write_styled_and_wrapped(
+                writer,
+                &settings.terminal_capabilities,
+                &attrs.style,
+                settings.terminal_size.columns,
+                attrs.indent as usize,
+                data.current_line,
+                text,
+            )?;
+            Ok(stack
                 .current(Inline(ListItem(kind, ItemText), attrs))
-                .and_data(data)
-                .ok()
+                .and_data(StateData {
+                    current_line,
+                    ..data
+                }))
+        }
+        // Inline blocks don't wrap
+        (Stacked(stack, Inline(InlineBlock, attrs)), Text(text)) => {
+            write_styled(writer, &settings.terminal_capabilities, &attrs.style, text)?;
+            Ok(stack.current(Inline(InlineBlock, attrs)).and_data(data))
         }
         (Stacked(stack, Inline(state, attrs)), Text(text)) => {
-            write_styled(writer, &settings.terminal_capabilities, &attrs.style, text)?;
-            stack.current(Inline(state, attrs)).and_data(data).ok()
+            let current_line = write_styled_and_wrapped(
+                writer,
+                &settings.terminal_capabilities,
+                &attrs.style,
+                settings.terminal_size.columns,
+                attrs.indent as usize,
+                data.current_line,
+                text,
+            )?;
+            Ok(stack.current(Inline(state, attrs)).and_data(StateData {
+                current_line,
+                ..data
+            }))
         }
         // Inline HTML
         (Stacked(stack, Inline(ListItem(kind, ItemBlock), attrs)), Html(html)) => {
@@ -534,11 +586,15 @@ pub fn write_event<'a, W: Write>(
         // Ending inline text
         (Stacked(stack, Inline(_, _)), End(Paragraph)) => {
             writeln!(writer)?;
-            stack.pop().and_data(data).ok()
+            Ok(stack
+                .pop()
+                .and_data(data.current_line(CurrentLine::empty())))
         }
         (Stacked(stack, Inline(_, _)), End(Heading(_, _, _))) => {
             writeln!(writer)?;
-            stack.pop().and_data(data).ok()
+            Ok(stack
+                .pop()
+                .and_data(data.current_line(CurrentLine::empty())))
         }
 
         // Links.

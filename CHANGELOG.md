@@ -8,12 +8,17 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Added
+- mdcat now fills paragraph text to the column limit, i.e. fills up short lines and wraps long lines (see [GH-4]).
+
 ### Changed
 - Update all dependencies.
 - `mdcat::Settings` now holds a reference to a syntax set, so the syntax set can now be shared among multiple different settings.
 
 ### Changed
 - Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.
+
+[GH-4]: https://github.com/swsnr/mdcat/issues/4
 
 ## [1.1.1] – 2023-03-18
 
