@@ -1,0 +1,6 @@
+`mdcat` has some stuff which seriously goes over the **80 character** mark [here and definitely][1] must wrap right before the "definitely"!
+
+If there is a [very very long inline link](https://example.com/this-is-a-very-long-path-which-should-not-be-taken-into-account-wrt-line-length)
+mdcat should join subsequent lines.
+
+[1]: https://example.com/this-link-should-wrap

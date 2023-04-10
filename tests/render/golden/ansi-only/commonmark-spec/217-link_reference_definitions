@@ -1,3 +1,1 @@
-]8;;file://HOSTNAME/ROOT/foo-url[34mfoo[0m]8;;,
-]8;;file://HOSTNAME/ROOT/bar-url[34mbar[0m]8;;,
-]8;;file://HOSTNAME/ROOT/baz-url[34mbaz[0m]8;;
+]8;;file://HOSTNAME/ROOT/foo-url[34mfoo[0m]8;;,]8;;file://HOSTNAME/ROOT/bar-url[34m bar[0m]8;;,]8;;file://HOSTNAME/ROOT/baz-url[34m baz[0m]8;;

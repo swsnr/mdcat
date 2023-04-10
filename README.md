@@ -108,7 +108,6 @@ Run `mdcat` with `$MDCAT_LOG=trace` for complete tracing information, or with `$
 - [ ] Figure out a better way to show HTML [#3].
 - [ ] CommonMark extensions: Footnotes [#1].
 - [ ] CommonMark extensions: Tables [#2].
-- [ ] Ignore soft wraps and wrap inline text a column limit instead [#4].
 
 [#1]: https://github.com/swsnr/mdcat/issues/1
 [#2]: https://github.com/swsnr/mdcat/issues/2

@@ -10,9 +10,11 @@ use ansi_term::{Colour, Style};
 use pulldown_cmark::{CodeBlockKind, HeadingLevel};
 use syntect::highlighting::{HighlightState, Highlighter, Theme};
 use syntect::parsing::{ParseState, ScopeStack};
+use textwrap::core::{display_width, Word};
+use textwrap::WordSeparator;
 
 use crate::references::*;
-use crate::render::data::LinkReferenceDefinition;
+use crate::render::data::{CurrentLine, LinkReferenceDefinition};
 use crate::render::state::*;
 use crate::terminal::capabilities::{MarkCapability, StyleCapability, TerminalCapabilities};
 use crate::terminal::TerminalSize;
@@ -33,6 +35,167 @@ pub fn write_styled<W: Write, S: AsRef<str>>(
     match capabilities.style {
         None => write!(writer, "{}", text.as_ref()),
         Some(StyleCapability::Ansi(ansi)) => ansi.write_styled(writer, style, text),
+    }
+}
+
+fn write_remaining_lines<W: Write>(
+    writer: &mut W,
+    capabilities: &TerminalCapabilities,
+    style: &Style,
+    indent: usize,
+    mut buffer: String,
+    next_lines: &[&[Word]],
+    last_line: &[Word],
+) -> Result<CurrentLine> {
+    // Finish the previous line
+    writeln!(writer)?;
+    write_indent(writer, indent as u16)?;
+    // Now write all lines up to the last
+    for line in next_lines {
+        match line.split_last() {
+            None => {
+                // The line was empty, so there's nothing to do anymore.
+            }
+            Some((last, heads)) => {
+                for word in heads {
+                    buffer.push_str(word.word);
+                    buffer.push_str(word.whitespace);
+                }
+                buffer.push_str(last.word);
+                write_styled(writer, capabilities, style, &buffer)?;
+                writeln!(writer)?;
+                write_indent(writer, indent as u16)?;
+                buffer.clear();
+            }
+        };
+    }
+
+    // Now write the last line and keep track of its width
+    match last_line.split_last() {
+        None => {
+            // The line was empty, so there's nothing to do anymore.
+            Ok(CurrentLine::empty())
+        }
+        Some((last, heads)) => {
+            for word in heads {
+                buffer.push_str(word.word);
+                buffer.push_str(word.whitespace);
+            }
+            buffer.push_str(last.word);
+            write_styled(writer, capabilities, style, &buffer)?;
+            Ok(CurrentLine {
+                length: textwrap::core::display_width(&buffer),
+                trailing_space: Some(last.whitespace.to_owned()),
+            })
+        }
+    }
+}
+
+pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
+    writer: &mut W,
+    capabilities: &TerminalCapabilities,
+    style: &Style,
+    max_width: usize,
+    indent: usize,
+    current_line: CurrentLine,
+    text: S,
+) -> Result<CurrentLine> {
+    let words = WordSeparator::UnicodeBreakProperties
+        .find_words(text.as_ref())
+        .collect::<Vec<_>>();
+    match words.first() {
+        // There were no words in the text so we just do nothing.
+        None => Ok(current_line),
+        Some(first_word) => {
+            let current_width = current_line.length
+                + indent
+                + current_line
+                    .trailing_space
+                    .as_ref()
+                    .map_or(0, |s| display_width(s.as_ref()));
+
+            // If the current line is not empty and we can't even add the first first word of the text to it
+            // then lets finish the line and start over.  If the current line is empty the word simply doesn't
+            // fit into the terminal size so we must print it anyway.
+            if 0 < current_line.length && max_width < current_width + display_width(first_word) {
+                writeln!(writer)?;
+                write_indent(writer, indent as u16)?;
+                return write_styled_and_wrapped(
+                    writer,
+                    capabilities,
+                    style,
+                    max_width,
+                    indent,
+                    CurrentLine::empty(),
+                    text,
+                );
+            }
+
+            let widths = [
+                // For the first line we need to subtract the length of the current line, and
+                // the trailing space we need to add if we add more words to this line
+                (max_width - current_width.min(max_width)) as f64,
+                // For remaining lines we only need to account for the indent
+                (max_width - indent) as f64,
+            ];
+            let lines = textwrap::wrap_algorithms::wrap_first_fit(&words, &widths);
+            match lines.split_first() {
+                None => {
+                    // there was nothing to wrap so we continue as before
+                    Ok(current_line)
+                }
+                Some((first_line, tails)) => {
+                    let mut buffer = String::with_capacity(max_width);
+
+                    // Finish the current line
+                    let new_current_line = match first_line.split_last() {
+                        None => {
+                            // The first line was empty, so there's nothing to do anymore.
+                            current_line
+                        }
+                        Some((last, heads)) => {
+                            if let Some(s) = current_line.trailing_space {
+                                buffer.push_str(&s);
+                            }
+                            for word in heads {
+                                buffer.push_str(word.word);
+                                buffer.push_str(word.whitespace);
+                            }
+                            buffer.push_str(last.word);
+                            let length =
+                                current_line.length + textwrap::core::display_width(&buffer);
+                            write_styled(writer, capabilities, style, &buffer)?;
+                            buffer.clear();
+                            CurrentLine {
+                                length,
+                                trailing_space: Some(last.whitespace.to_owned()),
+                            }
+                        }
+                    };
+
+                    // Now write the rest of the lines
+                    match tails.split_last() {
+                        None => {
+                            // There are no more lines and we're done here.
+                            //
+                            // We arive here when the text fragment we wrapped above was
+                            // shorter than the max length of the current line, i.e. we're
+                            // still continuing with the current line.
+                            Ok(new_current_line)
+                        }
+                        Some((last_line, next_lines)) => write_remaining_lines(
+                            writer,
+                            capabilities,
+                            style,
+                            indent,
+                            buffer,
+                            next_lines,
+                            last_line,
+                        ),
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -171,7 +334,7 @@ pub fn write_start_heading<W: Write>(
 
     // Headlines never wrap, so indent doesn't matter
     Ok(StackedState::Inline(
-        InlineState::InlineText,
+        InlineState::InlineBlock,
         InlineAttrs { style, indent: 0 },
     ))
 }

@@ -74,6 +74,10 @@ pub enum InlineState {
     ///
     /// Regular inline text without any particular implications.
     InlineText,
+    /// Inline text.
+    ///
+    /// Inline text block which may not be wrapped.
+    InlineBlock,
     /// Inline link.
     ///
     /// This state suppresses link references being written when reading a link

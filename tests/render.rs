@@ -112,6 +112,14 @@ fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
     let expected_file = golden_file_directory.as_ref().join(&basename);
 
     if std::env::var_os("MDCAT_UPDATE_GOLDEN_FILES").is_some() {
+        std::fs::create_dir_all(expected_file.parent().unwrap())
+            .with_context(|| {
+                format!(
+                    "Failed to create directory {}",
+                    expected_file.parent().unwrap().display()
+                )
+            })
+            .unwrap();
         std::fs::write(&expected_file, &actual)
             .with_context(|| {
                 format!(

@@ -20,6 +20,25 @@ pub struct LinkReferenceDefinition<'a> {
     pub(crate) colour: Colour,
 }
 
+/// The state of the current line for render.md.wrapping.
+#[derive(Debug)]
+pub struct CurrentLine {
+    /// The line length
+    pub(super) length: usize,
+    /// Trailing space to add before continuing this line.
+    pub(super) trailing_space: Option<String>,
+}
+
+impl CurrentLine {
+    /// An empty current line
+    pub(super) fn empty() -> Self {
+        Self {
+            length: 0,
+            trailing_space: None,
+        }
+    }
+}
+
 /// Data associated with rendering state.
 ///
 /// Unlike state attributes state data represents cross-cutting
@@ -33,9 +52,18 @@ pub struct StateData<'a> {
     pub(super) pending_link_definitions: Vec<LinkReferenceDefinition<'a>>,
     /// The reference number for the next link.
     pub(super) next_link: u16,
+    /// The state of the current line for render.md.wrapping.
+    pub(super) current_line: CurrentLine,
 }
 
 impl<'a> StateData<'a> {
+    pub(crate) fn current_line(self, current_line: CurrentLine) -> Self {
+        Self {
+            current_line,
+            ..self
+        }
+    }
+
     /// Add a pending link to the state data.
     ///
     /// `target` is the link target, and `title` the link title to show after the URL.
@@ -75,6 +103,7 @@ impl<'a> Default for StateData<'a> {
         StateData {
             pending_link_definitions: Vec::new(),
             next_link: 1,
+            current_line: CurrentLine::empty(),
         }
     }
 }
