@@ -8,6 +8,8 @@ use std::io::{Error, ErrorKind, Result};
 use std::path::Path;
 use std::process::Command;
 
+use syntect::highlighting::ThemeSet;
+
 mod mdcat {
     include!("src/bin/mdcat/args.rs");
 }
@@ -27,6 +29,13 @@ fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn generate_theme_dump<P: AsRef<Path>>(out_dir: P) {
+    let source_file = "src/render/Solarized (dark).tmTheme";
+    println!("cargo:rerun-if-changed={source_file}");
+    let theme = ThemeSet::get_theme(source_file).unwrap();
+    syntect::dumps::dump_to_file(&theme, out_dir.as_ref().join("theme.dump")).unwrap();
 }
 
 fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
@@ -59,6 +68,7 @@ fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
 
 fn main() {
     let out_dir = std::env::var_os("OUT_DIR").expect("OUT_DIR not set");
+    generate_theme_dump(&out_dir);
 
     println!("cargo:rerun-if-changed=src/bin/mdcat/args.rs");
     if let Err(error) = gen_completions(&out_dir) {

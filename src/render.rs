@@ -15,17 +15,18 @@ use anyhow::anyhow;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, LinkType};
-use syntect::highlighting::{HighlightIterator, Highlighter, Theme};
+use syntect::highlighting::HighlightIterator;
 use syntect::util::LinesWithEndings;
 use textwrap::core::display_width;
 use tracing::{event, instrument, Level};
 use url::Url;
 
-use crate::terminal::*;
+use crate::render::highlighting::HIGHLIGHTER;
 use crate::theme::CombineStyle;
 use crate::{Environment, Settings};
 
 mod data;
+mod highlighting;
 mod state;
 mod write;
 
@@ -41,12 +42,11 @@ pub use state::State;
 pub use state::StateAndData;
 
 #[allow(clippy::cognitive_complexity)]
-#[instrument(level = "trace", skip(writer, settings, environment, syntax_theme))]
+#[instrument(level = "trace", skip(writer, settings, environment))]
 pub fn write_event<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
     environment: &Environment,
-    syntax_theme: &Theme,
     state: State,
     data: StateData<'a>,
     event: Event<'a>,
@@ -127,7 +127,6 @@ pub fn write_event<'a, W: Write>(
                     0,
                     Style::new(),
                     kind,
-                    syntax_theme,
                 )?)
                 .and_data(data)
                 .ok()
@@ -241,12 +240,7 @@ pub fn write_event<'a, W: Write>(
             stack
                 .push(attrs.into())
                 .current(write_start_code_block(
-                    writer,
-                    settings,
-                    indent,
-                    style,
-                    kind,
-                    syntax_theme,
+                    writer, settings, indent, style, kind,
                 )?)
                 .and_data(data)
                 .ok()
@@ -312,14 +306,7 @@ pub fn write_event<'a, W: Write>(
             let InlineAttrs { indent, style, .. } = attrs;
             stack
                 .push(Inline(ListItem(kind, ItemBlock), attrs))
-                .current(write_start_code_block(
-                    writer,
-                    settings,
-                    indent,
-                    style,
-                    ck,
-                    syntax_theme,
-                )?)
+                .current(write_start_code_block(writer, settings, indent, style, ck)?)
                 .and_data(data)
                 .ok()
         }
@@ -418,7 +405,6 @@ pub fn write_event<'a, W: Write>(
 
         // Highlighted code blocks
         (Stacked(stack, HighlightBlock(mut attrs)), Text(text)) => {
-            let highlighter = Highlighter::new(syntax_theme);
             for line in LinesWithEndings::from(&text) {
                 let ops = attrs
                     .parse_state
@@ -427,7 +413,7 @@ pub fn write_event<'a, W: Write>(
                 highlighting::write_as_ansi(
                     writer,
                     attrs.ansi,
-                    HighlightIterator::new(&mut attrs.highlight_state, &ops, line, &highlighter),
+                    HighlightIterator::new(&mut attrs.highlight_state, &ops, line, &HIGHLIGHTER),
                 )?;
                 if text.ends_with('\n') {
                     write_indent(writer, attrs.indent)?;

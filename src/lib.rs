@@ -16,7 +16,6 @@ use std::io::{ErrorKind, Result, Write};
 use std::path::Path;
 
 use pulldown_cmark::Event;
-use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 use tracing::instrument;
 use url::Url;
@@ -120,12 +119,11 @@ where
     I: Iterator<Item = Event<'e>>,
     W: Write,
 {
-    let theme = &ThemeSet::load_defaults().themes["Solarized (dark)"];
     use render::*;
     let StateAndData(final_state, final_data) = events.try_fold(
         StateAndData(State::default(), StateData::default()),
         |StateAndData(state, data), event| {
-            write_event(writer, settings, environment, theme, state, data, event)
+            write_event(writer, settings, environment, state, data, event)
         },
     )?;
     finish(writer, settings, environment, final_state, final_data)

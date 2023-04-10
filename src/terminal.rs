@@ -9,7 +9,6 @@
 // Support modules for terminal writing.
 
 mod ansi;
-pub mod highlighting;
 mod osc;
 mod size;
 

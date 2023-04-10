@@ -6,10 +6,18 @@
 
 //! Tools for syntax highlighting.
 
-use super::ansi::AnsiStyle;
 use anstyle::{AnsiColor, Effects};
+use once_cell::sync::Lazy;
 use std::io::{Result, Write};
-use syntect::highlighting::{FontStyle, Style};
+use syntect::highlighting::{FontStyle, Highlighter, Style, Theme};
+
+use crate::terminal::AnsiStyle;
+
+static SOLARIZED_DARK_DUMP: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/theme.dump"));
+static SOLARIZED_DARK: Lazy<Theme> = Lazy::new(|| syntect::dumps::from_binary(SOLARIZED_DARK_DUMP));
+pub static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new(|| Highlighter::new(&SOLARIZED_DARK));
+
+// static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new
 
 /// Write regions as ANSI 8-bit coloured text.
 ///
