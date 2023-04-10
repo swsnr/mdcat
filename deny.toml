@@ -12,11 +12,7 @@ vulnerability = "deny"
 unmaintained = "deny"
 yanked = "deny"
 notice = "warn"
-ignore = [
-    # Ignore maintenance advisory for ansi_term: While it's unmaintained it still
-    # does it's job perfectly, so there's no pressing need to address this.
-    "RUSTSEC-2021-0139"
-]
+ignore = []
 
 [licenses]
 unlicensed = "deny"

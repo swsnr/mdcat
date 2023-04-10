@@ -1,1 +1,1 @@
-[foo[3m bar[0m]8;;file://HOSTNAME/ROOT/uri[3;34m baz[0m]8;;]]8;;file://HOSTNAME/ROOT/uri[34mref[0m]8;;
+[foo[3m bar[0m]8;;file://HOSTNAME/ROOT/uri[3m[34m baz[0m]8;;]]8;;file://HOSTNAME/ROOT/uri[34mref[0m]8;;

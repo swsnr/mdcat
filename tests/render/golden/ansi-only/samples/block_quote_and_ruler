@@ -8,8 +8,8 @@ Block quotes with paragraphs
     [3meirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam[0m
     [3mvoluptua.[0m
 
-    [3mLorem ipsum dolor sit amet,[0m[1;3m consetetur sadipscing elitr[0m[3m, sed diam nonumy[0m
-    [3meirmod tempor invidunt ut[0m[3;33m labore et dolore magna[0m[3m aliquyam erat, sed diam[0m
+    [3mLorem ipsum dolor sit amet,[0m[1m[3m consetetur sadipscing elitr[0m[3m, sed diam nonumy[0m
+    [3meirmod tempor invidunt ut[0m[3m[33m labore et dolore magna[0m[3m aliquyam erat, sed diam[0m
     [3mvoluptua.[0m
 
 Before we continue, have a ruler:

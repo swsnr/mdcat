@@ -10,6 +10,8 @@ Use `cargo release` to create a new release.
 
 ### Added
 - mdcat now fills paragraph text to the column limit, i.e. fills up short lines and wraps long lines (see [GH-4]).
+- mdcat now allows to control color and style via a new `theme` field in `mdcat::Settings` of type `mdcat::Theme` (see [GH-48]).
+    `mdcat::Theme::default()` provides the standard mdcat 1.x colors and style.
 
 ### Changed
 - Update all dependencies.
@@ -19,6 +21,7 @@ Use `cargo release` to create a new release.
 - Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.
 
 [GH-4]: https://github.com/swsnr/mdcat/issues/4
+[GH-48]: https://github.com/swsnr/mdcat/issues/48
 
 ## [1.1.1] – 2023-03-18
 
