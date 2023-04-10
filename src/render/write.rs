@@ -8,13 +8,14 @@ use std::io::{Result, Write};
 
 use anstyle::Style;
 use pulldown_cmark::{CodeBlockKind, HeadingLevel};
-use syntect::highlighting::{HighlightState, Highlighter};
+use syntect::highlighting::HighlightState;
 use syntect::parsing::{ParseState, ScopeStack};
 use textwrap::core::{display_width, Word};
 use textwrap::WordSeparator;
 
 use crate::references::*;
 use crate::render::data::{CurrentLine, LinkReferenceDefinition};
+use crate::render::highlighting::HIGHLIGHTER;
 use crate::render::state::*;
 use crate::terminal::capabilities::{MarkCapability, StyleCapability, TerminalCapabilities};
 use crate::terminal::TerminalSize;
@@ -293,7 +294,6 @@ pub fn write_start_code_block<W: Write>(
     indent: u16,
     style: Style,
     block_kind: CodeBlockKind<'_>,
-    syntax_theme: &syntect::highlighting::Theme,
 ) -> Result<StackedState> {
     write_indent(writer, indent)?;
     write_code_block_border(
@@ -315,8 +315,7 @@ pub fn write_start_code_block<W: Write>(
                 .into()),
                 Some(syntax) => {
                     let parse_state = ParseState::new(syntax);
-                    let highlight_state =
-                        HighlightState::new(&Highlighter::new(syntax_theme), ScopeStack::new());
+                    let highlight_state = HighlightState::new(&HIGHLIGHTER, ScopeStack::new());
                     Ok(HighlightBlockAttrs {
                         ansi: *ansi,
                         indent,
