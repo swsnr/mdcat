@@ -217,7 +217,7 @@ Unless `--no-colour` is given, mdcat translates CommonMark text into ANSI format
 It uses bold (SGR 1), italic (SGR 3) and strikethrough (SGR 9) formatting, and the standard 4-bit color sequences, as well as https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda[OSC 8] for hyperlinks.
 It does not use 8-bit or 24-bit color sequences, though this may change in future releases.
 
-Additionally, it uses proprietary escape code if it detects one of the following terminal emulators (see sections <<Terminal detection>> and <<Environment>> for details):
+Additionally, it uses proprietary escape codes if it detects one of the following terminal emulators (see sections <<Terminal detection>> and <<Environment>> for details):
 
 * https://iterm2.com/[iTerm2]: Inline images (https://iterm2.com/documentation-images.html[iTerm2 protocol]) and
 https://iterm2.com/documentation-escape-codes.html[Marks].
@@ -229,7 +229,7 @@ https://iterm2.com/documentation-escape-codes.html[Marks].
 
 Please report bugs to https://github.com/swsnr/mdcat/issues.
 
-Currently mdcat does not yet wrap text to column limits, and does not provide means to customize styles and colours.
+Currently does not provide means to customize styles and colours.
 
 == Examples
 
