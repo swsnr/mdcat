@@ -25,18 +25,6 @@ use mdcat::terminal::TerminalProgram;
 use mdcat::Environment;
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
-static SETTINGS_ANSI_ONLY: Lazy<mdcat::Settings> = Lazy::new(|| mdcat::Settings {
-    terminal_capabilities: TerminalProgram::Ansi.capabilities(),
-    terminal_size: mdcat::terminal::TerminalSize::default(),
-    resource_access: mdcat::ResourceAccess::LocalOnly,
-    syntax_set: &SYNTAX_SET,
-});
-static SETTINGS_ITERM2: Lazy<mdcat::Settings> = Lazy::new(|| mdcat::Settings {
-    terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
-    terminal_size: mdcat::terminal::TerminalSize::default(),
-    resource_access: mdcat::ResourceAccess::LocalOnly,
-    syntax_set: &SYNTAX_SET,
-});
 
 fn render_to_string<P: AsRef<Path>>(
     markdown_file: P,
@@ -143,24 +131,34 @@ fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
 /// Test basic rendering.
 #[test]
 fn ansi_only() {
+    let settings = mdcat::Settings {
+        terminal_capabilities: TerminalProgram::Ansi.capabilities(),
+        terminal_size: mdcat::terminal::TerminalSize::default(),
+        resource_access: mdcat::ResourceAccess::LocalOnly,
+        syntax_set: &SYNTAX_SET,
+    };
     for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
         test_with_golden_file(
             markdown_file.unwrap(),
             "tests/render/golden/ansi-only",
-            &SETTINGS_ANSI_ONLY,
+            &settings,
         )
     }
 }
 
-/// Test the full shebang, but not on Windows, since the iTerm2 backend has some unimplemented stuff on Windows.
-#[cfg(not(windows))]
 #[test]
 fn iterm2() {
+    let settings = mdcat::Settings {
+        terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
+        terminal_size: mdcat::terminal::TerminalSize::default(),
+        resource_access: mdcat::ResourceAccess::LocalOnly,
+        syntax_set: &SYNTAX_SET,
+    };
     for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
         test_with_golden_file(
             markdown_file.unwrap(),
             "tests/render/golden/iterm2",
-            &SETTINGS_ITERM2,
+            &settings,
         )
     }
 }
