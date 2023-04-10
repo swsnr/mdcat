@@ -22,7 +22,7 @@ use syntect::parsing::SyntaxSet;
 use url::Url;
 
 use mdcat::terminal::TerminalProgram;
-use mdcat::Environment;
+use mdcat::{Environment, Theme};
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
 
@@ -143,6 +143,7 @@ fn ansi_only() {
         terminal_capabilities: TerminalProgram::Ansi.capabilities(),
         terminal_size: mdcat::terminal::TerminalSize::default(),
         resource_access: mdcat::ResourceAccess::LocalOnly,
+        theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };
     for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
@@ -160,6 +161,7 @@ fn iterm2() {
         terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
         terminal_size: mdcat::terminal::TerminalSize::default(),
         resource_access: mdcat::ResourceAccess::LocalOnly,
+        theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };
     for markdown_file in glob("tests/render/md/*/*.md").unwrap() {

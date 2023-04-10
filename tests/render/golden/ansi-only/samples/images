@@ -4,7 +4,7 @@ An inline]8;;https://example.com/[34m image[0m[35m[1][0m]8;; with a link
 
 An inline]8;;https://example.com/[34m linked[0m[34m image[0m[35m[2][0m]8;; with some extra text.
 
-An inline]8;;https://example.com/[1;34m linked[0m[1;34m image[0m[1;35m[3][0m]8;; with nested formatting.
+An inline]8;;https://example.com/[1m[34m linked[0m[1m[34m image[0m[1m[35m[3][0m]8;; with nested formatting.
 
 Or as block:
 

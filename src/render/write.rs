@@ -6,9 +6,9 @@
 
 use std::io::{Result, Write};
 
-use ansi_term::{Colour, Style};
+use anstyle::Style;
 use pulldown_cmark::{CodeBlockKind, HeadingLevel};
-use syntect::highlighting::{HighlightState, Highlighter, Theme};
+use syntect::highlighting::{HighlightState, Highlighter};
 use syntect::parsing::{ParseState, ScopeStack};
 use textwrap::core::{display_width, Word};
 use textwrap::WordSeparator;
@@ -18,6 +18,8 @@ use crate::render::data::{CurrentLine, LinkReferenceDefinition};
 use crate::render::state::*;
 use crate::terminal::capabilities::{MarkCapability, StyleCapability, TerminalCapabilities};
 use crate::terminal::TerminalSize;
+use crate::theme::CombineStyle;
+use crate::Theme;
 use crate::{Environment, Settings};
 
 #[inline]
@@ -214,22 +216,27 @@ pub fn write_mark<W: Write>(writer: &mut W, capabilities: &TerminalCapabilities)
 pub fn write_rule<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
+    theme: &Theme,
     length: usize,
 ) -> std::io::Result<()> {
     let rule = "\u{2550}".repeat(length);
-    let style = Style::new().fg(Colour::Green);
-    write_styled(writer, capabilities, &style, rule)
+    write_styled(writer, capabilities, &theme.rule_color.into(), rule)
 }
 
 #[inline]
-pub fn write_border<W: Write>(
+pub fn write_code_block_border<W: Write>(
     writer: &mut W,
+    theme: &Theme,
     capabilities: &TerminalCapabilities,
     terminal_size: &TerminalSize,
 ) -> std::io::Result<()> {
     let separator = "\u{2500}".repeat(terminal_size.columns.min(20));
-    let style = Style::new().fg(Colour::Green);
-    write_styled(writer, capabilities, &style, separator)?;
+    write_styled(
+        writer,
+        capabilities,
+        &theme.code_block_border_color.into(),
+        separator,
+    )?;
     writeln!(writer)
 }
 
@@ -242,8 +249,12 @@ pub fn write_link_refs<W: Write>(
     if !links.is_empty() {
         writeln!(writer)?;
         for link in links {
-            let style = Style::new().fg(link.colour);
-            write_styled(writer, capabilities, &style, &format!("[{}]: ", link.index))?;
+            write_styled(
+                writer,
+                capabilities,
+                &link.style,
+                &format!("[{}]: ", link.index),
+            )?;
 
             // If we can resolve the link try to write it as inline link to make the URL
             // clickable.  This mostly helps images inside inline links which we had to write as
@@ -253,17 +264,22 @@ pub fn write_link_refs<W: Write>(
                 match &capabilities.links {
                     Some(Osc8(links)) => {
                         links.set_link_url(writer, url, &environment.hostname)?;
-                        write_styled(writer, capabilities, &style, link.target)?;
+                        write_styled(writer, capabilities, &link.style, link.target)?;
                         links.clear_link(writer)?;
                     }
-                    None => write_styled(writer, capabilities, &style, link.target)?,
+                    None => write_styled(writer, capabilities, &link.style, link.target)?,
                 };
             } else {
-                write_styled(writer, capabilities, &style, link.target)?;
+                write_styled(writer, capabilities, &link.style, link.target)?;
             }
 
             if !link.title.is_empty() {
-                write_styled(writer, capabilities, &style, format!(" {}", link.title))?;
+                write_styled(
+                    writer,
+                    capabilities,
+                    &link.style,
+                    format!(" {}", link.title),
+                )?;
             }
             writeln!(writer)?;
         }
@@ -277,11 +293,12 @@ pub fn write_start_code_block<W: Write>(
     indent: u16,
     style: Style,
     block_kind: CodeBlockKind<'_>,
-    theme: &Theme,
+    syntax_theme: &syntect::highlighting::Theme,
 ) -> Result<StackedState> {
     write_indent(writer, indent)?;
-    write_border(
+    write_code_block_border(
         writer,
+        &settings.theme,
         &settings.terminal_capabilities,
         &settings.terminal_size,
     )?;
@@ -293,13 +310,13 @@ pub fn write_start_code_block<W: Write>(
             match settings.syntax_set.find_syntax_by_token(&name) {
                 None => Ok(LiteralBlockAttrs {
                     indent,
-                    style: style.fg(Colour::Yellow),
+                    style: settings.theme.code_style.on_top_of(&style),
                 }
                 .into()),
                 Some(syntax) => {
                     let parse_state = ParseState::new(syntax);
                     let highlight_state =
-                        HighlightState::new(&Highlighter::new(theme), ScopeStack::new());
+                        HighlightState::new(&Highlighter::new(syntax_theme), ScopeStack::new());
                     Ok(HighlightBlockAttrs {
                         ansi: *ansi,
                         indent,
@@ -312,7 +329,7 @@ pub fn write_start_code_block<W: Write>(
         }
         (_, _) => Ok(LiteralBlockAttrs {
             indent,
-            style: style.fg(Colour::Yellow),
+            style: settings.theme.code_style.on_top_of(&style),
         }
         .into()),
     }
@@ -324,7 +341,6 @@ pub fn write_start_heading<W: Write>(
     style: Style,
     level: HeadingLevel,
 ) -> Result<StackedState> {
-    let style = style.fg(Colour::Blue).bold();
     write_styled(
         writer,
         capabilities,

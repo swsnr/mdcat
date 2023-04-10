@@ -14,6 +14,7 @@ use std::io::Result;
 use std::io::{stdin, BufWriter};
 use std::path::PathBuf;
 
+use mdcat::Theme;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use tracing::{event, instrument, Level};
@@ -114,12 +115,8 @@ fn main() {
     if args.detect_and_exit {
         println!("Terminal: {terminal}");
     } else {
-        // On Windows 10 we need to enable ANSI term explicitly.
-        #[cfg(windows)]
-        {
-            event!(target: "mdcat::main", Level::TRACE, "Enable ANSI support in windows terminal");
-            ansi_term::enable_ansi_support().ok();
-        }
+        // Enable Ansi color processing on Windows; no-op on other platforms.
+        concolor_query::windows::enable_ansi_colors();
 
         let size = TerminalSize::detect().unwrap_or_default();
         let columns = args.columns.unwrap_or(size.columns);
@@ -135,6 +132,7 @@ fn main() {
                         ResourceAccess::RemoteAllowed
                     },
                     syntax_set: &SyntaxSet::load_defaults_newlines(),
+                    theme: Theme::default(),
                 };
                 event!(
                     target: "mdcat::main",

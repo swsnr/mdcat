@@ -14,13 +14,14 @@ use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 
 use anyhow::{Context, Result};
-use mdcat::{terminal::TerminalProgram, Environment};
+use mdcat::{terminal::TerminalProgram, Environment, Theme};
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
 static SETTINGS_ANSI_ONLY: Lazy<mdcat::Settings> = Lazy::new(|| mdcat::Settings {
     terminal_capabilities: TerminalProgram::Ansi.capabilities(),
     terminal_size: mdcat::terminal::TerminalSize::default(),
     resource_access: mdcat::ResourceAccess::LocalOnly,
+    theme: Theme::default(),
     syntax_set: &SYNTAX_SET,
 });
 

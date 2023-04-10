@@ -7,7 +7,7 @@
 //! Tools for syntax highlighting.
 
 use super::ansi::AnsiStyle;
-use ansi_term::Colour;
+use anstyle::{AnsiColor, Effects};
 use std::io::{Result, Write};
 use syntect::highlighting::{FontStyle, Style};
 
@@ -36,8 +36,7 @@ pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
             let fg = style.foreground;
             (fg.r, fg.g, fg.b)
         };
-        let mut ansi_style = ansi_term::Style::new();
-        match rgb {
+        let color = match rgb {
             // base03, base02, base01, base00, base0, base1, base2, and base3
             (0x00, 0x2b, 0x36)
             | (0x07, 0x36, 0x42)
@@ -46,22 +45,24 @@ pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
             | (0x83, 0x94, 0x96)
             | (0x93, 0xa1, 0xa1)
             | (0xee, 0xe8, 0xd5)
-            | (0xfd, 0xf6, 0xe3) => ansi_style.foreground = None,
-            (0xb5, 0x89, 0x00) => ansi_style.foreground = Some(Colour::Yellow),
-            (0xcb, 0x4b, 0x16) => ansi_style.foreground = Some(Colour::Fixed(9)), // Bright red
-            (0xdc, 0x32, 0x2f) => ansi_style.foreground = Some(Colour::Red),
-            (0xd3, 0x36, 0x82) => ansi_style.foreground = Some(Colour::Purple),
-            (0x6c, 0x71, 0xc4) => ansi_style.foreground = Some(Colour::Fixed(13)), // Bright purple
-            (0x26, 0x8b, 0xd2) => ansi_style.foreground = Some(Colour::Blue),
-            (0x2a, 0xa1, 0x98) => ansi_style.foreground = Some(Colour::Cyan),
-            (0x85, 0x99, 0x00) => ansi_style.foreground = Some(Colour::Green),
+            | (0xfd, 0xf6, 0xe3) => None,
+            (0xb5, 0x89, 0x00) => Some(AnsiColor::Yellow.into()),
+            (0xcb, 0x4b, 0x16) => Some(AnsiColor::BrightRed.into()),
+            (0xdc, 0x32, 0x2f) => Some(AnsiColor::Red.into()),
+            (0xd3, 0x36, 0x82) => Some(AnsiColor::Magenta.into()),
+            (0x6c, 0x71, 0xc4) => Some(AnsiColor::BrightMagenta.into()),
+            (0x26, 0x8b, 0xd2) => Some(AnsiColor::Blue.into()),
+            (0x2a, 0xa1, 0x98) => Some(AnsiColor::Cyan.into()),
+            (0x85, 0x99, 0x00) => Some(AnsiColor::Green.into()),
             (r, g, b) => panic!("Unexpected RGB colour: #{r:2>0x}{g:2>0x}{b:2>0x}"),
         };
         let font = style.font_style;
-        ansi_style.is_bold = font.contains(FontStyle::BOLD);
-        ansi_style.is_italic = font.contains(FontStyle::ITALIC);
-        ansi_style.is_underline = font.contains(FontStyle::UNDERLINE);
-        ansi.write_styled(writer, &ansi_style, text)?;
+        let effects = Effects::new()
+            .set(Effects::BOLD, font.contains(FontStyle::BOLD))
+            .set(Effects::ITALIC, font.contains(FontStyle::ITALIC))
+            .set(Effects::UNDERLINE, font.contains(FontStyle::UNDERLINE));
+        let style = anstyle::Style::new().fg_color(color).effects(effects);
+        ansi.write_styled(writer, &style, text)?;
     }
     Ok(())
 }

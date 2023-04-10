@@ -6,7 +6,7 @@
 
 use crate::terminal::capabilities::LinkCapability;
 use crate::terminal::AnsiStyle;
-use ansi_term::Style;
+use anstyle::Style;
 use std::borrow::Borrow;
 use syntect::highlighting::HighlightState;
 use syntect::parsing::ParseState;

@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use ansi_term::Colour;
+use anstyle::Style;
 use pulldown_cmark::CowStr;
 
 /// The definition of a reference link, i.e. a numeric index for a link.
@@ -16,8 +16,8 @@ pub struct LinkReferenceDefinition<'a> {
     pub(crate) target: CowStr<'a>,
     /// The link title as it appeared in Markdown.
     pub(crate) title: CowStr<'a>,
-    /// The colour to use for the link.
-    pub(crate) colour: Colour,
+    /// The style to use for the link.
+    pub(crate) style: Style,
 }
 
 /// The state of the current line for render.md.wrapping.
@@ -73,7 +73,7 @@ impl<'a> StateData<'a> {
         mut self,
         target: CowStr<'a>,
         title: CowStr<'a>,
-        colour: Colour,
+        style: Style,
     ) -> (Self, u16) {
         let index = self.next_link;
         self.next_link += 1;
@@ -81,7 +81,7 @@ impl<'a> StateData<'a> {
             index,
             target,
             title,
-            colour,
+            style,
         });
         (self, index)
     }

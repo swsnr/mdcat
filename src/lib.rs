@@ -19,17 +19,19 @@ use pulldown_cmark::Event;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 use tracing::instrument;
+use url::Url;
 
 // Expose some select things for use in main
 pub use crate::resources::ResourceAccess;
 use crate::terminal::capabilities::TerminalCapabilities;
 use crate::terminal::TerminalSize;
-use url::Url;
+pub use crate::theme::Theme;
 
 mod references;
 mod resources;
 mod svg;
 pub mod terminal;
+mod theme;
 
 mod render;
 
@@ -49,6 +51,8 @@ pub struct Settings<'a> {
     pub resource_access: ResourceAccess,
     /// Syntax set for syntax highlighting of code blocks.
     pub syntax_set: &'a SyntaxSet,
+    /// Colour theme for mdcat
+    pub theme: Theme,
 }
 
 /// The environment to render markdown in.
@@ -160,6 +164,7 @@ mod tests {
                     syntax_set: &SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),
+                    theme: Theme::default(),
                 },
             )
         }
@@ -304,6 +309,7 @@ Hello Donald[2]
                     syntax_set: &SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),
+                    theme: Theme::default(),
                 },
             )
         }

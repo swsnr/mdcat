@@ -6,8 +6,9 @@
 
 //! Standard ANSI styling.
 
-use ansi_term::Style;
 use std::io::{Result, Write};
+
+use anstyle::Style;
 
 /// Access to a terminal’s basic ANSI styling functionality.
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -21,6 +22,12 @@ impl AnsiStyle {
         style: &Style,
         text: V,
     ) -> Result<()> {
-        write!(write, "{}", style.paint(text.as_ref()))
+        write!(
+            write,
+            "{}{}{}",
+            style.render(),
+            text.as_ref(),
+            style.render_reset()
+        )
     }
 }

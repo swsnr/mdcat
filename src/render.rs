@@ -9,7 +9,8 @@
 use std::io::prelude::*;
 use std::io::Result;
 
-use ansi_term::{Colour, Style};
+use anstyle::Effects;
+use anstyle::Style;
 use anyhow::anyhow;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
@@ -21,6 +22,7 @@ use tracing::{event, instrument, Level};
 use url::Url;
 
 use crate::terminal::*;
+use crate::theme::CombineStyle;
 use crate::{Environment, Settings};
 
 mod data;
@@ -39,12 +41,12 @@ pub use state::State;
 pub use state::StateAndData;
 
 #[allow(clippy::cognitive_complexity)]
-#[instrument(level = "trace", skip(writer, settings, environment, theme))]
+#[instrument(level = "trace", skip(writer, settings, environment, syntax_theme))]
 pub fn write_event<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
     environment: &Environment,
-    theme: &Theme,
+    syntax_theme: &Theme,
     state: State,
     data: StateData<'a>,
     event: Event<'a>,
@@ -78,7 +80,7 @@ pub fn write_event<'a, W: Write>(
                 .current(write_start_heading(
                     writer,
                     &settings.terminal_capabilities,
-                    Style::new(),
+                    settings.theme.heading_style,
                     level,
                 )?)
                 .and_data(data)
@@ -107,6 +109,7 @@ pub fn write_event<'a, W: Write>(
             write_rule(
                 writer,
                 &settings.terminal_capabilities,
+                &settings.theme,
                 settings.terminal_size.columns,
             )?;
             writeln!(writer)?;
@@ -124,7 +127,7 @@ pub fn write_event<'a, W: Write>(
                     0,
                     Style::new(),
                     kind,
-                    theme,
+                    syntax_theme,
                 )?)
                 .and_data(data)
                 .ok()
@@ -149,7 +152,7 @@ pub fn write_event<'a, W: Write>(
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
-                &Style::new().fg(Colour::Green),
+                &settings.theme.html_block_style,
                 html,
             )?;
             TopLevel(TopLevelAttrs::no_margin_for_html_only())
@@ -188,6 +191,7 @@ pub fn write_event<'a, W: Write>(
             write_rule(
                 writer,
                 &settings.terminal_capabilities,
+                &settings.theme,
                 settings.terminal_size.columns - (attrs.indent as usize),
             )?;
             writeln!(writer)?;
@@ -209,7 +213,7 @@ pub fn write_event<'a, W: Write>(
                 .current(write_start_heading(
                     writer,
                     &settings.terminal_capabilities,
-                    style,
+                    settings.theme.heading_style.on_top_of(&style),
                     level,
                 )?)
                 .and_data(data)
@@ -237,7 +241,12 @@ pub fn write_event<'a, W: Write>(
             stack
                 .push(attrs.into())
                 .current(write_start_code_block(
-                    writer, settings, indent, style, kind, theme,
+                    writer,
+                    settings,
+                    indent,
+                    style,
+                    kind,
+                    syntax_theme,
                 )?)
                 .and_data(data)
                 .ok()
@@ -250,7 +259,7 @@ pub fn write_event<'a, W: Write>(
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
-                &attrs.style.fg(Colour::Green),
+                &settings.theme.html_block_style.on_top_of(&attrs.style),
                 html,
             )?;
             stack
@@ -304,7 +313,12 @@ pub fn write_event<'a, W: Write>(
             stack
                 .push(Inline(ListItem(kind, ItemBlock), attrs))
                 .current(write_start_code_block(
-                    writer, settings, indent, style, ck, theme,
+                    writer,
+                    settings,
+                    indent,
+                    style,
+                    ck,
+                    syntax_theme,
                 )?)
                 .and_data(data)
                 .ok()
@@ -315,6 +329,7 @@ pub fn write_event<'a, W: Write>(
             write_rule(
                 writer,
                 &settings.terminal_capabilities,
+                &settings.theme,
                 settings.terminal_size.columns - (attrs.indent as usize),
             )?;
             writeln!(writer)?;
@@ -335,7 +350,7 @@ pub fn write_event<'a, W: Write>(
                 .current(write_start_heading(
                     writer,
                     &settings.terminal_capabilities,
-                    style,
+                    settings.theme.heading_style.on_top_of(&style),
                     level,
                 )?)
                 .and_data(data)
@@ -392,8 +407,9 @@ pub fn write_event<'a, W: Write>(
             stack.current(attrs.into()).and_data(data).ok()
         }
         (Stacked(stack, LiteralBlock(_)), End(CodeBlock(_))) => {
-            write_border(
+            write_code_block_border(
                 writer,
+                &settings.theme,
                 &settings.terminal_capabilities,
                 &settings.terminal_size,
             )?;
@@ -402,7 +418,7 @@ pub fn write_event<'a, W: Write>(
 
         // Highlighted code blocks
         (Stacked(stack, HighlightBlock(mut attrs)), Text(text)) => {
-            let highlighter = Highlighter::new(theme);
+            let highlighter = Highlighter::new(syntax_theme);
             for line in LinesWithEndings::from(&text) {
                 let ops = attrs
                     .parse_state
@@ -420,8 +436,9 @@ pub fn write_event<'a, W: Write>(
             stack.current(attrs.into()).and_data(data).ok()
         }
         (Stacked(stack, HighlightBlock(_)), End(CodeBlock(_))) => {
-            write_border(
+            write_code_block_border(
                 writer,
+                &settings.theme,
                 &settings.terminal_capabilities,
                 &settings.terminal_size,
             )?;
@@ -431,19 +448,12 @@ pub fn write_event<'a, W: Write>(
         // Inline markup
         (Stacked(stack, Inline(state, attrs)), Start(Emphasis)) => {
             let InlineAttrs { style, indent } = attrs;
-            let new_style = Style {
-                is_italic: !style.is_italic,
-                ..style
-            };
+            let effects = style.get_effects();
+            let style =
+                style.effects(effects.set(Effects::ITALIC, !effects.contains(Effects::ITALIC)));
             stack
                 .push(Inline(state, attrs))
-                .current(Inline(
-                    state,
-                    InlineAttrs {
-                        style: new_style,
-                        indent,
-                    },
-                ))
+                .current(Inline(state, InlineAttrs { style, indent }))
                 .and_data(data)
                 .ok()
         }
@@ -472,7 +482,7 @@ pub fn write_event<'a, W: Write>(
             let current_line = write_styled_and_wrapped(
                 writer,
                 &settings.terminal_capabilities,
-                &attrs.style.fg(Colour::Yellow),
+                &settings.theme.code_style.on_top_of(&attrs.style),
                 settings.terminal_size.columns,
                 attrs.indent as usize,
                 data.current_line,
@@ -566,7 +576,7 @@ pub fn write_event<'a, W: Write>(
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
-                &attrs.style.fg(Colour::Green),
+                &settings.theme.inline_html_style.on_top_of(&attrs.style),
                 html,
             )?;
             stack
@@ -578,7 +588,7 @@ pub fn write_event<'a, W: Write>(
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
-                &attrs.style.fg(Colour::Green),
+                &settings.theme.inline_html_style.on_top_of(&attrs.style),
                 html,
             )?;
             stack.current(Inline(state, attrs)).and_data(data).ok()
@@ -628,7 +638,7 @@ pub fn write_event<'a, W: Write>(
                     link_state,
                     InlineAttrs {
                         indent,
-                        style: style.fg(Colour::Blue),
+                        style: settings.theme.link_style.on_top_of(&style),
                     },
                 ))
                 .and_data(data)
@@ -651,11 +661,11 @@ pub fn write_event<'a, W: Write>(
             stack.pop().and_data(data).ok()
         }
         (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
-            let (data, index) = data.add_link(target, title, Colour::Blue);
+            let (data, index) = data.add_link(target, title, settings.theme.link_style);
             write_styled(
                 writer,
                 &settings.terminal_capabilities,
-                &attrs.style.fg(Colour::Blue),
+                &settings.theme.link_style.on_top_of(&attrs.style),
                 format!("[{index}]"),
             )?;
             stack.pop().and_data(data).ok()
@@ -721,7 +731,7 @@ pub fn write_event<'a, W: Write>(
                                         InlineLink(capability),
                                         InlineAttrs {
                                             indent,
-                                            style: style.fg(Colour::Purple),
+                                            style: settings.theme.image_link_style.on_top_of(&style),
                                         },
                                     ))
                                 }
@@ -734,12 +744,12 @@ pub fn write_event<'a, W: Write>(
             }
             .unwrap_or_else(|| {
                 event!(Level::WARN, "Rendering image {} as inline text, without link", link);
-                // Inside an inline link keep the blue foreground colour; we cannot nest links so we
+                // Inside an inline link keep the link style; we cannot nest links so we
                 // should clarify that clicking the link follows the link target and not the image.
                 let style = if let InlineLink(_) = state {
                     style
                 } else {
-                    style.fg(Colour::Purple)
+                    settings.theme.image_link_style.on_top_of(&style)
                 };
                 Inline(InlineText, InlineAttrs { style, indent })
             });
@@ -762,13 +772,13 @@ pub fn write_event<'a, W: Write>(
                 }
                 stack.pop().and_data(data).ok()
             } else {
-                let (data, index) = data.add_link(target, title, Colour::Purple);
+                let (data, index) = data.add_link(target, title, settings.theme.image_link_style);
                 write_styled(
                     writer,
                     &settings.terminal_capabilities,
                     // Regardless of text style always colour the reference to make clear it points to
                     // an image
-                    &attrs.style.fg(Colour::Purple),
+                    &settings.theme.image_link_style.on_top_of(&attrs.style),
                     format!("[{index}]"),
                 )?;
                 stack.pop().and_data(data).ok()
