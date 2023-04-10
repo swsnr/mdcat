@@ -1,1 +1,2 @@
-foo <?php echo $a; ?>
+foo <!-- this is a
+comment - with hyphen -->

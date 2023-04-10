@@ -1,6 +1,9 @@
-<?php
+<table>
+  <tr>
+    <td>
+           hi
+    </td>
+  </tr>
+</table>
 
-  echo '>';
-
-?>
-okay
+okay.

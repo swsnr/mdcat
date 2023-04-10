@@ -1,3 +1,5 @@
-  <!-- foo -->
+<DIV CLASS="foo">
 
-    <!-- foo -->
+*Markdown*
+
+</DIV>

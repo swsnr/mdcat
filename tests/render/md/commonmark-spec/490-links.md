@@ -1,1 +1,2 @@
-[link](<foo\>)
+[link](<foo
+bar>)

@@ -1,1 +1,3 @@
-[link](/url "title "and" title")
+[link](/url "title")
+[link](/url 'title')
+[link](/url (title))

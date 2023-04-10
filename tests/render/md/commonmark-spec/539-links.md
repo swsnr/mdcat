@@ -1,4 +1,3 @@
-[foo]
-[bar]
+[ẞ]
 
-[bar]: /url "title"
+[SS]: /url

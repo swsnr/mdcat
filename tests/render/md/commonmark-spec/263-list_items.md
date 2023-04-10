@@ -1,2 +1,9 @@
-> 1. > Blockquote
-> continued here.
+1.  foo
+
+    ```
+    bar
+    ```
+
+    baz
+
+    > bam

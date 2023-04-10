@@ -1,4 +1,3 @@
-Foo
-<div>
-bar
+<div id="foo" class="bar
+  baz">
 </div>

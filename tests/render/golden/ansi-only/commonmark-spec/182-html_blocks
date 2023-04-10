@@ -1,0 +1,14 @@
+[32m<![CDATA[
+[0m[32mfunction matchwo(a,b)
+[0m[32m{
+[0m[32m  if (a < b && a < 0) then {
+[0m[32m    return 1;
+[0m[32m
+[0m[32m  } else {
+[0m[32m
+[0m[32m    return 0;
+[0m[32m  }
+[0m[32m}
+[0m[32m]]>
+[0m
+okay

@@ -1,1 +1,1 @@
-<http://foo.bar/baz bim>
+<made-up-scheme://foo,bar>

@@ -1,1 +1,1 @@
-foo <a href="\*">
+foo <!ELEMENT br EMPTY>

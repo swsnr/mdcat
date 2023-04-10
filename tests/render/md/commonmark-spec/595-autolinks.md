@@ -1,1 +1,1 @@
-<made-up-scheme://foo,bar>
+<irc://foo.bar:2233/baz>

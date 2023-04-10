@@ -1,3 +1,1 @@
-[link \[bar][ref]
-
-[ref]: /uri
+[foo<http://example.com/?search=](uri)>

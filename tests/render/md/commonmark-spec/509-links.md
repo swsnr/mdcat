@@ -1,1 +1,2 @@
-[link] bar](/uri)
+[link](   /uri
+  "title"  )

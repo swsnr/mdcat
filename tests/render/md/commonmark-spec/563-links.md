@@ -1,3 +1,3 @@
-[foo]()
+[foo*]: /url
 
-[foo]: /url1
+*[foo*]

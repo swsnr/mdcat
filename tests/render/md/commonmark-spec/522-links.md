@@ -1,1 +1,1 @@
-[foo<http://example.com/?search=](uri)>
+*foo [bar* baz]

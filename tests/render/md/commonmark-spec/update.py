@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 
-SPEC_VERSION = '0.29'
+SPEC_VERSION = '0.30'
 SPEC_URL = f'https://spec.commonmark.org/{SPEC_VERSION}/spec.json'
 
 DIR = Path(__file__).parent.absolute()

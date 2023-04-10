@@ -1,11 +1,1 @@
-<table>
-
-<tr>
-
-<td>
-Hi
-</td>
-
-</tr>
-
-</table>
+<div><a href="bar">*foo*</a></div>

@@ -1,1 +1,3 @@
-foo <![CDATA[>&<]]>
+foo <!--> foo -->
+
+foo <!-- foo--->

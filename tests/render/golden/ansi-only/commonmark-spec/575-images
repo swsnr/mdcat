@@ -1,1 +1,1 @@
-My ]8;;file://HOSTNAME/ROOT/path/to/train.jpg[35mfoo bar[0m]8;;
+]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/render/md/commonmark-spec/train.jpg[35mfoo [0m[3;35mbar[0m]8;;

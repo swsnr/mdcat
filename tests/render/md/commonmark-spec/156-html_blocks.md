@@ -1,3 +1,2 @@
-Foo
-<a href="bar">
-baz
+<div id="foo"
+*hi*

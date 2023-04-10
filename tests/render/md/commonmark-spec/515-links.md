@@ -1,1 +1,1 @@
-[foo *[bar [baz](/uri)](/uri)*](/uri)
+[link *foo **bar** `#`*](/uri)

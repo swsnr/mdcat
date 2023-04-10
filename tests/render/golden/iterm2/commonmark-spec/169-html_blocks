@@ -1,0 +1,8 @@
+[32m<pre language="haskell"><code>
+[0m[32mimport Text.HTML.TagSoup
+[0m[32m
+[0m[32mmain :: IO ()
+[0m[32mmain = print $ parseTags tags
+[0m[32m</code></pre>
+[0m
+okay

@@ -1,6 +1,4 @@
-Foo
-
-[32m<div>
-[0m[32mbar
+[32m<div id="foo" class="bar
+[0m[32m  baz">
 [0m[32m</div>
 [0m

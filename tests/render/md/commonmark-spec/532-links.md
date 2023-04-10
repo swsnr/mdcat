@@ -1,3 +1,3 @@
-[foo <bar attr="][ref]">
+[foo *bar [baz][ref]*][ref]
 
 [ref]: /uri

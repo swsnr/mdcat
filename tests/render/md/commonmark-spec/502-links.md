@@ -1,1 +1,1 @@
-[link](/url "title \"&quot;")
+[link](foo%20b&auml;)

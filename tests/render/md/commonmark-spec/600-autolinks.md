@@ -1,1 +1,1 @@
-<foo@bar.example.com>
+<localhost:5001/foo>

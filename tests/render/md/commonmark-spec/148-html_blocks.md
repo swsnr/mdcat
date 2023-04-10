@@ -1,5 +1,7 @@
-<!-- Foo
+<table><tr><td>
+<pre>
+**Hello**,
 
-bar
-   baz -->
-okay
+_world_.
+</pre>
+</td></tr></table>

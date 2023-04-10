@@ -1,1 +1,3 @@
-foo [32m<![CDATA[>&<]]>[0m
+foo <!--> foo -->
+
+foo <!-- foo--->

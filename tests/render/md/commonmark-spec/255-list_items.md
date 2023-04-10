@@ -1,5 +1,3 @@
-foo
-*
+- one
 
-foo
-1.
+ two

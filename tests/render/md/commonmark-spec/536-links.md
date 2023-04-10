@@ -1,3 +1,3 @@
-[Толпой][Толпой] is a Russian word.
+[foo`][ref]`
 
-[ТОЛПОЙ]: /url
+[ref]: /uri

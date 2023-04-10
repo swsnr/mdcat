@@ -1,5 +1,2 @@
-<div>
-
-*Emphasized* text.
-
-</div>
+<div class
+foo

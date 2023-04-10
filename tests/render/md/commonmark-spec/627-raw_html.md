@@ -1,1 +1,1 @@
-foo <a href="&ouml;">
+foo <?php echo $a; ?>

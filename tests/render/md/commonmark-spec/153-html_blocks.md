@@ -1,3 +1,3 @@
-  <div>
-
-    <div>
+<div id="foo"
+  class="bar">
+</div>
