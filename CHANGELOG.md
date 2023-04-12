@@ -20,6 +20,7 @@ Use `cargo release` to create a new release.
 - Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.
 - Move all core rendering functions into a new crate `pulldown-cmark-mdcat`; `mdcat` itself only contains the argument parsing and handling now (see [GH-248]).
     If you were using `mdcat` as a library before, you likely want to use `pulldown-cmark-mdcat` now.
+- Move HTTP resource handling into new crate `mdcat-http-reqwest`, in order to isolate the rather heavy `reqwest` dependency (see [GH-248]).
 
 ### Removed
 - `mdcat::Settings.resource_access` and the corresponding `ResourceAccess` enum (see [GH-247]).

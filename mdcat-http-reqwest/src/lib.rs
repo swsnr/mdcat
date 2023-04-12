@@ -11,18 +11,27 @@ use std::io::{Error, ErrorKind, Result};
 use std::time::Duration;
 
 use mime::Mime;
+use pulldown_cmark_mdcat::resources::{filter_schemes, MimeData, ResourceUrlHandler};
 use reqwest::blocking::{Client, ClientBuilder};
 use reqwest::header::CONTENT_TYPE;
-use tracing::{event, Level};
-use url::Url;
-
-use super::{filter_schemes, MimeData, ResourceUrlHandler};
+use reqwest::Url;
+use tracing::{event, instrument, Level};
 
 /// A client for HTTP resources.
 #[derive(Debug, Clone)]
 pub struct HttpResourceHandler {
     read_limit: u64,
     http_client: Client,
+}
+
+/// Create a [`ClientBuilder`] preconfigured with default settings for mdcat.
+pub fn build_default_client() -> ClientBuilder {
+    ClientBuilder::new()
+        // Use somewhat aggressive timeouts to avoid blocking rendering for long; we have graceful
+        // fallbacks since we have to support terminals without image capabilities anyways.
+        .timeout(Some(Duration::from_millis(100)))
+        .connect_timeout(Some(Duration::from_secs(1)))
+        .referer(false)
 }
 
 impl HttpResourceHandler {
@@ -44,18 +53,7 @@ impl HttpResourceHandler {
     ///
     /// Create a HTTP client with some standard settings.
     pub fn with_user_agent(read_limit: u64, user_agent: &str) -> Result<Self> {
-        let proxies = system_proxy::env::from_curl_env();
-        ClientBuilder::new()
-            // Use env_proxy to extract proxy information from the environment; it's more flexible and
-            // accurate than reqwest's built-in env proxy support.
-            .proxy(reqwest::Proxy::custom(move |url| {
-                proxies.lookup(url).map(Clone::clone)
-            }))
-            // Use somewhat aggressive timeouts to avoid blocking rendering for long; we have graceful
-            // fallbacks since we have to support terminals without image capabilities anyways.
-            .timeout(Some(Duration::from_millis(100)))
-            .connect_timeout(Some(Duration::from_secs(1)))
-            .referer(false)
+        build_default_client()
             .user_agent(user_agent)
             .build()
             .map_err(|err| Error::new(ErrorKind::Other, err))
@@ -64,6 +62,7 @@ impl HttpResourceHandler {
 }
 
 impl ResourceUrlHandler for HttpResourceHandler {
+    #[instrument(level = "debug", skip(self))]
     fn read_resource(&self, url: &Url) -> Result<MimeData> {
         filter_schemes(&["http", "https"], url).and_then(|url| {
             let response = self
@@ -153,12 +152,11 @@ mod tests {
     use hyper::service::{make_service_fn, service_fn};
     use hyper::{Body, Request, Response, Server};
     use once_cell::sync::Lazy;
+    use pulldown_cmark_mdcat::resources::ResourceUrlHandler;
+    use reqwest::Url;
     use tokio::runtime::Runtime;
     use tokio::sync::oneshot;
     use tokio::task::JoinHandle;
-    use url::Url;
-
-    use crate::resources::ResourceUrlHandler;
 
     use super::HttpResourceHandler;
 

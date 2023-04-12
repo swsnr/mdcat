@@ -15,6 +15,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use glob::glob;
+use mdcat_http_reqwest::HttpResourceHandler;
 use once_cell::sync::Lazy;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};

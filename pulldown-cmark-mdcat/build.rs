@@ -17,5 +17,5 @@ fn generate_theme_dump<P: AsRef<Path>>(out_dir: P) {
 
 fn main() {
     let out_dir = std::env::var_os("OUT_DIR").expect("OUT_DIR not set");
-    generate_theme_dump(&out_dir);
+    generate_theme_dump(out_dir);
 }

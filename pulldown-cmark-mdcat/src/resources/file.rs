@@ -10,7 +10,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Result};
 
-use tracing::{event, Level};
+use tracing::{event, instrument, Level};
 use url::Url;
 
 use super::{filter_schemes, MimeData, ResourceUrlHandler};
@@ -31,6 +31,7 @@ impl FileResourceHandler {
 }
 
 impl ResourceUrlHandler for FileResourceHandler {
+    #[instrument(level = "debug", skip(self))]
     fn read_resource(&self, url: &Url) -> Result<MimeData> {
         filter_schemes(&["file"], url).and_then(|url| {
             match url.to_file_path() {
@@ -75,7 +76,7 @@ impl ResourceUrlHandler for FileResourceHandler {
 mod tests {
     use crate::resources::*;
     use pretty_assertions::assert_eq;
-    use reqwest::Url;
+    use url::Url;
 
     #[test]
     fn read_resource_returns_content_type() {

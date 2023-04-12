@@ -12,15 +12,18 @@
 #![deny(warnings, missing_docs, clippy::all)]
 
 use std::fs::File;
+use std::io::stdin;
 use std::io::{prelude::*, BufWriter};
-use std::io::{stdin, Result};
 use std::path::PathBuf;
 
+use anyhow::{Context, Result};
+use mdcat_http_reqwest::HttpResourceHandler;
 use pulldown_cmark::{Options, Parser};
 use pulldown_cmark_mdcat::resources::{
-    DispatchingResourceHandler, FileResourceHandler, HttpResourceHandler, ResourceUrlHandler,
+    DispatchingResourceHandler, FileResourceHandler, ResourceUrlHandler,
 };
 use pulldown_cmark_mdcat::{Environment, Settings};
+use reqwest::Proxy;
 use tracing::{event, instrument, Level};
 
 use args::ResourceAccess;
@@ -94,7 +97,8 @@ pub fn process_file(
                 event!(Level::ERROR, ?error, "Failed to process file: {:#}", error);
                 Err(error)
             }
-        })
+        })?;
+    Ok(())
 }
 
 /// Create the resource handler for mdcat.
@@ -110,10 +114,18 @@ pub fn create_resource_handler(access: ResourceAccess) -> Result<DispatchingReso
             "Remote resource access permitted, creating HTTP client with user agent {}",
             user_agent
         );
-        resource_handlers.push(Box::new(HttpResourceHandler::with_user_agent(
+        let proxies = system_proxy::env::EnvProxies::from_curl_env();
+        let client = mdcat_http_reqwest::build_default_client()
+            .user_agent(user_agent)
+            .proxy(Proxy::custom(move |url| {
+                proxies.lookup(url).map(Clone::clone)
+            }))
+            .build()
+            .with_context(|| "Failed to build HTTP client".to_string())?;
+        resource_handlers.push(Box::new(HttpResourceHandler::new(
             DEFAULT_RESOURCE_READ_LIMIT,
-            user_agent,
-        )?));
+            client,
+        )));
     }
     Ok(DispatchingResourceHandler::new(resource_handlers))
 }

@@ -954,13 +954,30 @@ dependencies = [
  "clap",
  "clap_complete",
  "concolor-query",
+ "mdcat-http-reqwest",
  "pretty_assertions",
  "pulldown-cmark",
  "pulldown-cmark-mdcat",
+ "reqwest",
  "shell-words",
  "syntect",
+ "system_proxy",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "mdcat-http-reqwest"
+version = "1.1.1"
+dependencies = [
+ "hyper",
+ "mime",
+ "once_cell",
+ "pulldown-cmark-mdcat",
+ "reqwest",
+ "syntect",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -1283,21 +1300,18 @@ dependencies = [
  "base64",
  "gethostname",
  "glob",
- "hyper",
  "image",
  "libc",
+ "mdcat-http-reqwest",
  "mime",
  "mime_guess",
  "once_cell",
  "pretty_assertions",
  "pulldown-cmark",
- "reqwest",
  "resvg",
  "syntect",
- "system_proxy",
  "terminal_size",
  "textwrap",
- "tokio",
  "tracing",
  "tracing-subscriber",
  "url",

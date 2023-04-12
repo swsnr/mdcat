@@ -13,10 +13,8 @@ use mime::Mime;
 use url::Url;
 
 mod file;
-mod http;
 
 pub use file::FileResourceHandler;
-pub use http::HttpResourceHandler;
 
 /// Data of a resource with associated mime type.
 #[derive(Debug, Clone)]
