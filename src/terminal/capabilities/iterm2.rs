@@ -10,15 +10,10 @@
 
 use std::io::{self, Write};
 
-use anyhow::{Context, Result};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
-use url::Url;
 
-use crate::resources::read_url;
-use crate::svg;
 use crate::terminal::osc::write_osc;
-use crate::ResourceAccess;
 
 /// Iterm2 marks.
 #[derive(Debug, Copy, Clone)]
@@ -59,18 +54,5 @@ impl ITerm2Images {
                 },
             ),
         )
-    }
-
-    /// Read `url` and render to an image if necessary.
-    ///
-    /// Render the binary content of the (rendered) image or an IO error if
-    /// reading or rendering failed.
-    pub fn read_and_render(self, url: &Url, access: ResourceAccess) -> Result<Vec<u8>> {
-        let (mime_type, contents) = read_url(url, access)?;
-        if mime_type == Some(mime::IMAGE_SVG) {
-            svg::render_svg(&contents).with_context(|| format!("Failed to render SVG at URL {url}"))
-        } else {
-            Ok(contents)
-        }
     }
 }

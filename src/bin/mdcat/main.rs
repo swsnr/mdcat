@@ -14,6 +14,11 @@ use std::io::Result;
 use std::io::{stdin, BufWriter};
 use std::path::PathBuf;
 
+use mdcat::resources::DispatchingResourceHandler;
+use mdcat::resources::FileResourceHandler;
+use mdcat::resources::HttpResourceHandler;
+use mdcat::resources::ResourceUrlHandler;
+use mdcat::resources::DEFAULT_RESOURCE_READ_LIMIT;
 use mdcat::Theme;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
@@ -23,7 +28,6 @@ use tracing_subscriber::EnvFilter;
 
 use crate::output::Output;
 use mdcat::terminal::{TerminalProgram, TerminalSize};
-use mdcat::ResourceAccess;
 use mdcat::{Environment, Settings};
 
 mod args;
@@ -52,8 +56,13 @@ fn read_input<T: AsRef<str>>(filename: T) -> Result<(PathBuf, String)> {
     }
 }
 
-#[instrument(skip(output, settings), level = "debug")]
-fn process_file(filename: &str, settings: &Settings, output: &mut Output) -> Result<()> {
+#[instrument(skip(output, settings, resource_handler), level = "debug")]
+fn process_file(
+    filename: &str,
+    settings: &Settings,
+    resource_handler: &dyn ResourceUrlHandler,
+    output: &mut Output,
+) -> Result<()> {
     let (base_dir, input) = read_input(filename)?;
     event!(
         Level::TRACE,
@@ -67,7 +76,7 @@ fn process_file(filename: &str, settings: &Settings, output: &mut Output) -> Res
     let env = Environment::for_local_directory(&base_dir)?;
 
     let mut sink = BufWriter::new(output.writer());
-    mdcat::push_tty(settings, &env, &mut sink, parser)
+    mdcat::push_tty(settings, &env, resource_handler, &mut sink, parser)
         .and_then(|_| {
             event!(Level::TRACE, "Finished rendering, flushing output");
             sink.flush()
@@ -126,26 +135,42 @@ fn main() {
                 let settings = Settings {
                     terminal_capabilities: terminal.capabilities(),
                     terminal_size: TerminalSize { columns, ..size },
-                    resource_access: if args.local_only {
-                        ResourceAccess::LocalOnly
-                    } else {
-                        ResourceAccess::RemoteAllowed
-                    },
                     syntax_set: &SyntaxSet::load_defaults_newlines(),
                     theme: Theme::default(),
                 };
+                let mut resource_handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![Box::new(
+                    FileResourceHandler::new(DEFAULT_RESOURCE_READ_LIMIT),
+                )];
+                if !args.local_only {
+                    let user_agent =
+                        concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+                    event!(
+                        target: "mdcat::main",
+                        Level::DEBUG,
+                        "Remote resource access permitted, creating HTTP client with user agent {}",
+                        user_agent
+                    );
+                    resource_handlers.push(Box::new(
+                        HttpResourceHandler::with_user_agent(
+                            DEFAULT_RESOURCE_READ_LIMIT,
+                            user_agent,
+                        )
+                        // TODO: Properly return this error?
+                        .unwrap(),
+                    ));
+                }
+                let resource_handler = DispatchingResourceHandler::new(resource_handlers);
                 event!(
                     target: "mdcat::main",
                     Level::TRACE,
                     ?settings.terminal_size,
                     ?settings.terminal_capabilities,
-                    ?settings.resource_access,
                     "settings"
                 );
                 args.filenames
                     .iter()
                     .try_fold(0, |code, filename| {
-                        process_file(filename, &settings, &mut output)
+                        process_file(filename, &settings, &resource_handler, &mut output)
                             .map(|_| code)
                             .or_else(|error| {
                                 eprintln!("Error: {filename}: {error}");
