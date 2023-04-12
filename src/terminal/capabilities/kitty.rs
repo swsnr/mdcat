@@ -25,10 +25,9 @@ use image::ColorType;
 use image::{DynamicImage, GenericImageView};
 use url::Url;
 
-use crate::resources::read_url;
+use crate::resources::MimeData;
 use crate::svg::render_svg;
 use crate::terminal::size::PixelSize;
-use crate::ResourceAccess;
 
 /// Provides access to printing images for kitty.
 #[derive(Debug, Copy, Clone)]
@@ -104,32 +103,31 @@ impl KittyImages {
         Ok(())
     }
 
-    /// Read the image bytes from the given URL and wrap them in a `KittyImage`.
+    /// Render mime data obtained from `url` and wrap it in a `KittyImage`.
     ///
     /// If the image size exceeds `terminal_size` in either dimension scale the
     /// image down to `terminal_size` (preserving aspect ratio).
-    pub fn read_and_render(
+    pub fn render(
         self,
         url: &Url,
-        access: ResourceAccess,
+        mime_data: MimeData,
         terminal_size: PixelSize,
     ) -> Result<KittyImage> {
-        let (mime_type, contents) = read_url(url, access)?;
-        let image = if mime_type == Some(mime::IMAGE_SVG) {
+        let image = if mime_data.mime_type == Some(mime::IMAGE_SVG) {
             image::load_from_memory(
-                &render_svg(&contents)
+                &render_svg(&mime_data.data)
                     .with_context(|| format!("Failed to render SVG at {url} to PNG"))?,
             )
             .with_context(|| format!("Failed to load SVG rendered from {url}"))?
         } else {
-            image::load_from_memory(&contents)
+            image::load_from_memory(&mime_data.data)
                 .with_context(|| format!("Failed to load image from URL {url}"))?
         };
 
-        if mime_type == Some(mime::IMAGE_PNG)
+        if mime_data.mime_type == Some(mime::IMAGE_PNG)
             && PixelSize::from_xy(image.dimensions()) <= terminal_size
         {
-            Ok(self.render_as_png(contents))
+            Ok(self.render_as_png(mime_data.data))
         } else {
             Ok(self.render_as_rgb_or_rgba(image, terminal_size))
         }

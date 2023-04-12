@@ -20,14 +20,15 @@ use syntect::parsing::SyntaxSet;
 use tracing::instrument;
 use url::Url;
 
-// Expose some select things for use in main
-pub use crate::resources::ResourceAccess;
+use crate::resources::ResourceUrlHandler;
 use crate::terminal::capabilities::TerminalCapabilities;
 use crate::terminal::TerminalSize;
+
+// Expose some select things for use in main
 pub use crate::theme::Theme;
 
 mod references;
-mod resources;
+pub mod resources;
 mod svg;
 pub mod terminal;
 mod theme;
@@ -46,8 +47,6 @@ pub struct Settings<'a> {
     pub terminal_capabilities: TerminalCapabilities,
     /// The size of the terminal mdcat writes to.
     pub terminal_size: TerminalSize,
-    /// Whether remote resource access is permitted.
-    pub resource_access: ResourceAccess,
     /// Syntax set for syntax highlighting of code blocks.
     pub syntax_set: &'a SyntaxSet,
     /// Colour theme for mdcat
@@ -112,6 +111,7 @@ impl Environment {
 pub fn push_tty<'a, 'e, W, I>(
     settings: &Settings,
     environment: &Environment,
+    resource_handler: &dyn ResourceUrlHandler,
     writer: &'a mut W,
     mut events: I,
 ) -> Result<()>
@@ -123,7 +123,15 @@ where
     let StateAndData(final_state, final_data) = events.try_fold(
         StateAndData(State::default(), StateData::default()),
         |StateAndData(state, data), event| {
-            write_event(writer, settings, environment, state, data, event)
+            write_event(
+                writer,
+                settings,
+                environment,
+                &resource_handler,
+                state,
+                data,
+                event,
+            )
         },
     )?;
     finish(writer, settings, environment, final_state, final_data)
@@ -133,6 +141,8 @@ where
 mod tests {
     use pulldown_cmark::Parser;
 
+    use crate::resources::NoopResourceHandler;
+
     use super::*;
 
     fn render_string(input: &str, settings: &Settings) -> anyhow::Result<String> {
@@ -140,7 +150,7 @@ mod tests {
         let mut sink = Vec::new();
         let env =
             Environment::for_local_directory(&std::env::current_dir().expect("Working directory"))?;
-        push_tty(settings, &env, &mut sink, source)?;
+        push_tty(settings, &env, &NoopResourceHandler, &mut sink, source)?;
         Ok(String::from_utf8_lossy(&sink).into())
     }
 
@@ -158,7 +168,6 @@ mod tests {
             render_string(
                 markup,
                 &Settings {
-                    resource_access: ResourceAccess::LocalOnly,
                     syntax_set: &SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),
@@ -303,7 +312,6 @@ Hello Donald[2]
             render_string(
                 markup,
                 &Settings {
-                    resource_access: ResourceAccess::LocalOnly,
                     syntax_set: &SyntaxSet::default(),
                     terminal_capabilities: TerminalProgram::Dumb.capabilities(),
                     terminal_size: TerminalSize::default(),

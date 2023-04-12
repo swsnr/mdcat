@@ -14,13 +14,12 @@ use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 
 use anyhow::{Context, Result};
-use mdcat::{terminal::TerminalProgram, Environment, Theme};
+use mdcat::{resources::NoopResourceHandler, terminal::TerminalProgram, Environment, Theme};
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
 static SETTINGS_ANSI_ONLY: Lazy<mdcat::Settings> = Lazy::new(|| mdcat::Settings {
     terminal_capabilities: TerminalProgram::Ansi.capabilities(),
     terminal_size: mdcat::terminal::TerminalSize::default(),
-    resource_access: mdcat::ResourceAccess::LocalOnly,
     theme: Theme::default(),
     syntax_set: &SYNTAX_SET,
 });
@@ -35,7 +34,7 @@ fn render_to_string<S: AsRef<str>>(markdown: S, settings: &mdcat::Settings) -> R
         hostname: "HOSTNAME".to_string(),
         ..Environment::for_local_directory(&std::env::current_dir()?)?
     };
-    mdcat::push_tty(settings, &env, &mut sink, parser)?;
+    mdcat::push_tty(settings, &env, &NoopResourceHandler, &mut sink, parser)?;
     String::from_utf8(sink).with_context(|| "Failed to convert rendered result to string")
 }
 

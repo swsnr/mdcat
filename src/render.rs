@@ -1,4 +1,4 @@
-// Copyright 2020 Sebastian Wiesner <sebastian@swsnr.de>
+// Copyright Sebastian Wiesner <sebastian@swsnr.de>
 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@ use std::io::Result;
 use anstyle::Effects;
 use anstyle::Style;
 use anyhow::anyhow;
+use anyhow::Context;
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, LinkType};
@@ -22,6 +23,8 @@ use tracing::{event, instrument, Level};
 use url::Url;
 
 use crate::render::highlighting::HIGHLIGHTER;
+use crate::resources::ResourceUrlHandler;
+use crate::svg;
 use crate::theme::CombineStyle;
 use crate::{Environment, Settings};
 
@@ -42,11 +45,12 @@ pub use state::State;
 pub use state::StateAndData;
 
 #[allow(clippy::cognitive_complexity)]
-#[instrument(level = "trace", skip(writer, settings, environment))]
+#[instrument(level = "trace", skip(writer, settings, environment, resource_handler))]
 pub fn write_event<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
     environment: &Environment,
+    resource_handler: &dyn ResourceUrlHandler,
     state: State,
     data: StateData<'a>,
     event: Event<'a>,
@@ -667,10 +671,19 @@ pub fn write_event<'a, W: Write>(
                     terminology.write_inline_image(writer, settings.terminal_size, url)?;
                     Some(RenderedImage)
                 }
-                (Some(ITerm2(iterm2)), Some(ref url)) => iterm2
-                    .read_and_render(url, settings.resource_access)
+                (Some(ITerm2(iterm2)), Some(ref url)) =>
+                   resource_handler
+                        .read_resource(url)
+                        .with_context(|| format!("Failed to read resource from {url}"))
+                        .and_then(|mime_data| {
+                            if mime_data.mime_type == Some(mime::IMAGE_SVG) {
+                                svg::render_svg(&mime_data.data)
+                            } else {
+                                Ok(mime_data.data)
+                            }
+                        })
                     .map_err(|error| {
-                        event!(Level::ERROR, ?error, %url, ?settings.resource_access, "failed to render image in iterm2: {:#}", error);
+                        event!(Level::ERROR, ?error, %url, "failed to render image in iterm2: {:#}", error);
                         error
                     })
                     .and_then(|contents| {
@@ -692,10 +705,13 @@ pub fn write_event<'a, W: Write>(
                         anyhow!("Terminal pixel size not available")
                     })
                     .and_then(|size| {
-                        let image = kitty.read_and_render(url, settings.resource_access, size).map_err(|error| {
-                            event!(Level::ERROR, ?error, %url, ?settings.resource_access, "failed to render image in kitty: {:#}", error);
-                            error
-                        })?;
+                        let image = resource_handler.read_resource(url)
+                            .with_context(|| format!("Failed to read data from {url}"))
+                            .and_then(|mime_data| kitty.render(url, mime_data, size))
+                            .map_err(|error| {
+                                event!(Level::ERROR, ?error, %url, "failed to render image in kitty: {:#}", error);
+                                error
+                            })?;
                         kitty.write_inline_image(writer, image).map_err(|error| {
                             event!(Level::ERROR, ?error, "failed to write iterm kitty: {:#}", error);
                             error

@@ -12,16 +12,19 @@ Use `cargo release` to create a new release.
 - mdcat now fills paragraph text to the column limit, i.e. fills up short lines and wraps long lines (see [GH-4]).
 - mdcat now allows to control color and style via a new `theme` field in `mdcat::Settings` of type `mdcat::Theme` (see [GH-48]).
     `mdcat::Theme::default()` provides the standard mdcat 1.x colors and style.
+- mdcat now exposes resource handling via the new `mdcat::resources::ResourceUrlHandler` trait (see [GH-247]).
 
 ### Changed
 - Update all dependencies.
 - `mdcat::Settings` now holds a reference to a syntax set, so the syntax set can now be shared among multiple different settings.
-
-### Changed
 - Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.
+
+### Removed
+- `mdcat::Settings.resource_access` and the corresponding `ResourceAccess` enum (see [GH-247]).
 
 [GH-4]: https://github.com/swsnr/mdcat/issues/4
 [GH-48]: https://github.com/swsnr/mdcat/issues/48
+[GH-247]: https://github.com/swsnr/mdcat/issues/247
 
 ## [1.1.1] – 2023-03-18
 

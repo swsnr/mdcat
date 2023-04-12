@@ -15,6 +15,10 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use glob::glob;
+use mdcat::resources::{
+    DispatchingResourceHandler, FileResourceHandler, HttpResourceHandler, ResourceUrlHandler,
+    DEFAULT_RESOURCE_READ_LIMIT,
+};
 use once_cell::sync::Lazy;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};
@@ -25,6 +29,20 @@ use mdcat::terminal::TerminalProgram;
 use mdcat::{Environment, Theme};
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
+
+static RESOURCE_HANDLER: Lazy<DispatchingResourceHandler> = Lazy::new(|| {
+    let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
+        Box::new(FileResourceHandler::new(DEFAULT_RESOURCE_READ_LIMIT)),
+        Box::new(
+            HttpResourceHandler::with_user_agent(
+                DEFAULT_RESOURCE_READ_LIMIT,
+                concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
+            )
+            .unwrap(),
+        ),
+    ];
+    DispatchingResourceHandler::new(handlers)
+});
 
 fn render_to_string<P: AsRef<Path>>(
     markdown_file: P,
@@ -54,7 +72,7 @@ fn render_to_string<P: AsRef<Path>>(
         hostname: "HOSTNAME".to_string(),
         ..Environment::for_local_directory(&base_dir)?
     };
-    mdcat::push_tty(settings, &env, &mut sink, parser).with_context(|| {
+    mdcat::push_tty(settings, &env, &*RESOURCE_HANDLER, &mut sink, parser).with_context(|| {
         format!(
             "Failed to render contents of {}",
             markdown_file.as_ref().display()
@@ -142,7 +160,6 @@ fn ansi_only() {
     let settings = mdcat::Settings {
         terminal_capabilities: TerminalProgram::Ansi.capabilities(),
         terminal_size: mdcat::terminal::TerminalSize::default(),
-        resource_access: mdcat::ResourceAccess::LocalOnly,
         theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };
@@ -160,7 +177,6 @@ fn iterm2() {
     let settings = mdcat::Settings {
         terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
         terminal_size: mdcat::terminal::TerminalSize::default(),
-        resource_access: mdcat::ResourceAccess::LocalOnly,
         theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };
