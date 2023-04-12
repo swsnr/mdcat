@@ -15,27 +15,27 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use glob::glob;
-use mdcat::resources::{
-    DispatchingResourceHandler, FileResourceHandler, HttpResourceHandler, ResourceUrlHandler,
-    DEFAULT_RESOURCE_READ_LIMIT,
-};
 use once_cell::sync::Lazy;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use url::Url;
 
-use mdcat::terminal::TerminalProgram;
-use mdcat::{Environment, Theme};
+use pulldown_cmark_mdcat::resources::*;
+use pulldown_cmark_mdcat::terminal::{TerminalProgram, TerminalSize};
+use pulldown_cmark_mdcat::Settings;
+use pulldown_cmark_mdcat::{Environment, Theme};
+
+static TEST_READ_LIMIT: u64 = 5_242_880;
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
 
 static RESOURCE_HANDLER: Lazy<DispatchingResourceHandler> = Lazy::new(|| {
     let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
-        Box::new(FileResourceHandler::new(DEFAULT_RESOURCE_READ_LIMIT)),
+        Box::new(FileResourceHandler::new(TEST_READ_LIMIT)),
         Box::new(
             HttpResourceHandler::with_user_agent(
-                DEFAULT_RESOURCE_READ_LIMIT,
+                TEST_READ_LIMIT,
                 concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
             )
             .unwrap(),
@@ -44,10 +44,7 @@ static RESOURCE_HANDLER: Lazy<DispatchingResourceHandler> = Lazy::new(|| {
     DispatchingResourceHandler::new(handlers)
 });
 
-fn render_to_string<P: AsRef<Path>>(
-    markdown_file: P,
-    settings: &mdcat::Settings,
-) -> Result<String> {
+fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> Result<String> {
     let markdown = std::fs::read_to_string(&markdown_file).with_context(|| {
         format!(
             "Failed to read markdown from {}",
@@ -72,12 +69,13 @@ fn render_to_string<P: AsRef<Path>>(
         hostname: "HOSTNAME".to_string(),
         ..Environment::for_local_directory(&base_dir)?
     };
-    mdcat::push_tty(settings, &env, &*RESOURCE_HANDLER, &mut sink, parser).with_context(|| {
-        format!(
-            "Failed to render contents of {}",
-            markdown_file.as_ref().display()
-        )
-    })?;
+    pulldown_cmark_mdcat::push_tty(settings, &env, &*RESOURCE_HANDLER, &mut sink, parser)
+        .with_context(|| {
+            format!(
+                "Failed to render contents of {}",
+                markdown_file.as_ref().display()
+            )
+        })?;
     String::from_utf8(sink).with_context(|| "Failed to convert rendered result to string")
 }
 
@@ -110,7 +108,7 @@ fn replace_system_specific_urls(input: String) -> String {
 fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
     markdown_file: S,
     golden_file_directory: T,
-    settings: &mdcat::Settings,
+    settings: &Settings,
 ) {
     // Replace environment specific facts in
     let actual =
@@ -157,9 +155,9 @@ fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
 /// Test basic rendering.
 #[test]
 fn ansi_only() {
-    let settings = mdcat::Settings {
+    let settings = Settings {
         terminal_capabilities: TerminalProgram::Ansi.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
+        terminal_size: TerminalSize::default(),
         theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };
@@ -174,9 +172,9 @@ fn ansi_only() {
 
 #[test]
 fn iterm2() {
-    let settings = mdcat::Settings {
+    let settings = Settings {
         terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
+        terminal_size: TerminalSize::default(),
         theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };

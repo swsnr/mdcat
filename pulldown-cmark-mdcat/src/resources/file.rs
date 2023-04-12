@@ -80,15 +80,13 @@ mod tests {
     #[test]
     fn read_resource_returns_content_type() {
         let cwd = Url::from_directory_path(std::env::current_dir().unwrap()).unwrap();
-        let client = FileResourceHandler {
-            read_limit: DEFAULT_RESOURCE_READ_LIMIT,
-        };
+        let client = FileResourceHandler::new(5_000_000);
 
-        let resource = cwd.join("sample/rust-logo.svg").unwrap();
+        let resource = cwd.join("../sample/rust-logo.svg").unwrap();
         let mime_type = client.read_resource(&resource).unwrap().mime_type;
         assert_eq!(mime_type, Some(mime::IMAGE_SVG));
 
-        let resource = cwd.join("sample/rust-logo-128x128.png").unwrap();
+        let resource = cwd.join("../sample/rust-logo-128x128.png").unwrap();
         let mime_type = client.read_resource(&resource).unwrap().mime_type;
         assert_eq!(mime_type, Some(mime::IMAGE_PNG));
     }
@@ -98,7 +96,7 @@ mod tests {
         let cwd = Url::from_directory_path(std::env::current_dir().unwrap()).unwrap();
         let client = FileResourceHandler { read_limit: 10 };
 
-        let resource = cwd.join("sample/rust-logo.svg").unwrap();
+        let resource = cwd.join("../sample/rust-logo.svg").unwrap();
         let error = client.read_resource(&resource).unwrap_err().to_string();
         assert_eq!(error, format!("Contents of {resource} exceeded 10 bytes"));
     }

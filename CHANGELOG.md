@@ -18,6 +18,8 @@ Use `cargo release` to create a new release.
 - Update all dependencies.
 - `mdcat::Settings` now holds a reference to a syntax set, so the syntax set can now be shared among multiple different settings.
 - Explicitly set minimum rust version in `Cargo.toml`, and document MSRV policy.
+- Move all core rendering functions into a new crate `pulldown-cmark-mdcat`; `mdcat` itself only contains the argument parsing and handling now (see [GH-248]).
+    If you were using `mdcat` as a library before, you likely want to use `pulldown-cmark-mdcat` now.
 
 ### Removed
 - `mdcat::Settings.resource_access` and the corresponding `ResourceAccess` enum (see [GH-247]).
@@ -25,6 +27,7 @@ Use `cargo release` to create a new release.
 [GH-4]: https://github.com/swsnr/mdcat/issues/4
 [GH-48]: https://github.com/swsnr/mdcat/issues/48
 [GH-247]: https://github.com/swsnr/mdcat/issues/247
+[GH-248]: https://github.com/swsnr/mdcat/issues/248
 
 ## [1.1.1] – 2023-03-18
 

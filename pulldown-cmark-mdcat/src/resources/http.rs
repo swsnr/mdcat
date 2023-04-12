@@ -158,7 +158,7 @@ mod tests {
     use tokio::task::JoinHandle;
     use url::Url;
 
-    use crate::resources::{ResourceUrlHandler, DEFAULT_RESOURCE_READ_LIMIT};
+    use crate::resources::ResourceUrlHandler;
 
     use super::HttpResourceHandler;
 
@@ -279,9 +279,8 @@ mod tests {
         }
     }
 
-    static CLIENT: Lazy<HttpResourceHandler> = Lazy::new(|| {
-        HttpResourceHandler::with_user_agent(DEFAULT_RESOURCE_READ_LIMIT, "foo/0.0").unwrap()
-    });
+    static CLIENT: Lazy<HttpResourceHandler> =
+        Lazy::new(|| HttpResourceHandler::with_user_agent(52_428_800, "foo/0.0").unwrap());
 
     #[test]
     fn read_url_with_http_url_fails_when_status_404() {
@@ -347,7 +346,7 @@ mod tests {
         let error = format!("{:#}", result.unwrap_err());
         assert_eq!(
             error,
-            format!("{url} reports size 150000000 which exceeds limit 104857600, refusing to read")
+            format!("{url} reports size 150000000 which exceeds limit 52428800, refusing to read")
         );
     }
 }

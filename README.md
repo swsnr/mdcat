@@ -46,7 +46,6 @@ Then it
 Not supported:
 
 * CommonMark extensions: [Footnotes][#1] and [tables][#2]
-* [Re-filling paragraphs][#4]
 
 [syntect]: https://github.com/trishume/syntect
 [osc8]: https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
