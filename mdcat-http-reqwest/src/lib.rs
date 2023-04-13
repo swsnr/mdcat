@@ -181,7 +181,7 @@ mod tests {
                         {
                             break;
                         }
-                        tokio::time::sleep(Duration::from_millis(500)).await;
+                        tokio::time::sleep(Duration::from_secs(5)).await;
                     }
                 });
                 Response::builder()
@@ -206,7 +206,7 @@ mod tests {
                         {
                             break;
                         }
-                        tokio::time::sleep(Duration::from_secs(5)).await;
+                        tokio::time::sleep(Duration::from_millis(250)).await;
                     }
                 });
                 Response::builder()
