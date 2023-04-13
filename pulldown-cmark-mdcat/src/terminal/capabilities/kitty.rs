@@ -14,20 +14,39 @@
 // limitations under the License.
 
 //! Kitty terminal extensions.
-use std::io::Write;
+use std::io::{ErrorKind, Write};
 use std::str;
 
-use anyhow::{Context, Result};
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use image::imageops::FilterType;
-use image::ColorType;
+use image::{ColorType, ImageError, ImageFormat};
 use image::{DynamicImage, GenericImageView};
-use url::Url;
+use thiserror::Error;
 
 use crate::resources::MimeData;
-use crate::svg::render_svg;
+use crate::svg::{render_svg_to_png, RenderSvgError};
 use crate::terminal::size::PixelSize;
+
+/// An error which occurred while rendering or writing an image with the Kitty image protocol.
+#[derive(Debug, Error)]
+pub enum KittyImageError {
+    /// Rendering an SVG to PNG failed.
+    #[error("Failed to render SVG to PNG: {0}")]
+    RenderSvgError(#[from] RenderSvgError),
+    /// Writing a rendered image to the terminal failed.
+    #[error("Failed to write image: {0}")]
+    IoError(#[from] std::io::Error),
+    /// Processing a pixel image, e.g. for format conversion, failed
+    #[error("Failed to process pixel image: {0}")]
+    ImageError(#[from] ImageError),
+}
+
+impl From<KittyImageError> for std::io::Error {
+    fn from(value: KittyImageError) -> Self {
+        std::io::Error::new(ErrorKind::Other, value)
+    }
+}
 
 /// Provides access to printing images for kitty.
 #[derive(Debug, Copy, Clone)]
@@ -35,7 +54,11 @@ pub struct KittyImages;
 
 impl KittyImages {
     /// Write an inline image for kitty.
-    pub fn write_inline_image<W: Write>(self, writer: &mut W, image: KittyImage) -> Result<()> {
+    pub fn write_inline_image<W: Write>(
+        self,
+        writer: &mut W,
+        image: KittyImage,
+    ) -> Result<(), KittyImageError> {
         // Kitty's escape sequence is like: Put the command key/value pairs together like "{}={}(,*)"
         // and write them along with the image bytes in 4096 bytes chunks to the stdout.
         // Documentation gives the following python example:
@@ -89,12 +112,10 @@ impl KittyImages {
                 cmd_header.push("m=0".into());
             }
 
-            let cmd = format!(
-                "\x1b_G{};{}\x1b\\",
-                cmd_header.join(","),
-                str::from_utf8(data)?
-            );
-            writer.write_all(cmd.as_bytes())?;
+            write!(writer, "\x1b_G{};", cmd_header.join(","))?;
+            writer.write_all(data)?;
+            write!(writer, "\x1b\\")?;
+            // FIXME: Remove this? Why do we flush here?
             writer.flush()?;
 
             cmd_header.clear();
@@ -109,19 +130,15 @@ impl KittyImages {
     /// image down to `terminal_size` (preserving aspect ratio).
     pub fn render(
         self,
-        url: &Url,
         mime_data: MimeData,
         terminal_size: PixelSize,
-    ) -> Result<KittyImage> {
+    ) -> Result<KittyImage, KittyImageError> {
         let image = if mime_data.mime_type == Some(mime::IMAGE_SVG) {
-            image::load_from_memory(
-                &render_svg(&mime_data.data)
-                    .with_context(|| format!("Failed to render SVG at {url} to PNG"))?,
-            )
-            .with_context(|| format!("Failed to load SVG rendered from {url}"))?
+            let png_data = render_svg_to_png(&mime_data.data)?;
+            image::load_from_memory_with_format(&png_data, ImageFormat::Png)?
         } else {
-            image::load_from_memory(&mime_data.data)
-                .with_context(|| format!("Failed to load image from URL {url}"))?
+            // TODO: Inspect the mime type of `mime_data` to avoid guessing the format?
+            image::load_from_memory(&mime_data.data)?
         };
 
         if mime_data.mime_type == Some(mime::IMAGE_PNG)

@@ -1296,7 +1296,6 @@ name = "pulldown-cmark-mdcat"
 version = "1.1.1"
 dependencies = [
  "anstyle",
- "anyhow",
  "base64",
  "gethostname",
  "glob",
@@ -1312,6 +1311,7 @@ dependencies = [
  "syntect",
  "terminal_size",
  "textwrap",
+ "thiserror",
  "tracing",
  "tracing-subscriber",
  "url",

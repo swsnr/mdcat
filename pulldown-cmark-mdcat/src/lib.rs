@@ -145,7 +145,7 @@ mod tests {
 
     use super::*;
 
-    fn render_string(input: &str, settings: &Settings) -> anyhow::Result<String> {
+    fn render_string(input: &str, settings: &Settings) -> Result<String> {
         let source = Parser::new(input);
         let mut sink = Vec::new();
         let env =
@@ -155,7 +155,6 @@ mod tests {
     }
 
     mod layout {
-        use anyhow::Result;
         use pretty_assertions::assert_eq;
         use syntect::parsing::SyntaxSet;
 
@@ -299,7 +298,6 @@ Hello Donald[2]
     }
 
     mod disabled_features {
-        use anyhow::Result;
         use pretty_assertions::assert_eq;
         use syntect::parsing::SyntaxSet;
 
