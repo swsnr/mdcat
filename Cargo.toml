@@ -21,6 +21,7 @@ static = ["mdcat-http-reqwest/rustls-tls-native-roots"]
 anyhow = { version = "1.0.70", default-features = false, features = ["std"] }
 clap = { version = "4.2.1", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 concolor-query = { version = "0.3.3", default-features = false }
+human-panic = { version = "1.1.4", default-features = false, features = ["color"] }
 pulldown-cmark = { version = "0.9.2", default-features = false, features = ['simd'] }
 reqwest = { version = "0.11.16", default-features = false }
 shell-words = { version = "1.1.0", default-features = false, features = ["std"] }

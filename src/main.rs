@@ -21,6 +21,9 @@ use mdcat::args::Args;
 use mdcat::output::Output;
 
 fn main() {
+    // Setup human-readable panic handling for release builds
+    human_panic::setup_panic!();
+
     // Setup tracing
     let filter = EnvFilter::builder()
         // Disable all logging by default, to avoid interfering with regular output at all cost.

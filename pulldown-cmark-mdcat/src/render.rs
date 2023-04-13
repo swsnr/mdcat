@@ -791,14 +791,7 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, _), End(List(_))) => stack.pop().and_data(data).ok(),
 
         // Impossible events
-        (s, e) => panic!(
-            "Event {e:?} impossible in state {s:?}
-
-Please do report an issue at <https://github.com/swsnr/mdcat/issues/new> including
-
-* a copy of this message, and
-* the markdown document which caused this error.",
-        ),
+        (s, e) => panic!("Event {e:?} impossible in state {s:?}"),
     }
 }
 
