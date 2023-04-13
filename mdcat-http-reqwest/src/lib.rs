@@ -29,7 +29,7 @@ pub fn build_default_client() -> ClientBuilder {
     ClientBuilder::new()
         // Use somewhat aggressive timeouts to avoid blocking rendering for long; we have graceful
         // fallbacks since we have to support terminals without image capabilities anyways.
-        .timeout(Some(Duration::from_millis(100)))
+        .timeout(Some(Duration::from_secs(1)))
         .connect_timeout(Some(Duration::from_secs(1)))
         .referer(false)
 }
@@ -206,7 +206,7 @@ mod tests {
                         {
                             break;
                         }
-                        tokio::time::sleep(Duration::from_millis(250)).await;
+                        tokio::time::sleep(Duration::from_secs(5)).await;
                     }
                 });
                 Response::builder()
