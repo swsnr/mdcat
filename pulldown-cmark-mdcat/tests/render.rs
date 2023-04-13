@@ -13,29 +13,29 @@
 
 use std::path::Path;
 
-use anyhow::{Context, Result};
 use glob::glob;
-use mdcat::resources::{
-    DispatchingResourceHandler, FileResourceHandler, HttpResourceHandler, ResourceUrlHandler,
-    DEFAULT_RESOURCE_READ_LIMIT,
-};
+use mdcat_http_reqwest::HttpResourceHandler;
 use once_cell::sync::Lazy;
 use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use url::Url;
 
-use mdcat::terminal::TerminalProgram;
-use mdcat::{Environment, Theme};
+use pulldown_cmark_mdcat::resources::*;
+use pulldown_cmark_mdcat::terminal::{TerminalProgram, TerminalSize};
+use pulldown_cmark_mdcat::Settings;
+use pulldown_cmark_mdcat::{Environment, Theme};
+
+static TEST_READ_LIMIT: u64 = 5_242_880;
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
 
 static RESOURCE_HANDLER: Lazy<DispatchingResourceHandler> = Lazy::new(|| {
     let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
-        Box::new(FileResourceHandler::new(DEFAULT_RESOURCE_READ_LIMIT)),
+        Box::new(FileResourceHandler::new(TEST_READ_LIMIT)),
         Box::new(
             HttpResourceHandler::with_user_agent(
-                DEFAULT_RESOURCE_READ_LIMIT,
+                TEST_READ_LIMIT,
                 concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
             )
             .unwrap(),
@@ -44,41 +44,23 @@ static RESOURCE_HANDLER: Lazy<DispatchingResourceHandler> = Lazy::new(|| {
     DispatchingResourceHandler::new(handlers)
 });
 
-fn render_to_string<P: AsRef<Path>>(
-    markdown_file: P,
-    settings: &mdcat::Settings,
-) -> Result<String> {
-    let markdown = std::fs::read_to_string(&markdown_file).with_context(|| {
-        format!(
-            "Failed to read markdown from {}",
-            markdown_file.as_ref().display()
-        )
-    })?;
+fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> String {
+    let markdown = std::fs::read_to_string(&markdown_file).unwrap();
     let parser = Parser::new_ext(
         &markdown,
         Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
     );
-    let abs_path = std::fs::canonicalize(&markdown_file).with_context(|| {
-        format!(
-            "Failed to convert {} to an absolute path",
-            markdown_file.as_ref().display()
-        )
-    })?;
+    let abs_path = std::fs::canonicalize(&markdown_file).unwrap();
     let base_dir = abs_path
         .parent()
         .expect("Absolute file name must have a parent!");
     let mut sink = Vec::new();
     let env = Environment {
         hostname: "HOSTNAME".to_string(),
-        ..Environment::for_local_directory(&base_dir)?
+        ..Environment::for_local_directory(&base_dir).unwrap()
     };
-    mdcat::push_tty(settings, &env, &*RESOURCE_HANDLER, &mut sink, parser).with_context(|| {
-        format!(
-            "Failed to render contents of {}",
-            markdown_file.as_ref().display()
-        )
-    })?;
-    String::from_utf8(sink).with_context(|| "Failed to convert rendered result to string")
+    pulldown_cmark_mdcat::push_tty(settings, &env, &*RESOURCE_HANDLER, &mut sink, parser).unwrap();
+    String::from_utf8(sink).unwrap()
 }
 
 fn replace_system_specific_urls(input: String) -> String {
@@ -110,46 +92,23 @@ fn replace_system_specific_urls(input: String) -> String {
 fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
     markdown_file: S,
     golden_file_directory: T,
-    settings: &mdcat::Settings,
+    settings: &Settings,
 ) {
     // Replace environment specific facts in
-    let actual =
-        replace_system_specific_urls(render_to_string(markdown_file.as_ref(), settings).unwrap());
+    let actual = replace_system_specific_urls(render_to_string(markdown_file.as_ref(), settings));
 
     let basename = markdown_file
         .as_ref()
         .strip_prefix("tests/render/md")
-        .with_context(|| {
-            format!(
-                "Failed to strip prefix from {}",
-                markdown_file.as_ref().display()
-            )
-        })
         .unwrap()
         .with_extension("");
     let expected_file = golden_file_directory.as_ref().join(&basename);
 
     if std::env::var_os("MDCAT_UPDATE_GOLDEN_FILES").is_some() {
-        std::fs::create_dir_all(expected_file.parent().unwrap())
-            .with_context(|| {
-                format!(
-                    "Failed to create directory {}",
-                    expected_file.parent().unwrap().display()
-                )
-            })
-            .unwrap();
-        std::fs::write(&expected_file, &actual)
-            .with_context(|| {
-                format!(
-                    "Failed to update golden file at {}",
-                    expected_file.display()
-                )
-            })
-            .unwrap()
+        std::fs::create_dir_all(expected_file.parent().unwrap()).unwrap();
+        std::fs::write(&expected_file, &actual).unwrap()
     } else {
-        let expected = std::fs::read_to_string(&expected_file)
-            .with_context(|| format!("Failed to read golden file at {}", expected_file.display()))
-            .unwrap();
+        let expected = std::fs::read_to_string(&expected_file).unwrap();
         assert_eq!(actual, expected, "Test case: {}", basename.display());
     }
 }
@@ -157,9 +116,9 @@ fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
 /// Test basic rendering.
 #[test]
 fn ansi_only() {
-    let settings = mdcat::Settings {
+    let settings = Settings {
         terminal_capabilities: TerminalProgram::Ansi.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
+        terminal_size: TerminalSize::default(),
         theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };
@@ -174,9 +133,9 @@ fn ansi_only() {
 
 #[test]
 fn iterm2() {
-    let settings = mdcat::Settings {
+    let settings = Settings {
         terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
-        terminal_size: mdcat::terminal::TerminalSize::default(),
+        terminal_size: TerminalSize::default(),
         theme: Theme::default(),
         syntax_set: &SYNTAX_SET,
     };

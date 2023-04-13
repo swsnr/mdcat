@@ -105,3 +105,34 @@ pub struct CommonArgs {
     #[arg(long = "ansi", conflicts_with = "no_colour")]
     pub ansi_only: bool,
 }
+
+/// What resources mdcat may access.
+#[derive(Debug, Copy, Clone)]
+pub enum ResourceAccess {
+    /// Only allow local resources.
+    LocalOnly,
+    /// Allow remote resources
+    Remote,
+}
+
+impl CommonArgs {
+    /// Whether remote resource access is permitted.
+    pub fn resource_access(&self) -> ResourceAccess {
+        if self.local_only {
+            ResourceAccess::LocalOnly
+        } else {
+            ResourceAccess::Remote
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Args;
+    use clap::CommandFactory;
+
+    #[test]
+    fn verify_app() {
+        Args::command().debug_assert();
+    }
+}

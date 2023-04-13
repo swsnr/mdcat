@@ -7,12 +7,11 @@
 //! Rendering algorithm.
 
 use std::io::prelude::*;
+use std::io::Error;
+use std::io::ErrorKind;
 use std::io::Result;
 
-use anstyle::Effects;
-use anstyle::Style;
-use anyhow::anyhow;
-use anyhow::Context;
+use anstyle::{Effects, Style};
 use pulldown_cmark::Event::*;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::{Event, LinkType};
@@ -674,10 +673,9 @@ pub fn write_event<'a, W: Write>(
                 (Some(ITerm2(iterm2)), Some(ref url)) =>
                    resource_handler
                         .read_resource(url)
-                        .with_context(|| format!("Failed to read resource from {url}"))
                         .and_then(|mime_data| {
                             if mime_data.mime_type == Some(mime::IMAGE_SVG) {
-                                svg::render_svg(&mime_data.data)
+                                svg::render_svg_to_png(&mime_data.data).map_err(Into::into)
                             } else {
                                 Ok(mime_data.data)
                             }
@@ -702,16 +700,17 @@ pub fn write_event<'a, W: Write>(
                     .pixels
                     .ok_or_else(|| {
                         event!(Level::ERROR, "Kitty surprisingly did not report pixel size, cannot render image");
-                        anyhow!("Terminal pixel size not available")
+                        Error::new(ErrorKind::InvalidData, "Terminal pixel size not available")
                     })
                     .and_then(|size| {
-                        let image = resource_handler.read_resource(url)
-                            .with_context(|| format!("Failed to read data from {url}"))
-                            .and_then(|mime_data| kitty.render(url, mime_data, size))
-                            .map_err(|error| {
-                                event!(Level::ERROR, ?error, %url, "failed to render image in kitty: {:#}", error);
-                                error
-                            })?;
+                        let mime_data = resource_handler.read_resource(url)?;
+                        Ok(kitty.render(mime_data, size)?)
+                    })
+                    .map_err(|error| {
+                        event!(Level::ERROR, ?error, %url, "failed to render image in kitty: {:#}", error);
+                        error
+                    })
+                    .and_then(|image| {
                         kitty.write_inline_image(writer, image).map_err(|error| {
                             event!(Level::ERROR, ?error, "failed to write iterm kitty: {:#}", error);
                             error

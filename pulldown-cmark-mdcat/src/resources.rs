@@ -13,13 +13,8 @@ use mime::Mime;
 use url::Url;
 
 mod file;
-mod http;
 
 pub use file::FileResourceHandler;
-pub use http::HttpResourceHandler;
-
-/// Default read size limit for resources.
-pub static DEFAULT_RESOURCE_READ_LIMIT: u64 = 104_857_600;
 
 /// Data of a resource with associated mime type.
 #[derive(Debug, Clone)]

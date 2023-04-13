@@ -1,0 +1,31 @@
+[package]
+name = "mdcat-http-reqwest"
+description = "Reqwest-based HTTP resource handler for mdcat"
+documentation = "https://docs.rs/mdcat-http-reqwest"
+homepage.workspace = true
+repository.workspace = true
+version.workspace = true
+categories.workspace = true
+license.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[features]
+native-tls = ["reqwest/native-tls"]
+rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
+
+[dependencies]
+mime = { version = "0.3.17", default-features = false }
+reqwest = { version = "0.11.16", default-features = false, features = ["gzip", "brotli", "blocking"]}
+tracing = { version = "0.1.37", default-features = false, features = ["attributes"] }
+
+# Our own crates; pinned to an exact version because we release all of this repo
+# in a single version. cargo release takes care of updating these.
+pulldown-cmark-mdcat = { version = "=1.1.1", path = "../pulldown-cmark-mdcat", default-features = false}
+
+[dev-dependencies]
+hyper = { version="0.14.25", default-features = false, features = ["server", "http1", "runtime"] }
+once_cell = { version = "1.17.1", default-features = false }
+syntect = { version = "5.0.0", default-features = false, features = ["regex-fancy", "default-syntaxes"] }
+tokio = { version = "1.27", default-features = false, features = ["time"] }

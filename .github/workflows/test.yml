@@ -25,7 +25,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-      - run: cargo fmt -- --check
+      - run: cargo fmt --all -- --check
 
   manpage:
     runs-on: ubuntu-latest
@@ -95,8 +95,8 @@ jobs:
           targets: ${{ matrix.target }}
           components: clippy
       # Build, including tests, to report build failures and measure build time separately from tests
-      - run: cargo build --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo clippy --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo test --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo doc --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo test --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo doc --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
       - run: cargo run --target ${{ matrix.target }} ${{ matrix.cargo_opts }} -- sample/common-mark.md

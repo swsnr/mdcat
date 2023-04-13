@@ -1,339 +1,131 @@
-// Copyright 2018-2020 Sebastian Wiesner <sebastian@swsnr.de>
+// Copyright 2020 Sebastian Wiesner <sebastian@swsnr.de>
 
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+//! Command line application to render markdown to TTYs.
+//!
+//! Note that as of version 2.0.0 mdcat itself no longer contains the core rendering functions.
+//! Use [`pulldown_cmark_mdcat`] instead.
+
 #![deny(warnings, missing_docs, clippy::all)]
 
-//! Write markdown to TTYs.
-//!
-//! ## MSRV
-//!
-//! This library generally supports only the latest stable Rust version.
+use std::fs::File;
+use std::io::stdin;
+use std::io::{prelude::*, BufWriter};
+use std::path::PathBuf;
 
-use std::io::{ErrorKind, Result, Write};
-use std::path::Path;
+use anyhow::{Context, Result};
+use mdcat_http_reqwest::HttpResourceHandler;
+use pulldown_cmark::{Options, Parser};
+use pulldown_cmark_mdcat::resources::{
+    DispatchingResourceHandler, FileResourceHandler, ResourceUrlHandler,
+};
+use pulldown_cmark_mdcat::{Environment, Settings};
+use reqwest::Proxy;
+use tracing::{event, instrument, Level};
 
-use pulldown_cmark::Event;
-use syntect::parsing::SyntaxSet;
-use tracing::instrument;
-use url::Url;
+use args::ResourceAccess;
+use output::Output;
 
-use crate::resources::ResourceUrlHandler;
-use crate::terminal::capabilities::TerminalCapabilities;
-use crate::terminal::TerminalSize;
+/// Argument parsing for mdcat.
+#[allow(missing_docs)]
+pub mod args;
+/// Output handling for mdcat.
+pub mod output;
 
-// Expose some select things for use in main
-pub use crate::theme::Theme;
+/// Default read size limit for resources.
+pub static DEFAULT_RESOURCE_READ_LIMIT: u64 = 104_857_600;
 
-mod references;
-pub mod resources;
-mod svg;
-pub mod terminal;
-mod theme;
-
-mod render;
-
-/// The mdcat error type.
+/// Read input for `filename`.
 ///
-/// This is `std::io::Error`: mdcat never fails visible unless it cannot write output.
-pub type Error = std::io::Error;
+/// If `filename` is `-` read from standard input, otherwise try to open and
+/// read the given file.
+pub fn read_input<T: AsRef<str>>(filename: T) -> Result<(PathBuf, String)> {
+    let cd = std::env::current_dir()?;
+    let mut buffer = String::new();
 
-/// Settings for markdown rendering.
-#[derive(Debug)]
-pub struct Settings<'a> {
-    /// Capabilities of the terminal mdcat writes to.
-    pub terminal_capabilities: TerminalCapabilities,
-    /// The size of the terminal mdcat writes to.
-    pub terminal_size: TerminalSize,
-    /// Syntax set for syntax highlighting of code blocks.
-    pub syntax_set: &'a SyntaxSet,
-    /// Colour theme for mdcat
-    pub theme: Theme,
-}
-
-/// The environment to render markdown in.
-#[derive(Debug)]
-pub struct Environment {
-    /// The base URL to resolve relative URLs with.
-    pub base_url: Url,
-    /// The local host name.
-    pub hostname: String,
-}
-
-impl Environment {
-    /// Create an environment for the local host with the given `base_url`.
-    ///
-    /// Take the local hostname from `gethostname`.
-    pub fn for_localhost(base_url: Url) -> Result<Self> {
-        gethostname::gethostname()
-            .into_string()
-            .map_err(|raw| {
-                Error::new(
-                    ErrorKind::InvalidData,
-                    format!("gethostname() returned invalid unicode data: {raw:?}"),
-                )
-            })
-            .map(|hostname| Environment { base_url, hostname })
-    }
-
-    /// Create an environment for a local diretory.
-    ///
-    /// Convert the directory to a directory URL, and obtain the hostname from `gethostname`.
-    ///
-    /// `base_dir` must be an absolute path; return an IO error with `ErrorKind::InvalidInput`
-    /// otherwise.
-    pub fn for_local_directory<P: AsRef<Path>>(base_dir: &P) -> Result<Self> {
-        Url::from_directory_path(base_dir)
-            .map_err(|_| {
-                Error::new(
-                    ErrorKind::InvalidInput,
-                    format!(
-                        "Base directory {} must be an absolute path",
-                        base_dir.as_ref().display()
-                    ),
-                )
-            })
-            .and_then(Self::for_localhost)
+    if filename.as_ref() == "-" {
+        stdin().read_to_string(&mut buffer)?;
+        Ok((cd, buffer))
+    } else {
+        let mut source = File::open(filename.as_ref())?;
+        source.read_to_string(&mut buffer)?;
+        let base_dir = cd
+            .join(filename.as_ref())
+            .parent()
+            .map(|p| p.to_path_buf())
+            .unwrap_or(cd);
+        Ok((base_dir, buffer))
     }
 }
 
-/// Write markdown to a TTY.
+/// Process a single file.
 ///
-/// Iterate over Markdown AST `events`, format each event for TTY output and
-/// write the result to a `writer`, using the given `settings` and `environment`
-/// for rendering and resource access.
-///
-/// `push_tty` tries to limit output to the given number of TTY `columns` but
-/// does not guarantee that output stays within the column limit.
-#[instrument(level = "debug", skip_all, fields(environment.hostname = environment.hostname.as_str(), environment.base_url = &environment.base_url.as_str()))]
-pub fn push_tty<'a, 'e, W, I>(
+/// Read from `filename` and render the contents to `output`.
+#[instrument(skip(output, settings, resource_handler), level = "debug")]
+pub fn process_file(
+    filename: &str,
     settings: &Settings,
-    environment: &Environment,
     resource_handler: &dyn ResourceUrlHandler,
-    writer: &'a mut W,
-    mut events: I,
-) -> Result<()>
-where
-    I: Iterator<Item = Event<'e>>,
-    W: Write,
-{
-    use render::*;
-    let StateAndData(final_state, final_data) = events.try_fold(
-        StateAndData(State::default(), StateData::default()),
-        |StateAndData(state, data), event| {
-            write_event(
-                writer,
-                settings,
-                environment,
-                &resource_handler,
-                state,
-                data,
-                event,
-            )
-        },
-    )?;
-    finish(writer, settings, environment, final_state, final_data)
+    output: &mut Output,
+) -> Result<()> {
+    let (base_dir, input) = read_input(filename)?;
+    event!(
+        Level::TRACE,
+        "Read input, using {} as base directory",
+        base_dir.display()
+    );
+    let parser = Parser::new_ext(
+        &input,
+        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
+    );
+    let env = Environment::for_local_directory(&base_dir)?;
+
+    let mut sink = BufWriter::new(output.writer());
+    pulldown_cmark_mdcat::push_tty(settings, &env, resource_handler, &mut sink, parser)
+        .and_then(|_| {
+            event!(Level::TRACE, "Finished rendering, flushing output");
+            sink.flush()
+        })
+        .or_else(|error| {
+            if error.kind() == std::io::ErrorKind::BrokenPipe {
+                event!(Level::TRACE, "Ignoring broken pipe");
+                Ok(())
+            } else {
+                event!(Level::ERROR, ?error, "Failed to process file: {:#}", error);
+                Err(error)
+            }
+        })?;
+    Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use pulldown_cmark::Parser;
-
-    use crate::resources::NoopResourceHandler;
-
-    use super::*;
-
-    fn render_string(input: &str, settings: &Settings) -> anyhow::Result<String> {
-        let source = Parser::new(input);
-        let mut sink = Vec::new();
-        let env =
-            Environment::for_local_directory(&std::env::current_dir().expect("Working directory"))?;
-        push_tty(settings, &env, &NoopResourceHandler, &mut sink, source)?;
-        Ok(String::from_utf8_lossy(&sink).into())
+/// Create the resource handler for mdcat.
+pub fn create_resource_handler(access: ResourceAccess) -> Result<DispatchingResourceHandler> {
+    let mut resource_handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![Box::new(
+        FileResourceHandler::new(DEFAULT_RESOURCE_READ_LIMIT),
+    )];
+    if let ResourceAccess::Remote = access {
+        let user_agent = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+        event!(
+            target: "mdcat::main",
+            Level::DEBUG,
+            "Remote resource access permitted, creating HTTP client with user agent {}",
+            user_agent
+        );
+        let proxies = system_proxy::env::EnvProxies::from_curl_env();
+        let client = mdcat_http_reqwest::build_default_client()
+            .user_agent(user_agent)
+            .proxy(Proxy::custom(move |url| {
+                proxies.lookup(url).map(Clone::clone)
+            }))
+            .build()
+            .with_context(|| "Failed to build HTTP client".to_string())?;
+        resource_handlers.push(Box::new(HttpResourceHandler::new(
+            DEFAULT_RESOURCE_READ_LIMIT,
+            client,
+        )));
     }
-
-    mod layout {
-        use anyhow::Result;
-        use pretty_assertions::assert_eq;
-        use syntect::parsing::SyntaxSet;
-
-        use crate::terminal::TerminalProgram;
-        use crate::*;
-
-        use super::render_string;
-
-        fn render(markup: &str) -> Result<String> {
-            render_string(
-                markup,
-                &Settings {
-                    syntax_set: &SyntaxSet::default(),
-                    terminal_capabilities: TerminalProgram::Dumb.capabilities(),
-                    terminal_size: TerminalSize::default(),
-                    theme: Theme::default(),
-                },
-            )
-        }
-
-        #[test]
-        #[allow(non_snake_case)]
-        fn GH_49_format_no_colour_simple() {
-            assert_eq!(
-                render("_lorem_ **ipsum** dolor **sit** _amet_").unwrap(),
-                "lorem ipsum dolor sit amet\n",
-            )
-        }
-
-        #[test]
-        fn begins_with_rule() {
-            assert_eq!(render("----").unwrap(), "════════════════════════════════════════════════════════════════════════════════\n")
-        }
-
-        #[test]
-        fn begins_with_block_quote() {
-            assert_eq!(render("> Hello World").unwrap(), "    Hello World\n")
-        }
-
-        #[test]
-        fn rule_in_block_quote() {
-            assert_eq!(
-                render(
-                    "> Hello World
-
-> ----"
-                )
-                .unwrap(),
-                "    Hello World
-
-    ════════════════════════════════════════════════════════════════════════════\n"
-            )
-        }
-
-        #[test]
-        fn heading_in_block_quote() {
-            assert_eq!(
-                render(
-                    "> Hello World
-
-> # Hello World"
-                )
-                .unwrap(),
-                "    Hello World
-
-    ┄Hello World\n"
-            )
-        }
-
-        #[test]
-        fn heading_levels() {
-            assert_eq!(
-                render(
-                    "
-# First
-
-## Second
-
-### Third"
-                )
-                .unwrap(),
-                "┄First
-
-┄┄Second
-
-┄┄┄Third\n"
-            )
-        }
-
-        #[test]
-        fn autolink_creates_no_reference() {
-            assert_eq!(
-                render("Hello <http://example.com>").unwrap(),
-                "Hello http://example.com\n"
-            )
-        }
-
-        #[test]
-        fn flush_ref_links_before_toplevel_heading() {
-            assert_eq!(
-                render(
-                    "> Hello [World](http://example.com/world)
-
-> # No refs before this headline
-
-# But before this"
-                )
-                .unwrap(),
-                "    Hello World[1]
-
-    ┄No refs before this headline
-
-[1]: http://example.com/world
-
-┄But before this\n"
-            )
-        }
-
-        #[test]
-        fn flush_ref_links_at_end() {
-            assert_eq!(
-                render(
-                    "Hello [World](http://example.com/world)
-
-# Headline
-
-Hello [Donald](http://example.com/Donald)"
-                )
-                .unwrap(),
-                "Hello World[1]
-
-[1]: http://example.com/world
-
-┄Headline
-
-Hello Donald[2]
-
-[2]: http://example.com/Donald\n"
-            )
-        }
-    }
-
-    mod disabled_features {
-        use anyhow::Result;
-        use pretty_assertions::assert_eq;
-        use syntect::parsing::SyntaxSet;
-
-        use crate::terminal::TerminalProgram;
-        use crate::*;
-
-        use super::render_string;
-
-        fn render(markup: &str) -> Result<String> {
-            render_string(
-                markup,
-                &Settings {
-                    syntax_set: &SyntaxSet::default(),
-                    terminal_capabilities: TerminalProgram::Dumb.capabilities(),
-                    terminal_size: TerminalSize::default(),
-                    theme: Theme::default(),
-                },
-            )
-        }
-
-        #[test]
-        #[allow(non_snake_case)]
-        fn GH_155_do_not_choke_on_footnoes() {
-            assert_eq!(
-                render(
-                    "A footnote [^1]
-
-[^1: We do not support footnotes."
-                )
-                .unwrap(),
-                "A footnote [^1]
-
-[^1: We do not support footnotes.\n"
-            )
-        }
-    }
+    Ok(DispatchingResourceHandler::new(resource_handlers))
 }

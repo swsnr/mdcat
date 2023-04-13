@@ -950,33 +950,34 @@ dependencies = [
 name = "mdcat"
 version = "1.1.1"
 dependencies = [
- "anstyle",
  "anyhow",
- "base64",
  "clap",
  "clap_complete",
  "concolor-query",
- "gethostname",
- "glob",
- "hyper",
- "image",
- "libc",
- "mime",
- "mime_guess",
- "once_cell",
+ "mdcat-http-reqwest",
  "pretty_assertions",
  "pulldown-cmark",
+ "pulldown-cmark-mdcat",
  "reqwest",
- "resvg",
  "shell-words",
  "syntect",
  "system_proxy",
- "terminal_size",
- "textwrap",
- "tokio",
  "tracing",
  "tracing-subscriber",
- "url",
+]
+
+[[package]]
+name = "mdcat-http-reqwest"
+version = "1.1.1"
+dependencies = [
+ "hyper",
+ "mime",
+ "once_cell",
+ "pulldown-cmark-mdcat",
+ "reqwest",
+ "syntect",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -1288,6 +1289,32 @@ dependencies = [
  "bitflags",
  "memchr",
  "unicase",
+]
+
+[[package]]
+name = "pulldown-cmark-mdcat"
+version = "1.1.1"
+dependencies = [
+ "anstyle",
+ "base64",
+ "gethostname",
+ "glob",
+ "image",
+ "libc",
+ "mdcat-http-reqwest",
+ "mime",
+ "mime_guess",
+ "once_cell",
+ "pretty_assertions",
+ "pulldown-cmark",
+ "resvg",
+ "syntect",
+ "terminal_size",
+ "textwrap",
+ "thiserror",
+ "tracing",
+ "tracing-subscriber",
+ "url",
 ]
 
 [[package]]
