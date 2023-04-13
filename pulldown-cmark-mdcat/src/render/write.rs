@@ -221,7 +221,12 @@ pub fn write_rule<W: Write>(
     length: usize,
 ) -> std::io::Result<()> {
     let rule = "\u{2550}".repeat(length);
-    write_styled(writer, capabilities, &theme.rule_color.into(), rule)
+    write_styled(
+        writer,
+        capabilities,
+        &Style::new().fg_color(Some(theme.rule_color)),
+        rule,
+    )
 }
 
 #[inline]
@@ -235,7 +240,7 @@ pub fn write_code_block_border<W: Write>(
     write_styled(
         writer,
         capabilities,
-        &theme.code_block_border_color.into(),
+        &Style::new().fg_color(Some(theme.code_block_border_color)),
         separator,
     )?;
     writeln!(writer)

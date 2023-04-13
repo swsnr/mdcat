@@ -35,11 +35,11 @@ impl Default for Theme {
     /// The default theme from mdcat 1.x
     fn default() -> Self {
         Self {
-            html_block_style: AnsiColor::Green.into(),
-            inline_html_style: AnsiColor::Green.into(),
-            code_style: AnsiColor::Yellow.into(),
-            link_style: AnsiColor::Blue.into(),
-            image_link_style: AnsiColor::Magenta.into(),
+            html_block_style: Style::new().fg_color(Some(AnsiColor::Green.into())),
+            inline_html_style: Style::new().fg_color(Some(AnsiColor::Green.into())),
+            code_style: Style::new().fg_color(Some(AnsiColor::Yellow.into())),
+            link_style: Style::new().fg_color(Some(AnsiColor::Blue.into())),
+            image_link_style: Style::new().fg_color(Some(AnsiColor::Magenta.into())),
             rule_color: AnsiColor::Green.into(),
             code_block_border_color: AnsiColor::Green.into(),
             heading_style: Style::new().fg_color(Some(AnsiColor::Blue.into())).bold(),
