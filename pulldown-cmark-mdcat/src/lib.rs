@@ -8,11 +8,13 @@
 
 //! Write markdown to TTYs.
 //!
+//! See [`push_tty`] for the main entry point.
+//!
 //! ## MSRV
 //!
 //! This library generally supports only the latest stable Rust version.
 
-use std::io::{ErrorKind, Result, Write};
+use std::io::{Error, ErrorKind, Result, Write};
 use std::path::Path;
 
 use pulldown_cmark::Event;
@@ -20,11 +22,9 @@ use syntect::parsing::SyntaxSet;
 use tracing::instrument;
 use url::Url;
 
-use crate::resources::ResourceUrlHandler;
-use crate::terminal::capabilities::TerminalCapabilities;
-use crate::terminal::TerminalSize;
-
-// Expose some select things for use in main
+pub use crate::resources::ResourceUrlHandler;
+pub use crate::terminal::capabilities::TerminalCapabilities;
+pub use crate::terminal::{TerminalProgram, TerminalSize};
 pub use crate::theme::Theme;
 
 mod references;
@@ -34,11 +34,6 @@ pub mod terminal;
 mod theme;
 
 mod render;
-
-/// The mdcat error type.
-///
-/// This is `std::io::Error`: mdcat never fails visible unless it cannot write output.
-pub type Error = std::io::Error;
 
 /// Settings for markdown rendering.
 #[derive(Debug)]

@@ -38,15 +38,20 @@ pub enum MarkCapability {
 /// The capability of the terminal to write images inline.
 #[derive(Debug, Copy, Clone)]
 pub enum ImageCapability {
-    /// The terminal understands the terminology way of inline images.
+    /// The terminal understands the terminology image protocol.
     Terminology(self::terminology::TerminologyImages),
-    /// The terminal understands the iterm2 way of inline images.
+    /// The terminal understands the iterm2 image protocol.
     ITerm2(self::iterm2::ITerm2Images),
-    /// The terminal understands the Kitty way of inline images.
+    /// The terminal understands the kitty image protocol.
     Kitty(self::kitty::KittyImages),
 }
 
 /// The capabilities of a terminal.
+///
+/// See [`crate::TerminalProgram`] for a way to detect a terminal and derive known capabilities.
+/// To obtain capabilities for the current terminal program use [`crate::TerminalProgram::detect`]
+/// to detect the terminal and then [`crate::TerminalProgram::capabilities`] to get its
+/// capabilities.
 #[derive(Debug)]
 pub struct TerminalCapabilities {
     /// How the terminal supports basic styling.

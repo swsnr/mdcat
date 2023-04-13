@@ -7,7 +7,7 @@
 //! Command line application to render markdown to TTYs.
 //!
 //! Note that as of version 2.0.0 mdcat itself no longer contains the core rendering functions.
-//! Use [`pulldown-cmark-mdcat`] instead.
+//! Use [`pulldown_cmark_mdcat`] instead.
 
 #![deny(warnings, missing_docs, clippy::all)]
 
