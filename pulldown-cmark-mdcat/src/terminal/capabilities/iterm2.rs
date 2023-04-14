@@ -8,48 +8,63 @@
 //!
 //! This module provides the iTerm2 marks and the iTerm2 image protocol.
 
-use std::io::{self, Write};
+use std::borrow::Cow;
+use std::io::{self, Result, Write};
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 
+use crate::resources::{svg, InlineImageProtocol};
 use crate::terminal::osc::write_osc;
+use crate::ResourceUrlHandler;
 
 /// Iterm2 marks.
 #[derive(Debug, Copy, Clone)]
-pub struct ITerm2Marks;
+pub struct ITerm2;
 
-impl ITerm2Marks {
+impl ITerm2 {
     /// Write an iterm2 mark command to the given `writer`.
     pub fn set_mark<W: Write>(self, writer: &mut W) -> io::Result<()> {
         write_osc(writer, "1337;SetMark")
     }
 }
 
-/// Iterm2 inline iamges.
-#[derive(Debug, Copy, Clone)]
-pub struct ITerm2Images;
-
-impl ITerm2Images {
-    /// Write an iterm2 inline image command to `writer`.
-    ///
-    /// `name` is the local file name and `contents` are the contents of the
-    /// given file.
-    pub fn write_inline_image<W: Write>(
-        self,
-        writer: &mut W,
-        name: Option<&str>,
-        contents: &[u8],
-    ) -> io::Result<()> {
+/// The iterm2 inline image protocol.
+///
+/// See <https://iterm2.com/documentation-images.html> for details; effectively we write a base64
+/// encoded dump of the pixel data.
+///
+/// This implementation does **not** validate whether iterm2 actually supports the image type;
+/// it writes data opportunistically and hopes iTerm2 copes.  For rare formats which are not
+/// supported by macOS, this may yield false positives, i.e. this implementation might not return
+/// an error even though iTerm2 cannot actually display the image.
+impl InlineImageProtocol for ITerm2 {
+    fn write_inline_image(
+        &self,
+        writer: &mut dyn Write,
+        resource_handler: &dyn ResourceUrlHandler,
+        url: &url::Url,
+        _terminal_size: &crate::TerminalSize,
+    ) -> Result<()> {
+        let mime_data = resource_handler.read_resource(url)?;
+        let contents = if mime_data.mime_type == Some(mime::IMAGE_SVG) {
+            Cow::Owned(svg::render_svg_to_png(&mime_data.data)?)
+        } else {
+            Cow::Borrowed(&mime_data.data)
+        };
+        // Determine the local file name to use, by taking the last segment of the URL.
+        // If the URL has no last segment do not tell iterm about a file name.
+        let name = url.path_segments().and_then(|s| s.last());
+        let data = STANDARD.encode(contents.as_ref());
         write_osc(
             writer,
             &name.map_or_else(
-                || format!("1337;inline=1:{}", STANDARD.encode(contents)),
+                || format!("1337;inline=1:{}", data),
                 |name| {
                     format!(
                         "1337;File=name={};inline=1:{}",
                         STANDARD.encode(name.as_bytes()),
-                        STANDARD.encode(contents)
+                        data
                     )
                 },
             ),

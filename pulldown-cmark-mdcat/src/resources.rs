@@ -13,9 +13,11 @@ use mime::Mime;
 use url::Url;
 
 mod file;
+mod image;
 
 pub(crate) mod svg;
 
+pub(crate) use self::image::InlineImageProtocol;
 pub use file::FileResourceHandler;
 
 /// Data of a resource with associated mime type.

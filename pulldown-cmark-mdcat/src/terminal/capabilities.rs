@@ -6,7 +6,7 @@
 
 //! Capabilities of terminal emulators.
 
-use crate::terminal::AnsiStyle;
+use crate::{resources::InlineImageProtocol, terminal::AnsiStyle};
 
 pub mod iterm2;
 pub mod kitty;
@@ -32,18 +32,28 @@ pub enum LinkCapability {
 #[derive(Debug, Copy, Clone)]
 pub enum MarkCapability {
     /// The terminal supports iTerm2 jump marks.
-    ITerm2(self::iterm2::ITerm2Marks),
+    ITerm2(self::iterm2::ITerm2),
 }
 
 /// The capability of the terminal to write images inline.
 #[derive(Debug, Copy, Clone)]
 pub enum ImageCapability {
     /// The terminal understands the terminology image protocol.
-    Terminology(self::terminology::TerminologyImages),
+    Terminology(self::terminology::Terminology),
     /// The terminal understands the iterm2 image protocol.
-    ITerm2(self::iterm2::ITerm2Images),
+    ITerm2(self::iterm2::ITerm2),
     /// The terminal understands the kitty image protocol.
     Kitty(self::kitty::KittyImages),
+}
+
+impl ImageCapability {
+    pub(crate) fn image_protocol(&self) -> &dyn InlineImageProtocol {
+        match self {
+            ImageCapability::Terminology(t) => t,
+            ImageCapability::ITerm2(t) => t,
+            ImageCapability::Kitty(_) => todo!(),
+        }
+    }
 }
 
 /// The capabilities of a terminal.

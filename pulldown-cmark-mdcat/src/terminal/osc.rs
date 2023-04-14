@@ -11,7 +11,7 @@ use std::io::{Result, Write};
 use url::{Host, Url};
 
 /// Write an OSC `command` to this terminal.
-pub fn write_osc<W: Write>(writer: &mut W, command: &str) -> Result<()> {
+pub fn write_osc<W: Write + ?Sized>(writer: &mut W, command: &str) -> Result<()> {
     writer.write_all(&[0x1b, 0x5d])?;
     writer.write_all(command.as_bytes())?;
     writer.write_all(&[0x07])?;

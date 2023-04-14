@@ -7,8 +7,6 @@
 //! Rendering algorithm.
 
 use std::io::prelude::*;
-use std::io::Error;
-use std::io::ErrorKind;
 use std::io::Result;
 
 use anstyle::{Effects, Style};
@@ -22,7 +20,6 @@ use tracing::{event, instrument, Level};
 use url::Url;
 
 use crate::render::highlighting::HIGHLIGHTER;
-use crate::resources::svg;
 use crate::resources::ResourceUrlHandler;
 use crate::theme::CombineStyle;
 use crate::{Environment, Settings};
@@ -663,67 +660,23 @@ pub fn write_event<'a, W: Write>(
         // Images
         (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
             let InlineAttrs { style, indent } = attrs;
-            use crate::terminal::capabilities::ImageCapability::*;
             let resolved_link = environment.resolve_reference(&link);
             let image_state = match (settings.terminal_capabilities.image, resolved_link) {
-                (Some(Terminology(terminology)), Some(ref url)) => {
-                    terminology.write_inline_image(writer, settings.terminal_size, url)?;
-                    Some(RenderedImage)
-                }
-                (Some(ITerm2(iterm2)), Some(ref url)) =>
-                   resource_handler
-                        .read_resource(url)
-                        .and_then(|mime_data| {
-                            if mime_data.mime_type == Some(mime::IMAGE_SVG) {
-                                svg::render_svg_to_png(&mime_data.data).map_err(Into::into)
-                            } else {
-                                Ok(mime_data.data)
-                            }
-                        })
+                (Some(capability), Some(ref url)) => capability
+                    .image_protocol()
+                    .write_inline_image(writer, &resource_handler, url, &settings.terminal_size)
                     .map_err(|error| {
-                        event!(Level::ERROR, ?error, %url, "failed to render image in iterm2: {:#}", error);
+                        event!(Level::ERROR, ?error, %url, "failed to render image with capability {:?}: {:#}", capability, error);
                         error
-                    })
-                    .and_then(|contents| {
-                        // Use the last segment as file name for iterm2.
-                        let name = url.path_segments().and_then(|s| s.last());
-                        iterm2.write_inline_image(writer, name, &contents).map_err(|error| {
-                            event!(Level::ERROR, ?error, "failed to write iterm image: {:#}", error);
-                            error
-                        })?;
-                        Ok(RenderedImage)
                     })
                     .map(|_| RenderedImage)
                     .ok(),
-                (Some(Kitty(kitty)), Some(ref url)) => settings
-                    .terminal_size
-                    .pixels
-                    .ok_or_else(|| {
-                        event!(Level::ERROR, "Kitty surprisingly did not report pixel size, cannot render image");
-                        Error::new(ErrorKind::InvalidData, "Terminal pixel size not available")
-                    })
-                    .and_then(|size| {
-                        let mime_data = resource_handler.read_resource(url)?;
-                        Ok(kitty.render(mime_data, size)?)
-                    })
-                    .map_err(|error| {
-                        event!(Level::ERROR, ?error, %url, "failed to render image in kitty: {:#}", error);
-                        error
-                    })
-                    .and_then(|image| {
-                        kitty.write_inline_image(writer, image).map_err(|error| {
-                            event!(Level::ERROR, ?error, "failed to write iterm kitty: {:#}", error);
-                            error
-                        })?;
-                        Ok(RenderedImage)
-                    })
-                    .ok(),
-                (None, Some(url)) => {
+                (None, Some(url)) =>
                     if let InlineLink(_) = state {
-                        event!(Level::WARN, url = %url, "Terminal did not support images, want to render image as link but cannot: Already inside a link");
+                        event!(Level::WARN, url = %url, "Terminal does not support images, want to render image as link but cannot: Already inside a link");
                         None
                     } else {
-                        event!(Level::INFO, url = %url, "Terminal did not support images, rendering image as link");
+                        event!(Level::INFO, url = %url, "Terminal does not support images, rendering image as link");
                         match settings.terminal_capabilities.links {
                             Some(capability) => match capability {
                                 LinkCapability::Osc8(osc8) => {
@@ -739,8 +692,7 @@ pub fn write_event<'a, W: Write>(
                             },
                             None => None,
                         }
-                    }
-                }
+                    },
                 (_, None) => None,
             }
             .unwrap_or_else(|| {

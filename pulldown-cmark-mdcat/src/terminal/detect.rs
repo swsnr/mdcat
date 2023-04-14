@@ -6,7 +6,7 @@
 
 //! Detect the terminal application mdcat is running on.
 
-use crate::terminal::capabilities::iterm2::{ITerm2Images, ITerm2Marks};
+use crate::terminal::capabilities::iterm2::ITerm2;
 use crate::terminal::capabilities::*;
 use crate::terminal::AnsiStyle;
 use std::fmt::{Display, Formatter};
@@ -123,17 +123,15 @@ impl TerminalProgram {
             TerminalProgram::Dumb => TerminalCapabilities::default(),
             TerminalProgram::Ansi => ansi,
             TerminalProgram::ITerm2 => ansi
-                .with_mark_capability(MarkCapability::ITerm2(ITerm2Marks))
-                .with_image_capability(ImageCapability::ITerm2(ITerm2Images)),
-            TerminalProgram::Terminology => ansi.with_image_capability(
-                ImageCapability::Terminology(terminology::TerminologyImages),
-            ),
+                .with_mark_capability(MarkCapability::ITerm2(ITerm2))
+                .with_image_capability(ImageCapability::ITerm2(ITerm2)),
+            TerminalProgram::Terminology => {
+                ansi.with_image_capability(ImageCapability::Terminology(terminology::Terminology))
+            }
             TerminalProgram::Kitty => {
                 ansi.with_image_capability(ImageCapability::Kitty(self::kitty::KittyImages))
             }
-            TerminalProgram::WezTerm => {
-                ansi.with_image_capability(ImageCapability::ITerm2(ITerm2Images))
-            }
+            TerminalProgram::WezTerm => ansi.with_image_capability(ImageCapability::ITerm2(ITerm2)),
         }
     }
 }

@@ -16,7 +16,7 @@
 //!
 //! This module implements the terminology image protocol.
 
-use crate::terminal::TerminalSize;
+use crate::{resources::InlineImageProtocol, terminal::TerminalSize, ResourceUrlHandler};
 use std::io::{Result, Write};
 use url::Url;
 
@@ -29,29 +29,38 @@ pub fn is_terminology() -> bool {
 
 /// Provides access to printing images for Terminology.
 #[derive(Debug, Copy, Clone)]
-pub struct TerminologyImages;
+pub struct Terminology;
 
-impl TerminologyImages {
-    /// Write an inline image for Terminology.
-    pub fn write_inline_image<W: Write>(
-        self,
-        writer: &mut W,
-        max_size: TerminalSize,
+/// The terminology image protocol
+
+/// Terminology escape sequences work like this: Set texture to path, then draw a rectangle of a
+/// chosen character which Terminology will then replace with the texture
+///
+/// The documentation gives the following C example:
+///
+/// ```c
+/// printf("\033}is#5;3;%s\000"
+///        "\033}ib\000#####\033}ie\000\n"
+///        "\033}ib\000#####\033}ie\000\n"
+///        "\033}ib\000#####\033}ie\000\n", "/tmp/icon.png");
+/// ```
+///
+/// To determine the optimal size this implementation attempts to determine the image dimensions:
+/// If the URL refers to a local path it'll read the image header from the path and extracts the
+/// size information.
+///
+/// For remote URLs the implementation falls back to a rectangle covering half of the screen, and
+/// does not attempt to determine more precise dimensions, to avoid downloading the resource twice
+/// (once to determine the size, and then again when terminology renders the image).
+impl InlineImageProtocol for Terminology {
+    fn write_inline_image(
+        &self,
+        writer: &mut dyn Write,
+        _resource_handler: &dyn ResourceUrlHandler,
         url: &Url,
+        terminal_size: &TerminalSize,
     ) -> Result<()> {
-        // Terminology escape sequence is like: set texture to path, then draw a
-        // rectangle of chosen character to be replaced by the given texture.
-        // Documentation gives the following C example:
-        //
-        //  printf("\033}is#5;3;%s\000"
-        //         "\033}ib\000#####\033}ie\000\n"
-        //         "\033}ib\000#####\033}ie\000\n"
-        //         "\033}ib\000#####\033}ie\000\n", "/tmp/icon.png");
-        //
-        // We need to compute image proportion to draw the appropriate
-        // rectangle. If we can't compute the image proportion (e.g. it's an
-        // external URL), we fallback to a rectangle that is half of the screen.
-        let columns = max_size.columns;
+        let columns = terminal_size.columns;
 
         let lines = Some(url)
             .filter(|url| url.scheme() == "file")
@@ -63,7 +72,7 @@ impl TerminologyImages {
                 // 1:2 proportion
                 (h * (columns / 2) as f64 / w) as usize
             })
-            .unwrap_or(max_size.rows / 2);
+            .unwrap_or(terminal_size.rows / 2);
 
         let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, url.as_str());
         for _ in 0..lines {
