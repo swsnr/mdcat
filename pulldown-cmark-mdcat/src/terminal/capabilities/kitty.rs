@@ -24,8 +24,8 @@ use image::{ColorType, ImageError, ImageFormat};
 use image::{DynamicImage, GenericImageView};
 use thiserror::Error;
 
+use crate::resources::svg::{render_svg_to_png, RenderSvgError};
 use crate::resources::MimeData;
-use crate::svg::{render_svg_to_png, RenderSvgError};
 use crate::terminal::size::PixelSize;
 
 /// An error which occurred while rendering or writing an image with the Kitty image protocol.

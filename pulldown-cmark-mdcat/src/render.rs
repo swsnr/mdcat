@@ -22,8 +22,8 @@ use tracing::{event, instrument, Level};
 use url::Url;
 
 use crate::render::highlighting::HIGHLIGHTER;
+use crate::resources::svg;
 use crate::resources::ResourceUrlHandler;
-use crate::svg;
 use crate::theme::CombineStyle;
 use crate::{Environment, Settings};
 

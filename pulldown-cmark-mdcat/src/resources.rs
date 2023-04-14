@@ -14,6 +14,8 @@ use url::Url;
 
 mod file;
 
+pub(crate) mod svg;
+
 pub use file::FileResourceHandler;
 
 /// Data of a resource with associated mime type.

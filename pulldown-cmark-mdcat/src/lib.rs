@@ -29,7 +29,6 @@ pub use crate::theme::Theme;
 
 mod references;
 pub mod resources;
-mod svg;
 pub mod terminal;
 mod theme;
 
