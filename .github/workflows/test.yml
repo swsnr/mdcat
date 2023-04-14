@@ -56,10 +56,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # TODO: Test name
         cargo_opts:
           - ''
-          - '--no-default-features'
+          # Without default features we need to explicitly pick a regex engine
+          - '--no-default-features --features regex-fancy'
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
@@ -77,10 +77,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - run: cargo build -p mdcat-http-reqwest --all-targets --locked ${{ matrix.cargo_opts }}
-      - run: cargo clippy -p mdcat-http-reqwest --all-targets --locked ${{ matrix.cargo_opts }}
-      - run: cargo test -p mdcat-http-reqwest --locked ${{ matrix.cargo_opts }}
-      - run: cargo doc -p mdcat-http-reqwest --locked ${{ matrix.cargo_opts }}
+      # We need to pick a regex engine explicitly because we do not depend on
+      # default features of pulldown-cmark-mdcat
+      - run: cargo build -p mdcat-http-reqwest --all-targets --locked --features pulldown-cmark-mdcat/regex-fancy
+      - run: cargo clippy -p mdcat-http-reqwest --all-targets --locked --features pulldown-cmark-mdcat/regex-fancy
+      - run: cargo test -p mdcat-http-reqwest --locked --features pulldown-cmark-mdcat/regex-fancy
+      - run: cargo doc -p mdcat-http-reqwest --locked --features pulldown-cmark-mdcat/regex-fancy
 
   # Test mdcat itself
   test-mdcat:

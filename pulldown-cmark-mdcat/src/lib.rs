@@ -16,9 +16,13 @@
 //!
 //! ## Features
 //!
-//! - `default` enables `svg`.
+//! - `default` enables `svg` and `regex-fancy`.
 //! - `svg` includes support for rendering SVG images to PNG for terminals which do not support SVG
 //!   images natively.  This feature adds a dependency on `resvg`.
+//! - `regex-fancy` and `regex-onig` enable the corresponding features of the [`syntect`] crate,
+//!   i.e. determine whether syntect uses the regex-fancy Rust crate or the Oniguruma C library as
+//!   its regex engine.  The former is slower, but does not imply a native dependency, the latter
+//!   is faster, but you need to compile and link a C library.
 
 use std::io::{Error, ErrorKind, Result, Write};
 use std::path::Path;
