@@ -13,8 +13,13 @@ authors.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
+[features]
+default = ["svg"]
+
+svg = ["dep:resvg"]
+
 [dependencies]
-base64 = { version = "0.21.0", default-features = false }
+base64 = { version = "0.21.0", default-features = false, features = ["std"] }
 anstyle = { version = "1.0.0", default-features = false }
 gethostname = "0.4.2"
 image = "0.24.6"
@@ -22,13 +27,15 @@ mime = { version = "0.3.17", default-features = false }
 mime_guess = { version = "2.0.4", default-features = false }
 once_cell = { version = "1.17.1", default-features = false }
 pulldown-cmark = { version = "0.9.2", default-features = false, features = ['simd'] }
-resvg = { version = "0.31.0", default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
 syntect = { version = "5.0.0", default-features = false, features = ["parsing"] }
 textwrap = { version = "0.16.0", default-features = false, features = ["unicode-linebreak", "unicode-width"] }
 thiserror = { version = "1.0.40", default-features = false }
 tracing = { version = "0.1.37", default-features = false, features = ["attributes"] }
 tracing-subscriber = { version = "0.3.16", default-features = false, features = ["env-filter", "std", "fmt", "ansi"] }
 url = "2.3.1"
+
+# Optional for svg support
+resvg = { version = "0.31.0", optional = true, default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
 
 [dev-dependencies]
 glob = "0.3.1"

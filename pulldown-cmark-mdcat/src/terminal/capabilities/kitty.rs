@@ -24,18 +24,15 @@ use image::{ColorType, ImageError, ImageFormat};
 use image::{DynamicImage, GenericImageView};
 use thiserror::Error;
 
-use crate::resources::svg::{render_svg_to_png, RenderSvgError};
+use crate::resources::svg::render_svg_to_png;
 use crate::resources::{InlineImageProtocol, MimeData};
 use crate::terminal::size::PixelSize;
 
 /// An error which occurred while rendering or writing an image with the Kitty image protocol.
 #[derive(Debug, Error)]
 pub enum KittyImageError {
-    /// Rendering an SVG to PNG failed.
-    #[error("Failed to render SVG to PNG: {0}")]
-    RenderSvgError(#[from] RenderSvgError),
-    /// Writing a rendered image to the terminal failed.
-    #[error("Failed to write image: {0}")]
+    /// A general IO error.
+    #[error("Failed to render kitty image: {0}")]
     IoError(#[from] std::io::Error),
     /// Processing a pixel image, e.g. for format conversion, failed
     #[error("Failed to process pixel image: {0}")]

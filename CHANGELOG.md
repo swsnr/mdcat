@@ -10,9 +10,10 @@ Use `cargo release` to create a new release.
 
 ### Added
 - mdcat now fills paragraph text to the column limit, i.e. fills up short lines and wraps long lines (see [GH-4]).
-- mdcat now allows to control color and style via a new `theme` field in `mdcat::Settings` of type `mdcat::Theme` (see [GH-48]).
-    `mdcat::Theme::default()` provides the standard mdcat 1.x colors and style.
-- mdcat now exposes resource handling via the new `mdcat::resources::ResourceUrlHandler` trait (see [GH-247]).
+- mdcat now allows to control color and style via a new `theme` field in `pulldown_cmark_mdcat::Settings` of type `pulldown_cmark_mdcat::Theme` (see [GH-48]).
+    `pulldown_cmark_mdcat::Theme::default()` provides the standard mdcat 1.x colors and style.
+- mdcat now exposes resource handling via the new `pulldown_cmark_mdcat::resources::ResourceUrlHandler` trait (see [GH-247]).
+- `pulldown_cmark_mdcat` allows to disable SVG support and thus avoid the `resvg` dependency by disabling the `svg` feature (see [GH-249]).
 
 ### Changed
 - Update all dependencies.
@@ -28,8 +29,9 @@ Use `cargo release` to create a new release.
 
 [GH-4]: https://github.com/swsnr/mdcat/issues/4
 [GH-48]: https://github.com/swsnr/mdcat/issues/48
-[GH-247]: https://github.com/swsnr/mdcat/issues/247
-[GH-248]: https://github.com/swsnr/mdcat/issues/248
+[GH-247]: https://github.com/swsnr/mdcat/pull/247
+[GH-248]: https://github.com/swsnr/mdcat/pull/248
+[GH-249]: https://github.com/swsnr/mdcat/pull/249
 
 ## [1.1.1] – 2023-03-18
 

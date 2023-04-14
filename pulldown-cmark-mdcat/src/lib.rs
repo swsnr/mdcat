@@ -13,6 +13,12 @@
 //! ## MSRV
 //!
 //! This library generally supports only the latest stable Rust version.
+//!
+//! ## Features
+//!
+//! - `default` enables `svg`.
+//! - `svg` includes support for rendering SVG images to PNG for terminals which do not support SVG
+//!   images natively.  This feature adds a dependency on `resvg`.
 
 use std::io::{Error, ErrorKind, Result, Write};
 use std::path::Path;
