@@ -1,0 +1,2 @@
+- mdcat now fills paragraph text to the column limit, i.e. fills up short lines and wraps long lines (see [GH-4]).
+- mdcat now allows to control color and style via a new `theme` field in `pulldown_cmark_mdcat::Settings` of type `pulldown_cmark_mdcat::Theme` (see [GH-48]).

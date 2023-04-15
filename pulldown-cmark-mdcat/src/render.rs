@@ -285,7 +285,10 @@ pub fn write_event<'a, W: Write>(
                     ListItem(kind, StartItem),
                     InlineAttrs { style, indent },
                 ))
-                .and_data(data)
+                .and_data(data.current_line(CurrentLine {
+                    length: indent as usize,
+                    trailing_space: None,
+                }))
                 .ok()
         }
         (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Paragraph)) => {
@@ -367,10 +370,13 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, Inline(ListItem(kind, state), attrs)), End(Item)) => {
             let InlineAttrs { indent, style, .. } = attrs;
-            if state != ItemBlock {
+            let data = if state != ItemBlock {
                 // End the inline text of this item
                 writeln!(writer)?;
-            }
+                data.current_line(CurrentLine::empty())
+            } else {
+                data
+            };
             // Decrease indent back to the level where we can write the next item bullet, and increment the list item number.
             let (indent, kind) = match kind {
                 ListItemKind::Unordered => (indent - 2, ListItemKind::Unordered),
