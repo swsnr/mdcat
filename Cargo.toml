@@ -48,6 +48,7 @@ clap_complete = "4.2.0"
 lto = true
 
 [package.metadata.release]
+release = true
 pre-release-replacements = [
     # Update version and release date in manpage
     { file="mdcat.1.adoc", search="(?m)^:revnumber:.*$", replace = ":revnumber: {{version}}" },
@@ -80,3 +81,4 @@ pre-release-commit-message = "Release {{version}}"
 tag-prefix = "mdcat-"
 tag-name = "{{prefix}}{{version}}"
 tag-message = "mdcat {{version}}"
+sign-tag = true

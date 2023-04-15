@@ -29,3 +29,6 @@ hyper = { version="0.14.26", default-features = false, features = ["server", "ht
 once_cell = { version = "1.17.1", default-features = false }
 syntect = { version = "5.0.0", default-features = false, features = ["regex-fancy", "default-syntaxes"] }
 tokio = { version = "1.27", default-features = false, features = ["time"] }
+
+[package.metadata.release]
+release = true

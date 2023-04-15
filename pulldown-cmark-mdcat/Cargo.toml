@@ -58,3 +58,5 @@ rustix = { version = "0.37.11", default-features = false, features = ['termios',
 [target.'cfg(windows)'.dependencies]
 terminal_size = "0.2.6"
 
+[package.metadata.release]
+release = true
