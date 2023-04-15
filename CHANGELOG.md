@@ -8,6 +8,11 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Fixed
+- Properly reset line wrapping state in list items (see [GH-254]).
+
+[GH-254]: https://github.com/swsnr/mdcat/pull/254
+
 ## [2.0.0] – 2023-04-15
 
 ### Added
