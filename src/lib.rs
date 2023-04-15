@@ -10,6 +10,7 @@
 //! Use [`pulldown_cmark_mdcat`] instead.
 
 #![deny(warnings, missing_docs, clippy::all)]
+#![forbid(unsafe_code)]
 
 use std::fs::File;
 use std::io::stdin;

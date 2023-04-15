@@ -4,8 +4,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#![deny(warnings, missing_docs, clippy::all)]
-
 //! Write markdown to TTYs.
 //!
 //! See [`push_tty`] for the main entry point.
@@ -40,6 +38,9 @@
 //!   i.e. determine whether syntect uses the regex-fancy Rust crate or the Oniguruma C library as
 //!   its regex engine.  The former is slower, but does not imply a native dependency, the latter
 //!   is faster, but you need to compile and link a C library.
+
+#![deny(warnings, missing_docs, clippy::all)]
+#![forbid(unsafe_code)]
 
 use std::io::{Error, ErrorKind, Result, Write};
 use std::path::Path;

@@ -6,7 +6,7 @@
 
 //! Various tests for render.md.wrapping output.
 
-#![deny(warnings, missing_docs, clippy::all)]
+#![deny(warnings, clippy::all)]
 
 use glob::glob;
 use once_cell::sync::Lazy;

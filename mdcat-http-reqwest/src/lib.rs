@@ -4,7 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-//! HTTP resources.
+//! HTTP resource handler for [`pulldown_cmark_mdcat`].
+
+#![deny(warnings, missing_docs, clippy::all)]
+#![forbid(unsafe_code)]
 
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Result};

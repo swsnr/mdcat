@@ -9,7 +9,7 @@
 //! Test a set of custom samples as well as all samples from the official common mark spec against
 //! known golden files to catch rendering regressions.
 
-#![deny(warnings, missing_docs, clippy::all)]
+#![deny(warnings, clippy::all)]
 
 use std::path::Path;
 

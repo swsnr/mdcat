@@ -6,7 +6,7 @@
 
 //! Test the command line interface of mdcat
 
-#![deny(warnings, missing_docs, clippy::all)]
+#![deny(warnings, clippy::all)]
 
 mod cli {
     use std::ffi::OsStr;

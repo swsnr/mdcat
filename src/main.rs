@@ -5,6 +5,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #![deny(warnings, clippy::all)]
+#![forbid(unsafe_code)]
 
 //! Show CommonMark documents on TTYs.
 
