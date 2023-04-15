@@ -14,6 +14,7 @@ Use `cargo release` to create a new release.
     `pulldown_cmark_mdcat::Theme::default()` provides the standard mdcat 1.x colors and style.
 - mdcat now exposes resource handling via the new `pulldown_cmark_mdcat::resources::ResourceUrlHandler` trait (see [GH-247]).
 - `pulldown_cmark_mdcat` allows to disable SVG support and thus avoid the `resvg` dependency by disabling the `svg` feature (see [GH-249]).
+- `pulldown_cmark_mdcat` allows to disable image processing support and thus avoid the `image` dependency by disabling the `image-processing` feature (see [GH-250]).
 
 ### Changed
 - Update all dependencies.
@@ -32,6 +33,7 @@ Use `cargo release` to create a new release.
 [GH-247]: https://github.com/swsnr/mdcat/pull/247
 [GH-248]: https://github.com/swsnr/mdcat/pull/248
 [GH-249]: https://github.com/swsnr/mdcat/pull/249
+[GH-250]: https://github.com/swsnr/mdcat/pull/250
 
 ## [1.1.1] – 2023-03-18
 

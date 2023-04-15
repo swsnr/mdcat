@@ -19,12 +19,9 @@ use std::str;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
-use image::imageops::FilterType;
-use image::{ColorType, ImageError, ImageFormat};
-use image::{DynamicImage, GenericImageView};
 use thiserror::Error;
+use tracing::{event, Level};
 
-use crate::resources::svg::render_svg_to_png;
 use crate::resources::{InlineImageProtocol, MimeData};
 use crate::terminal::size::PixelSize;
 
@@ -36,7 +33,8 @@ pub enum KittyImageError {
     IoError(#[from] std::io::Error),
     /// Processing a pixel image, e.g. for format conversion, failed
     #[error("Failed to process pixel image: {0}")]
-    ImageError(#[from] ImageError),
+    #[cfg(feature = "image-processing")]
+    ImageError(#[from] image::ImageError),
 }
 
 impl From<KittyImageError> for std::io::Error {
@@ -48,7 +46,9 @@ impl From<KittyImageError> for std::io::Error {
 /// The image format (PNG, RGB or RGBA) of the image bytes.
 enum KittyFormat {
     Png,
+    #[cfg(feature = "image-processing")]
     Rgb,
+    #[cfg(feature = "image-processing")]
     Rgba,
 }
 
@@ -60,14 +60,16 @@ impl KittyFormat {
     fn control_data_value(&self) -> &str {
         match *self {
             KittyFormat::Png => "100",
+            #[cfg(feature = "image-processing")]
             KittyFormat::Rgb => "24",
+            #[cfg(feature = "image-processing")]
             KittyFormat::Rgba => "32",
         }
     }
 }
 
 /// Holds the image bytes with its image format and dimensions.
-pub struct KittyImage {
+struct KittyImage {
     contents: Vec<u8>,
     format: KittyFormat,
     size: Option<PixelSize>,
@@ -117,15 +119,17 @@ pub struct KittyImages;
 impl KittyImages {
     /// Render mime data obtained from `url` and wrap it in a `KittyImage`.
     ///
-    /// If the image size exceeds `terminal_size` in either dimension scale the
-    /// image down to `terminal_size` (preserving aspect ratio).
-    pub fn render(
+    /// This implemention processes the image to scale it to the given `terminal_size`, and
+    /// supports various pixel image types, as well as SVG.
+    #[cfg(feature = "image-processing")]
+    fn render(
         self,
         mime_data: MimeData,
         terminal_size: PixelSize,
     ) -> Result<KittyImage, KittyImageError> {
+        use image::{GenericImageView, ImageFormat};
         let image = if mime_data.mime_type == Some(mime::IMAGE_SVG) {
-            let png_data = render_svg_to_png(&mime_data.data)?;
+            let png_data = crate::resources::svg::render_svg_to_png(&mime_data.data)?;
             image::load_from_memory_with_format(&png_data, ImageFormat::Png)?
         } else {
             // TODO: Inspect the mime type of `mime_data` to avoid guessing the format?
@@ -135,9 +139,47 @@ impl KittyImages {
         if mime_data.mime_type == Some(mime::IMAGE_PNG)
             && PixelSize::from_xy(image.dimensions()) <= terminal_size
         {
+            event!(
+                Level::DEBUG,
+                "PNG image of appropriate size, rendering original data"
+            );
             Ok(self.render_as_png(mime_data.data))
         } else {
+            event!(
+                Level::DEBUG,
+                "Image of other format or larger than terminal, rendering RGB data"
+            );
             Ok(self.render_as_rgb_or_rgba(image, terminal_size))
+        }
+    }
+
+    /// Render mime data obtained from `url` and wrap it in a `KittyImage`.
+    ///
+    /// This implementation does not support image processing, and only renders PNG images which
+    /// kitty supports directly.
+    #[cfg(not(feature = "image-processing"))]
+    fn render(
+        self,
+        mime_data: MimeData,
+        _terminal_size: PixelSize,
+    ) -> Result<KittyImage, KittyImageError> {
+        match mime_data.mime_type {
+            Some(t) if t == mime::IMAGE_PNG => Ok(self.render_as_png(mime_data.data)),
+            _ => {
+                event!(
+                    Level::DEBUG,
+                    "Only PNG images supported without image-processing feature, but got {:?}",
+                    mime_data.mime_type
+                );
+                Err(std::io::Error::new(
+                    ErrorKind::Unsupported,
+                    format!(
+                        "Image data with mime type {:?} not supported",
+                        mime_data.mime_type
+                    ),
+                )
+                .into())
+            }
         }
     }
 
@@ -154,7 +196,13 @@ impl KittyImages {
     ///
     /// If the image size exceeds `terminal_size` in either dimension scale the
     /// image down to `terminal_size` (preserving aspect ratio).
-    fn render_as_rgb_or_rgba(self, image: DynamicImage, terminal_size: PixelSize) -> KittyImage {
+    #[cfg(feature = "image-processing")]
+    fn render_as_rgb_or_rgba(
+        self,
+        image: image::DynamicImage,
+        terminal_size: PixelSize,
+    ) -> KittyImage {
+        use image::{ColorType, GenericImageView};
         let format = match image.color() {
             ColorType::L8 | ColorType::Rgb8 | ColorType::L16 | ColorType::Rgb16 => KittyFormat::Rgb,
             // Default to RGBA format: We cannot match all colour types because
@@ -167,7 +215,11 @@ impl KittyImages {
         let image = if PixelSize::from_xy(image.dimensions()) <= terminal_size {
             image
         } else {
-            image.resize(terminal_size.x, terminal_size.y, FilterType::Nearest)
+            image.resize(
+                terminal_size.x,
+                terminal_size.y,
+                image::imageops::FilterType::Nearest,
+            )
         };
 
         let size = PixelSize::from_xy(image.dimensions());

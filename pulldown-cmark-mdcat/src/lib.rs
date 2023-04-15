@@ -16,9 +16,26 @@
 //!
 //! ## Features
 //!
-//! - `default` enables `svg` and `regex-fancy`.
+//! - `default` enables `svg`, `regex-fancy`, and `image-processing`.
+//!
 //! - `svg` includes support for rendering SVG images to PNG for terminals which do not support SVG
 //!   images natively.  This feature adds a dependency on `resvg`.
+//!
+//! - `image-processing` enables processing of pixel images before rendering.  This feature adds
+//!   a dependency on `image`.  If disabled mdcat will not be able to render inline images on some
+//!   terminals, or render images incorrectly or at wrong sizes on other terminals.
+//!
+//!   Do not disable this feature unless you are sure that you won't use inline images, or accept
+//!   incomplete rendering of images.  Please do not report issues with inline images with this
+//!   feature disabled.
+//!
+//!   This feature only exists to allow building with minimal dependencies for use cases where
+//!   inline image support is not used or required.  Do not disable this feature unless you know
+//!   you won't use inline images, or can accept buggy inline image rendering.
+//!
+//!   Please **do not report bugs** about inline image rendering with this feature disabled, unless
+//!   the issue can also be reproduced if the feature is enabled.
+//!
 //! - `regex-fancy` and `regex-onig` enable the corresponding features of the [`syntect`] crate,
 //!   i.e. determine whether syntect uses the regex-fancy Rust crate or the Oniguruma C library as
 //!   its regex engine.  The former is slower, but does not imply a native dependency, the latter

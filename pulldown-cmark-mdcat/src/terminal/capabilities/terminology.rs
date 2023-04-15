@@ -18,6 +18,7 @@
 
 use crate::{resources::InlineImageProtocol, terminal::TerminalSize, ResourceUrlHandler};
 use std::io::{Result, Write};
+use tracing::{event, Level};
 use url::Url;
 
 /// Whether we run in terminology or not.
@@ -30,6 +31,40 @@ pub fn is_terminology() -> bool {
 /// Provides access to printing images for Terminology.
 #[derive(Debug, Copy, Clone)]
 pub struct Terminology;
+
+#[cfg(feature = "image-processing")]
+fn get_image_dimensions(url: &Url) -> Option<(u32, u32)> {
+    if url.scheme() == "file" {
+        let path = url.to_file_path().ok()?;
+        event!(
+            Level::DEBUG,
+            "Inspecting image dimensions at {}",
+            path.display()
+        );
+        image::image_dimensions(&path)
+            .map_err(|error| {
+                event!(
+                    Level::INFO,
+                    "Failed to read image dimensions from {}: {}",
+                    path.display(),
+                    error
+                );
+                error
+            })
+            .ok()
+    } else {
+        None
+    }
+}
+
+#[cfg(not(feature = "image-processing"))]
+fn get_image_dimensions(_url: &Url) -> Option<(u32, u32)> {
+    event!(
+        Level::DEBUG,
+        "Inspecting image dimensions not supported without image-processing feature"
+    );
+    None
+}
 
 /// The terminology image protocol
 
@@ -61,18 +96,10 @@ impl InlineImageProtocol for Terminology {
         terminal_size: &TerminalSize,
     ) -> Result<()> {
         let columns = terminal_size.columns;
-
-        let lines = Some(url)
-            .filter(|url| url.scheme() == "file")
-            .and_then(|url| url.to_file_path().ok())
-            .and_then(|path| image::image_dimensions(path).ok())
-            .map(|(width, height)| {
-                let (w, h) = (f64::from(width), f64::from(height));
-                // We divide by 2 because terminal cursor/font most likely has a
-                // 1:2 proportion
-                (h * (columns / 2) as f64 / w) as usize
-            })
-            .unwrap_or(terminal_size.rows / 2);
+        let lines = match get_image_dimensions(url) {
+            Some((w, h)) => ((h as f64) * (columns / 2) as f64 / (w as f64)) as usize,
+            None => terminal_size.rows / 2,
+        };
 
         let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, url.as_str());
         for _ in 0..lines {
