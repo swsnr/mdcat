@@ -132,8 +132,17 @@ impl KittyImages {
             let png_data = crate::resources::svg::render_svg_to_png(&mime_data.data)?;
             image::load_from_memory_with_format(&png_data, ImageFormat::Png)?
         } else {
-            // TODO: Inspect the mime type of `mime_data` to avoid guessing the format?
-            image::load_from_memory(&mime_data.data)?
+            let image_format = mime_data
+                .mime_type
+                .as_ref()
+                .and_then(image::ImageFormat::from_mime_type);
+            match image_format {
+                // If we already have information about the mime type of the resource data let's
+                // use it, and trust whoever provided it to have gotten it right.
+                Some(format) => image::load_from_memory_with_format(&mime_data.data, format)?,
+                // If we don't know the mime type of the original data have image guess the format.
+                None => image::load_from_memory(&mime_data.data)?,
+            }
         };
 
         if mime_data.mime_type == Some(mime::IMAGE_PNG)
@@ -143,12 +152,19 @@ impl KittyImages {
                 Level::DEBUG,
                 "PNG image of appropriate size, rendering original data"
             );
+            // If we know that the original data is in PNG format and of sufficient size we can
+            // discard the decoded image and instead render the original data directly.
+            //
+            // We kinda wasted the decoded image here (we do need it to check dimensions tho) but
+            // at least we don't have to encode it again.
             Ok(self.render_as_png(mime_data.data))
         } else {
             event!(
                 Level::DEBUG,
                 "Image of other format or larger than terminal, rendering RGB data"
             );
+            // The original data was not in PNG format, or we have to resize the image to terminal
+            // dimensions, so we need to encode the RGB data of the decoded image explicitly.
             Ok(self.render_as_rgb_or_rgba(image, terminal_size))
         }
     }
