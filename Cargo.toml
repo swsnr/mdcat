@@ -32,8 +32,8 @@ system_proxy = { version = "0.3.2", default-features = false }
 
 # Our own crates; pinned to an exact version because we release all of this repo
 # in a single version. cargo release takes care of updating these.
-mdcat-http-reqwest = { version = "=1.1.1", path = "mdcat-http-reqwest", default-features = false}
-pulldown-cmark-mdcat = { version = "=1.1.1", path = "pulldown-cmark-mdcat", default-features = false }
+mdcat-http-reqwest = { version = "=2.0.0", path = "mdcat-http-reqwest", default-features = false}
+pulldown-cmark-mdcat = { version = "=2.0.0", path = "pulldown-cmark-mdcat", default-features = false }
 
 [dev-dependencies]
 pretty_assertions = "1.3.0"
@@ -68,7 +68,7 @@ members = [
 [workspace.package]
 homepage = "https://github.com/swsnr/mdcat"
 repository = "https://github.com/swsnr/mdcat"
-version = "1.1.1"
+version = "2.0.0"
 categories = ["command-line-utilities", "text-processing"]
 license = "MPL-2.0 AND Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]

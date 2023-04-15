@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.0.0] – 2023-04-15
+
 ### Added
 - mdcat now fills paragraph text to the column limit, i.e. fills up short lines and wraps long lines (see [GH-4]).
 - mdcat now allows to control color and style via a new `theme` field in `pulldown_cmark_mdcat::Settings` of type `pulldown_cmark_mdcat::Theme` (see [GH-48]).
@@ -666,7 +668,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.1...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.0...HEAD
+[2.0.0]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.1...mdcat-2.0.0
 [1.1.1]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.0...mdcat-1.1.1
 [1.1.0]: https://github.com/swsnr/mdcat/compare/mdcat-1.0.0...mdcat-1.1.0
 [1.0.0]: https://github.com/swsnr/mdcat/compare/mdcat-0.30.3...mdcat-1.0.0
