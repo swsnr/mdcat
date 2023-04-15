@@ -51,7 +51,7 @@ impl ImageCapability {
         match self {
             ImageCapability::Terminology(t) => t,
             ImageCapability::ITerm2(t) => t,
-            ImageCapability::Kitty(_) => todo!(),
+            ImageCapability::Kitty(t) => t,
         }
     }
 }
