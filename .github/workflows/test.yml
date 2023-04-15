@@ -8,84 +8,51 @@ on:
   pull_request:
 
 jobs:
-  check-scripts:
+  scripts_and_manage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      # Test scripts
       - run: |
           curl -fsSL -o ./shfmt https://github.com/mvdan/sh/releases/download/v3.6.0/shfmt_v3.6.0_linux_amd64
           chmod 700 ./shfmt
       - run: ./shfmt -i 4 -l -d scripts/*
       - run: shellcheck -S style -o all scripts/*
-
-  rustfmt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - run: cargo fmt --all -- --check
-
-  manpage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+      # Test manpage
       - run: sudo gem install asciidoctor
       - run: asciidoctor -b manpage -a reproducible --warnings mdcat.1.adoc
       - run: man -l --warnings=w --pager=cat mdcat.1
         env:
           MANWIDTH: 80
 
-  cargo-deny:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    # Check default build
-    - uses: EmbarkStudios/cargo-deny-action@v1
-      with:
-        # The action uses --all-features by default, but we'd only like to check default
-        arguments: ""
-    # Check the static build for lib musl
-    - uses: EmbarkStudios/cargo-deny-action@v1
-      with:
-        arguments: "--no-default-features --features static"
-
-  # Test pulldown-cmark-mdcat
-  test-pulldown-cmark-mdcat:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        cargo_opts:
-          - ''
-          # Without default features we need to explicitly pick a regex engine
-          - '--no-default-features --features regex-fancy'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked ${{ matrix.cargo_opts }}
-      - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked ${{ matrix.cargo_opts }}
-      - run: cargo test -p pulldown-cmark-mdcat --locked ${{ matrix.cargo_opts }}
-      - run: cargo doc -p pulldown-cmark-mdcat --locked ${{ matrix.cargo_opts }}
-
-  test-mdcat-http-reqwest:
+  # Check dependency policies
+  deny:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      # Install musl tools for musl target
+      - run: sudo apt-get install musl-tools
+        if: "contains(matrix.target, 'musl')"
       - uses: dtolnay/rust-toolchain@stable
+      # Check our library without any features (we do need to pick a regex
+      # engine tho)
+      - uses: EmbarkStudios/cargo-deny-action@v1
         with:
-          components: clippy
-      # We need to pick a regex engine explicitly because we do not depend on
-      # default features of pulldown-cmark-mdcat
-      - run: cargo build -p mdcat-http-reqwest --all-targets --locked --features pulldown-cmark-mdcat/regex-fancy
-      - run: cargo clippy -p mdcat-http-reqwest --all-targets --locked --features pulldown-cmark-mdcat/regex-fancy
-      - run: cargo test -p mdcat-http-reqwest --locked --features pulldown-cmark-mdcat/regex-fancy
-      - run: cargo doc -p mdcat-http-reqwest --locked --features pulldown-cmark-mdcat/regex-fancy
+          arguments: "--manifest-path ./pulldown-cmark-mdcat/Cargo.toml --no-default-features --features regex-fancy"
+      # Test mdcat in its default configuration (this implicity checks the
+      # default configuration of our libraries)
+      - uses: EmbarkStudios/cargo-deny-action@v1
+        with:
+          # Need to pass an empty arg list explicitly, because otherwise the
+          # action passes --all-features
+          arguments: ""
+      # Test the static build for our release artifacts
+      - uses: EmbarkStudios/cargo-deny-action@v1
+        with:
+          arguments: "--no-default-features --features static"
 
   # Test mdcat itself
-  test-mdcat:
+  test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -116,10 +83,22 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-          components: clippy
-      # Build, including tests, to report build failures and measure build time separately from tests
-      - run: cargo build --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo clippy --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo test --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo doc --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+          components: clippy,rustfmt
+
+      # Test formatting
+      - run: cargo fmt --all -- --check
+
+      # Test library with no features; however we need to pick a regex engine
+      - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+      - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+      - run: cargo test -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+      - run: cargo doc -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+
+      # Build and test entire workspace in default configuration
+      - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo test --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo doc --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+
+      # Run on our complete example, just to assert that the CLI doesn't crash
       - run: cargo run --target ${{ matrix.target }} ${{ matrix.cargo_opts }} -- sample/common-mark.md
