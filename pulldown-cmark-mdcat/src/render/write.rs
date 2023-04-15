@@ -23,12 +23,10 @@ use crate::theme::CombineStyle;
 use crate::Theme;
 use crate::{Environment, Settings};
 
-#[inline]
 pub fn write_indent<W: Write>(writer: &mut W, level: u16) -> Result<()> {
     write!(writer, "{}", " ".repeat(level as usize))
 }
 
-#[inline]
 pub fn write_styled<W: Write, S: AsRef<str>>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
@@ -202,7 +200,6 @@ pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
     }
 }
 
-#[inline]
 pub fn write_mark<W: Write>(writer: &mut W, capabilities: &TerminalCapabilities) -> Result<()> {
     if let Some(mark) = capabilities.marks {
         match mark {
@@ -213,7 +210,6 @@ pub fn write_mark<W: Write>(writer: &mut W, capabilities: &TerminalCapabilities)
     }
 }
 
-#[inline]
 pub fn write_rule<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
@@ -229,7 +225,6 @@ pub fn write_rule<W: Write>(
     )
 }
 
-#[inline]
 pub fn write_code_block_border<W: Write>(
     writer: &mut W,
     theme: &Theme,
