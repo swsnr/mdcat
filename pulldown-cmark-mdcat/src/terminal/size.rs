@@ -71,76 +71,86 @@ impl Default for TerminalSize {
 }
 
 #[cfg(unix)]
-extern "C" {
-    // Need to wrap ctermid explicitly because it's not (yet?) in libc, see
-    // <https://github.com/rust-lang/libc/issues/1928>
-    pub fn ctermid(c: *mut libc::c_char) -> *mut libc::c_char;
-}
+mod implementation {
+    use rustix::termios::{tcgetwinsize, Winsize};
+    use tracing::{event, Level};
 
-/// Query terminal size on Unix.
-///
-/// Open the underlying controlling terminal via ctermid and open, and issue a
-/// TIOCGWINSZ ioctl to the device.
-///
-/// We do this manually because terminal_size currently doesn't support pixel
-/// size see <https://github.com/eminence/terminal-size/issues/22>.
-#[cfg(unix)]
-#[inline]
-fn from_terminal_impl() -> Option<TerminalSize> {
-    unsafe {
-        let mut winsize = libc::winsize {
-            ws_row: 0,
-            ws_col: 0,
-            ws_xpixel: 0,
-            ws_ypixel: 0,
-        };
-        // ctermid uses a static buffer if given NULL.  This isn't thread safe but
-        // a) we open the path right away, and b) a process only has a single
-        // controlling terminal anyway, so we're pretty safe here I guess.
-        let cterm_path = ctermid(std::ptr::null_mut());
-        if cterm_path.is_null() {
+    use crate::TerminalSize;
+    use std::fs::File;
+    use std::io::Result;
+    use std::path::Path;
+
+    use super::PixelSize;
+
+    /// Get the ID of the controlling terminal.
+    ///
+    /// This implementation currently just returns `/dev/tty`, which refers to the current TTY on
+    /// Linux and macOS at least.
+    fn ctermid() -> &'static Path {
+        Path::new("/dev/tty")
+    }
+
+    fn from_cterm() -> Result<Winsize> {
+        let tty = File::open(ctermid())?;
+        tcgetwinsize(&tty).map_err(Into::into)
+    }
+
+    /// Query terminal size on Unix.
+    ///
+    /// Open the underlying controlling terminal via ctermid and open, and issue a
+    /// TIOCGWINSZ ioctl to the device.
+    ///
+    /// We do this manually because terminal_size currently doesn't support pixel
+    /// size see <https://github.com/eminence/terminal-size/issues/22>.
+    pub fn from_terminal() -> Option<TerminalSize> {
+        let winsize = from_cterm()
+            .map_err(|error| {
+                event!(
+                    Level::ERROR,
+                    "Failed to read terminal size from controlling terminal: {}",
+                    error
+                );
+                error
+            })
+            .ok()?;
+        if winsize.ws_row == 0 || winsize.ws_col == 0 {
+            event!(
+                Level::WARN,
+                "Invalid terminal size returned, columns or rows were 0: {:?}",
+                winsize
+            );
             None
         } else {
-            let fd = libc::open(cterm_path, libc::O_RDONLY);
-            // disable this check for the ioctl(2) call because different libcs
-            // can have different types for the request parameter, see
-            // https://github.com/swsnr/mdcat/issues/177
-            #[allow(clippy::useless_conversion)]
-            let result = libc::ioctl(fd, libc::TIOCGWINSZ.into(), &mut winsize);
-            libc::close(fd);
-            if result == -1 || winsize.ws_row == 0 || winsize.ws_col == 0 {
-                None
+            let pixels = if winsize.ws_xpixel != 0 && winsize.ws_ypixel != 0 {
+                Some(PixelSize {
+                    x: winsize.ws_xpixel as u32,
+                    y: winsize.ws_ypixel as u32,
+                })
             } else {
-                Some(winsize)
-            }
+                None
+            };
+            Some(TerminalSize {
+                columns: winsize.ws_col as usize,
+                rows: winsize.ws_row as usize,
+                pixels,
+            })
         }
     }
-    .map(|winsize| {
-        let window = if winsize.ws_xpixel != 0 && winsize.ws_ypixel != 0 {
-            Some(PixelSize {
-                x: winsize.ws_xpixel as u32,
-                y: winsize.ws_ypixel as u32,
-            })
-        } else {
-            None
-        };
-        TerminalSize {
-            columns: winsize.ws_col as usize,
-            rows: winsize.ws_row as usize,
-            pixels: window,
-        }
-    })
 }
 
 #[cfg(windows)]
-#[inline]
-fn from_terminal_impl() -> Option<TerminalSize> {
+mod implementation {
     use terminal_size::{terminal_size, Height, Width};
-    terminal_size().map(|(Width(w), Height(h))| TerminalSize {
-        rows: h as usize,
-        columns: w as usize,
-        pixels: None,
-    })
+
+    use super::TerminalSize;
+
+    pub fn from_terminal() -> Option<TerminalSize> {
+        terminal_size().map(|(Width(w), Height(h))| TerminalSize {
+            rows: h as usize,
+            columns: w as usize,
+            pixels: None,
+        })
+    }
 }
 
 impl TerminalSize {
@@ -173,7 +183,7 @@ impl TerminalSize {
     ///
     /// [terminal_size]: https://docs.rs/terminal_size/
     pub fn from_terminal() -> Option<Self> {
-        from_terminal_impl()
+        implementation::from_terminal()
     }
 
     /// Detect the terminal size.

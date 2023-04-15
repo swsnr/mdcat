@@ -53,7 +53,7 @@ mdcat-http-reqwest = { path = "../mdcat-http-reqwest/", features = ["rustls-tls-
 syntect = { version = "5.0.0", default-features = false, features = ["plist-load", "dump-create"] }
 
 [target.'cfg(unix)'.dependencies]
-libc = "0.2.141"
+rustix = { version = "0.37.11", default-features = false, features = ['termios', 'std'] }
 
 [target.'cfg(windows)'.dependencies]
 terminal_size = "0.2.6"
