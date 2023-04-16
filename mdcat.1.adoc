@@ -72,6 +72,9 @@ mdcat fetches images from HTTP(S) URLs for rendering if the underlying terminal 
 pass `--local` to disable this and force mdcat to only use images from the local filesystem.
 In this case remote images render as hyperlinks.
 
+Note that some terminals (e.g. Terminology) directly render images from URLs and do not require that mdcat fetches the image data first.
+In this case `--local` has no effect: mdcat always passes the URL to the terminal, and leaves it up to the terminal to fetch it.
+
 == Options
 
 -p::
