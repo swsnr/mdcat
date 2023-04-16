@@ -604,24 +604,43 @@ pub fn write_event<'a, W: Write>(
         // Links need a bit more work than standard inline markup because we
         // need to keep track of link references if we can't write inline links.
         (Stacked(stack, Inline(state, attrs)), Start(Link(link_type, target, _))) => {
-            let link_state = settings
+            let maybe_link = settings
                 .terminal_capabilities
                 .links
-                .and_then(|link_capability| match link_capability {
-                    LinkCapability::Osc8(ref osc8) => {
-                        let url = if let LinkType::Email = link_type {
-                            // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
-                            Url::parse(&format!("mailto:{target}")).ok()
-                        } else {
-                            environment.resolve_reference(&target)
-                        };
-                        url.and_then(|url| {
-                            osc8.set_link_url(writer, url, &environment.hostname).ok()
-                        })
-                        .and(Some(InlineLink(link_capability)))
-                    }
-                })
-                .unwrap_or(InlineText);
+                .and_then(|link_capability| {
+                    let maybe_url = if let LinkType::Email = link_type {
+                        // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
+                        Url::parse(&format!("mailto:{target}")).ok()
+                    } else {
+                        environment.resolve_reference(&target)
+                    };
+                    maybe_url.map(|url| (url, link_capability))
+                });
+
+            let (link_state, data) = match maybe_link {
+                None => (InlineText, data),
+                Some((url, capability)) => {
+                    let data = match capability {
+                        LinkCapability::Osc8(ref osc8) => {
+                            let data = match data.current_line.trailing_space.as_ref() {
+                                Some(space) => {
+                                    // Flush trailing space before starting a link
+                                    write!(writer, "{}", space)?;
+                                    let length = data.current_line.length + 1;
+                                    data.current_line(CurrentLine {
+                                        length,
+                                        trailing_space: None,
+                                    })
+                                }
+                                None => data,
+                            };
+                            osc8.set_link_url(writer, url, &environment.hostname)?;
+                            data
+                        }
+                    };
+                    (InlineLink(capability), data)
+                }
+            };
 
             let InlineAttrs { style, indent } = attrs;
             stack

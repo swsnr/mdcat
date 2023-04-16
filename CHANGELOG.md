@@ -10,8 +10,10 @@ Use `cargo release` to create a new release.
 
 ### Fixed
 - Properly reset line wrapping state in list items (see [GH-254]).
+- Flush trailing spaces before starting a link to avoid link styling over an initial whitespace (see [GH-255]).
 
 [GH-254]: https://github.com/swsnr/mdcat/pull/254
+[GH-255]: https://github.com/swsnr/mdcat/pull/255
 
 ## [2.0.0] – 2023-04-15
 
