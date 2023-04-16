@@ -22,7 +22,7 @@ tracing = { version = "0.1.37", default-features = false, features = ["attribute
 
 # Our own crates; pinned to an exact version because we release all of this repo
 # in a single version. cargo release takes care of updating these.
-pulldown-cmark-mdcat = { version = "=2.0.0", path = "../pulldown-cmark-mdcat", default-features = false}
+pulldown-cmark-mdcat = { version = "=2.0.1", path = "../pulldown-cmark-mdcat", default-features = false}
 
 [dev-dependencies]
 hyper = { version="0.14.26", default-features = false, features = ["server", "http1", "runtime"] }

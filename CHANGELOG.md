@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.0.1] – 2023-04-16
+
 ### Fixed
 - Properly reset line wrapping state in list items (see [GH-254]).
 - Flush trailing spaces before starting a link to avoid link styling over an initial whitespace (see [GH-255]).
@@ -675,7 +677,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.0...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.1...HEAD
+[2.0.1]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.0...mdcat-2.0.1
 [2.0.0]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.1...mdcat-2.0.0
 [1.1.1]: https://github.com/swsnr/mdcat/compare/mdcat-1.1.0...mdcat-1.1.1
 [1.1.0]: https://github.com/swsnr/mdcat/compare/mdcat-1.0.0...mdcat-1.1.0
