@@ -9,6 +9,11 @@ on:
     # (draft) PR if we need CI. See https://github.com/orgs/community/discussions/26276#discussioncomment-3251154
     # for the general idea.
     branches: main
+    paths-ignore:
+      - screenshots/**
+      - README.md
+      - CHANGELOG.md
+      - LICENSE
   pull_request:
 
 jobs:
