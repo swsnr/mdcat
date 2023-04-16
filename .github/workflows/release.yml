@@ -60,8 +60,6 @@ jobs:
       - run: mv ./artifacts/*/*.{zip,tar.gz} ./assets
       - run: b2sum *.{zip,tar.gz} > B2SUMS.txt
         working-directory: assets
-      - run: sha512sum *.{zip,tar.gz} > SHA512SUM.txt
-        working-directory: assets
       - id: version
         shell: bash
         run: |
