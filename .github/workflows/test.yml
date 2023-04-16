@@ -4,7 +4,7 @@ on:
   push:
     # Don't run CI for tags; there's always a branch for the tag as well so
     # there's no point in testing it separately
-    tags_ignore: '*'
+    tags-ignore: '*'
   pull_request:
 
 jobs:
