@@ -73,11 +73,11 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * [Chocolatey]: `choco install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
-[Homebrew]: https://brew.sh
-[MacPorts]: https://www.macports.org
+[Homebrew]: https://formulae.brew.sh/formula/mdcat#default
+[MacPorts]: https://ports.macports.org/port/mdcat/
 [Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
-[scoop]: https://github.com/lukesampson/scoop
-[chocolatey]: https://github.com/chocolatey
+[scoop]: https://scoop.sh/#/apps?q=mdcat
+[chocolatey]: https://community.chocolatey.org/packages/mdcat
 
 ## Building
 
