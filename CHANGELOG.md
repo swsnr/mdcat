@@ -12,6 +12,13 @@ Use `cargo release` to create a new release.
 
 - Update dependencies.
 
+### Fixed
+
+- Fix SVG rendering:
+    - Correctly enable SVG rendering and image processing features by default in `mdcat` (see [GH-256]).
+
+[GH-256]: https://github.com/swsnr/mdcat/pull/256
+
 ## [2.0.1] – 2023-04-16
 
 ### Fixed
