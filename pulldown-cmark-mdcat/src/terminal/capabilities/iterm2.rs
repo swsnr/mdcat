@@ -47,7 +47,7 @@ impl InlineImageProtocol for ITerm2 {
         _terminal_size: &crate::TerminalSize,
     ) -> Result<()> {
         let mime_data = resource_handler.read_resource(url)?;
-        let contents = if mime_data.mime_type == Some(mime::IMAGE_SVG) {
+        let contents = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
             Cow::Owned(svg::render_svg_to_png(&mime_data.data)?)
         } else {
             Cow::Borrowed(&mime_data.data)

@@ -128,7 +128,7 @@ impl KittyImages {
         terminal_size: PixelSize,
     ) -> Result<KittyImage, KittyImageError> {
         use image::{GenericImageView, ImageFormat};
-        let image = if mime_data.mime_type == Some(mime::IMAGE_SVG) {
+        let image = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
             let png_data = crate::resources::svg::render_svg_to_png(&mime_data.data)?;
             image::load_from_memory_with_format(&png_data, ImageFormat::Png)?
         } else {

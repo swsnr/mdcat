@@ -16,6 +16,7 @@ Use `cargo release` to create a new release.
 
 - Fix SVG rendering:
     - Correctly enable SVG rendering and image processing features by default in `mdcat` (see [GH-256]).
+    - Ignore `charset` and other mime type parameters when checking for `image/svg+xml` (see [GH-256]).
 
 [GH-256]: https://github.com/swsnr/mdcat/pull/256
 
