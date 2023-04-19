@@ -20,7 +20,7 @@ use std::str;
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use thiserror::Error;
-use tracing::{event, Level};
+use tracing::{event, instrument, Level};
 
 use crate::resources::{InlineImageProtocol, MimeData};
 use crate::terminal::size::PixelSize;
@@ -129,6 +129,7 @@ impl KittyImages {
     ) -> Result<KittyImage, KittyImageError> {
         use image::{GenericImageView, ImageFormat};
         let image = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
+            event!(Level::DEBUG, "Rendering mime data to SVG");
             let png_data = crate::resources::svg::render_svg_to_png(&mime_data.data)?;
             image::load_from_memory_with_format(&png_data, ImageFormat::Png)?
         } else {
@@ -288,6 +289,7 @@ impl KittyImages {
 /// See <https://sw.kovidgoyal.net/kitty/graphics-protocol.html#control-data-reference>
 /// for reference.
 impl InlineImageProtocol for KittyImages {
+    #[instrument(skip(self, writer, terminal_size))]
     fn write_inline_image(
         &self,
         writer: &mut dyn Write,
@@ -302,6 +304,11 @@ impl InlineImageProtocol for KittyImages {
             )
         })?;
         let mime_data = resource_handler.read_resource(url)?;
+        event!(
+            Level::DEBUG,
+            "Received data of mime type {:?}",
+            mime_data.mime_type
+        );
         let image = self.render(mime_data, pixel_size)?;
         image.write_to(writer)
     }

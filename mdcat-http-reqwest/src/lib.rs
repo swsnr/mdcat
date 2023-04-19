@@ -65,9 +65,10 @@ impl HttpResourceHandler {
 }
 
 impl ResourceUrlHandler for HttpResourceHandler {
-    #[instrument(level = "debug", skip(self))]
+    #[instrument(level = "debug", skip(self), fields(url = %url))]
     fn read_resource(&self, url: &Url) -> Result<MimeData> {
         filter_schemes(&["http", "https"], url).and_then(|url| {
+            event!(Level::DEBUG, "Requesting remote HTTP resource {}", url);
             let response = self
                 .http_client
                 .get(url.clone())

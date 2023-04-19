@@ -36,6 +36,11 @@ impl ResourceUrlHandler for FileResourceHandler {
         filter_schemes(&["file"], url).and_then(|url| {
             match url.to_file_path() {
                 Ok(path) => {
+                    event!(
+                        Level::DEBUG,
+                        "Reading from resource file {}",
+                        path.display()
+                    );
                     let mut buffer = Vec::new();
                     File::open(&path)?
                         // Read a byte more than the limit differentiate an expected EOF from hitting the limit
