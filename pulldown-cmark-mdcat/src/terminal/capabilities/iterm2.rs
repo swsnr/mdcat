@@ -13,6 +13,7 @@ use std::io::{self, Result, Write};
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
+use tracing::{event, instrument, Level};
 
 use crate::resources::{svg, InlineImageProtocol};
 use crate::terminal::osc::write_osc;
@@ -39,6 +40,7 @@ impl ITerm2 {
 /// supported by macOS, this may yield false positives, i.e. this implementation might not return
 /// an error even though iTerm2 cannot actually display the image.
 impl InlineImageProtocol for ITerm2 {
+    #[instrument(skip(self, writer, _terminal_size), fields(url = %url))]
     fn write_inline_image(
         &self,
         writer: &mut dyn Write,
@@ -47,9 +49,16 @@ impl InlineImageProtocol for ITerm2 {
         _terminal_size: &crate::TerminalSize,
     ) -> Result<()> {
         let mime_data = resource_handler.read_resource(url)?;
-        let contents = if mime_data.mime_type == Some(mime::IMAGE_SVG) {
+        event!(
+            Level::DEBUG,
+            "Received data of mime type {:?}",
+            mime_data.mime_type
+        );
+        let contents = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
+            event!(Level::DEBUG, "Rendering SVG from {}", url);
             Cow::Owned(svg::render_svg_to_png(&mime_data.data)?)
         } else {
+            event!(Level::DEBUG, "Rendering mime data literally");
             Cow::Borrowed(&mime_data.data)
         };
         // Determine the local file name to use, by taking the last segment of the URL.

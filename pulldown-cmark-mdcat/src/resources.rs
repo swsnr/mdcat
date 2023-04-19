@@ -29,6 +29,15 @@ pub struct MimeData {
     pub data: Vec<u8>,
 }
 
+impl MimeData {
+    /// Get the essence of the mime type, if any.
+    ///
+    /// The essence is roughly the mime type without parameters.
+    pub fn mime_type_essence(&self) -> Option<&str> {
+        self.mime_type.as_ref().map(|m| m.essence_str())
+    }
+}
+
 /// Handle resource URLs.
 pub trait ResourceUrlHandler: Send + Sync + Debug {
     /// Read a resource.
