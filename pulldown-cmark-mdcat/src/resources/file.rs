@@ -80,7 +80,7 @@ impl ResourceUrlHandler for FileResourceHandler {
 #[cfg(test)]
 mod tests {
     use crate::resources::*;
-    use pretty_assertions::assert_eq;
+    use similar_asserts::assert_eq;
     use url::Url;
 
     #[test]

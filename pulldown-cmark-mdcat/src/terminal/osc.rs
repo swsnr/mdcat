@@ -80,8 +80,6 @@ impl Osc8Links {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
-
     #[test]
     fn url_needs_explicit_host() {
         let checks = [
@@ -95,10 +93,13 @@ mod tests {
         for (url, expected) in checks.iter() {
             let parsed = super::Url::parse(url).unwrap();
             let needs_host = super::url_needs_explicit_host(&parsed);
-            assert_eq!(
-                needs_host, *expected,
+            similar_asserts::assert_eq!(
+                needs_host,
+                *expected,
                 "{:?} needs host? {}, but got {}",
-                parsed, expected, needs_host
+                parsed,
+                expected,
+                needs_host
             );
         }
     }

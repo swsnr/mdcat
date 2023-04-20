@@ -177,7 +177,7 @@ mod tests {
     }
 
     mod layout {
-        use pretty_assertions::assert_eq;
+        use similar_asserts::assert_eq;
         use syntect::parsing::SyntaxSet;
 
         use crate::terminal::TerminalProgram;
@@ -320,7 +320,7 @@ Hello Donald[2]
     }
 
     mod disabled_features {
-        use pretty_assertions::assert_eq;
+        use similar_asserts::assert_eq;
         use syntect::parsing::SyntaxSet;
 
         use crate::terminal::TerminalProgram;

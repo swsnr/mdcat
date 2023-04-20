@@ -100,7 +100,6 @@ mod cli {
 
         assert!(child.wait().unwrap().success());
 
-        use pretty_assertions::assert_eq;
-        assert_eq!(String::from_utf8_lossy(&stderr), "")
+        similar_asserts::assert_eq!(String::from_utf8_lossy(&stderr), "")
     }
 }

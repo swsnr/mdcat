@@ -16,8 +16,8 @@ use std::path::Path;
 use glob::glob;
 use mdcat_http_reqwest::HttpResourceHandler;
 use once_cell::sync::Lazy;
-use pretty_assertions::assert_eq;
 use pulldown_cmark::{Options, Parser};
+use similar_asserts::assert_eq;
 use syntect::parsing::SyntaxSet;
 use url::Url;
 

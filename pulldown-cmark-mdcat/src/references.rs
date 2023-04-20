@@ -42,7 +42,7 @@ impl UrlBase for Environment {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pretty_assertions::assert_eq;
+    use similar_asserts::assert_eq;
     use url::Url;
 
     #[test]
