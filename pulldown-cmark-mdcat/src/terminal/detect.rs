@@ -139,67 +139,8 @@ impl TerminalProgram {
 #[cfg(test)]
 mod tests {
     use crate::terminal::TerminalProgram;
-    use std::{
-        collections::HashMap,
-        ffi::OsString,
-        sync::{Mutex, MutexGuard},
-    };
 
-    /// Mutex to ensure exclusive access to the environment for the tests in this module.
-    static ENV_MUTEX: Mutex<()> = Mutex::new(());
-
-    /// Keep a list of environment variables to restore when dropped.
-    struct RestoreEnv<'a, 'b> {
-        env: HashMap<&'a str, Option<OsString>>,
-        /// Hold onto a mutex guard for exclusive access to the environment.
-        _guard: MutexGuard<'b, ()>,
-    }
-
-    impl<'a, 'b> RestoreEnv<'a, 'b> {
-        /// Capture the given environment variables for restoring when dropped.
-        fn capture<I>(guard: MutexGuard<'b, ()>, names: I) -> Self
-        where
-            I: Iterator<Item = &'a str> + 'a,
-        {
-            let mut env = Self {
-                env: HashMap::new(),
-                _guard: guard,
-            };
-
-            for name in names {
-                env.env.insert(name, std::env::var_os(name));
-            }
-
-            env
-        }
-    }
-
-    impl<'a, 'b> Drop for RestoreEnv<'a, 'b> {
-        /// Restore the environment variables as captured.
-        fn drop(&mut self) {
-            for (name, value) in self.env.iter() {
-                match value {
-                    Some(value) => std::env::set_var(name, value),
-                    None => std::env::remove_var(name),
-                }
-            }
-        }
-    }
-
-    /// Run `block` with `vars` set in the environment, and restore old environment at return.
-    fn with_vars<F: Fn()>(vars: Vec<(&str, Option<&str>)>, block: F) {
-        let old_env = RestoreEnv::capture(ENV_MUTEX.lock().unwrap(), vars.iter().map(|(k, _)| *k));
-        for (name, value) in &vars {
-            match value {
-                Some(value) => std::env::set_var(name, value),
-                None => std::env::remove_var(name),
-            }
-        }
-        block();
-        // Just to mark `old_env` as used; it exists only for the purpose of being dropped in a
-        // controlled way.
-        drop(old_env);
-    }
+    use temp_env::with_vars;
 
     #[test]
     pub fn detect_term_kitty() {
