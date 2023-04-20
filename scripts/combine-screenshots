@@ -9,5 +9,5 @@ set -euo pipefail
 
 DEST="$(git rev-parse --show-toplevel)/screenshots/side-by-side.png"
 
-montage "$@" -tile "$#x1" -geometry +0+0 "$DEST"
-oxipng "$DEST"
+montage "$@" -tile "$#x1" -geometry +0+0 "${DEST}"
+oxipng "${DEST}"
