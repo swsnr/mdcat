@@ -1,0 +1,24 @@
+#!/bin/bash
+# Copyright 2020 Sebastian Wiesnser <sebastian@swsnr.de>
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+COLOR_THEMES=(
+    'One Light (base16)'
+    'Gruvbox Light'
+    'Darcula (base16)'
+)
+SAMPLE="./sample/showcase.md"
+LINES="$(wc -l "${SAMPLE}" | cut -d' ' -f1)"
+
+for theme in "${COLOR_THEMES[@]}"; do
+    wezterm --config-file ./screenshots/wezterm.lua \
+        --config "color_scheme='$theme'" \
+        start --cwd .
+done

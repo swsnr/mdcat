@@ -8,14 +8,14 @@ $ mdcat sample.md
 
 ![mdcat showcase with different colour themes][sxs]
 
-mdcat in [kitty], with Tango Light, [Solarized] Light, and [Dracula] (from left to
-right), and [PragmataPro] as font.
+mdcat in [WezTerm], with "One Light (base16)", "Gruvbox Light", and "Darcula
+(base16)" (from left to right), and [JetBrains Mono] as font.
 
 [CommonMark]: http://commonmark.org
 [Solarized]: http://ethanschoonover.com/solarized
 [dracula]: https://draculatheme.com/iterm/
-[kitty]: https://sw.kovidgoyal.net/kitty/index.html
-[PragmataPro]: https://www.fsd.it/shop/fonts/pragmatapro/
+[wezterm]: https://wezfurlong.org/wezterm/
+[JetBrains Mono]: https://www.jetbrains.com/lp/mono/
 [sxs]: ./screenshots/side-by-side.png
 
 ## Features
