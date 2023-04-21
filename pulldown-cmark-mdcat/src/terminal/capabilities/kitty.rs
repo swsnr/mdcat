@@ -114,8 +114,6 @@ impl KittyImage {
             write!(writer, "\x1b_G{},q=2;", cmd_header.join(","))?;
             writer.write_all(data)?;
             write!(writer, "\x1b\\")?;
-            // FIXME: Remove this? Why do we flush here?
-            writer.flush()?;
 
             cmd_header.clear();
         }
