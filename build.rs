@@ -61,7 +61,7 @@ fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
 fn main() {
     let out_dir = std::env::var_os("OUT_DIR").expect("OUT_DIR not set");
 
-    println!("cargo:rerun-if-changed=src/bin/mdcat/args.rs");
+    println!("cargo:rerun-if-changed=src/args.rs");
     if let Err(error) = gen_completions(&out_dir) {
         println!("cargo:warning=Failed to build completions: {error}");
     }
