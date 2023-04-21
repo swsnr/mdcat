@@ -24,7 +24,7 @@ pub struct LinkReferenceDefinition<'a> {
 #[derive(Debug)]
 pub struct CurrentLine {
     /// The line length
-    pub(super) length: usize,
+    pub(super) length: u16,
     /// Trailing space to add before continuing this line.
     pub(super) trailing_space: Option<String>,
 }

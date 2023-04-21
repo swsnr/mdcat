@@ -53,9 +53,9 @@ impl PartialOrd for PixelSize {
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TerminalSize {
     /// The width of the terminal, in characters aka columns.
-    pub columns: usize,
+    pub columns: u16,
     /// The height of the terminal, in lines.
-    pub rows: usize,
+    pub rows: u16,
     /// The size in pixels, if available.
     pub pixels: Option<PixelSize>,
 }
@@ -130,8 +130,8 @@ mod implementation {
                 None
             };
             Some(TerminalSize {
-                columns: winsize.ws_col as usize,
-                rows: winsize.ws_row as usize,
+                columns: winsize.ws_col,
+                rows: winsize.ws_row,
                 pixels,
             })
         }
@@ -145,9 +145,9 @@ mod implementation {
     use super::TerminalSize;
 
     pub fn from_terminal() -> Option<TerminalSize> {
-        terminal_size().map(|(Width(w), Height(h))| TerminalSize {
-            rows: h as usize,
-            columns: w as usize,
+        terminal_size().map(|(Width(columns), Height(rows))| TerminalSize {
+            rows,
+            columns,
             pixels: None,
         })
     }
@@ -160,10 +160,10 @@ impl TerminalSize {
     pub fn from_env() -> Option<Self> {
         let columns = std::env::var("COLUMNS")
             .ok()
-            .and_then(|value| value.parse::<usize>().ok());
+            .and_then(|value| value.parse::<u16>().ok());
         let rows = std::env::var("LINES")
             .ok()
-            .and_then(|value| value.parse::<usize>().ok());
+            .and_then(|value| value.parse::<u16>().ok());
 
         match (columns, rows) {
             (Some(columns), Some(rows)) => Some(Self {

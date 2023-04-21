@@ -91,7 +91,7 @@ pub struct CommonArgs {
     pub no_colour: bool,
     /// Maximum number of columns to use for output.
     #[arg(long)]
-    pub columns: Option<usize>,
+    pub columns: Option<u16>,
     /// Do not load remote resources like images.
     #[arg(short, long = "local")]
     pub local_only: bool,

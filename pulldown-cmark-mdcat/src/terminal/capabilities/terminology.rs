@@ -98,7 +98,7 @@ impl InlineImageProtocol for Terminology {
         let columns = terminal_size.columns;
         let lines = match get_image_dimensions(url) {
             Some((w, h)) => ((h as f64) * (columns / 2) as f64 / (w as f64)) as usize,
-            None => terminal_size.rows / 2,
+            None => terminal_size.rows as usize / 2,
         };
 
         let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, url.as_str());

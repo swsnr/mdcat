@@ -43,14 +43,14 @@ fn write_remaining_lines<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
     style: &Style,
-    indent: usize,
+    indent: u16,
     mut buffer: String,
     next_lines: &[&[Word]],
     last_line: &[Word],
 ) -> Result<CurrentLine> {
     // Finish the previous line
     writeln!(writer)?;
-    write_indent(writer, indent as u16)?;
+    write_indent(writer, indent)?;
     // Now write all lines up to the last
     for line in next_lines {
         match line.split_last() {
@@ -65,7 +65,7 @@ fn write_remaining_lines<W: Write>(
                 buffer.push_str(last.word);
                 write_styled(writer, capabilities, style, &buffer)?;
                 writeln!(writer)?;
-                write_indent(writer, indent as u16)?;
+                write_indent(writer, indent)?;
                 buffer.clear();
             }
         };
@@ -85,7 +85,7 @@ fn write_remaining_lines<W: Write>(
             buffer.push_str(last.word);
             write_styled(writer, capabilities, style, &buffer)?;
             Ok(CurrentLine {
-                length: textwrap::core::display_width(&buffer),
+                length: textwrap::core::display_width(&buffer) as u16,
                 trailing_space: Some(last.whitespace.to_owned()),
             })
         }
@@ -96,8 +96,8 @@ pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
     style: &Style,
-    max_width: usize,
-    indent: usize,
+    max_width: u16,
+    indent: u16,
     current_line: CurrentLine,
     text: S,
 ) -> Result<CurrentLine> {
@@ -113,14 +113,16 @@ pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
                 + current_line
                     .trailing_space
                     .as_ref()
-                    .map_or(0, |s| display_width(s.as_ref()));
+                    .map_or(0, |s| display_width(s.as_ref()) as u16);
 
             // If the current line is not empty and we can't even add the first first word of the text to it
             // then lets finish the line and start over.  If the current line is empty the word simply doesn't
             // fit into the terminal size so we must print it anyway.
-            if 0 < current_line.length && max_width < current_width + display_width(first_word) {
+            if 0 < current_line.length
+                && max_width < current_width + display_width(first_word) as u16
+            {
                 writeln!(writer)?;
-                write_indent(writer, indent as u16)?;
+                write_indent(writer, indent)?;
                 return write_styled_and_wrapped(
                     writer,
                     capabilities,
@@ -146,7 +148,7 @@ pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
                     Ok(current_line)
                 }
                 Some((first_line, tails)) => {
-                    let mut buffer = String::with_capacity(max_width);
+                    let mut buffer = String::with_capacity(max_width as usize);
 
                     // Finish the current line
                     let new_current_line = match first_line.split_last() {
@@ -164,7 +166,7 @@ pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
                             }
                             buffer.push_str(last.word);
                             let length =
-                                current_line.length + textwrap::core::display_width(&buffer);
+                                current_line.length + textwrap::core::display_width(&buffer) as u16;
                             write_styled(writer, capabilities, style, &buffer)?;
                             buffer.clear();
                             CurrentLine {
@@ -214,9 +216,9 @@ pub fn write_rule<W: Write>(
     writer: &mut W,
     capabilities: &TerminalCapabilities,
     theme: &Theme,
-    length: usize,
+    length: u16,
 ) -> std::io::Result<()> {
-    let rule = "\u{2550}".repeat(length);
+    let rule = "\u{2550}".repeat(length as usize);
     write_styled(
         writer,
         capabilities,
@@ -231,7 +233,7 @@ pub fn write_code_block_border<W: Write>(
     capabilities: &TerminalCapabilities,
     terminal_size: &TerminalSize,
 ) -> std::io::Result<()> {
-    let separator = "\u{2500}".repeat(terminal_size.columns.min(20));
+    let separator = "\u{2500}".repeat(terminal_size.columns.min(20) as usize);
     write_styled(
         writer,
         capabilities,
