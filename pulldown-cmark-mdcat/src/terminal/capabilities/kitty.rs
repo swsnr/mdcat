@@ -22,8 +22,9 @@ use base64::Engine;
 use thiserror::Error;
 use tracing::{event, instrument, Level};
 
-use crate::resources::{InlineImageProtocol, MimeData};
-use crate::terminal::size::PixelSize;
+use crate::resources::image::*;
+use crate::resources::MimeData;
+use crate::terminal::size::{PixelSize, TerminalSize};
 
 /// An error which occurred while rendering or writing an image with the Kitty image protocol.
 #[derive(Debug, Error)]
@@ -125,9 +126,10 @@ impl KittyImages {
     fn render(
         self,
         mime_data: MimeData,
-        terminal_size: PixelSize,
+        terminal_size: TerminalSize,
     ) -> Result<KittyImage, KittyImageError> {
-        use image::{GenericImageView, ImageFormat};
+        use image::ImageFormat;
+
         let image = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
             event!(Level::DEBUG, "Rendering mime data to SVG");
             let png_data = crate::resources::svg::render_svg_to_png(&mime_data.data)?;
@@ -146,27 +148,25 @@ impl KittyImages {
             }
         };
 
-        if mime_data.mime_type == Some(mime::IMAGE_PNG)
-            && PixelSize::from_xy(image.dimensions()) <= terminal_size
-        {
-            event!(
-                Level::DEBUG,
-                "PNG image of appropriate size, rendering original data"
-            );
-            // If we know that the original data is in PNG format and of sufficient size we can
-            // discard the decoded image and instead render the original data directly.
-            //
-            // We kinda wasted the decoded image here (we do need it to check dimensions tho) but
-            // at least we don't have to encode it again.
-            Ok(self.render_as_png(mime_data.data))
-        } else {
-            event!(
-                Level::DEBUG,
-                "Image of other format or larger than terminal, rendering RGB data"
-            );
-            // The original data was not in PNG format, or we have to resize the image to terminal
-            // dimensions, so we need to encode the RGB data of the decoded image explicitly.
-            Ok(self.render_as_rgb_or_rgba(image, terminal_size))
+        match downsize_to_columns(&image, terminal_size) {
+            Some(downsized_image) => {
+                event!(
+                    Level::DEBUG,
+                    "Image scaled down to column limit, rendering RGB data"
+                );
+                Ok(self.render_as_rgb_or_rgba(downsized_image))
+            }
+            None if mime_data.mime_type_essence() == Some("image/png") => {
+                event!(
+                    Level::DEBUG,
+                    "PNG image of appropriate size, rendering original image data"
+                );
+                Ok(self.render_as_png(mime_data.data))
+            }
+            None => {
+                event!(Level::DEBUG, "Image not in PNG format, rendering RGB data");
+                Ok(self.render_as_rgb_or_rgba(image))
+            }
         }
     }
 
@@ -178,7 +178,7 @@ impl KittyImages {
     fn render(
         self,
         mime_data: MimeData,
-        _terminal_size: PixelSize,
+        _terminal_size: TerminalSize,
     ) -> Result<KittyImage, KittyImageError> {
         match mime_data.mime_type {
             Some(t) if t == mime::IMAGE_PNG => Ok(self.render_as_png(mime_data.data)),
@@ -214,12 +214,9 @@ impl KittyImages {
     /// If the image size exceeds `terminal_size` in either dimension scale the
     /// image down to `terminal_size` (preserving aspect ratio).
     #[cfg(feature = "image-processing")]
-    fn render_as_rgb_or_rgba(
-        self,
-        image: image::DynamicImage,
-        terminal_size: PixelSize,
-    ) -> KittyImage {
+    fn render_as_rgb_or_rgba(self, image: image::DynamicImage) -> KittyImage {
         use image::{ColorType, GenericImageView};
+
         let format = match image.color() {
             ColorType::L8 | ColorType::Rgb8 | ColorType::L16 | ColorType::Rgb16 => KittyFormat::Rgb,
             // Default to RGBA format: We cannot match all colour types because
@@ -227,16 +224,6 @@ impl KittyImages {
             // because we can convert any image to RGBA, at worth with additional
             // runtime costs.
             _ => KittyFormat::Rgba,
-        };
-
-        let image = if PixelSize::from_xy(image.dimensions()) <= terminal_size {
-            image
-        } else {
-            image.resize(
-                terminal_size.x,
-                terminal_size.y,
-                image::imageops::FilterType::Nearest,
-            )
         };
 
         let size = PixelSize::from_xy(image.dimensions());
@@ -295,21 +282,15 @@ impl InlineImageProtocol for KittyImages {
         writer: &mut dyn Write,
         resource_handler: &dyn crate::ResourceUrlHandler,
         url: &url::Url,
-        terminal_size: &crate::TerminalSize,
+        terminal_size: crate::TerminalSize,
     ) -> std::io::Result<()> {
-        let pixel_size = terminal_size.pixels.ok_or_else(|| {
-            Error::new(
-                ErrorKind::InvalidData,
-                "kitty did not report pixel size, cannot write image",
-            )
-        })?;
         let mime_data = resource_handler.read_resource(url)?;
         event!(
             Level::DEBUG,
             "Received data of mime type {:?}",
             mime_data.mime_type
         );
-        let image = self.render(mime_data, pixel_size)?;
+        let image = self.render(mime_data, terminal_size)?;
         image.write_to(writer)
     }
 }

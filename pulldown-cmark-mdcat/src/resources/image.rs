@@ -31,6 +31,38 @@ pub trait InlineImageProtocol {
         writer: &mut dyn Write,
         resource_handler: &dyn ResourceUrlHandler,
         url: &Url,
-        terminal_size: &TerminalSize,
+        terminal_size: TerminalSize,
     ) -> std::io::Result<()>;
+}
+
+/// Downsize an image to the given terminal size.
+///
+/// If the `image` is larger than the amount of columns in the given terminal `size` attempt to
+/// downsize the image to fit into the given columns.
+///
+/// Return the downsized image if `image` was larger than the column limit and `size` defined the
+/// terminal size in pixels.
+///
+/// Return `None` if `size` does not specify the cell size, or if `image` is already smaller than
+/// the column limit.
+#[cfg(feature = "image-processing")]
+pub fn downsize_to_columns(
+    image: &image::DynamicImage,
+    size: TerminalSize,
+) -> Option<image::DynamicImage> {
+    use image::{imageops::FilterType, GenericImageView};
+    use tracing::{event, Level};
+    let win_size = size.pixels?;
+    event!(
+        Level::DEBUG,
+        "Terminal size {:?}; image is {:?}",
+        size,
+        image.dimensions()
+    );
+    let (image_width, _) = image.dimensions();
+    if win_size.x < image_width {
+        Some(image.resize(win_size.x, win_size.y, FilterType::Nearest))
+    } else {
+        None
+    }
 }

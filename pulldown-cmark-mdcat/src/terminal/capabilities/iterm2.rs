@@ -46,7 +46,7 @@ impl InlineImageProtocol for ITerm2 {
         writer: &mut dyn Write,
         resource_handler: &dyn ResourceUrlHandler,
         url: &url::Url,
-        _terminal_size: &crate::TerminalSize,
+        _terminal_size: crate::TerminalSize,
     ) -> Result<()> {
         let mime_data = resource_handler.read_resource(url)?;
         event!(

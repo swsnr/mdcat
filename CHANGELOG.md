@@ -10,6 +10,8 @@ Use `cargo release` to create a new release.
 
 ### Changed
 - mdcat now uses the kitty protocol to render images on WezTerm (see [GH-258]).
+- mdcat now downscales images to the column limit if rendering with the kitty protocol (see [GH-258]).
+    Previously mdcat scaled down to the window size, which looked strange if a given `--columns` was much smaller than the window size.
 
 [GH-258]: https://github.com/swsnr/mdcat/pull/258
 

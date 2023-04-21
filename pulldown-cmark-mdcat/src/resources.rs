@@ -13,7 +13,7 @@ use mime::Mime;
 use url::Url;
 
 mod file;
-mod image;
+pub(crate) mod image;
 
 pub(crate) mod svg;
 

@@ -689,7 +689,7 @@ pub fn write_event<'a, W: Write>(
             let image_state = match (settings.terminal_capabilities.image, resolved_link) {
                 (Some(capability), Some(ref url)) => capability
                     .image_protocol()
-                    .write_inline_image(writer, &resource_handler, url, &settings.terminal_size)
+                    .write_inline_image(writer, &resource_handler, url, settings.terminal_size)
                     .map_err(|error| {
                         event!(Level::ERROR, ?error, %url, "failed to render image with capability {:?}: {:#}", capability, error);
                         error

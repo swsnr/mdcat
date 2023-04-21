@@ -93,7 +93,7 @@ impl InlineImageProtocol for Terminology {
         writer: &mut dyn Write,
         _resource_handler: &dyn ResourceUrlHandler,
         url: &Url,
-        terminal_size: &TerminalSize,
+        terminal_size: TerminalSize,
     ) -> Result<()> {
         let columns = terminal_size.columns;
         let lines = match get_image_dimensions(url) {
