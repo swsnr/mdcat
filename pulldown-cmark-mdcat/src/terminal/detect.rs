@@ -131,7 +131,9 @@ impl TerminalProgram {
             TerminalProgram::Kitty => {
                 ansi.with_image_capability(ImageCapability::Kitty(self::kitty::KittyImages))
             }
-            TerminalProgram::WezTerm => ansi.with_image_capability(ImageCapability::ITerm2(ITerm2)),
+            TerminalProgram::WezTerm => {
+                ansi.with_image_capability(ImageCapability::Kitty(self::kitty::KittyImages))
+            }
         }
     }
 }

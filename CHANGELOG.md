@@ -8,6 +8,11 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- mdcat now uses the kitty protocol to render images on WezTerm (see [GH-258]).
+
+[GH-258]: https://github.com/swsnr/mdcat/pull/258
+
 ## [2.0.2] – 2023-04-19
 
 ### Changed
