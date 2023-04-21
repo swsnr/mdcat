@@ -79,12 +79,21 @@ struct KittyImage {
 impl KittyImage {
     fn write_to(&self, writer: &mut dyn Write) -> Result<(), Error> {
         let mut cmd_header: Vec<String> = vec![
+            // Transfer image data and immediately display the image.
             "a=T".into(),
+            // Transfer image data inline in the escape code.
             "t=d".into(),
+            // Explicitly pass an image number to have the terminal create a unique image ID.
+            // Otherwise the terminal might assume we reuse the image ID 0 and overwrite the
+            // previous image.  At least, wezterm needs I=1 or previous images vanish.
+            "I=1".into(),
+            // The kind of data in the escape code.
             format!("f={}", self.format.control_data_value()),
         ];
 
         if let Some(size) = self.size {
+            // Tell kitty about the image size if we know it.  Don't know whether we have to do it
+            // but it probably won't do no harm.
             cmd_header.push(format!("s={}", size.x));
             cmd_header.push(format!("v={}", size.y));
         }
@@ -95,12 +104,14 @@ impl KittyImage {
 
         for (i, data) in image_data_chunks.enumerate() {
             if i < image_data_chunks_length - 1 {
+                // We'll send more data
                 cmd_header.push("m=1".into());
             } else {
+                // This is the last chunk
                 cmd_header.push("m=0".into());
             }
-
-            write!(writer, "\x1b_G{};", cmd_header.join(","))?;
+            // q=2 tells kitty not to send anything in response to our image sequences.
+            write!(writer, "\x1b_G{},q=2;", cmd_header.join(","))?;
             writer.write_all(data)?;
             write!(writer, "\x1b\\")?;
             // FIXME: Remove this? Why do we flush here?
