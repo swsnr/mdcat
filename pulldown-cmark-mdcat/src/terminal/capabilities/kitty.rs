@@ -180,8 +180,7 @@ impl KittyImages {
             image::load_from_memory_with_format(&png_data, ImageFormat::Png)?
         } else {
             let image_format = mime_data
-                .mime_type
-                .as_ref()
+                .mime_type_essence()
                 .and_then(image::ImageFormat::from_mime_type);
             match image_format {
                 // If we already have information about the mime type of the resource data let's
@@ -224,8 +223,8 @@ impl KittyImages {
         mime_data: MimeData,
         _terminal_size: TerminalSize,
     ) -> Result<KittyImageData, KittyImageError> {
-        match mime_data.mime_type {
-            Some(t) if t == mime::IMAGE_PNG => Ok(self.render_as_png(mime_data.data)),
+        match mime_data.mime_type_essence() {
+            Some("image/png") => Ok(self.render_as_png(mime_data.data)),
             _ => {
                 event!(
                     Level::DEBUG,
