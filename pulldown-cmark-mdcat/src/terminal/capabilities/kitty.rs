@@ -44,78 +44,113 @@ impl From<KittyImageError> for std::io::Error {
     }
 }
 
-/// The image format (PNG, RGB or RGBA) of the image bytes.
-enum KittyFormat {
-    Png,
+/// Image data for the kitty graphics protocol.
+///
+/// See [Terminal graphics protocol][1] for a complete documentation.
+///
+/// [1]: https://sw.kovidgoyal.net/kitty/graphics-protocol/
+enum KittyImageData {
+    Png(Vec<u8>),
     #[cfg(feature = "image-processing")]
-    Rgb,
+    Rgb(PixelSize, Vec<u8>),
     #[cfg(feature = "image-processing")]
-    Rgba,
+    Rgba(PixelSize, Vec<u8>),
 }
 
-impl KittyFormat {
-    /// Return the control data value of the image format.
-    /// See the [documentation] for the reference and explanation.
+impl KittyImageData {
+    /// Return the format code for this data for the `f` control data field.
     ///
-    /// [documentation]: https://sw.kovidgoyal.net/kitty/graphics-protocol.html#transferring-pixel-data
-    fn control_data_value(&self) -> &str {
-        match *self {
-            KittyFormat::Png => "100",
+    /// See the [Transferring pixel data][1] for reference.
+    ///
+    /// [1]: https://sw.kovidgoyal.net/kitty/graphics-protocol.html#transferring-pixel-data
+    fn f_format_code(&self) -> &str {
+        match self {
+            KittyImageData::Png(_) => "100",
             #[cfg(feature = "image-processing")]
-            KittyFormat::Rgb => "24",
+            KittyImageData::Rgb(_, _) => "24",
             #[cfg(feature = "image-processing")]
-            KittyFormat::Rgba => "32",
+            KittyImageData::Rgba(_, _) => "32",
         }
+    }
+
+    /// Get the actual data.
+    fn data(&self) -> &[u8] {
+        match self {
+            KittyImageData::Png(ref contents) => contents,
+            #[cfg(feature = "image-processing")]
+            KittyImageData::Rgb(_, ref contents) => contents,
+            #[cfg(feature = "image-processing")]
+            KittyImageData::Rgba(_, ref contents) => contents,
+        }
+    }
+
+    /// Get the size of the image contained in this data.
+    ///
+    /// `Some` if the size is explicitly specified for this data, `None` otherwise, i.e. in PNG
+    /// format).
+    fn size(&self) -> Option<PixelSize> {
+        match self {
+            KittyImageData::Png(_) => None,
+            #[cfg(feature = "image-processing")]
+            KittyImageData::Rgb(size, _) => Some(*size),
+            #[cfg(feature = "image-processing")]
+            KittyImageData::Rgba(size, _) => Some(*size),
+        }
+    }
+
+    /// The width of the image for the `s` control data field.
+    fn s_width(&self) -> u32 {
+        self.size().map_or(0, |s| s.x)
+    }
+
+    /// The height of the image for the `v` control data field.
+    fn v_height(&self) -> u32 {
+        self.size().map_or(0, |s| s.y)
     }
 }
 
-/// Holds the image bytes with its image format and dimensions.
-struct KittyImage {
-    contents: Vec<u8>,
-    format: KittyFormat,
-    size: Option<PixelSize>,
-}
-
-impl KittyImage {
+impl KittyImageData {
     fn write_to(&self, writer: &mut dyn Write) -> Result<(), Error> {
-        let mut cmd_header: Vec<String> = vec![
-            // Transfer image data and immediately display the image.
-            "a=T".into(),
-            // Transfer image data inline in the escape code.
-            "t=d".into(),
-            // Explicitly pass an image number to have the terminal create a unique image ID.
-            // Otherwise the terminal might assume we reuse the image ID 0 and overwrite the
-            // previous image.  At least, wezterm needs I=1 or previous images vanish.
-            "I=1".into(),
-            // The kind of data in the escape code.
-            format!("f={}", self.format.control_data_value()),
-        ];
-
-        if let Some(size) = self.size {
-            // Tell kitty about the image size if we know it.  Don't know whether we have to do it
-            // but it probably won't do no harm.
-            cmd_header.push(format!("s={}", size.x));
-            cmd_header.push(format!("v={}", size.y));
-        }
-
-        let image_data = STANDARD.encode(&self.contents);
+        let image_data = STANDARD.encode(self.data());
         let image_data_chunks = image_data.as_bytes().chunks(4096);
-        let image_data_chunks_length = image_data_chunks.len();
+        let number_of_chunks = image_data_chunks.len();
 
-        for (i, data) in image_data_chunks.enumerate() {
-            if i < image_data_chunks_length - 1 {
-                // We'll send more data
-                cmd_header.push("m=1".into());
+        for (i, chunk_data) in image_data_chunks.enumerate() {
+            let is_first_chunk = i == 0;
+            // The value for the m field
+            let m = if i < number_of_chunks - 1 { 1 } else { 0 };
+            if is_first_chunk {
+                // For the first chunk we must write the header for the image.
+                //
+                // a=T tells kitty that we transfer image data and want to show the image
+                // immediately.
+                //
+                // t=d tells kitty that we transfer image data inline in the escape code.
+                //
+                // I=1 tells kitty that we want to treat every image as unique and not have kitty
+                // reuse images.  At least wezterm requires this; otherwise past images disappear
+                // because wezterm seems to assume that we're reusing some image ID.
+                //
+                // f tells kitty about the data format.
+                //
+                // s and v tell kitty about the size of our image.
+                //
+                // m tells kitty whether to expect more chunks or whether this is the last one.
+                //
+                // q=2 tells kitty never to respond to our image sequence; we're not reading these
+                // responses anyway.
+                //
+                let f = self.f_format_code();
+                let s = self.s_width();
+                let v = self.v_height();
+                write!(writer, "\x1b_Ga=T,t=d,I=1,f={f},s={s},v={v},m={m},q=2;")?;
             } else {
-                // This is the last chunk
-                cmd_header.push("m=0".into());
+                // For follow up chunks we must not repeat the header, but only indicate whether we
+                // expect a response and whether more data is to follow.
+                write!(writer, "\x1b_Gm={m},q=2;")?;
             }
-            // q=2 tells kitty not to send anything in response to our image sequences.
-            write!(writer, "\x1b_G{},q=2;", cmd_header.join(","))?;
-            writer.write_all(data)?;
+            writer.write_all(chunk_data)?;
             write!(writer, "\x1b\\")?;
-
-            cmd_header.clear();
         }
 
         Ok(())
@@ -136,7 +171,7 @@ impl KittyImages {
         self,
         mime_data: MimeData,
         terminal_size: TerminalSize,
-    ) -> Result<KittyImage, KittyImageError> {
+    ) -> Result<KittyImageData, KittyImageError> {
         use image::ImageFormat;
 
         let image = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
@@ -179,7 +214,7 @@ impl KittyImages {
         }
     }
 
-    /// Render mime data obtained from `url` and wrap it in a `KittyImage`.
+    /// Render mime data obtained from `url` and wrap it in a `KittyImageData`.
     ///
     /// This implementation does not support image processing, and only renders PNG images which
     /// kitty supports directly.
@@ -188,7 +223,7 @@ impl KittyImages {
         self,
         mime_data: MimeData,
         _terminal_size: TerminalSize,
-    ) -> Result<KittyImage, KittyImageError> {
+    ) -> Result<KittyImageData, KittyImageError> {
         match mime_data.mime_type {
             Some(t) if t == mime::IMAGE_PNG => Ok(self.render_as_png(mime_data.data)),
             _ => {
@@ -210,12 +245,8 @@ impl KittyImages {
     }
 
     /// Wrap the image bytes as PNG format in `KittyImage`.
-    fn render_as_png(self, contents: Vec<u8>) -> KittyImage {
-        KittyImage {
-            contents,
-            format: KittyFormat::Png,
-            size: None,
-        }
+    fn render_as_png(self, data: Vec<u8>) -> KittyImageData {
+        KittyImageData::Png(data)
     }
 
     /// Render the image as RGB/RGBA format and wrap the image bytes in `KittyImage`.
@@ -223,27 +254,19 @@ impl KittyImages {
     /// If the image size exceeds `terminal_size` in either dimension scale the
     /// image down to `terminal_size` (preserving aspect ratio).
     #[cfg(feature = "image-processing")]
-    fn render_as_rgb_or_rgba(self, image: image::DynamicImage) -> KittyImage {
+    fn render_as_rgb_or_rgba(self, image: image::DynamicImage) -> KittyImageData {
         use image::{ColorType, GenericImageView};
 
-        let format = match image.color() {
-            ColorType::L8 | ColorType::Rgb8 | ColorType::L16 | ColorType::Rgb16 => KittyFormat::Rgb,
+        let size = PixelSize::from_xy(image.dimensions());
+        match image.color() {
+            ColorType::L8 | ColorType::Rgb8 | ColorType::L16 | ColorType::Rgb16 => {
+                KittyImageData::Rgb(size, image.into_rgb8().into_raw())
+            }
             // Default to RGBA format: We cannot match all colour types because
             // ColorType is marked non-exhaustive, but RGBA is a safe default
             // because we can convert any image to RGBA, at worth with additional
             // runtime costs.
-            _ => KittyFormat::Rgba,
-        };
-
-        let size = PixelSize::from_xy(image.dimensions());
-
-        KittyImage {
-            contents: match format {
-                KittyFormat::Rgb => image.into_rgb8().into_raw(),
-                _ => image.into_rgba8().into_raw(),
-            },
-            format,
-            size: Some(size),
+            _ => KittyImageData::Rgba(size, image.into_rgba8().into_raw()),
         }
     }
 }
