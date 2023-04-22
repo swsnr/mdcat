@@ -53,11 +53,13 @@ impl PartialOrd for PixelSize {
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TerminalSize {
     /// The width of the terminal, in characters aka columns.
-    pub columns: usize,
+    pub columns: u16,
     /// The height of the terminal, in lines.
-    pub rows: usize,
+    pub rows: u16,
     /// The size in pixels, if available.
     pub pixels: Option<PixelSize>,
+    /// The size of once cell, if available.
+    pub cell: Option<PixelSize>,
 }
 
 impl Default for TerminalSize {
@@ -66,6 +68,7 @@ impl Default for TerminalSize {
             columns: 80,
             rows: 24,
             pixels: None,
+            cell: None,
         }
     }
 }
@@ -121,19 +124,24 @@ mod implementation {
             );
             None
         } else {
-            let pixels = if winsize.ws_xpixel != 0 && winsize.ws_ypixel != 0 {
-                Some(PixelSize {
+            let mut terminal_size = TerminalSize {
+                columns: winsize.ws_col,
+                rows: winsize.ws_row,
+                pixels: None,
+                cell: None,
+            };
+            if winsize.ws_xpixel != 0 && winsize.ws_ypixel != 0 {
+                let pixels = PixelSize {
                     x: winsize.ws_xpixel as u32,
                     y: winsize.ws_ypixel as u32,
-                })
-            } else {
-                None
+                };
+                terminal_size.pixels = Some(pixels);
+                terminal_size.cell = Some(PixelSize {
+                    x: pixels.x / terminal_size.columns as u32,
+                    y: pixels.y / terminal_size.rows as u32,
+                });
             };
-            Some(TerminalSize {
-                columns: winsize.ws_col as usize,
-                rows: winsize.ws_row as usize,
-                pixels,
-            })
+            Some(terminal_size)
         }
     }
 }
@@ -145,10 +153,11 @@ mod implementation {
     use super::TerminalSize;
 
     pub fn from_terminal() -> Option<TerminalSize> {
-        terminal_size().map(|(Width(w), Height(h))| TerminalSize {
-            rows: h as usize,
-            columns: w as usize,
+        terminal_size().map(|(Width(columns), Height(rows))| TerminalSize {
+            rows,
+            columns,
             pixels: None,
+            cell: None,
         })
     }
 }
@@ -160,16 +169,17 @@ impl TerminalSize {
     pub fn from_env() -> Option<Self> {
         let columns = std::env::var("COLUMNS")
             .ok()
-            .and_then(|value| value.parse::<usize>().ok());
+            .and_then(|value| value.parse::<u16>().ok());
         let rows = std::env::var("LINES")
             .ok()
-            .and_then(|value| value.parse::<usize>().ok());
+            .and_then(|value| value.parse::<u16>().ok());
 
         match (columns, rows) {
             (Some(columns), Some(rows)) => Some(Self {
                 columns,
                 rows,
                 pixels: None,
+                cell: None,
             }),
             _ => None,
         }
@@ -192,5 +202,24 @@ impl TerminalSize {
     /// `$COLUMNS` and `$LINES`.
     pub fn detect() -> Option<Self> {
         Self::from_terminal().or_else(Self::from_env)
+    }
+
+    /// Shrink the terminal size to the given amount of maximum columns.
+    ///
+    /// Also shrinks the pixel size accordingly.
+    pub fn with_max_columns(&self, max_columns: u16) -> Self {
+        let pixels = match (self.pixels, self.cell) {
+            (Some(pixels), Some(cell)) => Some(PixelSize {
+                x: cell.x * max_columns as u32,
+                y: pixels.y,
+            }),
+            _ => None,
+        };
+        Self {
+            columns: max_columns,
+            rows: self.rows,
+            pixels,
+            cell: self.cell,
+        }
     }
 }

@@ -56,14 +56,18 @@ fn main() {
         // Enable Ansi color processing on Windows; no-op on other platforms.
         concolor_query::windows::enable_ansi_colors();
 
-        let size = TerminalSize::detect().unwrap_or_default();
-        let columns = args.columns.unwrap_or(size.columns);
+        let terminal_size = TerminalSize::detect().unwrap_or_default();
+        let terminal_size = if let Some(max_columns) = args.columns {
+            terminal_size.with_max_columns(max_columns)
+        } else {
+            terminal_size
+        };
 
         let exit_code = match Output::new(args.paginate()) {
             Ok(mut output) => {
                 let settings = Settings {
                     terminal_capabilities: terminal.capabilities(),
-                    terminal_size: TerminalSize { columns, ..size },
+                    terminal_size,
                     syntax_set: &SyntaxSet::load_defaults_newlines(),
                     theme: Theme::default(),
                 };

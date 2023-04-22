@@ -93,12 +93,12 @@ impl InlineImageProtocol for Terminology {
         writer: &mut dyn Write,
         _resource_handler: &dyn ResourceUrlHandler,
         url: &Url,
-        terminal_size: &TerminalSize,
+        terminal_size: TerminalSize,
     ) -> Result<()> {
         let columns = terminal_size.columns;
         let lines = match get_image_dimensions(url) {
             Some((w, h)) => ((h as f64) * (columns / 2) as f64 / (w as f64)) as usize,
-            None => terminal_size.rows / 2,
+            None => terminal_size.rows as usize / 2,
         };
 
         let mut command = format!("\x1b}}ic#{};{};{}\x00", columns, lines, url.as_str());

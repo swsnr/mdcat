@@ -191,7 +191,7 @@ pub fn write_event<'a, W: Write>(
                 writer,
                 &settings.terminal_capabilities,
                 &settings.theme,
-                settings.terminal_size.columns - (attrs.indent as usize),
+                settings.terminal_size.columns - attrs.indent,
             )?;
             writeln!(writer)?;
             stack
@@ -286,7 +286,7 @@ pub fn write_event<'a, W: Write>(
                     InlineAttrs { style, indent },
                 ))
                 .and_data(data.current_line(CurrentLine {
-                    length: indent as usize,
+                    length: indent,
                     trailing_space: None,
                 }))
                 .ok()
@@ -320,7 +320,7 @@ pub fn write_event<'a, W: Write>(
                 writer,
                 &settings.terminal_capabilities,
                 &settings.theme,
-                settings.terminal_size.columns - (attrs.indent as usize),
+                settings.terminal_size.columns - attrs.indent,
             )?;
             writeln!(writer)?;
             stack
@@ -476,7 +476,7 @@ pub fn write_event<'a, W: Write>(
                 &settings.terminal_capabilities,
                 &settings.theme.code_style.on_top_of(&attrs.style),
                 settings.terminal_size.columns,
-                attrs.indent as usize,
+                attrs.indent,
                 data.current_line,
                 code,
             )?;
@@ -494,7 +494,7 @@ pub fn write_event<'a, W: Write>(
                 &attrs.style,
                 marker,
             )?;
-            let length = data.current_line.length + display_width(marker);
+            let length = data.current_line.length + display_width(marker) as u16;
             Ok(stack
                 .current(Inline(ListItem(kind, state), attrs))
                 .and_data(data.current_line(CurrentLine {
@@ -530,7 +530,7 @@ pub fn write_event<'a, W: Write>(
                 &settings.terminal_capabilities,
                 &attrs.style,
                 settings.terminal_size.columns,
-                attrs.indent as usize,
+                attrs.indent,
                 data.current_line,
                 text,
             )?;
@@ -552,7 +552,7 @@ pub fn write_event<'a, W: Write>(
                 &settings.terminal_capabilities,
                 &attrs.style,
                 settings.terminal_size.columns,
-                attrs.indent as usize,
+                attrs.indent,
                 data.current_line,
                 text,
             )?;
@@ -689,7 +689,7 @@ pub fn write_event<'a, W: Write>(
             let image_state = match (settings.terminal_capabilities.image, resolved_link) {
                 (Some(capability), Some(ref url)) => capability
                     .image_protocol()
-                    .write_inline_image(writer, &resource_handler, url, &settings.terminal_size)
+                    .write_inline_image(writer, &resource_handler, url, settings.terminal_size)
                     .map_err(|error| {
                         event!(Level::ERROR, ?error, %url, "failed to render image with capability {:?}: {:#}", capability, error);
                         error
