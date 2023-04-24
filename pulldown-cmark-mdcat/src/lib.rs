@@ -142,21 +142,39 @@ where
     W: Write,
 {
     use render::*;
-    let StateAndData(final_state, final_data) = events.try_fold(
-        StateAndData(State::default(), StateData::default()),
-        |StateAndData(state, data), event| {
-            write_event(
+    if true {
+        let state = newstyle::State::initial(
+            settings.terminal_size.columns as usize,
+            settings.terminal_capabilities.style.is_some(),
+        );
+        let final_state = events.try_fold(state, |state, event| {
+            newstyle::render_event(
                 writer,
                 settings,
                 environment,
-                &resource_handler,
+                resource_handler,
                 state,
-                data,
                 event,
             )
-        },
-    )?;
-    finish(writer, settings, environment, final_state, final_data)
+        })?;
+        newstyle::finish(writer, settings, environment, resource_handler, final_state)
+    } else {
+        let StateAndData(final_state, final_data) = events.try_fold(
+            StateAndData(State::default(), StateData::default()),
+            |StateAndData(state, data), event| {
+                write_event(
+                    writer,
+                    settings,
+                    environment,
+                    &resource_handler,
+                    state,
+                    data,
+                    event,
+                )
+            },
+        )?;
+        finish(writer, settings, environment, final_state, final_data)
+    }
 }
 
 #[cfg(test)]

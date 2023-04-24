@@ -26,6 +26,7 @@ use crate::{Environment, Settings};
 
 mod data;
 mod highlighting;
+pub mod newstyle;
 mod state;
 mod write;
 
