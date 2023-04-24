@@ -1025,7 +1025,7 @@ dependencies = [
 
 [[package]]
 name = "mdcat"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
  "anyhow",
  "clap",
@@ -1046,7 +1046,7 @@ dependencies = [
 
 [[package]]
 name = "mdcat-http-reqwest"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
  "hyper",
  "mime",
@@ -1426,7 +1426,7 @@ dependencies = [
 
 [[package]]
 name = "pulldown-cmark-mdcat"
-version = "2.0.2"
+version = "2.0.3"
 dependencies = [
  "anstyle",
  "base64",
