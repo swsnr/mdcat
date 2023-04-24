@@ -20,7 +20,7 @@ mdcat in [WezTerm], with "One Light (base16)", "Gruvbox Light", and "Darcula
 
 ## Features
 
-`mdcat` works best with [iTerm2] or [Kitty], and a good terminal font with italic characters.
+`mdcat` works best with [iTerm2], [WezTerm], and [kitty], and a good terminal font with italic characters.
 Then it
 
 * nicely renders all basic CommonMark syntax (no [tables][#2] or [footnotes][#1] though),
@@ -31,14 +31,14 @@ Then it
 | Terminal                   |  Basic syntax | Syntax highlighting | Images | Jump marks |
 | :------------------------- | :-----------: | :-----------------: | :----: | :--------: |
 | Basic ANSI                 | ✓             | ✓                   |        |            |
-| Windows [ConEmu][]         | ✓             | ✓                   |        |            |
+| Windows [ConEmu]           | ✓             | ✓                   |        |            |
 | Windows 10 console         | ✓             | ✓                   |        |            |
 | Generic VTE 0.50 or newer¹ | ✓             | ✓                   |        |            |
-| [Terminology][]            | ✓             | ✓                   | ✓      |            |
-| [iTerm2][]                 | ✓             | ✓                   | ✓ 2)   | ✓          |
-| [kitty][]                  | ✓             | ✓                   | ✓ 2)   |            |
-| [WezTerm][]                | ✓             | ✓                   | ✓ 2)   |            |
-| [foot][]                   | ✓             | ✓                   |        |            |
+| [Terminology]              | ✓             | ✓                   | ✓      |            |
+| [iTerm2]                   | ✓             | ✓                   | ✓ 2)   | ✓          |
+| [kitty]                    | ✓             | ✓                   | ✓ 2)   |            |
+| [WezTerm]                  | ✓             | ✓                   | ✓ 2)   |            |
+| [foot]                     | ✓             | ✓                   |        |            |
 
 1) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
 2) SVG images are rendered with [resvg], see [SVG support].
@@ -53,6 +53,7 @@ Not supported:
 [ConEmu]: https://conemu.github.io
 [iterm2]: https://www.iterm2.com
 [WezTerm]: https://wezfurlong.org/wezterm/
+[kitty]: https://sw.kovidgoyal.net/kitty/
 [foot]: https://codeberg.org/dnkl/foot/
 [resvg]: https://github.com/RazrFalcon/resvg
 [SVG support]: https://github.com/RazrFalcon/resvg#svg-support
