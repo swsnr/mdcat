@@ -64,19 +64,8 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 
 ## Installation
 
-* 3rd party packages:
-    * [Homebrew]: `brew install mdcat`
-    * [MacPorts]: `sudo port install mdcat`
-    * [Arch Linux]: `pacman -S mdcat`
-    * Void Linux: `xbps-install -S mdcat`
-    * Nixpkgs: `nix-env -i mdcat`
-    * [Scoop]: `scoop install mdcat`
-* You can also build `mdcat` manually with `cargo install mdcat`.
-
-[Homebrew]: https://formulae.brew.sh/formula/mdcat#default
-[MacPorts]: https://ports.macports.org/port/mdcat/
-[Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
-[scoop]: https://scoop.sh/#/apps?q=mdcat
+* 3rd party packages at [Repology](https://repology.org/project/mdcat/versions)
+* You can also build `mdcat` manually with `cargo install mdcat` (see below for details).
 
 ## Building
 
