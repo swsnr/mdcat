@@ -71,14 +71,12 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
     * Void Linux: `xbps-install -S mdcat`
     * Nixpkgs: `nix-env -i mdcat`
     * [Scoop]: `scoop install mdcat`
-    * [Chocolatey]: `choco install mdcat`
 * You can also build `mdcat` manually with `cargo install mdcat`.
 
 [Homebrew]: https://formulae.brew.sh/formula/mdcat#default
 [MacPorts]: https://ports.macports.org/port/mdcat/
 [Arch Linux]: https://www.archlinux.org/packages/community/x86_64/mdcat/
 [scoop]: https://scoop.sh/#/apps?q=mdcat
-[chocolatey]: https://community.chocolatey.org/packages/mdcat
 
 ## Building
 
