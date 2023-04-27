@@ -12,10 +12,15 @@ use crate::{Environment, ResourceUrlHandler, Settings};
 use anstyle::Style;
 use pulldown_cmark::{Event, Tag};
 use std::io::{Result, Write};
+use tracing::{event, instrument, Level};
 
 mod state;
 pub use state::State;
 
+#[instrument(
+    level = "trace",
+    skip(writer, settings, _environment, _resource_handler, event)
+)]
 pub fn render_event<W: Write>(
     writer: &mut W,
     settings: &Settings,
@@ -24,11 +29,30 @@ pub fn render_event<W: Write>(
     mut state: State,
     event: Event,
 ) -> Result<State> {
+    event!(Level::TRACE, "Rendering event {:?}", event);
     match event {
-        Event::Start(Tag::Paragraph) => Ok(state.initialize_fresh_paragraph()),
-        Event::Start(Tag::Heading(_, _, _)) => {
-            todo!()
+        // We don't need to do anything when starting a new paragraph, because indentation and
+        Event::Start(Tag::Paragraph) => {
+            // TODO: Figure out whether we should flush the old paragraph here to be on the safe side.
+            // Normally we do expect end tags for everything so we should always be in clean state here.
+            assert!(
+                state.paragraph_is_empty(),
+                "Previous paragraph not flushed, this is a rendering bug!"
+            );
+            Ok(state)
         }
+        Event::End(Tag::Paragraph) => {
+            // We've written a paragraph so the paragraph which comes next needs to have a margin.
+            Ok(state.flush_paragraph(writer)?.with_margin_before())
+        }
+        Event::Start(Tag::Heading(level, _, _)) => Ok(state
+            .push_inline_style(&settings.theme.heading_style)
+            .with_line_prefix("\u{2504}".repeat(level as usize))),
+        Event::End(Tag::Heading(_, _, _)) => Ok(state
+            .pop_inline_style()
+            .flush_paragraph(writer)?
+            .clear_line_prefix()
+            .with_margin_before()),
         Event::Start(Tag::BlockQuote) => {
             todo!()
         }
@@ -60,21 +84,17 @@ pub fn render_event<W: Write>(
             todo!()
         }
         Event::Start(Tag::Emphasis) => Ok(state.toggle_italic()),
+        Event::End(Tag::Emphasis) => Ok(state.toggle_italic()),
         Event::Start(Tag::Strong) => Ok(state.push_inline_style(&Style::new().bold())),
+        Event::End(Tag::Strong) => Ok(state.pop_inline_style()),
         Event::Start(Tag::Strikethrough) => {
             Ok(state.push_inline_style(&Style::new().strikethrough()))
         }
+        Event::End(Tag::Strikethrough) => Ok(state.pop_inline_style()),
         Event::Start(Tag::Link(_, _, _)) => {
             todo!()
         }
         Event::Start(Tag::Image(_, _, _)) => {
-            todo!()
-        }
-        Event::End(Tag::Paragraph) => {
-            // We've written a paragraph so the paragraph which comes next needs to have a margin.
-            Ok(state.flush_paragraph(writer)?.with_margin_before())
-        }
-        Event::End(Tag::Heading(_, _, _)) => {
             todo!()
         }
         Event::End(Tag::BlockQuote) => {
@@ -101,9 +121,7 @@ pub fn render_event<W: Write>(
         Event::End(Tag::TableCell) => {
             todo!()
         }
-        Event::End(Tag::Emphasis) => Ok(state.toggle_italic()),
-        Event::End(Tag::Strong) => Ok(state.pop_inline_style()),
-        Event::End(Tag::Strikethrough) => Ok(state.pop_inline_style()),
+
         Event::End(Tag::Link(_, _, _)) => {
             todo!()
         }

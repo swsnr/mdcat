@@ -12,12 +12,14 @@ use textwrap::{wrap, Options, WrapAlgorithm};
 
 use crate::theme::CombineStyle;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Indent {
     /// The amount of whitespace to add before the initial line of this paragraph.
     pub initial_indent: u16,
     /// The amount of whitespace to add before any subsequent lines in this paragraph.
     pub subsequent_indent: u16,
+    /// A prefix to prepend between the indent and the text of every line.
+    pub prefix: Option<String>,
 }
 
 impl Indent {
@@ -26,6 +28,7 @@ impl Indent {
         Self {
             initial_indent: 0,
             subsequent_indent: 0,
+            prefix: None,
         }
     }
 }
@@ -93,12 +96,17 @@ pub struct State {
 impl State {
     /// Create the initial state.
     pub fn initial(text_width: usize, styling_enabled: bool) -> Self {
-        // TODO: Don't use a boolean parameter here
+        // TODO: Don't use a boolean parameter here, but a proper enum
         Self {
             text_width,
             styling_enabled,
             paragraph: Paragraph::empty_no_margin(),
         }
+    }
+
+    /// Whether the current paragraph is empty.
+    pub fn paragraph_is_empty(&self) -> bool {
+        self.paragraph.is_empty()
     }
 
     /// Flush the current paragraph to the given sink.
@@ -110,8 +118,17 @@ impl State {
         if let Margin::MarginBefore = self.paragraph.margin {
             writeln!(sink)?;
         }
-        let initial_indent = " ".repeat(self.paragraph.indent.initial_indent as usize);
-        let subsequent_indent = " ".repeat(self.paragraph.indent.subsequent_indent as usize);
+        let indent = &self.paragraph.indent;
+        let initial_indent = format!(
+            "{:indent$}",
+            indent.prefix.as_ref().map(|s| s.as_str()).unwrap_or(""),
+            indent = indent.initial_indent as usize
+        );
+        let subsequent_indent = format!(
+            "{:indent$}",
+            indent.prefix.as_ref().map(|s| s.as_str()).unwrap_or(""),
+            indent = indent.subsequent_indent as usize
+        );
         let options = Options::new(self.text_width)
             .initial_indent(&initial_indent)
             .subsequent_indent(&subsequent_indent)
@@ -125,18 +142,6 @@ impl State {
         Ok(self)
     }
 
-    /// Initialize a fresh paragraph.
-    ///
-    /// Flush current paragraph and initialize a new paragraph, unless the current paragraph is
-    /// empty.  In this case just keep the current paragraph.
-    pub fn initialize_fresh_paragraph(self) -> Self {
-        if self.paragraph.is_empty() {
-            self
-        } else {
-            todo!()
-        }
-    }
-
     /// A sink to write contents into the current paragraph.
     pub fn sink(&mut self) -> &mut dyn Write {
         &mut self.paragraph.contents
@@ -145,6 +150,18 @@ impl State {
     /// Require a margin before the next paragraph.
     pub fn with_margin_before(mut self) -> Self {
         self.paragraph.margin = Margin::MarginBefore;
+        self
+    }
+
+    /// Set the given `prefix` for every wrapped line in the current paragraph.
+    pub fn with_line_prefix(mut self, prefix: String) -> Self {
+        self.paragraph.indent.prefix = Some(prefix);
+        self
+    }
+
+    /// Clear the prefix for this paragraph.
+    pub fn clear_line_prefix(mut self) -> Self {
+        self.paragraph.indent.prefix = None;
         self
     }
 
