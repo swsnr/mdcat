@@ -8,6 +8,7 @@ use std::fmt::Write;
 use std::io::Result;
 
 use anstyle::{Effects, Style};
+use textwrap::core::display_width;
 use textwrap::{wrap, Options, WrapAlgorithm};
 
 use crate::theme::CombineStyle;
@@ -88,17 +89,17 @@ pub struct State {
     /// The current paragraph.
     paragraph: Paragraph,
     /// The maximum text width.
-    text_width: usize,
+    column_width: usize,
     /// Whether styling is enabled.
     styling_enabled: bool,
 }
 
 impl State {
     /// Create the initial state.
-    pub fn initial(text_width: usize, styling_enabled: bool) -> Self {
+    pub fn initial(column_width: usize, styling_enabled: bool) -> Self {
         // TODO: Don't use a boolean parameter here, but a proper enum
         Self {
-            text_width,
+            column_width,
             styling_enabled,
             paragraph: Paragraph::empty_no_margin(),
         }
@@ -129,7 +130,7 @@ impl State {
             indent.prefix.as_ref().map(|s| s.as_str()).unwrap_or(""),
             indent = indent.subsequent_indent as usize
         );
-        let options = Options::new(self.text_width)
+        let options = Options::new(self.column_width)
             .initial_indent(&initial_indent)
             .subsequent_indent(&subsequent_indent)
             // TODO: Change to optimal fit once the new algorithm works in general
@@ -147,6 +148,21 @@ impl State {
         &mut self.paragraph.contents
     }
 
+    /// Get the text width of subsequent lines in this paragraph.
+    ///
+    /// The text width is the width of the actual text, i.e. column width minus indent and prefix
+    /// length.
+    pub fn subsequent_text_width(&self) -> usize {
+        self.column_width
+            - self.paragraph.indent.subsequent_indent as usize
+            - self
+                .paragraph
+                .indent
+                .prefix
+                .as_ref()
+                .map_or(0, |p| display_width(p))
+    }
+
     /// Require a margin before the next paragraph.
     pub fn with_margin_before(mut self) -> Self {
         self.paragraph.margin = Margin::MarginBefore;
@@ -162,6 +178,20 @@ impl State {
     /// Clear the prefix for this paragraph.
     pub fn clear_line_prefix(mut self) -> Self {
         self.paragraph.indent.prefix = None;
+        self
+    }
+
+    /// Add the given amount to the overall indent.
+    pub fn indent(mut self, indent: u16) -> Self {
+        self.paragraph.indent.initial_indent += indent;
+        self.paragraph.indent.subsequent_indent += indent;
+        self
+    }
+
+    /// Subtract the given amount to the overall indent.
+    pub fn dedent(mut self, indent: u16) -> Self {
+        self.paragraph.indent.initial_indent -= indent;
+        self.paragraph.indent.subsequent_indent -= indent;
         self
     }
 

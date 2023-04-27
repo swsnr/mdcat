@@ -31,16 +31,9 @@ pub fn render_event<W: Write>(
 ) -> Result<State> {
     event!(Level::TRACE, "Rendering event {:?}", event);
     match event {
-        // We don't need to do anything when starting a new paragraph, because indentation and
-        Event::Start(Tag::Paragraph) => {
-            // TODO: Figure out whether we should flush the old paragraph here to be on the safe side.
-            // Normally we do expect end tags for everything so we should always be in clean state here.
-            assert!(
-                state.paragraph_is_empty(),
-                "Previous paragraph not flushed, this is a rendering bug!"
-            );
-            Ok(state)
-        }
+        // We don't need to do anything when starting a new paragraph, because indentation and styling
+        // are already set up by previous tags.
+        Event::Start(Tag::Paragraph) => Ok(state),
         Event::End(Tag::Paragraph) => {
             // We've written a paragraph so the paragraph which comes next needs to have a margin.
             Ok(state.flush_paragraph(writer)?.with_margin_before())
@@ -53,9 +46,8 @@ pub fn render_event<W: Write>(
             .flush_paragraph(writer)?
             .clear_line_prefix()
             .with_margin_before()),
-        Event::Start(Tag::BlockQuote) => {
-            todo!()
-        }
+        Event::Start(Tag::BlockQuote) => Ok(state.toggle_italic().indent(4)),
+        Event::End(Tag::BlockQuote) => Ok(state.toggle_italic().dedent(4)),
         Event::Start(Tag::CodeBlock(_)) => {
             todo!()
         }
@@ -95,9 +87,6 @@ pub fn render_event<W: Write>(
             todo!()
         }
         Event::Start(Tag::Image(_, _, _)) => {
-            todo!()
-        }
-        Event::End(Tag::BlockQuote) => {
             todo!()
         }
         Event::End(Tag::CodeBlock(_)) => {
@@ -148,7 +137,17 @@ pub fn render_event<W: Write>(
             todo!()
         }
         Event::Rule => {
-            todo!()
+            // A rule is effectively a paragraph on its own, so let's check that the previous
+            // paragraph is flushed.
+            assert!(
+                state.paragraph_is_empty(),
+                "Previous paragraph not flushed, this is a rendering bug!"
+            );
+            let rule_style = Style::new().fg_color(Some(settings.theme.rule_color));
+            let rule_length = state.subsequent_text_width();
+            let mut state = state.push_inline_style(&rule_style);
+            write!(state.sink(), "{}", "\u{2550}".repeat(rule_length)).unwrap();
+            state.pop_inline_style().flush_paragraph(writer)
         }
         Event::TaskListMarker(_) => {
             todo!()
