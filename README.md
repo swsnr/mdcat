@@ -30,18 +30,19 @@ Then it
 
 | Terminal                   |  Basic syntax | Syntax highlighting | Images | Jump marks |
 | :------------------------- | :-----------: | :-----------------: | :----: | :--------: |
-| Basic ANSI                 | ✓             | ✓                   |        |            |
+| Basic ANSI¹                | ✓             | ✓                   |        |            |
 | Windows [ConEmu]           | ✓             | ✓                   |        |            |
 | Windows 10 console         | ✓             | ✓                   |        |            |
-| Generic VTE 0.50 or newer¹ | ✓             | ✓                   |        |            |
+| Generic VTE 0.50 or newer² | ✓             | ✓                   |        |            |
 | [Terminology]              | ✓             | ✓                   | ✓      |            |
-| [iTerm2]                   | ✓             | ✓                   | ✓ 2)   | ✓          |
-| [kitty]                    | ✓             | ✓                   | ✓ 2)   |            |
-| [WezTerm]                  | ✓             | ✓                   | ✓ 2)   |            |
-| [foot]                     | ✓             | ✓                   |        |            |
+| [iTerm2]                   | ✓             | ✓                   | ✓³     | ✓          |
+| [kitty]                    | ✓             | ✓                   | ✓³     |            |
+| [WezTerm]                  | ✓             | ✓                   | ✓³     |            |
 
-1) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
-2) SVG images are rendered with [resvg], see [SVG support].
+1) mdcat requires that the terminal supports strikethrough formatting and [inline links][osc8].
+    It will not render strikethrough text and links correctly on terminals that don't support these (e.g. the Linux text console)
+2) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
+3) SVG images are rendered with [resvg], see [SVG support].
 
 Not supported:
 
@@ -54,7 +55,6 @@ Not supported:
 [iterm2]: https://www.iterm2.com
 [WezTerm]: https://wezfurlong.org/wezterm/
 [kitty]: https://sw.kovidgoyal.net/kitty/
-[foot]: https://codeberg.org/dnkl/foot/
 [resvg]: https://github.com/RazrFalcon/resvg
 [SVG support]: https://github.com/RazrFalcon/resvg#svg-support
 
