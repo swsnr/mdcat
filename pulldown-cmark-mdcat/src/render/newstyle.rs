@@ -207,8 +207,10 @@ pub fn render_event<W: Write>(
             write!(state.sink(), "{}", "\u{2550}".repeat(rule_length)).unwrap();
             state.pop_inline_style().flush_paragraph(writer)
         }
-        Event::TaskListMarker(_) => {
-            todo!()
+        Event::TaskListMarker(checked) => {
+            let marker = if checked { "\u{2611}" } else { "\u{2610}" };
+            write!(state.sink(), "{marker} ").unwrap();
+            Ok(state)
         }
         Event::FootnoteReference(_) => {
             panic!("Footnotes are not supported yet, see https://github.com/swsnr/mdcat/issues/1")
