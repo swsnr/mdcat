@@ -15,6 +15,7 @@ use std::io::{Result, Write};
 use tracing::{event, instrument, Level};
 
 mod state;
+use crate::render::newstyle::state::List;
 pub use state::State;
 
 #[instrument(
@@ -36,7 +37,13 @@ pub fn render_event<W: Write>(
         Event::Start(Tag::Paragraph) => Ok(state),
         Event::End(Tag::Paragraph) => {
             // We've written a paragraph so the paragraph which comes next needs to have a margin.
-            Ok(state.flush_paragraph(writer)?.with_margin_before())
+            // We also reset the initial indentation to subsequent indentation, because the next
+            // paragraph should be indented like subsequent text, unless there's another special
+            // block again, which changes the initial indentation.
+            Ok(state
+                .flush_paragraph(writer)?
+                .with_margin_before()
+                .reset_initial_indent())
         }
         Event::Start(Tag::Heading(level, _, _)) => Ok(state
             .push_inline_style(&settings.theme.heading_style)
@@ -51,11 +58,71 @@ pub fn render_event<W: Write>(
         Event::Start(Tag::CodeBlock(_)) => {
             todo!()
         }
-        Event::Start(Tag::List(_)) => {
+        Event::End(Tag::CodeBlock(_)) => {
             todo!()
         }
+        Event::Start(Tag::List(first_item)) => {
+            let state = if state.paragraph_is_empty() {
+                state
+            } else {
+                // The current paragraph is not empty, i.e. was not yet flushed.  This means we're
+                // in a list without paragraphs and started a new nested list.  In this case the
+                // list start occurs right in inline text, meaning there was no event to flush the
+                // paragraph yet.
+                //
+                // So let's flush out the paragraph, reset initial indentation to subsequent
+                // indentation (so that the next list item starts indented), and then also remove
+                // the margin before the next paragraph, because lists without paragraphs render
+                // condensed.
+                state
+                    .flush_paragraph(writer)?
+                    .reset_initial_indent()
+                    .no_margin_before()
+            };
+            Ok(match first_item {
+                None => state.push_unordered_list(),
+                Some(number) => state.push_ordered_list(number),
+            })
+        }
+        Event::End(Tag::List(_)) => {
+            // We don't need to flush anything here because we already flush paragraphs at the end
+            // of each list item.
+            let (state, _) = state.pop_current_list();
+            Ok(state.with_margin_before())
+        }
         Event::Start(Tag::Item) => {
-            todo!()
+            let (state, list) = state.pop_current_list();
+            Ok(match list {
+                List::Unordered => {
+                    let mut state = state.indent_subsequent(2);
+                    write!(state.sink(), "\u{2022} ").unwrap();
+                    state.push_unordered_list()
+                }
+                List::Ordered(item_no) => {
+                    let mut state = state.indent_subsequent(4);
+                    write!(state.sink(), "{item_no:>2}. ").unwrap();
+                    state.push_ordered_list(item_no)
+                }
+            })
+        }
+        Event::End(Tag::Item) => {
+            let state = if state.paragraph_is_empty() {
+                // If the current paragraph is already empty the entire list item was already
+                // flushed out; this means there were paragraphs inside the list item, and we need
+                // to ensure there's a margin before the next item.
+                state.with_margin_before()
+            } else {
+                // Otherwise there's the list item text is still in the paragraph, meaning this item
+                // only contains inline text.  Flush it to the terminal, and make sure that there's
+                // _no_ margin before the next item.
+                state.flush_paragraph(writer)?.no_margin_before()
+            };
+            let (state, list) = state.pop_current_list();
+            Ok(match list {
+                List::Unordered => state.dedent_subsequent(2).push_unordered_list(),
+                List::Ordered(no) => state.dedent_subsequent(4).push_ordered_list(no + 1),
+            }
+            .reset_initial_indent())
         }
         Event::Start(Tag::FootnoteDefinition(_)) => {
             panic!("Footnotes are not supported yet, see https://github.com/swsnr/mdcat/issues/1")
@@ -87,15 +154,6 @@ pub fn render_event<W: Write>(
             todo!()
         }
         Event::Start(Tag::Image(_, _, _)) => {
-            todo!()
-        }
-        Event::End(Tag::CodeBlock(_)) => {
-            todo!()
-        }
-        Event::End(Tag::List(_)) => {
-            todo!()
-        }
-        Event::End(Tag::Item) => {
             todo!()
         }
         Event::End(Tag::Table(_)) => {

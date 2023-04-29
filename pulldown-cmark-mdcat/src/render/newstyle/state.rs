@@ -43,6 +43,14 @@ pub enum Margin {
     NoMargin,
 }
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+pub enum List {
+    /// An unordered list
+    Unordered,
+    /// An ordered list with the given number for the next item.
+    Ordered(u64),
+}
+
 /// State for current paragraph.
 #[derive(Debug, Clone)]
 struct Paragraph {
@@ -59,6 +67,8 @@ struct Paragraph {
     /// The top-most style is what's currently used for rendering, and lower styles denote what style
     /// will become active again when the current inline item ends.
     inline_styles: Vec<Style>,
+    /// List this paragraph is contained in and any parent lists
+    list_level: Vec<List>,
 }
 
 impl Paragraph {
@@ -74,6 +84,8 @@ impl Paragraph {
             contents: String::with_capacity(4096),
             // 10 levels of nested styles would be a lot already.
             inline_styles: Vec::with_capacity(10),
+            // Likewise 10 nested lists would be a lot.
+            list_level: Vec::with_capacity(10),
         }
     }
 
@@ -115,6 +127,10 @@ impl State {
     /// Wrap and indent the paragraph and write it to `sink`.  If required, write a margin before.
     /// Then empty the paragraph data.
     pub fn flush_paragraph<W: std::io::Write>(mut self, sink: &mut W) -> Result<Self> {
+        if self.paragraph_is_empty() {
+            // If the paragraph is empty do nothing, because there's nothing to be written.
+            return Ok(self);
+        }
         // Write margin before if required
         if let Margin::MarginBefore = self.paragraph.margin {
             writeln!(sink)?;
@@ -163,6 +179,12 @@ impl State {
                 .map_or(0, |p| display_width(p))
     }
 
+    /// Require no margin before the next paragraph.
+    pub fn no_margin_before(mut self) -> Self {
+        self.paragraph.margin = Margin::NoMargin;
+        self
+    }
+
     /// Require a margin before the next paragraph.
     pub fn with_margin_before(mut self) -> Self {
         self.paragraph.margin = Margin::MarginBefore;
@@ -181,17 +203,32 @@ impl State {
         self
     }
 
-    /// Add the given amount to the overall indent.
+    /// Add the given amount to the overall indentation.
     pub fn indent(mut self, indent: u16) -> Self {
         self.paragraph.indent.initial_indent += indent;
+        self.indent_subsequent(indent)
+    }
+
+    /// Add the given amount to the indentation of subsequent lines.
+    pub fn indent_subsequent(mut self, indent: u16) -> Self {
         self.paragraph.indent.subsequent_indent += indent;
         self
     }
 
-    /// Subtract the given amount to the overall indent.
+    /// Subtract the given amount to the overall indentation
     pub fn dedent(mut self, indent: u16) -> Self {
         self.paragraph.indent.initial_indent -= indent;
+        self.dedent_subsequent(indent)
+    }
+
+    /// Subtract the given amount from the indentation of subsequent lines
+    pub fn dedent_subsequent(mut self, indent: u16) -> Self {
         self.paragraph.indent.subsequent_indent -= indent;
+        self
+    }
+
+    pub fn reset_initial_indent(mut self) -> Self {
+        self.paragraph.indent.initial_indent = self.paragraph.indent.subsequent_indent;
         self
     }
 
@@ -243,5 +280,23 @@ impl State {
             }
         }
         self
+    }
+
+    /// Push an unordered list
+    pub fn push_unordered_list(mut self) -> Self {
+        self.paragraph.list_level.push(List::Unordered);
+        self
+    }
+
+    /// Push an ordered list with the given number for the next item.
+    pub fn push_ordered_list(mut self, number: u64) -> Self {
+        self.paragraph.list_level.push(List::Ordered(number));
+        self
+    }
+
+    /// Pop and return the current list, and the changed state.
+    pub fn pop_current_list(mut self) -> (Self, List) {
+        let list = self.paragraph.list_level.pop().expect("Not inside a list!");
+        (self, list)
     }
 }
