@@ -15,9 +15,7 @@ static SOLARIZED_DARK_DUMP: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/th
 static SOLARIZED_DARK: Lazy<Theme> = Lazy::new(|| syntect::dumps::from_binary(SOLARIZED_DARK_DUMP));
 pub static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new(|| Highlighter::new(&SOLARIZED_DARK));
 
-// static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new
-
-/// Write regions as ANSI 8-bit coloured text.
+/// Iterate regions as ANSI 8-bit coloured text.
 ///
 /// We use this function to simplify syntax highlighting to 8-bit ANSI values
 /// which every theme provides.  Contrary to 24 bit colours this gives us a good
@@ -32,11 +30,10 @@ pub static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new(|| Highlighter::new(&SOLAR
 ///
 /// Furthermore we completely ignore any background colour settings, to avoid
 /// conflicts with the terminal colour themes.
-pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
-    writer: &mut W,
+pub fn styled_regions<'a, I: Iterator<Item = (Style, &'a str)>>(
     regions: I,
-) -> Result<()> {
-    for (style, text) in regions {
+) -> impl Iterator<Item = (anstyle::Style, &'a str)> {
+    regions.map(|(style, text)| {
         let rgb = {
             let fg = style.foreground;
             (fg.r, fg.g, fg.b)
@@ -67,6 +64,30 @@ pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
             .set(Effects::ITALIC, font.contains(FontStyle::ITALIC))
             .set(Effects::UNDERLINE, font.contains(FontStyle::UNDERLINE));
         let style = anstyle::Style::new().fg_color(color).effects(effects);
+        (style, text)
+    })
+}
+
+/// Write regions as ANSI 8-bit coloured text.
+///
+/// We use this function to simplify syntax highlighting to 8-bit ANSI values
+/// which every theme provides.  Contrary to 24 bit colours this gives us a good
+/// guarantee that highlighting works with any terminal colour theme, whether
+/// light or dark, and saves us all the hassle of mismatching colours.
+///
+/// We assume Solarized colours here: Solarized cleanly maps to 8-bit ANSI
+/// colours so we can safely map its RGB colour values back to ANSI colours.  We
+/// do so for all accent colours, but leave "base*" colours alone: Base colours
+/// change depending on light or dark Solarized; to address both light and dark
+/// backgrounds we must map all base colours to the default terminal colours.
+///
+/// Furthermore we completely ignore any background colour settings, to avoid
+/// conflicts with the terminal colour themes.
+pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
+    writer: &mut W,
+    regions: I,
+) -> Result<()> {
+    for (style, text) in styled_regions(regions) {
         write!(writer, "{}{}{}", style.render(), text, style.render_reset())?;
     }
     Ok(())

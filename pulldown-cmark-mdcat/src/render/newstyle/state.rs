@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::fmt::Write;
+use std::fmt::{Display, Formatter, Write};
 use std::io::Result;
 
 use anstyle::{Effects, Style};
@@ -31,6 +31,34 @@ impl Indent {
             subsequent_indent: 0,
             prefix: None,
         }
+    }
+
+    /// Render the initial indent to a formatter.
+    pub fn render_initial(&self) -> IndentDisplay<'_> {
+        IndentDisplay {
+            length: self.initial_indent,
+            prefix: self.prefix.as_ref().map_or("", |s| s.as_str()),
+        }
+    }
+
+    /// Render the subsequent indent to a formatter.
+    pub fn render_subsequent(&self) -> IndentDisplay<'_> {
+        IndentDisplay {
+            length: self.initial_indent,
+            prefix: self.prefix.as_ref().map_or("", |s| s.as_str()),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct IndentDisplay<'a> {
+    prefix: &'a str,
+    length: u16,
+}
+
+impl<'a> Display for IndentDisplay<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:indent$}", self.prefix, indent = self.length as usize)
     }
 }
 
@@ -122,11 +150,25 @@ impl State {
         self.paragraph.is_empty()
     }
 
+    /// Get the margin settings for the current paragraph.
+    pub fn paragraph_margin(&self) -> Margin {
+        self.paragraph.margin
+    }
+
+    pub fn paragraph_contents(&self) -> &str {
+        &self.paragraph.contents
+    }
+
+    pub fn clear_paragraph(mut self) -> Self {
+        self.paragraph.contents.clear();
+        self
+    }
+
     /// Flush the current paragraph to the given sink.
     ///
     /// Wrap and indent the paragraph and write it to `sink`.  If required, write a margin before.
     /// Then empty the paragraph data.
-    pub fn flush_paragraph<W: std::io::Write>(mut self, sink: &mut W) -> Result<Self> {
+    pub fn flush_paragraph<W: std::io::Write>(self, sink: &mut W) -> Result<Self> {
         if self.paragraph_is_empty() {
             // If the paragraph is empty do nothing, because there's nothing to be written.
             return Ok(self);
@@ -136,16 +178,8 @@ impl State {
             writeln!(sink)?;
         }
         let indent = &self.paragraph.indent;
-        let initial_indent = format!(
-            "{:indent$}",
-            indent.prefix.as_ref().map(|s| s.as_str()).unwrap_or(""),
-            indent = indent.initial_indent as usize
-        );
-        let subsequent_indent = format!(
-            "{:indent$}",
-            indent.prefix.as_ref().map(|s| s.as_str()).unwrap_or(""),
-            indent = indent.subsequent_indent as usize
-        );
+        let initial_indent = format!("{}", indent.render_initial());
+        let subsequent_indent = format!("{}", indent.render_subsequent());
         let options = Options::new(self.column_width)
             .initial_indent(&initial_indent)
             .subsequent_indent(&subsequent_indent)
@@ -155,8 +189,7 @@ impl State {
             writeln!(sink, "{line}")?;
         }
         // The paragraph was written so erase everything.
-        self.paragraph.contents.clear();
-        Ok(self)
+        Ok(self.clear_paragraph())
     }
 
     /// A sink to write contents into the current paragraph.
@@ -203,14 +236,18 @@ impl State {
         self
     }
 
+    pub fn paragraph_indent(&self) -> &Indent {
+        &self.paragraph.indent
+    }
+
     /// Add the given amount to the overall indentation.
-    pub fn indent(mut self, indent: u16) -> Self {
+    pub fn add_indent(mut self, indent: u16) -> Self {
         self.paragraph.indent.initial_indent += indent;
-        self.indent_subsequent(indent)
+        self.add_subsequent_indent(indent)
     }
 
     /// Add the given amount to the indentation of subsequent lines.
-    pub fn indent_subsequent(mut self, indent: u16) -> Self {
+    pub fn add_subsequent_indent(mut self, indent: u16) -> Self {
         self.paragraph.indent.subsequent_indent += indent;
         self
     }

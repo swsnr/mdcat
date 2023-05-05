@@ -10,12 +10,16 @@
 
 use crate::{Environment, ResourceUrlHandler, Settings};
 use anstyle::Style;
-use pulldown_cmark::{Event, Tag};
+use pulldown_cmark::{CodeBlockKind, Event, Tag};
 use std::io::{Result, Write};
+use syntect::highlighting::{HighlightIterator, HighlightState};
+use syntect::parsing::{ParseState, ScopeStack};
+use syntect::util::LinesWithEndings;
 use tracing::{event, instrument, Level};
 
 mod state;
-use crate::render::newstyle::state::List;
+use crate::render::highlighting::{styled_regions, HIGHLIGHTER};
+use crate::render::newstyle::state::{List, Margin};
 pub use state::State;
 
 #[instrument(
@@ -45,6 +49,7 @@ pub fn render_event<W: Write>(
                 .with_margin_before()
                 .reset_initial_indent())
         }
+        // TODO: Add heading marks in iterm2!
         Event::Start(Tag::Heading(level, _, _)) => Ok(state
             .push_inline_style(&settings.theme.heading_style)
             .with_line_prefix("\u{2504}".repeat(level as usize))),
@@ -53,13 +58,106 @@ pub fn render_event<W: Write>(
             .flush_paragraph(writer)?
             .clear_line_prefix()
             .with_margin_before()),
-        Event::Start(Tag::BlockQuote) => Ok(state.toggle_italic().indent(4)),
+        Event::Start(Tag::BlockQuote) => Ok(state.toggle_italic().add_indent(4)),
         Event::End(Tag::BlockQuote) => Ok(state.toggle_italic().dedent(4)),
         Event::Start(Tag::CodeBlock(_)) => {
-            todo!()
+            assert!(
+                state.paragraph_is_empty(),
+                "Paragraph not flushed before code block start"
+            );
+            // Do nothing because we'll just collect the code block text in the current paragraph,
+            // and then write it out at the end tag.
+            Ok(state)
         }
-        Event::End(Tag::CodeBlock(_)) => {
-            todo!()
+        Event::End(Tag::CodeBlock(kind)) => {
+            // The current paragraph now contains the literal contents of the code block.  We write
+            // the border, flush the paragraph as literal paragraph, and then write a border
+            // afterwards.
+            let border_style = if settings.terminal_capabilities.style.is_some() {
+                Style::new().fg_color(Some(settings.theme.code_block_border_color))
+            } else {
+                Style::new()
+            };
+            let border = "\u{2500}".repeat(settings.terminal_size.columns.min(20) as usize);
+            // Write margin before if required
+            if let Margin::MarginBefore = state.paragraph_margin() {
+                writeln!(writer)?;
+            }
+            writeln!(
+                writer,
+                "{indent}{0}{border}{1}",
+                border_style.render(),
+                border_style.render_reset(),
+                indent = state.paragraph_indent().render_initial()
+            )?;
+            // We first check whether styled rendering is enabled, so that we don't need to check this
+            // again when highlighting code which avoids needless parsing of the contained code, and
+            // makes the branch which highlights simpler.
+            let syntax = settings
+                .terminal_capabilities
+                .style
+                .and(match &kind {
+                    CodeBlockKind::Indented => None,
+                    CodeBlockKind::Fenced(s) if s.is_empty() => None,
+                    CodeBlockKind::Fenced(s) => Some(s),
+                })
+                .and_then(|token| settings.syntax_set.find_syntax_by_token(token));
+            match syntax {
+                None => {
+                    event!(
+                        Level::DEBUG,
+                        "Rendering code block of kind {:?} as literal block",
+                        kind
+                    );
+                    let code_style = if settings.terminal_capabilities.style.is_some() {
+                        &settings.theme.code_style
+                    } else {
+                        // A no-op in this case.
+                        &border_style
+                    };
+                    for line in LinesWithEndings::from(state.paragraph_contents()) {
+                        write!(
+                            writer,
+                            "{indent}{0}{line}{1}",
+                            code_style.render(),
+                            code_style.render_reset(),
+                            indent = state.paragraph_indent().render_subsequent()
+                        )?;
+                    }
+                }
+                Some(syntax) => {
+                    event!(
+                        Level::DEBUG,
+                        "Rendering code block of kind {:?} as highlighted block",
+                        kind
+                    );
+                    let mut parse_state = ParseState::new(syntax);
+                    let mut highlight_state = HighlightState::new(&HIGHLIGHTER, ScopeStack::new());
+                    for line in LinesWithEndings::from(state.paragraph_contents()) {
+                        let tokens = parse_state
+                            .parse_line(line, settings.syntax_set)
+                            .expect("Parsing should really not fail!");
+                        let regions = styled_regions(HighlightIterator::new(
+                            &mut highlight_state,
+                            &tokens,
+                            line,
+                            &HIGHLIGHTER,
+                        ));
+                        write!(writer, "{}", state.paragraph_indent().render_subsequent())?;
+                        for (style, text) in regions {
+                            write!(writer, "{0}{text}{1}", style.render(), style.render_reset())?;
+                        }
+                    }
+                }
+            }
+            writeln!(
+                writer,
+                "{indent}{0}{border}{1}",
+                border_style.render(),
+                border_style.render_reset(),
+                indent = state.paragraph_indent().render_subsequent()
+            )?;
+            Ok(state.clear_paragraph().reset_initial_indent())
         }
         Event::Start(Tag::List(first_item)) => {
             let state = if state.paragraph_is_empty() {
@@ -94,12 +192,12 @@ pub fn render_event<W: Write>(
             let (state, list) = state.pop_current_list();
             Ok(match list {
                 List::Unordered => {
-                    let mut state = state.indent_subsequent(2);
+                    let mut state = state.add_subsequent_indent(2);
                     write!(state.sink(), "\u{2022} ").unwrap();
                     state.push_unordered_list()
                 }
                 List::Ordered(item_no) => {
-                    let mut state = state.indent_subsequent(4);
+                    let mut state = state.add_subsequent_indent(4);
                     write!(state.sink(), "{item_no:>2}. ").unwrap();
                     state.push_ordered_list(item_no)
                 }
