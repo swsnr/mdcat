@@ -287,11 +287,11 @@ pub fn render_event<W: Write>(
         }
         // We just ignore soft breaks because we wrap and fill
         Event::SoftBreak => Ok(state),
-        Event::HardBreak => {
-            // Idea: Let's treat this as a paragraph break, flush the current one and render the
-            // next one, but without any margin.
-            todo!()
-        }
+        // Treat a hard break as paragraph end, but suppress the margin afterwards.
+        Event::HardBreak => Ok(state
+            .flush_paragraph(writer)?
+            .reset_initial_indent()
+            .no_margin_before()),
         Event::Rule => {
             // A rule is effectively a paragraph on its own, so let's check that the previous
             // paragraph is flushed.
