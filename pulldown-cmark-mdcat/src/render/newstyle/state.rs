@@ -58,7 +58,13 @@ pub struct IndentDisplay<'a> {
 
 impl<'a> Display for IndentDisplay<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:indent$}", self.prefix, indent = self.length as usize)
+        write!(
+            f,
+            "{:indent$}{}",
+            "",
+            self.prefix,
+            indent = self.length as usize
+        )
     }
 }
 
