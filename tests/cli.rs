@@ -94,7 +94,7 @@ mod cli {
         let mut stderr = Vec::new();
         drop(child.stdout.take());
 
-        write!(stdin, "Hello world\n").unwrap();
+        writeln!(stdin, "Hello world").unwrap();
         drop(stdin);
         child
             .stderr
