@@ -113,7 +113,25 @@ fn test_with_golden_file<S: AsRef<Path>, T: AsRef<Path>>(
     }
 }
 
-/// Test basic rendering.
+/// Test rendering without any formatting, just to test the general layout
+#[test]
+fn dump() {
+    let settings = Settings {
+        terminal_capabilities: TerminalProgram::Dumb.capabilities(),
+        terminal_size: TerminalSize::default(),
+        theme: Theme::default(),
+        syntax_set: &SYNTAX_SET,
+    };
+    for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
+        test_with_golden_file(
+            markdown_file.unwrap(),
+            "tests/render/golden/dump",
+            &settings,
+        )
+    }
+}
+
+/// Test rendering without inline images.
 #[test]
 fn ansi_only() {
     let settings = Settings {
@@ -131,6 +149,7 @@ fn ansi_only() {
     }
 }
 
+/// Test rendering with inline images and jump marks.
 #[test]
 fn iterm2() {
     let settings = Settings {
