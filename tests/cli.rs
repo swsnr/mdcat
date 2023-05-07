@@ -10,7 +10,7 @@
 
 mod cli {
     use std::ffi::OsStr;
-    use std::io::Read;
+    use std::io::{Read, Write};
     use std::process::{Command, Output, Stdio};
 
     fn cargo_mdcat() -> Command {
@@ -83,23 +83,28 @@ mod cli {
     #[test]
     fn ignore_broken_pipe() {
         let mut child = cargo_mdcat()
-            .arg("sample/common-mark.md")
+            .stdin(Stdio::piped())
+            // .arg("sample/common-mark.md")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
             .unwrap();
 
+        let mut stdin = child.stdin.take().unwrap();
         let mut stderr = Vec::new();
         drop(child.stdout.take());
+
+        write!(stdin, "Hello world\n").unwrap();
+        drop(stdin);
         child
             .stderr
             .as_mut()
             .unwrap()
             .read_to_end(&mut stderr)
             .unwrap();
+        let exit_code = child.wait().unwrap();
 
-        assert!(child.wait().unwrap().success());
-
-        similar_asserts::assert_eq!(String::from_utf8_lossy(&stderr), "")
+        similar_asserts::assert_eq!(String::from_utf8_lossy(&stderr), "");
+        assert_eq!(exit_code.code().unwrap(), 0);
     }
 }
