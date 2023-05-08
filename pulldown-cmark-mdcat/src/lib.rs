@@ -51,6 +51,7 @@ use tracing::instrument;
 use url::Url;
 
 pub use crate::resources::ResourceUrlHandler;
+use crate::terminal::capabilities::StyleCapability;
 pub use crate::terminal::capabilities::TerminalCapabilities;
 pub use crate::terminal::{TerminalProgram, TerminalSize};
 pub use crate::theme::Theme;
@@ -143,10 +144,11 @@ where
 {
     use render::*;
     if true {
-        let state = newstyle::State::initial(
-            settings.terminal_size.columns as usize,
-            settings.terminal_capabilities.style.is_some(),
-        );
+        let use_styling = match settings.terminal_capabilities.style {
+            None => false,
+            Some(StyleCapability::Ansi) => true,
+        };
+        let state = newstyle::State::initial(settings.terminal_size.columns as usize, use_styling);
         let final_state = events.try_fold(state, |state, event| {
             newstyle::render_event(
                 writer,

@@ -8,6 +8,7 @@ use std::fmt::{Display, Formatter, Write};
 use std::io::Result;
 
 use anstyle::{Effects, Style};
+use pulldown_cmark::CowStr;
 use textwrap::core::display_width;
 use textwrap::{wrap, Options, WrapAlgorithm};
 
@@ -103,6 +104,11 @@ struct Paragraph {
     inline_styles: Vec<Style>,
     /// List this paragraph is contained in and any parent lists
     list_level: Vec<List>,
+    /// Level of link nesting inside links.
+    ///
+    /// Required because we can't really nest inline links in a terminal, so we need to keep track
+    /// of whether we already wrote an inline inline.
+    link_nesting: u16,
 }
 
 impl Paragraph {
@@ -120,6 +126,7 @@ impl Paragraph {
             inline_styles: Vec::with_capacity(10),
             // Likewise 10 nested lists would be a lot.
             list_level: Vec::with_capacity(10),
+            link_nesting: 0,
         }
     }
 
@@ -129,18 +136,33 @@ impl Paragraph {
     }
 }
 
+/// The definition of a reference link, i.e. a numeric index for a link.
+#[derive(Debug, PartialEq)]
+pub struct LinkReferenceDefinition<'a> {
+    /// The reference index of this link.
+    pub(crate) index: u16,
+    /// The link target as it appeared in Markdown.
+    pub(crate) target: CowStr<'a>,
+    /// The link title as it appeared in Markdown.
+    pub(crate) title: CowStr<'a>,
+    /// The style to use for the link.
+    pub(crate) style: Style,
+}
+
 /// Rendering state
-#[derive(Debug, Clone)]
-pub struct State {
+#[derive(Debug)]
+pub struct State<'a> {
     /// The current paragraph.
     paragraph: Paragraph,
     /// The maximum text width.
     column_width: usize,
     /// Whether styling is enabled.
     styling_enabled: bool,
+    /// Pending links
+    pending_link_definitions: Vec<LinkReferenceDefinition<'a>>,
 }
 
-impl State {
+impl State<'_> {
     /// Create the initial state.
     pub fn initial(column_width: usize, styling_enabled: bool) -> Self {
         // TODO: Don't use a boolean parameter here, but a proper enum
@@ -148,6 +170,7 @@ impl State {
             column_width,
             styling_enabled,
             paragraph: Paragraph::empty_no_margin(),
+            pending_link_definitions: Vec::with_capacity(10),
         }
     }
 
@@ -161,10 +184,12 @@ impl State {
         self.paragraph.margin
     }
 
+    /// Get the contents of the current paragraph.
     pub fn paragraph_contents(&self) -> &str {
         &self.paragraph.contents
     }
 
+    /// Clear all contents in the current paragraph.
     pub fn clear_paragraph(mut self) -> Self {
         self.paragraph.contents.clear();
         self
@@ -341,5 +366,50 @@ impl State {
     pub fn pop_current_list(mut self) -> (Self, List) {
         let list = self.paragraph.list_level.pop().expect("Not inside a list!");
         (self, list)
+    }
+
+    /// Attempt to push an inline link into this state.
+    ///
+    /// Return Ok(self) if the caller can write an inline link, or Err(self) if the caller cannot
+    /// use an inline link and instead needs to use a reference link.
+    pub fn try_push_inline_link(mut self) -> std::result::Result<Self, Self> {
+        if self.styling_enabled {
+            self.paragraph.link_nesting += 1;
+            if self.paragraph.link_nesting == 1 {
+                Ok(self)
+            } else {
+                Err(self)
+            }
+        } else {
+            Err(self)
+        }
+    }
+
+    /// Attempt ot pop an inline link from this state.
+    ///
+    /// Return Ok(self) if the caller wrote an inline link, or Err(self) otherwise.
+    pub fn try_pop_inline_link(mut self) -> std::result::Result<Self, Self> {
+        if self.styling_enabled {
+            if self.paragraph.link_nesting == 1 {
+                self.paragraph.link_nesting -= 1;
+                Ok(self)
+            } else {
+                if 0 < self.paragraph.link_nesting {
+                    self.paragraph.link_nesting -= 1;
+                }
+                Err(self)
+            }
+        } else {
+            Err(self)
+        }
+    }
+
+    pub fn push_link_reference(
+        mut self,
+        target: CowStr<'_>,
+        title: CowStr<'_>,
+        style: Style,
+    ) -> (Self, u16) {
+        todo!()
     }
 }

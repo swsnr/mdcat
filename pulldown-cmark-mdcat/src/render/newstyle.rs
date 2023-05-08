@@ -10,30 +10,33 @@
 
 use crate::{Environment, ResourceUrlHandler, Settings};
 use anstyle::Style;
-use pulldown_cmark::{CodeBlockKind, Event, Tag};
+use pulldown_cmark::{CodeBlockKind, Event, LinkType, Tag};
 use std::io::{Result, Write};
 use syntect::highlighting::{HighlightIterator, HighlightState};
 use syntect::parsing::{ParseState, ScopeStack};
 use syntect::util::LinesWithEndings;
 use tracing::{event, instrument, Level};
+use url::Url;
 
 mod state;
+use crate::references::UrlBase;
 use crate::render::highlighting::{styled_regions, HIGHLIGHTER};
 use crate::render::newstyle::state::{List, Margin};
+use crate::terminal::osc;
 pub use state::State;
 
 #[instrument(
     level = "trace",
-    skip(writer, settings, _environment, _resource_handler, event)
+    skip(writer, settings, environment, _resource_handler, event)
 )]
-pub fn render_event<W: Write>(
+pub fn render_event<'a, W: Write>(
     writer: &mut W,
     settings: &Settings,
-    _environment: &Environment,
+    environment: &Environment,
     _resource_handler: &dyn ResourceUrlHandler,
-    mut state: State,
+    mut state: State<'a>,
     event: Event,
-) -> Result<State> {
+) -> Result<State<'a>> {
     event!(Level::TRACE, "Rendering event {:?}", event);
     match event {
         // We don't need to do anything when starting a new paragraph, because indentation and styling
@@ -248,7 +251,43 @@ pub fn render_event<W: Write>(
             Ok(state.push_inline_style(&Style::new().strikethrough()))
         }
         Event::End(Tag::Strikethrough) => Ok(state.pop_inline_style()),
-        Event::Start(Tag::Link(_, _, _)) => {
+        Event::Start(Tag::Link(r#type, url, title)) => match state.try_push_inline_link() {
+            Err(state) => {
+                // We're not allowed to use an inline link, so let's do nothing here, and wait for the
+                // end tag to write a link definition.
+                Ok(state)
+            }
+            Ok(mut state) => {
+                // We're allowed to use an inline link, so let's attempt to resolve the (maybe relative) URL
+                // in the link into something we can click.
+                let resolved_url = if let LinkType::Email = r#type {
+                    // Create a proper URL for automatically linked things that look like mail addresses
+                    Url::parse(&format!("mailto:{url}")).ok()
+                } else {
+                    environment.resolve_reference(&url)
+                };
+                match resolved_url {
+                    None => {
+                        // We failed to resolve the URL, so let's not use an inline link, and again wait
+                        // for the end tag to write a link definition.
+                        match state.try_pop_inline_link() {
+                            Ok(state) => Ok(state),
+                            Err(_) => {
+                                // Sanity check: We're popping the inline link we were allowed to write above,
+                                // so an Err result here should never happen, and indicates a flaw in our
+                                // inline link logic.
+                                unreachable!()
+                            }
+                        }
+                    }
+                    Some(url) => {
+                        osc::set_link_url(&mut state.sink(), url, &environment.hostname)?;
+                        Ok(state)
+                    }
+                }
+            }
+        },
+        Event::End(Tag::Link(r#type, url, title)) => {
             todo!()
         }
         Event::Start(Tag::Image(_, _, _)) => {
@@ -264,10 +303,6 @@ pub fn render_event<W: Write>(
             todo!()
         }
         Event::End(Tag::TableCell) => {
-            todo!()
-        }
-
-        Event::End(Tag::Link(_, _, _)) => {
             todo!()
         }
         Event::End(Tag::Image(_, _, _)) => {

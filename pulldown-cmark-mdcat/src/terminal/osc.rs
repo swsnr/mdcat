@@ -55,7 +55,11 @@ fn url_needs_explicit_host(url: &Url) -> bool {
 /// local system instead to make `file://` URLs work properly over SSH.
 ///
 /// See <https://git.io/vd4ee#file-uris-and-the-hostname>.
-pub fn set_link_url<W: Write>(writer: &mut W, mut destination: Url, hostname: &str) -> Result<()> {
+pub fn set_link_url<W: Write + ?Sized>(
+    writer: &mut W,
+    mut destination: Url,
+    hostname: &str,
+) -> Result<()> {
     if url_needs_explicit_host(&destination) {
         destination.set_host(Some(hostname)).unwrap();
     }
@@ -67,7 +71,7 @@ pub fn clear_link<W: Write>(writer: &mut W) -> Result<()> {
     set_link(writer, "")
 }
 
-fn set_link<W: Write>(writer: &mut W, destination: &str) -> Result<()> {
+fn set_link<W: Write + ?Sized>(writer: &mut W, destination: &str) -> Result<()> {
     write_osc(writer, &format!("8;;{destination}"))
 }
 
