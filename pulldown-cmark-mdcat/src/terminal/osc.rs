@@ -48,34 +48,27 @@ fn url_needs_explicit_host(url: &Url) -> bool {
         }
 }
 
-impl Osc8Links {
-    /// Set a link to the given `destination` URL for subsequent text.
-    ///
-    /// Take ownership of `destination` to resolve `file://` URLs for localhost
-    /// and loopback addresses, and print these with the proper `hostname` of the
-    /// local system instead to make `file://` URLs work properly over SSH.
-    ///
-    /// See <https://git.io/vd4ee#file-uris-and-the-hostname>.
-    pub fn set_link_url<W: Write>(
-        &self,
-        writer: &mut W,
-        mut destination: Url,
-        hostname: &str,
-    ) -> Result<()> {
-        if url_needs_explicit_host(&destination) {
-            destination.set_host(Some(hostname)).unwrap();
-        }
-        self.set_link(writer, destination.as_str())
+/// Set a link to the given `destination` URL for subsequent text.
+///
+/// Take ownership of `destination` to resolve `file://` URLs for localhost
+/// and loopback addresses, and print these with the proper `hostname` of the
+/// local system instead to make `file://` URLs work properly over SSH.
+///
+/// See <https://git.io/vd4ee#file-uris-and-the-hostname>.
+pub fn set_link_url<W: Write>(writer: &mut W, mut destination: Url, hostname: &str) -> Result<()> {
+    if url_needs_explicit_host(&destination) {
+        destination.set_host(Some(hostname)).unwrap();
     }
+    set_link(writer, destination.as_str())
+}
 
-    /// Clear the current link if any.
-    pub fn clear_link<W: Write>(&self, writer: &mut W) -> Result<()> {
-        self.set_link(writer, "")
-    }
+/// Clear the current link if any.
+pub fn clear_link<W: Write>(writer: &mut W) -> Result<()> {
+    set_link(writer, "")
+}
 
-    fn set_link<W: Write>(&self, writer: &mut W, destination: &str) -> Result<()> {
-        write_osc(writer, &format!("8;;{destination}"))
-    }
+fn set_link<W: Write>(writer: &mut W, destination: &str) -> Result<()> {
+    write_osc(writer, &format!("8;;{destination}"))
 }
 
 #[cfg(test)]

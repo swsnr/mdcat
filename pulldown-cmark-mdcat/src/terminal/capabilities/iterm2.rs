@@ -19,11 +19,11 @@ use crate::resources::{svg, InlineImageProtocol};
 use crate::terminal::osc::write_osc;
 use crate::ResourceUrlHandler;
 
-/// Iterm2 marks.
+/// Iterm2 terminal protocols.
 #[derive(Debug, Copy, Clone)]
-pub struct ITerm2;
+pub struct ITerm2Protocol;
 
-impl ITerm2 {
+impl ITerm2Protocol {
     /// Write an iterm2 mark command to the given `writer`.
     pub fn set_mark<W: Write>(self, writer: &mut W) -> io::Result<()> {
         write_osc(writer, "1337;SetMark")
@@ -39,7 +39,7 @@ impl ITerm2 {
 /// it writes data opportunistically and hopes iTerm2 copes.  For rare formats which are not
 /// supported by macOS, this may yield false positives, i.e. this implementation might not return
 /// an error even though iTerm2 cannot actually display the image.
-impl InlineImageProtocol for ITerm2 {
+impl InlineImageProtocol for ITerm2Protocol {
     #[instrument(skip(self, writer, _terminal_size), fields(url = %url))]
     fn write_inline_image(
         &self,

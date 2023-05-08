@@ -159,9 +159,9 @@ impl KittyImageData {
 
 /// Provides access to printing images for kitty.
 #[derive(Debug, Copy, Clone)]
-pub struct KittyImages;
+pub struct KittyGraphicsProtocol;
 
-impl KittyImages {
+impl KittyGraphicsProtocol {
     /// Render mime data obtained from `url` and wrap it in a `KittyImage`.
     ///
     /// This implemention processes the image to scale it to the given `terminal_size`, and
@@ -306,7 +306,7 @@ impl KittyImages {
 ///
 /// See <https://sw.kovidgoyal.net/kitty/graphics-protocol.html#control-data-reference>
 /// for reference.
-impl InlineImageProtocol for KittyImages {
+impl InlineImageProtocol for KittyGraphicsProtocol {
     #[instrument(skip(self, writer, terminal_size))]
     fn write_inline_image(
         &self,

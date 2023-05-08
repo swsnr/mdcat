@@ -6,9 +6,8 @@
 
 //! Detect the terminal application mdcat is running on.
 
-use crate::terminal::capabilities::iterm2::ITerm2;
+use crate::terminal::capabilities::iterm2::ITerm2Protocol;
 use crate::terminal::capabilities::*;
-use crate::terminal::AnsiStyle;
 use std::fmt::{Display, Formatter};
 
 /// A terminal application.
@@ -114,8 +113,7 @@ impl TerminalProgram {
     /// Get the capabilities of this terminal emulator.
     pub fn capabilities(self) -> TerminalCapabilities {
         let ansi = TerminalCapabilities {
-            style: Some(StyleCapability::Ansi(AnsiStyle)),
-            links: Some(LinkCapability::Osc8(crate::terminal::osc::Osc8Links)),
+            style: Some(StyleCapability::Ansi),
             image: None,
             marks: None,
         };
@@ -123,17 +121,15 @@ impl TerminalProgram {
             TerminalProgram::Dumb => TerminalCapabilities::default(),
             TerminalProgram::Ansi => ansi,
             TerminalProgram::ITerm2 => ansi
-                .with_mark_capability(MarkCapability::ITerm2(ITerm2))
-                .with_image_capability(ImageCapability::ITerm2(ITerm2)),
+                .with_mark_capability(MarkCapability::ITerm2(ITerm2Protocol))
+                .with_image_capability(ImageCapability::ITerm2(ITerm2Protocol)),
             TerminalProgram::Terminology => {
                 ansi.with_image_capability(ImageCapability::Terminology(terminology::Terminology))
             }
-            TerminalProgram::Kitty => {
-                ansi.with_image_capability(ImageCapability::Kitty(self::kitty::KittyImages))
-            }
-            TerminalProgram::WezTerm => {
-                ansi.with_image_capability(ImageCapability::Kitty(self::kitty::KittyImages))
-            }
+            TerminalProgram::Kitty => ansi
+                .with_image_capability(ImageCapability::Kitty(self::kitty::KittyGraphicsProtocol)),
+            TerminalProgram::WezTerm => ansi
+                .with_image_capability(ImageCapability::Kitty(self::kitty::KittyGraphicsProtocol)),
         }
     }
 }

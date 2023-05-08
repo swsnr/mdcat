@@ -8,13 +8,11 @@
 
 // Support modules for terminal writing.
 
-mod ansi;
-mod osc;
+pub(crate) mod osc;
 mod size;
 
 pub mod capabilities;
 mod detect;
 
-pub use self::ansi::AnsiStyle;
 pub use self::detect::TerminalProgram;
 pub use self::size::TerminalSize;

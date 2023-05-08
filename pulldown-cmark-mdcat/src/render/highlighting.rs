@@ -11,8 +11,6 @@ use once_cell::sync::Lazy;
 use std::io::{Result, Write};
 use syntect::highlighting::{FontStyle, Highlighter, Style, Theme};
 
-use crate::terminal::AnsiStyle;
-
 static SOLARIZED_DARK_DUMP: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/theme.dump"));
 static SOLARIZED_DARK: Lazy<Theme> = Lazy::new(|| syntect::dumps::from_binary(SOLARIZED_DARK_DUMP));
 pub static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new(|| Highlighter::new(&SOLARIZED_DARK));
@@ -36,7 +34,6 @@ pub static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new(|| Highlighter::new(&SOLAR
 /// conflicts with the terminal colour themes.
 pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
     writer: &mut W,
-    ansi: AnsiStyle,
     regions: I,
 ) -> Result<()> {
     for (style, text) in regions {
@@ -70,7 +67,7 @@ pub fn write_as_ansi<'a, W: Write, I: Iterator<Item = (Style, &'a str)>>(
             .set(Effects::ITALIC, font.contains(FontStyle::ITALIC))
             .set(Effects::UNDERLINE, font.contains(FontStyle::UNDERLINE));
         let style = anstyle::Style::new().fg_color(color).effects(effects);
-        ansi.write_styled(writer, &style, text)?;
+        write!(writer, "{}{}{}", style.render(), text, style.render_reset())?;
     }
     Ok(())
 }

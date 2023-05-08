@@ -18,6 +18,7 @@ use crate::render::data::{CurrentLine, LinkReferenceDefinition};
 use crate::render::highlighting::HIGHLIGHTER;
 use crate::render::state::*;
 use crate::terminal::capabilities::{MarkCapability, StyleCapability, TerminalCapabilities};
+use crate::terminal::osc::{clear_link, set_link_url};
 use crate::terminal::TerminalSize;
 use crate::theme::CombineStyle;
 use crate::Theme;
@@ -35,7 +36,13 @@ pub fn write_styled<W: Write, S: AsRef<str>>(
 ) -> Result<()> {
     match capabilities.style {
         None => write!(writer, "{}", text.as_ref()),
-        Some(StyleCapability::Ansi(ansi)) => ansi.write_styled(writer, style, text),
+        Some(StyleCapability::Ansi) => write!(
+            writer,
+            "{}{}{}",
+            style.render(),
+            text.as_ref(),
+            style.render_reset()
+        ),
     }
 }
 
@@ -263,12 +270,11 @@ pub fn write_link_refs<W: Write>(
             // clickable.  This mostly helps images inside inline links which we had to write as
             // reference links because we can't nest inline links.
             if let Some(url) = environment.resolve_reference(&link.target) {
-                use crate::terminal::capabilities::LinkCapability::*;
-                match &capabilities.links {
-                    Some(Osc8(links)) => {
-                        links.set_link_url(writer, url, &environment.hostname)?;
+                match &capabilities.style {
+                    Some(StyleCapability::Ansi) => {
+                        set_link_url(writer, url, &environment.hostname)?;
                         write_styled(writer, capabilities, &link.style, link.target)?;
-                        links.clear_link(writer)?;
+                        clear_link(writer)?;
                     }
                     None => write_styled(writer, capabilities, &link.style, link.target)?,
                 };
@@ -308,7 +314,7 @@ pub fn write_start_code_block<W: Write>(
     write_indent(writer, indent)?;
 
     match (&settings.terminal_capabilities.style, block_kind) {
-        (Some(StyleCapability::Ansi(ansi)), CodeBlockKind::Fenced(name)) if !name.is_empty() => {
+        (Some(StyleCapability::Ansi), CodeBlockKind::Fenced(name)) if !name.is_empty() => {
             match settings.syntax_set.find_syntax_by_token(&name) {
                 None => Ok(LiteralBlockAttrs {
                     indent,
@@ -319,7 +325,6 @@ pub fn write_start_code_block<W: Write>(
                     let parse_state = ParseState::new(syntax);
                     let highlight_state = HighlightState::new(&HIGHLIGHTER, ScopeStack::new());
                     Ok(HighlightBlockAttrs {
-                        ansi: *ansi,
                         indent,
                         highlight_state,
                         parse_state,

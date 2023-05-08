@@ -35,7 +35,8 @@ use write::*;
 
 use crate::render::data::CurrentLine;
 use crate::render::state::MarginControl::{Margin, NoMargin};
-use crate::terminal::capabilities::LinkCapability;
+use crate::terminal::capabilities::StyleCapability;
+use crate::terminal::osc::{clear_link, set_link_url};
 pub use data::StateData;
 pub use state::State;
 pub use state::StateAndData;
@@ -418,7 +419,6 @@ pub fn write_event<'a, W: Write>(
                     .expect("syntect parsing shouldn't fail in mdcat");
                 highlighting::write_as_ansi(
                     writer,
-                    attrs.ansi,
                     HighlightIterator::new(&mut attrs.highlight_state, &ops, line, &HIGHLIGHTER),
                 )?;
                 if text.ends_with('\n') {
@@ -606,39 +606,34 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, Inline(state, attrs)), Start(Link(link_type, target, _))) => {
             let maybe_link = settings
                 .terminal_capabilities
-                .links
-                .and_then(|link_capability| {
-                    let maybe_url = if let LinkType::Email = link_type {
+                .style
+                .filter(|s| *s == StyleCapability::Ansi)
+                .and_then(|_| {
+                    if let LinkType::Email = link_type {
                         // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
                         Url::parse(&format!("mailto:{target}")).ok()
                     } else {
                         environment.resolve_reference(&target)
-                    };
-                    maybe_url.map(|url| (url, link_capability))
+                    }
                 });
 
             let (link_state, data) = match maybe_link {
                 None => (InlineText, data),
-                Some((url, capability)) => {
-                    let data = match capability {
-                        LinkCapability::Osc8(ref osc8) => {
-                            let data = match data.current_line.trailing_space.as_ref() {
-                                Some(space) => {
-                                    // Flush trailing space before starting a link
-                                    write!(writer, "{}", space)?;
-                                    let length = data.current_line.length + 1;
-                                    data.current_line(CurrentLine {
-                                        length,
-                                        trailing_space: None,
-                                    })
-                                }
-                                None => data,
-                            };
-                            osc8.set_link_url(writer, url, &environment.hostname)?;
-                            data
+                Some(url) => {
+                    let data = match data.current_line.trailing_space.as_ref() {
+                        Some(space) => {
+                            // Flush trailing space before starting a link
+                            write!(writer, "{}", space)?;
+                            let length = data.current_line.length + 1;
+                            data.current_line(CurrentLine {
+                                length,
+                                trailing_space: None,
+                            })
                         }
+                        None => data,
                     };
-                    (InlineLink(capability), data)
+                    set_link_url(writer, url, &environment.hostname)?;
+                    (InlineLink, data)
                 }
             };
 
@@ -655,12 +650,8 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(InlineLink(capability), _)), End(Link(_, _, _))) => {
-            match capability {
-                LinkCapability::Osc8(ref osc8) => {
-                    osc8.clear_link(writer)?;
-                }
-            }
+        (Stacked(stack, Inline(InlineLink, _)), End(Link(_, _, _))) => {
+            clear_link(writer)?;
             stack.pop().and_data(data).ok()
         }
         // When closing email or autolinks in inline text just return because link, being identical
@@ -697,23 +688,21 @@ pub fn write_event<'a, W: Write>(
                     .map(|_| RenderedImage)
                     .ok(),
                 (None, Some(url)) =>
-                    if let InlineLink(_) = state {
+                    if let InlineLink = state {
                         event!(Level::WARN, url = %url, "Terminal does not support images, want to render image as link but cannot: Already inside a link");
                         None
                     } else {
                         event!(Level::INFO, url = %url, "Terminal does not support images, rendering image as link");
-                        match settings.terminal_capabilities.links {
-                            Some(capability) => match capability {
-                                LinkCapability::Osc8(osc8) => {
-                                    osc8.set_link_url(writer, url, &environment.hostname)?;
-                                    Some(Inline(
-                                        InlineLink(capability),
-                                        InlineAttrs {
-                                            indent,
-                                            style: settings.theme.image_link_style.on_top_of(&style),
-                                        },
-                                    ))
-                                }
+                        match settings.terminal_capabilities.style {
+                            Some(StyleCapability::Ansi) => {
+                                set_link_url(writer, url, &environment.hostname)?;
+                                Some(Inline(
+                                    InlineLink,
+                                    InlineAttrs {
+                                        indent,
+                                        style: settings.theme.image_link_style.on_top_of(&style),
+                                    },
+                                ))
                             },
                             None => None,
                         }
@@ -724,7 +713,7 @@ pub fn write_event<'a, W: Write>(
                 event!(Level::WARN, "Rendering image {} as inline text, without link", link);
                 // Inside an inline link keep the link style; we cannot nest links so we
                 // should clarify that clicking the link follows the link target and not the image.
-                let style = if let InlineLink(_) = state {
+                let style = if let InlineLink = state {
                     style
                 } else {
                     settings.theme.image_link_style.on_top_of(&style)
@@ -742,12 +731,8 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
-            if let InlineLink(capability) = state {
-                match capability {
-                    LinkCapability::Osc8(ref osc8) => {
-                        osc8.clear_link(writer)?;
-                    }
-                }
+            if let InlineLink = state {
+                clear_link(writer)?;
                 stack.pop().and_data(data).ok()
             } else {
                 let (data, index) = data.add_link(target, title, settings.theme.image_link_style);

@@ -6,44 +6,35 @@
 
 //! Capabilities of terminal emulators.
 
-use crate::{resources::InlineImageProtocol, terminal::AnsiStyle};
+use crate::resources::InlineImageProtocol;
 
 pub mod iterm2;
 pub mod kitty;
 pub mod terminology;
 
 /// The capability of basic styling.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum StyleCapability {
-    /// The terminal supports ANSI styles.
-    Ansi(AnsiStyle),
-}
-
-/// How the terminal supports inline links.
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum LinkCapability {
-    /// The terminal supports [OSC 8] inline links.
-    ///
-    /// [OSC 8]: https://git.io/vd4ee
-    Osc8(crate::terminal::osc::Osc8Links),
+    /// The terminal supports ANSI styles including OSC 8.
+    Ansi,
 }
 
 /// The capability of the terminal to set marks.
 #[derive(Debug, Copy, Clone)]
 pub enum MarkCapability {
     /// The terminal supports iTerm2 jump marks.
-    ITerm2(self::iterm2::ITerm2),
+    ITerm2(iterm2::ITerm2Protocol),
 }
 
 /// The capability of the terminal to write images inline.
 #[derive(Debug, Copy, Clone)]
 pub enum ImageCapability {
     /// The terminal understands the terminology image protocol.
-    Terminology(self::terminology::Terminology),
+    Terminology(terminology::Terminology),
     /// The terminal understands the iterm2 image protocol.
-    ITerm2(self::iterm2::ITerm2),
-    /// The terminal understands the kitty image protocol.
-    Kitty(self::kitty::KittyImages),
+    ITerm2(iterm2::ITerm2Protocol),
+    /// The terminal understands the kitty graphics protocol.
+    Kitty(kitty::KittyGraphicsProtocol),
 }
 
 impl ImageCapability {
@@ -64,10 +55,8 @@ impl ImageCapability {
 /// capabilities.
 #[derive(Debug)]
 pub struct TerminalCapabilities {
-    /// How the terminal supports basic styling.
+    /// Whether the terminal supports basic ANSI styling.
     pub style: Option<StyleCapability>,
-    /// How the terminal supports links.
-    pub links: Option<LinkCapability>,
     /// How the terminal supports images.
     pub image: Option<ImageCapability>,
     /// How the terminal supports marks.
@@ -79,7 +68,6 @@ impl Default for TerminalCapabilities {
     fn default() -> Self {
         TerminalCapabilities {
             style: None,
-            links: None,
             image: None,
             marks: None,
         }
