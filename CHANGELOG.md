@@ -8,6 +8,9 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- Update all dependencies.
+
 ## [2.0.3] – 2023-04-24
 
 ### Changed

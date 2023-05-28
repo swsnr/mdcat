@@ -18,8 +18,9 @@ mod implementation {
     use std::{error::Error, io::ErrorKind};
 
     use once_cell::sync::Lazy;
-    use resvg::tiny_skia;
-    use resvg::usvg::{self, ScreenSize};
+    use resvg::tiny_skia::{IntSize, Pixmap, Transform};
+    use resvg::usvg::{self};
+    use resvg::Tree;
     use thiserror::Error;
     use usvg::{fontdb, TreeParsing, TreeTextToPath};
 
@@ -27,8 +28,8 @@ mod implementation {
     pub enum RenderSvgError {
         #[error("Failed to parse SVG: {0}")]
         ParseError(#[from] usvg::Error),
-        #[error("Failed to create pixmap of size {0}")]
-        FailedToCreatePixmap(ScreenSize),
+        #[error("Failed to create pixmap of size {0:?}")]
+        FailedToCreatePixmap(IntSize),
         #[error("Failed to encode pixmap to PNG image: {0}")]
         EncodePngError(Box<dyn Error + Send + Sync>),
     }
@@ -45,23 +46,22 @@ mod implementation {
         fontdb
     });
 
-    fn render_svg_to_png_with_resvg(svg: &[u8]) -> Result<Vec<u8>, RenderSvgError> {
+    fn parse_svg(svg: &[u8]) -> Result<Tree, RenderSvgError> {
         let opt = usvg::Options::default();
         let mut tree = usvg::Tree::from_data(svg, &opt)?;
         tree.convert_text(&FONTS);
-        let size = tree.size.to_screen_size();
-        let mut pixmap = tiny_skia::Pixmap::new(size.width(), size.height())
+        Ok(Tree::from_usvg(&tree))
+    }
+
+    fn render_svg_to_png_with_resvg(svg: &[u8]) -> Result<Vec<u8>, RenderSvgError> {
+        let tree = parse_svg(svg)?;
+        let size = tree.size.to_int_size();
+        let mut pixmap = Pixmap::new(size.width(), size.height())
             .ok_or(RenderSvgError::FailedToCreatePixmap(size))?;
         // We create a pixmap of the appropriate size so the size transform in render cannot fail, so
         // if it fails it's a bug in our code or in resvg which we should fix and not hide.  Hence we
         // unwrap the result.
-        resvg::render(
-            &tree,
-            resvg::FitTo::Original,
-            tiny_skia::Transform::default(),
-            pixmap.as_mut(),
-        )
-        .unwrap();
+        tree.render(Transform::default(), &mut pixmap.as_mut());
         pixmap
             .encode_png()
             .map_err(|err| RenderSvgError::EncodePngError(Box::new(err)))
