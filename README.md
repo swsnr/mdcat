@@ -64,6 +64,7 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 
 ## Installation
 
+* [Release binaries](https://github.com/swsnr/mdcat/releases/) built on Github Actions.
 * 3rd party packages at [Repology](https://repology.org/project/mdcat/versions)
 * You can also build `mdcat` manually with `cargo install mdcat` (see below for details).
 
