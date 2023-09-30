@@ -2,7 +2,7 @@
 name = "pulldown-cmark-mdcat"
 description = "Render pulldown-cmark events to TTY"
 readme = "README.md"
-documentation = "https://docs.rs/pulldown-cmark"
+documentation = "https://docs.rs/pulldown-cmark-mdcat"
 keywords = ["markdown", "less", "cat", "cmark"]
 homepage.workspace = true
 repository.workspace = true
