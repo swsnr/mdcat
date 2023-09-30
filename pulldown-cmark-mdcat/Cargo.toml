@@ -36,7 +36,7 @@ tracing-subscriber = { version = "0.3.16", default-features = false, features = 
 url = "2.3.1"
 
 # Optional for svg support
-resvg = { version = "0.34.1", optional = true, default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
+resvg = { version = "0.35.0", optional = true, default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
 # Optional for image processing support; we deliberately build with default
 # features to include all possible image formats
 image = { version = "0.24.6", optional = true }
@@ -54,10 +54,10 @@ mdcat-http-reqwest = { path = "../mdcat-http-reqwest/", features = ["rustls-tls-
 syntect = { version = "5.0.0", default-features = false, features = ["plist-load", "dump-create"] }
 
 [target.'cfg(unix)'.dependencies]
-rustix = { version = "0.37.11", default-features = false, features = ['termios', 'std'] }
+rustix = { version = "0.38.15", default-features = false, features = ['termios', 'std'] }
 
 [target.'cfg(windows)'.dependencies]
-terminal_size = "0.2.6"
+terminal_size = "0.3.0"
 
 [package.metadata.release]
 release = true
