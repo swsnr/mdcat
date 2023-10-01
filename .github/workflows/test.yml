@@ -20,7 +20,7 @@ jobs:
   scripts_and_manage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Test scripts
       - run: |
           curl -fsSL -o ./shfmt https://github.com/mvdan/sh/releases/download/v3.6.0/shfmt_v3.6.0_linux_amd64
@@ -38,7 +38,7 @@ jobs:
   deny:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Install musl tools for musl target
       - run: sudo apt-get install musl-tools
         if: "contains(matrix.target, 'musl')"
@@ -85,7 +85,7 @@ jobs:
           - target: x86_64-pc-windows-msvc
             os: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # Install musl tools for musl target
       - run: sudo apt-get install musl-tools
         if: "contains(matrix.target, 'musl')"
