@@ -16,6 +16,9 @@ rust-version.workspace = true
 native-tls = ["reqwest/native-tls"]
 rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
 
+# Only use for building documentation, to bring in all dependencies to get syntect to compile
+doc = ["dep:syntect"]
+
 [dependencies]
 mime = { version = "0.3.17", default-features = false }
 reqwest = { version = "0.11.16", default-features = false, features = ["gzip", "brotli", "blocking"]}
@@ -25,6 +28,10 @@ tracing = { version = "0.1.37", default-features = false, features = ["attribute
 # in a single version. cargo release takes care of updating these.
 pulldown-cmark-mdcat = { version = "=2.0.3", path = "../pulldown-cmark-mdcat", default-features = false}
 
+# To build our docs we need to provide a regex backend for syntect, so we have a optional dependency on syntect with the
+# appropriate feature enabled, which we only bring in when "doc" is enabled, a
+syntect = { version = "5.0.0", default-features = false, features = ["regex-fancy", "default-syntaxes"], optional = true }
+
 [dev-dependencies]
 hyper = { version="0.14.26", default-features = false, features = ["server", "http1", "runtime"] }
 syntect = { version = "5.0.0", default-features = false, features = ["regex-fancy", "default-syntaxes"] }
@@ -32,3 +39,7 @@ tokio = { version = "1.27", default-features = false, features = ["time"] }
 
 [package.metadata.release]
 release = true
+
+[package.metadata.docs.rs]
+# On docs.rs build with all necessary dependencies
+features = ["doc"]
