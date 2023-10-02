@@ -31,7 +31,6 @@ syntect = { version = "5.0.0", default-features = false, features = ["parsing"] 
 textwrap = { version = "0.16.0", default-features = false, features = ["unicode-linebreak", "unicode-width"] }
 thiserror = { version = "1.0.40", default-features = false }
 tracing = { version = "0.1.37", default-features = false, features = ["attributes"] }
-tracing-subscriber = { version = "0.3.16", default-features = false, features = ["env-filter", "std", "fmt", "ansi"] }
 url = "2.3.1"
 
 # Optional for svg support

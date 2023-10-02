@@ -1377,7 +1377,6 @@ dependencies = [
  "textwrap",
  "thiserror",
  "tracing",
- "tracing-subscriber",
  "url",
 ]
 
