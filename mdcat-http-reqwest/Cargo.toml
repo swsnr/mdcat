@@ -1,6 +1,7 @@
 [package]
 name = "mdcat-http-reqwest"
 description = "Reqwest-based HTTP resource handler for mdcat"
+readme = "README.md"
 documentation = "https://docs.rs/mdcat-http-reqwest"
 homepage.workspace = true
 repository.workspace = true
