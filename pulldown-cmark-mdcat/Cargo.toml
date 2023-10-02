@@ -47,7 +47,6 @@ similar-asserts = "1.4.2"
 syntect = { version = "5.0.0", default-features = false, features = ["default-syntaxes"] }
 temp-env = { version = "0.3.4", default-features = false }
 
-# Our own development dependencies; we can just use a path dependency here.
 mdcat-http-reqwest = { path = "../mdcat-http-reqwest/", features = ["rustls-tls-native-roots"] }
 
 [build-dependencies]
