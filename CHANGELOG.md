@@ -10,6 +10,7 @@ Use `cargo release` to create a new release.
 
 ### Changed
 - Update all dependencies.
+- Bump MSRV to 1.72.
 
 ## [2.0.3] – 2023-04-24
 

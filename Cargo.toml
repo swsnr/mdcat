@@ -73,7 +73,7 @@ categories = ["command-line-utilities", "text-processing"]
 license = "MPL-2.0 AND Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2021"
-rust-version = "1.67"
+rust-version = "1.72"
 
 [workspace.metadata.release]
 allow-branch = ["main"]

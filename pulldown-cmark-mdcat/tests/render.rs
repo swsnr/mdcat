@@ -12,10 +12,10 @@
 #![deny(warnings, clippy::all)]
 
 use std::path::Path;
+use std::sync::OnceLock;
 
 use glob::glob;
 use mdcat_http_reqwest::HttpResourceHandler;
-use once_cell::sync::Lazy;
 use pulldown_cmark::{Options, Parser};
 use similar_asserts::assert_eq;
 use syntect::parsing::SyntaxSet;
@@ -28,21 +28,29 @@ use pulldown_cmark_mdcat::{Environment, Theme};
 
 static TEST_READ_LIMIT: u64 = 5_242_880;
 
-static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
+static SYNTAX_SET: OnceLock<SyntaxSet> = OnceLock::new();
 
-static RESOURCE_HANDLER: Lazy<DispatchingResourceHandler> = Lazy::new(|| {
-    let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
-        Box::new(FileResourceHandler::new(TEST_READ_LIMIT)),
-        Box::new(
-            HttpResourceHandler::with_user_agent(
-                TEST_READ_LIMIT,
-                concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
-            )
-            .unwrap(),
-        ),
-    ];
-    DispatchingResourceHandler::new(handlers)
-});
+fn syntax_set() -> &'static SyntaxSet {
+    SYNTAX_SET.get_or_init(SyntaxSet::load_defaults_newlines)
+}
+
+static RESOURCE_HANDLER: OnceLock<DispatchingResourceHandler> = OnceLock::new();
+
+fn resource_handler() -> &'static DispatchingResourceHandler {
+    RESOURCE_HANDLER.get_or_init(|| {
+        let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
+            Box::new(FileResourceHandler::new(TEST_READ_LIMIT)),
+            Box::new(
+                HttpResourceHandler::with_user_agent(
+                    TEST_READ_LIMIT,
+                    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
+                )
+                .unwrap(),
+            ),
+        ];
+        DispatchingResourceHandler::new(handlers)
+    })
+}
 
 fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> String {
     let markdown = std::fs::read_to_string(&markdown_file).unwrap();
@@ -59,7 +67,7 @@ fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> St
         hostname: "HOSTNAME".to_string(),
         ..Environment::for_local_directory(&base_dir).unwrap()
     };
-    pulldown_cmark_mdcat::push_tty(settings, &env, &*RESOURCE_HANDLER, &mut sink, parser).unwrap();
+    pulldown_cmark_mdcat::push_tty(settings, &env, resource_handler(), &mut sink, parser).unwrap();
     String::from_utf8(sink).unwrap()
 }
 
@@ -120,7 +128,7 @@ fn dump() {
         terminal_capabilities: TerminalProgram::Dumb.capabilities(),
         terminal_size: TerminalSize::default(),
         theme: Theme::default(),
-        syntax_set: &SYNTAX_SET,
+        syntax_set: syntax_set(),
     };
     for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
         test_with_golden_file(
@@ -138,7 +146,7 @@ fn ansi_only() {
         terminal_capabilities: TerminalProgram::Ansi.capabilities(),
         terminal_size: TerminalSize::default(),
         theme: Theme::default(),
-        syntax_set: &SYNTAX_SET,
+        syntax_set: syntax_set(),
     };
     for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
         test_with_golden_file(
@@ -156,7 +164,7 @@ fn iterm2() {
         terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
         terminal_size: TerminalSize::default(),
         theme: Theme::default(),
-        syntax_set: &SYNTAX_SET,
+        syntax_set: syntax_set(),
     };
     for markdown_file in glob("tests/render/md/*/*.md").unwrap() {
         test_with_golden_file(

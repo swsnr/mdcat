@@ -7,15 +7,23 @@
 //! Tools for syntax highlighting.
 
 use anstyle::{AnsiColor, Effects};
-use once_cell::sync::Lazy;
-use std::io::{Result, Write};
+use std::{
+    io::{Result, Write},
+    sync::OnceLock,
+};
 use syntect::highlighting::{FontStyle, Highlighter, Style, Theme};
 
 static SOLARIZED_DARK_DUMP: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/theme.dump"));
-static SOLARIZED_DARK: Lazy<Theme> = Lazy::new(|| syntect::dumps::from_binary(SOLARIZED_DARK_DUMP));
-pub static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new(|| Highlighter::new(&SOLARIZED_DARK));
+static THEME: OnceLock<Theme> = OnceLock::new();
+static HIGHLIGHTER: OnceLock<Highlighter> = OnceLock::new();
 
-// static HIGHLIGHTER: Lazy<Highlighter> = Lazy::new
+fn theme() -> &'static Theme {
+    THEME.get_or_init(|| syntect::dumps::from_binary(SOLARIZED_DARK_DUMP))
+}
+
+pub fn highlighter() -> &'static Highlighter<'static> {
+    HIGHLIGHTER.get_or_init(|| Highlighter::new(theme()))
+}
 
 /// Write regions as ANSI 8-bit coloured text.
 ///

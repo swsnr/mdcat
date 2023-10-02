@@ -1021,7 +1021,6 @@ version = "2.0.3"
 dependencies = [
  "hyper",
  "mime",
- "once_cell",
  "pulldown-cmark-mdcat",
  "reqwest",
  "syntect",
@@ -1368,7 +1367,6 @@ dependencies = [
  "mdcat-http-reqwest",
  "mime",
  "mime_guess",
- "once_cell",
  "pulldown-cmark",
  "resvg",
  "rustix",

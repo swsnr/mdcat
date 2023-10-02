@@ -149,13 +149,13 @@ impl ResourceUrlHandler for HttpResourceHandler {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::OnceLock;
     use std::time::Duration;
     use std::{convert::Infallible, net::SocketAddr};
 
     use hyper::body::Bytes;
     use hyper::service::{make_service_fn, service_fn};
     use hyper::{Body, Request, Response, Server};
-    use once_cell::sync::Lazy;
     use pulldown_cmark_mdcat::resources::ResourceUrlHandler;
     use reqwest::Url;
     use tokio::runtime::Runtime;
@@ -281,14 +281,17 @@ mod tests {
         }
     }
 
-    static CLIENT: Lazy<HttpResourceHandler> =
-        Lazy::new(|| HttpResourceHandler::with_user_agent(52_428_800, "foo/0.0").unwrap());
+    static CLIENT: OnceLock<HttpResourceHandler> = OnceLock::new();
+
+    fn client() -> &'static HttpResourceHandler {
+        CLIENT.get_or_init(|| HttpResourceHandler::with_user_agent(52_428_800, "foo/0.0").unwrap())
+    }
 
     #[test]
     fn read_url_with_http_url_fails_when_status_404() {
         let server = MockServer::start();
         let url = server.url().join("really-not-there").unwrap();
-        let result = CLIENT.read_resource(&url);
+        let result = client().read_resource(&url);
         assert!(result.is_err(), "Unexpected success: {result:?}");
         assert_eq!(
             format!("{:#}", result.unwrap_err()),
@@ -300,7 +303,7 @@ mod tests {
     fn read_url_with_http_url_empty_response() {
         let server = MockServer::start();
         let url = server.url().join("/empty-response").unwrap();
-        let result = CLIENT.read_resource(&url);
+        let result = client().read_resource(&url);
         assert!(result.is_ok(), "Unexpected error: {result:?}");
         let data = result.unwrap();
         assert_eq!(data.mime_type, None);
@@ -311,7 +314,7 @@ mod tests {
     fn read_url_with_http_url_returns_content_type() {
         let server = MockServer::start();
         let url = server.url().join("/png").unwrap();
-        let result = CLIENT.read_resource(&url);
+        let result = client().read_resource(&url);
         assert!(result.is_ok(), "Unexpected error: {result:?}");
         let data = result.unwrap();
         assert_eq!(data.mime_type, Some(mime::IMAGE_PNG));
@@ -327,7 +330,7 @@ mod tests {
         // Read from a small but slow response: We wouldn't hit the size limit, but we should time
         // out aggressively.
         let url = server.url().join("/drip-very-slow").unwrap();
-        let result = CLIENT.read_resource(&url);
+        let result = client().read_resource(&url);
         assert!(result.is_err(), "Unexpected success: {result:?}");
         let error = format!("{:#}", result.unwrap_err());
         assert_eq!(
@@ -343,7 +346,7 @@ mod tests {
         // since we abort right after checking the size limit, this test fails fast instead of
         // trying to read the entire request.
         let url = server.url().join("/drip-large").unwrap();
-        let result = CLIENT.read_resource(&url);
+        let result = client().read_resource(&url);
         assert!(result.is_err(), "Unexpected success: {result:?}");
         let error = format!("{:#}", result.unwrap_err());
         assert_eq!(

@@ -19,7 +19,7 @@ use textwrap::core::display_width;
 use tracing::{event, instrument, Level};
 use url::Url;
 
-use crate::render::highlighting::HIGHLIGHTER;
+use crate::render::highlighting::highlighter;
 use crate::resources::ResourceUrlHandler;
 use crate::theme::CombineStyle;
 use crate::{Environment, Settings};
@@ -419,7 +419,7 @@ pub fn write_event<'a, W: Write>(
                     .expect("syntect parsing shouldn't fail in mdcat");
                 highlighting::write_as_ansi(
                     writer,
-                    HighlightIterator::new(&mut attrs.highlight_state, &ops, line, &HIGHLIGHTER),
+                    HighlightIterator::new(&mut attrs.highlight_state, &ops, line, highlighter()),
                 )?;
                 if text.ends_with('\n') {
                     write_indent(writer, attrs.indent)?;

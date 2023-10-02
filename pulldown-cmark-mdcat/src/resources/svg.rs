@@ -15,9 +15,9 @@ pub fn render_svg_to_png(svg: &[u8]) -> Result<Vec<u8>> {
 
 #[cfg(feature = "svg")]
 mod implementation {
+    use std::sync::OnceLock;
     use std::{error::Error, io::ErrorKind};
 
-    use once_cell::sync::Lazy;
     use resvg::tiny_skia::{IntSize, Pixmap, Transform};
     use resvg::usvg::{self};
     use resvg::Tree;
@@ -40,16 +40,17 @@ mod implementation {
         }
     }
 
-    static FONTS: Lazy<fontdb::Database> = Lazy::new(|| {
-        let mut fontdb = fontdb::Database::new();
-        fontdb.load_system_fonts();
-        fontdb
-    });
+    static FONTS: OnceLock<fontdb::Database> = OnceLock::new();
 
     fn parse_svg(svg: &[u8]) -> Result<Tree, RenderSvgError> {
         let opt = usvg::Options::default();
         let mut tree = usvg::Tree::from_data(svg, &opt)?;
-        tree.convert_text(&FONTS);
+        let fonts = FONTS.get_or_init(|| {
+            let mut fontdb = fontdb::Database::new();
+            fontdb.load_system_fonts();
+            fontdb
+        });
+        tree.convert_text(fonts);
         Ok(Tree::from_usvg(&tree))
     }
 

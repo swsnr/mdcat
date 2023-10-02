@@ -15,7 +15,7 @@ use textwrap::WordSeparator;
 
 use crate::references::*;
 use crate::render::data::{CurrentLine, LinkReferenceDefinition};
-use crate::render::highlighting::HIGHLIGHTER;
+use crate::render::highlighting::highlighter;
 use crate::render::state::*;
 use crate::terminal::capabilities::{MarkCapability, StyleCapability, TerminalCapabilities};
 use crate::terminal::osc::{clear_link, set_link_url};
@@ -323,7 +323,7 @@ pub fn write_start_code_block<W: Write>(
                 .into()),
                 Some(syntax) => {
                     let parse_state = ParseState::new(syntax);
-                    let highlight_state = HighlightState::new(&HIGHLIGHTER, ScopeStack::new());
+                    let highlight_state = HighlightState::new(highlighter(), ScopeStack::new());
                     Ok(HighlightBlockAttrs {
                         indent,
                         highlight_state,
