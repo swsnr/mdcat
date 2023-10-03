@@ -84,3 +84,5 @@ tag-prefix = "mdcat-"
 tag-name = "{{prefix}}{{version}}"
 tag-message = "mdcat {{version}}"
 sign-tag = true
+# Github CI does this for us.
+verify = false
