@@ -6,3 +6,15 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: monthly
+    # Ignore minor and patch updates; downstream consumers
+    # can do these; we only need to check for semver
+    # incompatible updates.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
