@@ -53,7 +53,8 @@ fn main() {
     if args.detect_and_exit {
         println!("Terminal: {terminal}");
     } else {
-        // Enable Ansi color processing on Windows; no-op on other platforms.
+        // Enable Ansi color processing on Windows
+        #[cfg(windows)]
         concolor_query::windows::enable_ansi_colors();
 
         let terminal_size = TerminalSize::detect().unwrap_or_default();
