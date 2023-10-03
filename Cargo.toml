@@ -43,7 +43,7 @@ clap = { version = "4.2.2", features = ["derive"] }
 clap_complete = "4.2.0"
 
 [target.'cfg(windows)'.dependencies]
-concolor-query = { version = "0.3.3", default-features = false }
+anstyle-query = { version = "1.0.0", default-features = false }
 
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller

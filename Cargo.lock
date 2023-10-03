@@ -323,15 +323,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7"
 
 [[package]]
-name = "concolor-query"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88d11d52c3d7ca2e6d0040212be9e4dbbcd78b6447f535b6b561f449427944cf"
-dependencies = [
- "windows-sys 0.45.0",
-]
-
-[[package]]
 name = "console"
 version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -998,10 +989,10 @@ dependencies = [
 name = "mdcat"
 version = "2.0.3"
 dependencies = [
+ "anstyle-query",
  "anyhow",
  "clap",
  "clap_complete",
- "concolor-query",
  "human-panic",
  "mdcat-http-reqwest",
  "pulldown-cmark",

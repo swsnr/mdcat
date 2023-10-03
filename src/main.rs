@@ -55,7 +55,7 @@ fn main() {
     } else {
         // Enable Ansi color processing on Windows
         #[cfg(windows)]
-        concolor_query::windows::enable_ansi_colors();
+        anstyle_query::windows::enable_ansi_colors();
 
         let terminal_size = TerminalSize::detect().unwrap_or_default();
         let terminal_size = if let Some(max_columns) = args.columns {
