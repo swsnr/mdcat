@@ -1,5 +1,8 @@
 # pulldown-cmark-mdcat
 
+[![Crates.io](https://img.shields.io/crates/v/pulldown-cmark-mdcat)](https://crates.io/crates/pulldown-cmark-mdcat)
+[![docs.rs](https://img.shields.io/docsrs/pulldown-cmark-mdcat)](https://docs.rs/pulldown-cmark-mdcat)
+
 Render [pulldown-cmark] events to a TTY.
 
 This library backs the [mdcat] tool, and makes its rendering available to other crates.
