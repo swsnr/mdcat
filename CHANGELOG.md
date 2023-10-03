@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.0.4] – 2023-10-03
+
 ### Changed
 - Update all dependencies.
 - Bump MSRV to 1.72.
@@ -704,7 +706,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.3...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.4...HEAD
+[2.0.4]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.3...mdcat-2.0.4
 [2.0.3]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.2...mdcat-2.0.3
 [2.0.2]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.1...mdcat-2.0.2
 [2.0.1]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.0...mdcat-2.0.1
