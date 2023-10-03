@@ -42,6 +42,7 @@
 #![deny(warnings, missing_docs, clippy::all)]
 #![forbid(unsafe_code)]
 
+use std::ffi::OsString;
 use std::io::{Error, ErrorKind, Result, Write};
 use std::path::Path;
 
@@ -84,12 +85,24 @@ pub struct Environment {
     pub hostname: String,
 }
 
+#[cfg(windows)]
+fn gethostname() -> OsString {
+    gethostname::gethostname()
+}
+
+#[cfg(unix)]
+fn gethostname() -> OsString {
+    use std::os::unix::prelude::*;
+
+    OsString::from_vec(rustix::system::uname().nodename().to_bytes().to_vec())
+}
+
 impl Environment {
     /// Create an environment for the local host with the given `base_url`.
     ///
     /// Take the local hostname from `gethostname`.
     pub fn for_localhost(base_url: Url) -> Result<Self> {
-        gethostname::gethostname()
+        gethostname()
             .into_string()
             .map_err(|raw| {
                 Error::new(
