@@ -11,10 +11,12 @@ use std::io::{Result, Write};
 use url::{Host, Url};
 
 /// Write an OSC `command` to this terminal.
+///
+/// See <https://www.xfree86.org/current/ctlseqs.html> for format documentation.
 pub fn write_osc<W: Write + ?Sized>(writer: &mut W, command: &str) -> Result<()> {
-    writer.write_all(&[0x1b, 0x5d])?;
+    writer.write_all(&[0x1b, 0x5d])?; // OSC
     writer.write_all(command.as_bytes())?;
-    writer.write_all(&[0x07])?;
+    writer.write_all(&[0x1b, b'\\'])?; // ST
     Ok(())
 }
 

@@ -10,6 +10,7 @@ Use `cargo release` to create a new release.
 
 ### Fixed
 - Correct some iTerm2 inline image commands to better comply to the specification (see [GH-267]).
+- Always terminate OSC commands with ST instead of BEL, as the latter is the legacy form (see [GH-267]).
 
 [GH-267]: https://github.com/swsnr/mdcat/pull/267
 
