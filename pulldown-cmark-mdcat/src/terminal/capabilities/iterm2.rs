@@ -68,11 +68,12 @@ impl InlineImageProtocol for ITerm2Protocol {
         write_osc(
             writer,
             &name.map_or_else(
-                || format!("1337;inline=1:{}", data),
+                || format!("1337;File=size={};inline=1:{}", contents.len(), data),
                 |name| {
                     format!(
-                        "1337;File=name={};inline=1:{}",
+                        "1337;File=name={};size={};inline=1:{}",
                         STANDARD.encode(name.as_bytes()),
+                        contents.len(),
                         data
                     )
                 },

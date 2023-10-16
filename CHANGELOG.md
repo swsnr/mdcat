@@ -8,6 +8,11 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Fixed
+- Correct some iTerm2 inline image commands to better comply to the specification (see [GH-267]).
+
+[GH-267]: https://github.com/swsnr/mdcat/pull/267
+
 ## [2.0.4] – 2023-10-03
 
 ### Changed
