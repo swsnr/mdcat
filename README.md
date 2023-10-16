@@ -36,6 +36,7 @@ Then it
 | [iTerm2]                   | ✓             | ✓                   | ✓³     | ✓          |
 | [kitty]                    | ✓             | ✓                   | ✓³     |            |
 | [WezTerm]                  | ✓             | ✓                   | ✓³     |            |
+| [VSCode]                   | ✓             | ✓                   | ✓³     |            |
 
 1) mdcat requires that the terminal supports strikethrough formatting and [inline links][osc8].
     It will not render strikethrough text and links correctly on terminals that don't support these (e.g. the Linux text console)
@@ -54,6 +55,7 @@ Not supported:
 [kitty]: https://sw.kovidgoyal.net/kitty/
 [resvg]: https://github.com/RazrFalcon/resvg
 [SVG support]: https://github.com/RazrFalcon/resvg#svg-support
+[VSCode]: https://code.visualstudio.com/
 
 ## Usage
 

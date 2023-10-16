@@ -42,6 +42,10 @@ pub enum TerminalProgram {
     ///
     /// See <https://wezfurlong.org/wezterm/> for more information.
     WezTerm,
+    /// The built-in terminal in VSCode.
+    ///
+    /// Since version 1.80 it supports images with the iTerm2 protocol.
+    VSCode,
 }
 
 impl Display for TerminalProgram {
@@ -53,9 +57,22 @@ impl Display for TerminalProgram {
             TerminalProgram::Terminology => "Terminology",
             TerminalProgram::Kitty => "kitty",
             TerminalProgram::WezTerm => "WezTerm",
+            TerminalProgram::VSCode => "vscode",
         };
         write!(f, "{name}")
     }
+}
+
+/// Extract major and minor version from `$TERM_PROGRAM_VERSION`.
+///
+/// Return `None` if the variable doesn't exist, or has invalid contents, such as
+/// non-numeric parts, insufficient parts for a major.minor version, etc.
+fn get_term_program_major_minor_version() -> Option<(u16, u16)> {
+    let value = std::env::var("TERM_PROGRAM_VERSION").ok()?;
+    let mut parts = value.split('.').take(2);
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    Some((major, minor))
 }
 
 impl TerminalProgram {
@@ -71,6 +88,12 @@ impl TerminalProgram {
         match std::env::var("TERM_PROGRAM").ok().as_deref() {
             Some("WezTerm") => Some(Self::WezTerm),
             Some("iTerm.app") => Some(Self::ITerm2),
+            Some("vscode")
+                if get_term_program_major_minor_version()
+                    .map_or(false, |version| (1, 80) <= version) =>
+            {
+                Some(Self::VSCode)
+            }
             _ => None,
         }
     }
@@ -130,6 +153,9 @@ impl TerminalProgram {
                 .with_image_capability(ImageCapability::Kitty(self::kitty::KittyGraphicsProtocol)),
             TerminalProgram::WezTerm => ansi
                 .with_image_capability(ImageCapability::Kitty(self::kitty::KittyGraphicsProtocol)),
+            TerminalProgram::VSCode => {
+                ansi.with_image_capability(ImageCapability::ITerm2(ITerm2Protocol))
+            }
         }
     }
 }

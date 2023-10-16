@@ -8,6 +8,10 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Added
+
+- Support images in VSCode integrated terminal, 1.80 or newer (see [GH-266]).
+
 ### Changed
 - When rendering iTerm2 images append `.png` to the file name reported to the terminal if mdcat rendered an SVG to PNG (see [GH-267]).
   Previously, mdcat retained the original file extension, and would ask iTerm2 to download a PNG image to an `.svg` file.
@@ -16,6 +20,7 @@ Use `cargo release` to create a new release.
 - Correct some iTerm2 inline image commands to better comply to the specification (see [GH-267]).
 - Always terminate OSC commands with ST instead of BEL, as the latter is the legacy form (see [GH-267]).
 
+[GH-266]: https://github.com/swsnr/mdcat/pull/266
 [GH-267]: https://github.com/swsnr/mdcat/pull/267
 
 ## [2.0.4] – 2023-10-03
