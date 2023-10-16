@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.1.0] – 2023-10-16
+
 ### Added
 
 - Support images in VSCode integrated terminal, 1.80 or newer (see [GH-266]).
@@ -721,7 +723,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.4...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.0...HEAD
+[2.1.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.4...mdcat-2.1.0
 [2.0.4]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.3...mdcat-2.0.4
 [2.0.3]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.2...mdcat-2.0.3
 [2.0.2]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.1...mdcat-2.0.2
