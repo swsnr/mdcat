@@ -54,25 +54,38 @@ impl InlineImageProtocol for ITerm2Protocol {
             "Received data of mime type {:?}",
             mime_data.mime_type
         );
-        let contents = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
-            event!(Level::DEBUG, "Rendering SVG from {}", url);
-            Cow::Owned(svg::render_svg_to_png(&mime_data.data)?)
-        } else {
-            event!(Level::DEBUG, "Rendering mime data literally");
-            Cow::Borrowed(&mime_data.data)
-        };
+
         // Determine the local file name to use, by taking the last segment of the URL.
         // If the URL has no last segment do not tell iterm about a file name.
-        let name = url.path_segments().and_then(|s| s.last());
+        let name = url
+            .path_segments()
+            .and_then(|s| s.last())
+            .map(Cow::Borrowed);
+        let (name, contents) = if let Some("image/svg+xml") = mime_data.mime_type_essence() {
+            event!(Level::DEBUG, "Rendering SVG from {}", url);
+            (
+                name.map(|n| {
+                    let mut name = String::new();
+                    name.push_str(&n);
+                    name.push_str(".png");
+                    Cow::Owned(name)
+                }),
+                Cow::Owned(svg::render_svg_to_png(&mime_data.data)?),
+            )
+        } else {
+            event!(Level::DEBUG, "Rendering mime data literally");
+            (name, Cow::Borrowed(&mime_data.data))
+        };
         let data = STANDARD.encode(contents.as_ref());
         write_osc(
             writer,
             &name.map_or_else(
-                || format!("1337;inline=1:{}", data),
+                || format!("1337;File=size={};inline=1:{}", contents.len(), data),
                 |name| {
                     format!(
-                        "1337;File=name={};inline=1:{}",
+                        "1337;File=name={};size={};inline=1:{}",
                         STANDARD.encode(name.as_bytes()),
+                        contents.len(),
                         data
                     )
                 },
