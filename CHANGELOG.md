@@ -8,6 +8,10 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- When rendering iTerm2 images append `.png` to the file name reported to the terminal if mdcat rendered an SVG to PNG (see [GH-267]).
+  Previously, mdcat retained the original file extension, and would ask iTerm2 to download a PNG image to an `.svg` file.
+
 ### Fixed
 - Correct some iTerm2 inline image commands to better comply to the specification (see [GH-267]).
 - Always terminate OSC commands with ST instead of BEL, as the latter is the legacy form (see [GH-267]).
