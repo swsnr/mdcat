@@ -38,6 +38,8 @@ To enable formatting extensions such as inline images, `mdcat` needs to detect t
 2. `$TERM_PROGRAM`
 3. `$TERMINOLOGY`
 
+For some terminals `mdcat` also checks `$TERM_PROGRAM_VERSION` to determine whether the terminal supports the expected feature set.
+
 See section <<Environment>> below for a detailed description of each environment variable.
 
 === Pagination
@@ -50,7 +52,7 @@ In particular this disables all image support which relies on proprietary escape
 
 === Image support
 
-In iTerm2, kitty, Terminology and WezTerm mdcat prints inline images.
+In iTerm2, kitty, Terminology, WezTerm, and VSCode (1.80 or newer) mdcat prints inline images.
 mdcat supports most standard pixel formats by default.
 
 mdcat silently ignores images larger than 100 MiB, under the assumption that images of that size cannot reasonably be rendered in a terminal.
@@ -59,7 +61,7 @@ mdcat silently ignores images larger than 100 MiB, under the assumption that ima
 
 In Terminology mdcat also renders SVG images, using the built-in support of Terminology.
 
-In iTerm2, kitty and WezTerm mdcat renders SVG images into pixel graphics using the https://github.com/RazrFalcon/resvg[resvg] library.
+In iTerm2, kitty, VSCode, and WezTerm mdcat renders SVG images into pixel graphics using the https://github.com/RazrFalcon/resvg[resvg] library.
 Currently this library only supports SVG 1, and only the static subset thereof; see https://github.com/RazrFalcon/resvg#svg-support[SVG support] for details.
 While this is sufficient for most simple SVG images, complex SVG images may fail to render or render incompletely.
 
@@ -147,8 +149,13 @@ TERM_PROGRAM::
 +
     * `iTerm.app`: iTerm2
     * `WezTerm`: WezTerm
+    * `vscode`: VSCode integrated terminal, but only if `$TERM_PROGRAM_VERSION` indicates a sufficient version to support all required features..
 +
 For all other values `mdcat` proceeds to check `$TERMINOLOGY`.
+
+TERM_PROGRAM_VERSION::
+
+    If `$TERM_PROGRAM` is `vscode`, `mdcat` checks this variable to determine whether VSCode has a sufficient version to support all required features.
 
 TERMINOLOGY::
 
@@ -227,6 +234,7 @@ https://iterm2.com/documentation-escape-codes.html[Marks].
 * https://github.com/kovidgoyal/kitty[kitty]: Inline images (https://sw.kovidgoyal.net/kitty/graphics-protocol.html[kitty Graphics protocol]).
 * http://terminolo.gy[Terminology]: Inline images (terminology protocol).
 * https://wezfurlong.org/wezterm/[WezTerm]: Inline images (kitty graphics protocol, see above).
+* https://code.visualstudio.com/[VSCode] 1.80 or newer, integrated terminal: Inline images (iTerm2 protocol, see above)
 
 == Bugs
 
