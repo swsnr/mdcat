@@ -31,9 +31,7 @@ Then it
 | Terminal                   |  Basic syntax | Syntax highlighting | Images | Jump marks |
 | :------------------------- | :-----------: | :-----------------: | :----: | :--------: |
 | Basic ANSI¹                | ✓             | ✓                   |        |            |
-| Windows [ConEmu]           | ✓             | ✓                   |        |            |
 | Windows 10 console         | ✓             | ✓                   |        |            |
-| Generic VTE 0.50 or newer² | ✓             | ✓                   |        |            |
 | [Terminology]              | ✓             | ✓                   | ✓      |            |
 | [iTerm2]                   | ✓             | ✓                   | ✓³     | ✓          |
 | [kitty]                    | ✓             | ✓                   | ✓³     |            |
@@ -51,7 +49,6 @@ Not supported:
 [syntect]: https://github.com/trishume/syntect
 [osc8]: https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 [Terminology]: http://terminolo.gy
-[ConEmu]: https://conemu.github.io
 [iterm2]: https://www.iterm2.com
 [WezTerm]: https://wezfurlong.org/wezterm/
 [kitty]: https://sw.kovidgoyal.net/kitty/
