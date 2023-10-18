@@ -90,17 +90,6 @@ If you package mdcat you may want to include these files too.
 `mdcat` can output extensive tracing information when asked to.
 Run `mdcat` with `$MDCAT_LOG=trace` for complete tracing information, or with `$MDCAT_LOG=mdcat::render=trace` to trace only rendering.
 
-## Future plans
-
-- [ ] Figure out a better way to show HTML [#3].
-- [ ] CommonMark extensions: Footnotes [#1].
-- [ ] CommonMark extensions: Tables [#2].
-
-[#1]: https://github.com/swsnr/mdcat/issues/1
-[#2]: https://github.com/swsnr/mdcat/issues/2
-[#3]: https://github.com/swsnr/mdcat/issues/3
-[#4]: https://github.com/swsnr/mdcat/issues/4
-
 ## License
 
 Copyright Sebastian Wiesner <sebastian@swsnr.de>
