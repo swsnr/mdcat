@@ -23,7 +23,7 @@ mdcat in [WezTerm], with "One Light (base16)", "Gruvbox Light", and "Darcula
 `mdcat` works best with [iTerm2], [WezTerm], and [kitty], and a good terminal font with italic characters.
 Then it
 
-* nicely renders all basic CommonMark syntax (no [tables][#2] or [footnotes][#1] though),
+* nicely renders all basic CommonMark syntax,
 * highlights code blocks with [syntect],
 * shows [links][osc8], and also images inline in supported terminals (see above, where "Rust" is a clickable link!),
 * adds jump marks for headings in [iTerm2] (jump forwards and backwards with <key>⇧⌘↓</key> and <key>⇧⌘↑</key>).
