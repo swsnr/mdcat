@@ -8,7 +8,7 @@ $ mdcat sample.md
 
 ![mdcat showcase with different colour themes][sxs]
 
-mdcat in [WezTerm], with "One Light (base16)", "Gruvbox Light", and "Darcula
+mdcat in [WezTerm], with "One Light (base16)", "Gruvbox Light", and "Dracula
 (base16)" (from left to right), and [JetBrains Mono] as font.
 
 [CommonMark]: http://commonmark.org

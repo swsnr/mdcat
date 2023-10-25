@@ -113,7 +113,7 @@ impl Environment {
             .map(|hostname| Environment { base_url, hostname })
     }
 
-    /// Create an environment for a local diretory.
+    /// Create an environment for a local directory.
     ///
     /// Convert the directory to a directory URL, and obtain the hostname from `gethostname`.
     ///
@@ -355,7 +355,7 @@ Hello Donald[2]
 
         #[test]
         #[allow(non_snake_case)]
-        fn GH_155_do_not_choke_on_footnoes() {
+        fn GH_155_do_not_choke_on_footnotes() {
             assert_eq!(
                 render(
                     "A footnote [^1]

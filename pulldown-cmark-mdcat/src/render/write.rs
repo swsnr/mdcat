@@ -188,7 +188,7 @@ pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
                         None => {
                             // There are no more lines and we're done here.
                             //
-                            // We arive here when the text fragment we wrapped above was
+                            // We arrive here when the text fragment we wrapped above was
                             // shorter than the max length of the current line, i.e. we're
                             // still continuing with the current line.
                             Ok(new_current_line)

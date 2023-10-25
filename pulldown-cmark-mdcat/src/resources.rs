@@ -41,7 +41,7 @@ impl MimeData {
 /// Handle resource URLs.
 ///
 /// See [`DispatchingResourceHandler`] for a resource handler which dispatches
-/// to a list of handlers, and [`FileResourceHandler`] for a resouce handler for
+/// to a list of handlers, and [`FileResourceHandler`] for a resource handler for
 /// local files.
 ///
 /// For remote URLs, see e.g. [mdcat-http-reqwest](https://docs.rs/mdcat-http-reqwest)
