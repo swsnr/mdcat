@@ -13,7 +13,7 @@ cd "${TOPLEVEL}"
 COLOR_THEMES=(
     'One Light (base16)'
     'Gruvbox Light'
-    'Dracula (base16)'
+    'Darcula (base16)'
 )
 SAMPLE="./sample/showcase.md"
 LINES="$(wc -l "${SAMPLE}" | cut -d' ' -f1)"
