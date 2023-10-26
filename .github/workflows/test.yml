@@ -48,7 +48,7 @@ jobs:
       - uses: EmbarkStudios/cargo-deny-action@v1
         with:
           arguments: "--manifest-path ./pulldown-cmark-mdcat/Cargo.toml --no-default-features --features regex-fancy"
-      # Test mdcat in its default configuration (this implicity checks the
+      # Test mdcat in its default configuration (this implicitly checks the
       # default configuration of our libraries)
       - uses: EmbarkStudios/cargo-deny-action@v1
         with:

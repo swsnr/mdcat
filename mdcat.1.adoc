@@ -179,7 +179,7 @@ MDCAT_PAGER::
 The pager program must support basic ANSI formatting sequences, like e.g. `less -r`.
 +
 The value of this variable is subject to shell-like word-splitting.
-It is **not** subject to any kind of expansion or substitution (e.g. parameter expansion, process subsitution, etc.).
+It is **not** subject to any kind of expansion or substitution (e.g. parameter expansion, process substitution, etc.).
 +
 If set to an empty value, mdcat completely disables pagination.
 

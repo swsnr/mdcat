@@ -166,7 +166,7 @@ SOFTWARE.
       </dict>
       <dict>
         <key>name</key>
-        <string>Arithmetical, Assignment, Comparision Operators</string>
+        <string>Arithmetical, Assignment, Comparison Operators</string>
         <key>scope</key>
         <string>keyword.operator.comparison, keyword.operator.assignment, keyword.operator.arithmetic</string>
         <key>settings</key>

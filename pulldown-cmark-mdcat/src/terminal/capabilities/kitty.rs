@@ -164,7 +164,7 @@ pub struct KittyGraphicsProtocol;
 impl KittyGraphicsProtocol {
     /// Render mime data obtained from `url` and wrap it in a `KittyImage`.
     ///
-    /// This implemention processes the image to scale it to the given `terminal_size`, and
+    /// This implementation processes the image to scale it to the given `terminal_size`, and
     /// supports various pixel image types, as well as SVG.
     #[cfg(feature = "image-processing")]
     fn render(
