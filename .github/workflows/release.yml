@@ -43,7 +43,7 @@ jobs:
       - id: package
         shell: bash
         run: ./scripts/package '${{ steps.version.outputs.version }}' '${{ matrix.target }}' '${{ steps.build.outputs.outdir }}'
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.package.outputs.name }}
           path: ${{ steps.package.outputs.file }}
