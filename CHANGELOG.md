@@ -8,6 +8,12 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+
+- Update all dependencies (see [GH-274]).
+
+[GH-274]: https://github.com/swsnr/mdcat/pull/274
+
 ## [2.1.0] – 2023-10-16
 
 ### Added
