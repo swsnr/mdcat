@@ -16,7 +16,10 @@
 //!
 //! This module implements the terminology image protocol.
 
-use crate::{resources::InlineImageProtocol, terminal::TerminalSize, ResourceUrlHandler};
+use crate::{
+    bufferline::BufferLines, resources::InlineImageProtocol, terminal::TerminalSize,
+    ResourceUrlHandler,
+};
 use std::io::{Result, Write};
 use tracing::{event, Level};
 use url::Url;
@@ -90,7 +93,7 @@ fn get_image_dimensions(_url: &Url) -> Option<(u32, u32)> {
 impl InlineImageProtocol for Terminology {
     fn write_inline_image(
         &self,
-        writer: &mut dyn Write,
+        writer: &mut BufferLines,
         _resource_handler: &dyn ResourceUrlHandler,
         url: &Url,
         terminal_size: TerminalSize,
@@ -110,6 +113,13 @@ impl InlineImageProtocol for Terminology {
             command.push_str("\x1b}ie\x00\n");
         }
         writer.write_all(command.as_bytes())?;
+        /*
+        TODO: how to do ?
+        buffer_lines.push(BufferLine {
+            occupied_lines: dynamic_image.height().try_into().unwrap(),
+            offset: writer.len(),
+        });
+         */
         Ok(())
     }
 }

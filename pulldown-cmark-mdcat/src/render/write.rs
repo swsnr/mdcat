@@ -13,6 +13,7 @@ use syntect::parsing::{ParseState, ScopeStack};
 use textwrap::core::{display_width, Word};
 use textwrap::WordSeparator;
 
+use crate::bufferline::BufferLines;
 use crate::references::*;
 use crate::render::data::{CurrentLine, LinkReferenceDefinition};
 use crate::render::highlighting::highlighter;
@@ -46,8 +47,8 @@ pub fn write_styled<W: Write, S: AsRef<str>>(
     }
 }
 
-fn write_remaining_lines<W: Write>(
-    writer: &mut W,
+fn write_remaining_lines(
+    writer: &mut BufferLines,
     capabilities: &TerminalCapabilities,
     style: &Style,
     indent: u16,
@@ -56,7 +57,7 @@ fn write_remaining_lines<W: Write>(
     last_line: &[Word],
 ) -> Result<CurrentLine> {
     // Finish the previous line
-    writeln!(writer)?;
+    writer.writeln_buffer();
     write_indent(writer, indent)?;
     // Now write all lines up to the last
     for line in next_lines {
@@ -71,7 +72,7 @@ fn write_remaining_lines<W: Write>(
                 }
                 buffer.push_str(last.word);
                 write_styled(writer, capabilities, style, &buffer)?;
-                writeln!(writer)?;
+                writer.writeln_buffer();
                 write_indent(writer, indent)?;
                 buffer.clear();
             }
@@ -99,8 +100,8 @@ fn write_remaining_lines<W: Write>(
     }
 }
 
-pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
-    writer: &mut W,
+pub fn write_styled_and_wrapped<S: AsRef<str>>(
+    writer: &mut BufferLines,
     capabilities: &TerminalCapabilities,
     style: &Style,
     max_width: u16,
@@ -128,7 +129,7 @@ pub fn write_styled_and_wrapped<W: Write, S: AsRef<str>>(
             if 0 < current_line.length
                 && max_width < current_width + display_width(first_word) as u16
             {
-                writeln!(writer)?;
+                writer.writeln_buffer();
                 write_indent(writer, indent)?;
                 return write_styled_and_wrapped(
                     writer,
@@ -234,8 +235,8 @@ pub fn write_rule<W: Write>(
     )
 }
 
-pub fn write_code_block_border<W: Write>(
-    writer: &mut W,
+pub fn write_code_block_border(
+    writer: &mut BufferLines,
     theme: &Theme,
     capabilities: &TerminalCapabilities,
     terminal_size: &TerminalSize,
@@ -247,17 +248,18 @@ pub fn write_code_block_border<W: Write>(
         &Style::new().fg_color(Some(theme.code_block_border_color)),
         separator,
     )?;
-    writeln!(writer)
+    writer.writeln_buffer();
+    Ok(())
 }
 
-pub fn write_link_refs<W: Write>(
-    writer: &mut W,
+pub fn write_link_refs(
+    writer: &mut BufferLines,
     environment: &Environment,
     capabilities: &TerminalCapabilities,
     links: Vec<LinkReferenceDefinition>,
 ) -> Result<()> {
     if !links.is_empty() {
-        writeln!(writer)?;
+        writer.writeln_buffer();
         for link in links {
             write_styled(
                 writer,
@@ -290,14 +292,14 @@ pub fn write_link_refs<W: Write>(
                     format!(" {}", link.title),
                 )?;
             }
-            writeln!(writer)?;
+            writer.writeln_buffer();
         }
     };
     Ok(())
 }
 
-pub fn write_start_code_block<W: Write>(
-    writer: &mut W,
+pub fn write_start_code_block(
+    writer: &mut BufferLines,
     settings: &Settings,
     indent: u16,
     style: Style,

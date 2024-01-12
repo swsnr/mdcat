@@ -26,17 +26,23 @@ anstyle = { version = "1.0.0", default-features = false }
 mime = { version = "0.3.17", default-features = false }
 mime_guess = { version = "2.0.4", default-features = false }
 pulldown-cmark = { version = "0.9.2", default-features = false, features = ['simd'] }
-syntect = { version = "5.0.0", default-features = false, features = ["parsing"] }
+syntect = { version = "5.0.0", default-features = false, features = ["parsing",  "default-syntaxes"] }
 textwrap = { version = "0.16.0", default-features = false, features = ["unicode-linebreak", "unicode-width"] }
 thiserror = { version = "1.0.40", default-features = false }
 tracing = { version = "0.1.37", default-features = false, features = ["attributes"] }
 url = "2.3.1"
+yazi-adaptor = {git = "https://github.com/lengyijun/yazi", branch = "pub_more" }
 
 # Optional for svg support
 resvg = { version = "0.37.0", optional = true, default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
 # Optional for image processing support; we deliberately build with default
 # features to include all possible image formats
 image = { version = "0.24.6", optional = true }
+ratatui = "0.25.0"
+crossterm = "0.27.0"
+anyhow = "1.0.79"
+unicode-segmentation = "1.10.1"
+unicode-width = "0.1.11"
 
 [dev-dependencies]
 glob = "0.3.1"

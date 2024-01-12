@@ -15,9 +15,10 @@ use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use tracing::{event, instrument, Level};
 
+use crate::bufferline::BufferLines;
 use crate::resources::{svg, InlineImageProtocol};
 use crate::terminal::osc::write_osc;
-use crate::ResourceUrlHandler;
+use crate::{ResourceUrlHandler, TerminalSize};
 
 /// Iterm2 terminal protocols.
 #[derive(Debug, Copy, Clone)]
@@ -43,7 +44,7 @@ impl InlineImageProtocol for ITerm2Protocol {
     #[instrument(skip(self, writer, _terminal_size), fields(url = %url))]
     fn write_inline_image(
         &self,
-        writer: &mut dyn Write,
+        writer: &mut BufferLines,
         resource_handler: &dyn ResourceUrlHandler,
         url: &url::Url,
         _terminal_size: crate::TerminalSize,
@@ -90,6 +91,10 @@ impl InlineImageProtocol for ITerm2Protocol {
                     )
                 },
             ),
-        )
+        )?;
+        let dynamic_image = image::load_from_memory(&contents).unwrap();
+        let cell = TerminalSize::detect().unwrap().cell.unwrap();
+        writer.write_image((dynamic_image.height() / cell.y).try_into().unwrap());
+        Ok(())
     }
 }

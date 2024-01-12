@@ -6,11 +6,9 @@
 
 //! Inline image handling
 
-use std::io::Write;
-
 use url::Url;
 
-use crate::{ResourceUrlHandler, TerminalSize};
+use crate::{bufferline::BufferLines, ResourceUrlHandler, TerminalSize};
 
 /// An implementation of an inline image protocol.
 pub trait InlineImageProtocol {
@@ -28,7 +26,7 @@ pub trait InlineImageProtocol {
     /// support the given image format.
     fn write_inline_image(
         &self,
-        writer: &mut dyn Write,
+        writer: &mut BufferLines,
         resource_handler: &dyn ResourceUrlHandler,
         url: &Url,
         terminal_size: TerminalSize,

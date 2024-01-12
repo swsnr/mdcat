@@ -22,6 +22,7 @@ use base64::Engine;
 use thiserror::Error;
 use tracing::{event, instrument, Level};
 
+use crate::bufferline::BufferLines;
 use crate::resources::image::*;
 use crate::resources::MimeData;
 use crate::terminal::size::{PixelSize, TerminalSize};
@@ -310,7 +311,7 @@ impl InlineImageProtocol for KittyGraphicsProtocol {
     #[instrument(skip(self, writer, terminal_size))]
     fn write_inline_image(
         &self,
-        writer: &mut dyn Write,
+        writer: &mut BufferLines,
         resource_handler: &dyn crate::ResourceUrlHandler,
         url: &url::Url,
         terminal_size: crate::TerminalSize,
@@ -321,7 +322,11 @@ impl InlineImageProtocol for KittyGraphicsProtocol {
             "Received data of mime type {:?}",
             mime_data.mime_type
         );
+        let dynamic_image = image::load_from_memory(&mime_data.data).unwrap();
         let image = self.render(mime_data, terminal_size)?;
-        image.write_to(writer)
+        image.write_to(writer)?;
+        let cell = TerminalSize::detect().unwrap().cell.unwrap();
+        writer.write_image((dynamic_image.height() / cell.y).try_into().unwrap());
+        Ok(())
     }
 }

@@ -19,6 +19,7 @@ use textwrap::core::display_width;
 use tracing::{event, instrument, Level};
 use url::Url;
 
+use crate::bufferline::BufferLines;
 use crate::render::highlighting::highlighter;
 use crate::resources::ResourceUrlHandler;
 use crate::theme::CombineStyle;
@@ -43,8 +44,8 @@ pub use state::StateAndData;
 
 #[allow(clippy::cognitive_complexity)]
 #[instrument(level = "trace", skip(writer, settings, environment, resource_handler))]
-pub fn write_event<'a, W: Write>(
-    writer: &mut W,
+pub fn write_event<'a>(
+    writer: &mut BufferLines,
     settings: &Settings,
     environment: &Environment,
     resource_handler: &dyn ResourceUrlHandler,
@@ -62,7 +63,7 @@ pub fn write_event<'a, W: Write>(
         // Top level items
         (TopLevel(attrs), Start(Paragraph)) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             State::stack_onto(TopLevelAttrs::margin_before())
                 .current(Inline(InlineText, InlineAttrs::default()))
@@ -73,7 +74,7 @@ pub fn write_event<'a, W: Write>(
             let (data, links) = data.take_links();
             write_link_refs(writer, environment, &settings.terminal_capabilities, links)?;
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_mark(writer, &settings.terminal_capabilities)?;
 
@@ -89,7 +90,7 @@ pub fn write_event<'a, W: Write>(
         }
         (TopLevel(attrs), Start(BlockQuote)) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             State::stack_onto(TopLevelAttrs::margin_before())
                 .current(
@@ -105,7 +106,7 @@ pub fn write_event<'a, W: Write>(
         }
         (TopLevel(attrs), Rule) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_rule(
                 writer,
@@ -113,12 +114,12 @@ pub fn write_event<'a, W: Write>(
                 &settings.theme,
                 settings.terminal_size.columns,
             )?;
-            writeln!(writer)?;
+            writer.writeln_buffer();
             TopLevel(TopLevelAttrs::margin_before()).and_data(data).ok()
         }
         (TopLevel(attrs), Start(CodeBlock(kind))) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
 
             State::stack_onto(TopLevelAttrs::margin_before())
@@ -134,7 +135,7 @@ pub fn write_event<'a, W: Write>(
         }
         (TopLevel(attrs), Start(List(start))) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             let kind = start.map_or(ListItemKind::Unordered, |start| {
                 ListItemKind::Ordered(start)
@@ -147,7 +148,7 @@ pub fn write_event<'a, W: Write>(
         }
         (TopLevel(attrs), Html(html)) => {
             if attrs.margin_before == Margin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_styled(
                 writer,
@@ -163,7 +164,7 @@ pub fn write_event<'a, W: Write>(
         // Nested blocks with style, e.g. paragraphs in quotes, etc.
         (Stacked(stack, StyledBlock(attrs)), Start(Paragraph)) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_indent(writer, attrs.indent)?;
             let inline = InlineAttrs::from(&attrs);
@@ -175,7 +176,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, StyledBlock(attrs)), Start(BlockQuote)) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             stack
                 .push(attrs.clone().with_margin_before().into())
@@ -185,7 +186,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, StyledBlock(attrs)), Rule) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_indent(writer, attrs.indent)?;
             write_rule(
@@ -194,7 +195,7 @@ pub fn write_event<'a, W: Write>(
                 &settings.theme,
                 settings.terminal_size.columns - attrs.indent,
             )?;
-            writeln!(writer)?;
+            writer.writeln_buffer();
             stack
                 .current(attrs.with_margin_before().into())
                 .and_data(data)
@@ -202,7 +203,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, StyledBlock(attrs)), Start(Heading(level, _, _))) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_indent(writer, attrs.indent)?;
 
@@ -221,7 +222,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, StyledBlock(attrs)), Start(List(start))) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             let kind = start.map_or(ListItemKind::Unordered, |start| {
                 ListItemKind::Ordered(start)
@@ -235,7 +236,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, StyledBlock(attrs)), Start(CodeBlock(kind))) => {
             if attrs.margin_before != NoMargin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             let StyledBlockAttrs { indent, style, .. } = attrs;
             stack
@@ -248,7 +249,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, StyledBlock(attrs)), Html(html)) => {
             if attrs.margin_before == Margin {
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_indent(writer, attrs.indent)?;
             write_styled(
@@ -268,7 +269,7 @@ pub fn write_event<'a, W: Write>(
             let InlineAttrs { indent, style, .. } = attrs;
             if state == ItemBlock {
                 // Add margin
-                writeln!(writer)?;
+                writer.writeln_buffer();
             }
             write_indent(writer, indent)?;
             let indent = match kind {
@@ -296,7 +297,7 @@ pub fn write_event<'a, W: Write>(
             if state != StartItem {
                 // Write margin, unless we're at the start of the list item in which case the first line of the
                 // paragraph should go right beside the item bullet.
-                writeln!(writer)?;
+                writer.writeln_buffer();
                 write_indent(writer, attrs.indent)?;
             }
             stack
@@ -306,7 +307,7 @@ pub fn write_event<'a, W: Write>(
                 .ok()
         }
         (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(CodeBlock(ck))) => {
-            writeln!(writer)?;
+            writer.writeln_buffer();
             let InlineAttrs { indent, style, .. } = attrs;
             stack
                 .push(Inline(ListItem(kind, ItemBlock), attrs))
@@ -315,7 +316,7 @@ pub fn write_event<'a, W: Write>(
                 .ok()
         }
         (Stacked(stack, Inline(ListItem(kind, _), attrs)), Rule) => {
-            writeln!(writer)?;
+            writer.writeln_buffer();
             write_indent(writer, attrs.indent)?;
             write_rule(
                 writer,
@@ -323,7 +324,7 @@ pub fn write_event<'a, W: Write>(
                 &settings.theme,
                 settings.terminal_size.columns - attrs.indent,
             )?;
-            writeln!(writer)?;
+            writer.writeln_buffer();
             stack
                 .current(Inline(ListItem(kind, ItemBlock), attrs))
                 .and_data(data)
@@ -331,7 +332,7 @@ pub fn write_event<'a, W: Write>(
         }
         (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Heading(level, _, _))) => {
             if state != StartItem {
-                writeln!(writer)?;
+                writer.writeln_buffer();
                 write_indent(writer, attrs.indent)?;
             }
             // We deliberately don't mark headings which aren't top-level.
@@ -348,7 +349,7 @@ pub fn write_event<'a, W: Write>(
                 .ok()
         }
         (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(List(start))) => {
-            writeln!(writer)?;
+            writer.writeln_buffer();
             let nested_kind = start.map_or(ListItemKind::Unordered, |start| {
                 ListItemKind::Ordered(start)
             });
@@ -359,7 +360,7 @@ pub fn write_event<'a, W: Write>(
                 .ok()
         }
         (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(BlockQuote)) => {
-            writeln!(writer)?;
+            writer.writeln_buffer();
             let block_quote = StyledBlockAttrs::from(&attrs)
                 .without_margin_before()
                 .block_quote();
@@ -373,7 +374,7 @@ pub fn write_event<'a, W: Write>(
             let InlineAttrs { indent, style, .. } = attrs;
             let data = if state != ItemBlock {
                 // End the inline text of this item
-                writeln!(writer)?;
+                writer.writeln_buffer();
                 data.current_line(CurrentLine::empty())
             } else {
                 data
@@ -514,7 +515,7 @@ pub fn write_event<'a, W: Write>(
                 })))
         }
         (Stacked(stack, Inline(state, attrs)), HardBreak) => {
-            writeln!(writer)?;
+            writer.writeln_buffer();
             write_indent(writer, attrs.indent)?;
 
             Ok(stack
@@ -587,13 +588,13 @@ pub fn write_event<'a, W: Write>(
         }
         // Ending inline text
         (Stacked(stack, Inline(_, _)), End(Paragraph)) => {
-            writeln!(writer)?;
+            writer.writeln_buffer();
             Ok(stack
                 .pop()
                 .and_data(data.current_line(CurrentLine::empty())))
         }
         (Stacked(stack, Inline(_, _)), End(Heading(_, _, _))) => {
-            writeln!(writer)?;
+            writer.writeln_buffer();
             Ok(stack
                 .pop()
                 .and_data(data.current_line(CurrentLine::empty())))
@@ -758,8 +759,8 @@ pub fn write_event<'a, W: Write>(
 }
 
 #[instrument(level = "trace", skip(writer, settings, environment))]
-pub fn finish<'a, W: Write>(
-    writer: &mut W,
+pub fn finish<'a>(
+    writer: &mut BufferLines,
     settings: &Settings,
     environment: &Environment,
     state: State,

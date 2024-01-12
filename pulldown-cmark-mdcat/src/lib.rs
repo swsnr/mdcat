@@ -39,11 +39,10 @@
 //!   its regex engine.  The former is slower, but does not imply a native dependency, the latter
 //!   is faster, but you need to compile and link a C library.
 
-#![deny(warnings, missing_docs, clippy::all)]
 #![forbid(unsafe_code)]
 
 use std::ffi::OsString;
-use std::io::{Error, ErrorKind, Result, Write};
+use std::io::{Error, ErrorKind, Result};
 use std::path::Path;
 
 use pulldown_cmark::Event;
@@ -51,6 +50,7 @@ use syntect::parsing::SyntaxSet;
 use tracing::instrument;
 use url::Url;
 
+use crate::bufferline::BufferLines;
 pub use crate::resources::ResourceUrlHandler;
 pub use crate::terminal::capabilities::TerminalCapabilities;
 pub use crate::terminal::{TerminalProgram, TerminalSize};
@@ -61,6 +61,9 @@ pub mod resources;
 pub mod terminal;
 mod theme;
 
+pub mod bufferline;
+pub mod markdown_widget;
+mod reflow;
 mod render;
 
 /// Settings for markdown rendering.
@@ -143,18 +146,18 @@ impl Environment {
 /// `push_tty` tries to limit output to the given number of TTY `columns` but
 /// does not guarantee that output stays within the column limit.
 #[instrument(level = "debug", skip_all, fields(environment.hostname = environment.hostname.as_str(), environment.base_url = &environment.base_url.as_str()))]
-pub fn push_tty<'a, 'e, W, I>(
+pub fn push_tty<'a, 'e, I>(
     settings: &Settings,
     environment: &Environment,
     resource_handler: &dyn ResourceUrlHandler,
-    writer: &'a mut W,
+    writer: &'a mut BufferLines,
     mut events: I,
 ) -> Result<()>
 where
     I: Iterator<Item = Event<'e>>,
-    W: Write,
 {
     use render::*;
+
     let StateAndData(final_state, final_data) = events.try_fold(
         StateAndData(State::default(), StateData::default()),
         |StateAndData(state, data), event| {

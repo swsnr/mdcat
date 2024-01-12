@@ -6,6 +6,9 @@
 
 //! Capabilities of terminal emulators.
 
+use anyhow::Result;
+use ratatui::layout::Rect;
+
 use crate::resources::InlineImageProtocol;
 
 pub mod iterm2;
@@ -43,6 +46,15 @@ impl ImageCapability {
             ImageCapability::Terminology(t) => t,
             ImageCapability::ITerm2(t) => t,
             ImageCapability::Kitty(t) => t,
+        }
+    }
+
+    /// copy from yazi
+    pub fn image_erase(self, rect: Rect) -> Result<()> {
+        match self {
+            Self::Kitty(_) => yazi_adaptor::kitty::Kitty::image_erase(rect),
+            Self::ITerm2(_) => yazi_adaptor::iterm2::Iterm2::image_erase(rect),
+            _ => todo!(),
         }
     }
 }
