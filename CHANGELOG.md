@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.1.1] – 2024-01-15
+
 ### Changed
 
 - Update all dependencies (see [GH-274]).
@@ -729,7 +731,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.0...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.1...HEAD
+[2.1.1]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.0...mdcat-2.1.1
 [2.1.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.4...mdcat-2.1.0
 [2.0.4]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.3...mdcat-2.0.4
 [2.0.3]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.2...mdcat-2.0.3
