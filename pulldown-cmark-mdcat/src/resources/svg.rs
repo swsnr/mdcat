@@ -19,10 +19,9 @@ mod implementation {
     use std::{error::Error, io::ErrorKind};
 
     use resvg::tiny_skia::{IntSize, Pixmap, Transform};
-    use resvg::usvg::{self};
-    use resvg::Tree;
+    use resvg::usvg::{self, PostProcessingSteps, Tree};
     use thiserror::Error;
-    use usvg::{fontdb, TreeParsing, TreeTextToPath};
+    use usvg::fontdb;
 
     #[derive(Debug, Error)]
     pub enum RenderSvgError {
@@ -50,8 +49,13 @@ mod implementation {
             fontdb.load_system_fonts();
             fontdb
         });
-        tree.convert_text(fonts);
-        Ok(Tree::from_usvg(&tree))
+        tree.postprocess(
+            PostProcessingSteps {
+                convert_text_into_paths: true,
+            },
+            fonts,
+        );
+        Ok(tree)
     }
 
     fn render_svg_to_png_with_resvg(svg: &[u8]) -> Result<Vec<u8>, RenderSvgError> {
@@ -62,7 +66,7 @@ mod implementation {
         // We create a pixmap of the appropriate size so the size transform in render cannot fail, so
         // if it fails it's a bug in our code or in resvg which we should fix and not hide.  Hence we
         // unwrap the result.
-        tree.render(Transform::default(), &mut pixmap.as_mut());
+        resvg::render(&tree, Transform::default(), &mut pixmap.as_mut());
         pixmap
             .encode_png()
             .map_err(|err| RenderSvgError::EncodePngError(Box::new(err)))
