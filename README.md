@@ -67,6 +67,8 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 * 3rd party packages at [Repology](https://repology.org/project/mdcat/versions)
 * You can also build `mdcat` manually with `cargo install mdcat` (see below for details).
 
+`mdcat` can be linked or copied to `mdless`; if invoked as `mdless` it automatically uses pagination.
+
 ## Building
 
 Run `cargo build --release`.
@@ -82,6 +84,8 @@ The build process also generates the following additional files in `$OUT_DIR`:
 
 These additional artifacts are included in the release builds.
 If you package mdcat you may want to include these files too.
+
+You may also want to include an `mdless` link to `mdcat` (see above).
 
 [AsciiDoctor]: https://asciidoctor.org/
 
