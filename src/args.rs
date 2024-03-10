@@ -9,6 +9,9 @@ use clap::ValueHint;
 fn after_help() -> &'static str {
     "See 'man 1 mdcat' for more information.
 
+mdcat can be installed as or linked to mdless,
+for automatic pagination.
+
 Report issues to <https://github.com/swsnr/mdcat>."
 }
 
@@ -37,7 +40,7 @@ pub enum Command {
     Mdcat {
         #[command(flatten)]
         args: CommonArgs,
-        /// Paginate the output of mdcat with a pager like less.
+        /// Paginate the output of mdcat with a pager like less (default for mdless).
         #[arg(short, long, overrides_with = "no_pager")]
         paginate: bool,
         /// Do not paginate output (default). Overrides an earlier --paginate.
@@ -48,7 +51,7 @@ pub enum Command {
     Mdless {
         #[command(flatten)]
         args: CommonArgs,
-        /// Do not paginate output.
+        /// Do not paginate output (default for mdcat).
         #[arg(short = 'P', long, overrides_with = "paginate")]
         no_pager: bool,
         /// Paginate the output of mdcat with a pager like less (default). Overrides an earlier --no-pager.
