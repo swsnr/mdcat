@@ -11,8 +11,7 @@ use std::io::Result;
 
 use anstyle::{Effects, Style};
 use pulldown_cmark::Event::*;
-use pulldown_cmark::Tag::*;
-use pulldown_cmark::{Event, LinkType};
+use pulldown_cmark::{Event, LinkType, Tag, TagEnd};
 use syntect::highlighting::HighlightIterator;
 use syntect::util::LinesWithEndings;
 use textwrap::core::display_width;
@@ -60,7 +59,7 @@ pub fn write_event<'a, W: Write>(
     event!(Level::TRACE, event = ?event, "rendering");
     match (state, event) {
         // Top level items
-        (TopLevel(attrs), Start(Paragraph)) => {
+        (TopLevel(attrs), Start(Tag::Paragraph)) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -69,7 +68,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (TopLevel(attrs), Start(Heading(level, _, _))) => {
+        (TopLevel(attrs), Start(Tag::Heading { level, .. })) => {
             let (data, links) = data.take_links();
             write_link_refs(writer, environment, &settings.terminal_capabilities, links)?;
             if attrs.margin_before != NoMargin {
@@ -87,7 +86,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (TopLevel(attrs), Start(BlockQuote)) => {
+        (TopLevel(attrs), Start(Tag::BlockQuote)) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -116,7 +115,7 @@ pub fn write_event<'a, W: Write>(
             writeln!(writer)?;
             TopLevel(TopLevelAttrs::margin_before()).and_data(data).ok()
         }
-        (TopLevel(attrs), Start(CodeBlock(kind))) => {
+        (TopLevel(attrs), Start(Tag::CodeBlock(kind))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -132,7 +131,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (TopLevel(attrs), Start(List(start))) => {
+        (TopLevel(attrs), Start(Tag::List(start))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -161,7 +160,7 @@ pub fn write_event<'a, W: Write>(
         }
 
         // Nested blocks with style, e.g. paragraphs in quotes, etc.
-        (Stacked(stack, StyledBlock(attrs)), Start(Paragraph)) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Tag::Paragraph)) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -173,7 +172,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, StyledBlock(attrs)), Start(BlockQuote)) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Tag::BlockQuote)) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -200,7 +199,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, StyledBlock(attrs)), Start(Heading(level, _, _))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Tag::Heading { level, .. })) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -219,7 +218,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, StyledBlock(attrs)), Start(List(start))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Tag::List(start))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -233,7 +232,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, StyledBlock(attrs)), Start(CodeBlock(kind))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Tag::CodeBlock(kind))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -264,7 +263,7 @@ pub fn write_event<'a, W: Write>(
         }
 
         // Lists
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Item)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Tag::Item)) => {
             let InlineAttrs { indent, style, .. } = attrs;
             if state == ItemBlock {
                 // Add margin
@@ -292,7 +291,7 @@ pub fn write_event<'a, W: Write>(
                 }))
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Paragraph)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Tag::Paragraph)) => {
             if state != StartItem {
                 // Write margin, unless we're at the start of the list item in which case the first line of the
                 // paragraph should go right beside the item bullet.
@@ -305,7 +304,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(CodeBlock(ck))) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(Tag::CodeBlock(ck))) => {
             writeln!(writer)?;
             let InlineAttrs { indent, style, .. } = attrs;
             stack
@@ -329,7 +328,10 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Heading(level, _, _))) => {
+        (
+            Stacked(stack, Inline(ListItem(kind, state), attrs)),
+            Start(Tag::Heading { level, .. }),
+        ) => {
             if state != StartItem {
                 writeln!(writer)?;
                 write_indent(writer, attrs.indent)?;
@@ -347,7 +349,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(List(start))) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(Tag::List(start))) => {
             writeln!(writer)?;
             let nested_kind = start.map_or(ListItemKind::Unordered, |start| {
                 ListItemKind::Ordered(start)
@@ -358,7 +360,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(BlockQuote)) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(Tag::BlockQuote)) => {
             writeln!(writer)?;
             let block_quote = StyledBlockAttrs::from(&attrs)
                 .without_margin_before()
@@ -369,7 +371,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), End(Item)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), End(TagEnd::Item)) => {
             let InlineAttrs { indent, style, .. } = attrs;
             let data = if state != ItemBlock {
                 // End the inline text of this item
@@ -400,7 +402,7 @@ pub fn write_event<'a, W: Write>(
             }
             stack.current(attrs.into()).and_data(data).ok()
         }
-        (Stacked(stack, LiteralBlock(_)), End(CodeBlock(_))) => {
+        (Stacked(stack, LiteralBlock(_)), End(TagEnd::CodeBlock)) => {
             write_code_block_border(
                 writer,
                 &settings.theme,
@@ -427,7 +429,7 @@ pub fn write_event<'a, W: Write>(
             }
             stack.current(attrs.into()).and_data(data).ok()
         }
-        (Stacked(stack, HighlightBlock(_)), End(CodeBlock(_))) => {
+        (Stacked(stack, HighlightBlock(_)), End(TagEnd::CodeBlock)) => {
             write_code_block_border(
                 writer,
                 &settings.theme,
@@ -438,7 +440,7 @@ pub fn write_event<'a, W: Write>(
         }
 
         // Inline markup
-        (Stacked(stack, Inline(state, attrs)), Start(Emphasis)) => {
+        (Stacked(stack, Inline(state, attrs)), Start(Tag::Emphasis)) => {
             let InlineAttrs { style, indent } = attrs;
             let effects = style.get_effects();
             let style =
@@ -449,8 +451,8 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(_, _)), End(Emphasis)) => stack.pop().and_data(data).ok(),
-        (Stacked(stack, Inline(state, attrs)), Start(Strong)) => {
+        (Stacked(stack, Inline(_, _)), End(TagEnd::Emphasis)) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, Inline(state, attrs)), Start(Tag::Strong)) => {
             let InlineAttrs { indent, .. } = attrs;
             let style = attrs.style.bold();
             stack
@@ -459,8 +461,8 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(_, _)), End(Strong)) => stack.pop().and_data(data).ok(),
-        (Stacked(stack, Inline(state, attrs)), Start(Strikethrough)) => {
+        (Stacked(stack, Inline(_, _)), End(TagEnd::Strong)) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, Inline(state, attrs)), Start(Tag::Strikethrough)) => {
             let InlineAttrs { indent, .. } = attrs;
             let style = attrs.style.strikethrough();
             stack
@@ -469,7 +471,9 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(_, _)), End(Strikethrough)) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, Inline(_, _)), End(TagEnd::Strikethrough)) => {
+            stack.pop().and_data(data).ok()
+        }
         (Stacked(stack, Inline(state, attrs)), Code(code)) => {
             let current_line = write_styled_and_wrapped(
                 writer,
@@ -586,13 +590,13 @@ pub fn write_event<'a, W: Write>(
             stack.current(Inline(state, attrs)).and_data(data).ok()
         }
         // Ending inline text
-        (Stacked(stack, Inline(_, _)), End(Paragraph)) => {
+        (Stacked(stack, Inline(_, _)), End(TagEnd::Paragraph)) => {
             writeln!(writer)?;
             Ok(stack
                 .pop()
                 .and_data(data.current_line(CurrentLine::empty())))
         }
-        (Stacked(stack, Inline(_, _)), End(Heading(_, _, _))) => {
+        (Stacked(stack, Inline(_, _)), End(TagEnd::Heading(_))) => {
             writeln!(writer)?;
             Ok(stack
                 .pop()
@@ -603,7 +607,14 @@ pub fn write_event<'a, W: Write>(
         //
         // Links need a bit more work than standard inline markup because we
         // need to keep track of link references if we can't write inline links.
-        (Stacked(stack, Inline(state, attrs)), Start(Link(link_type, target, _))) => {
+        (
+            Stacked(stack, Inline(state, attrs)),
+            Start(Tag::Link {
+                link_type,
+                dest_url,
+                ..
+            }),
+        ) => {
             let maybe_link = settings
                 .terminal_capabilities
                 .style
@@ -611,9 +622,9 @@ pub fn write_event<'a, W: Write>(
                 .and_then(|_| {
                     if let LinkType::Email = link_type {
                         // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
-                        Url::parse(&format!("mailto:{target}")).ok()
+                        Url::parse(&format!("mailto:{dest_url}")).ok()
                     } else {
-                        environment.resolve_reference(&target)
+                        environment.resolve_reference(&dest_url)
                     }
                 });
 
@@ -650,19 +661,19 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(InlineLink, _)), End(Link(_, _, _))) => {
+        (Stacked(stack, Inline(InlineLink, _)), End(TagEnd::Link)) => {
             clear_link(writer)?;
             stack.pop().and_data(data).ok()
         }
         // When closing email or autolinks in inline text just return because link, being identical
         // to the link text, was already written.
-        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Autolink, _, _))) => {
+        (Stacked(stack, Inline(InlineText, _)), End(TagEnd::Link(LinkType::Autolink, _, _))) => {
             stack.pop().and_data(data).ok()
         }
-        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Email, _, _))) => {
+        (Stacked(stack, Inline(InlineText, _)), End(TagEnd::Link(LinkType::Email, _, _))) => {
             stack.pop().and_data(data).ok()
         }
-        (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
+        (Stacked(stack, Inline(InlineText, attrs)), End(TagEnd::Link(_, target, title))) => {
             let (data, index) = data.add_link(target, title, settings.theme.link_style);
             write_styled(
                 writer,
@@ -674,7 +685,7 @@ pub fn write_event<'a, W: Write>(
         }
 
         // Images
-        (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
+        (Stacked(stack, Inline(state, attrs)), Start(Tag::Image(_, link, _))) => {
             let InlineAttrs { style, indent } = attrs;
             let resolved_link = environment.resolve_reference(&link);
             let image_state = match (settings.terminal_capabilities.image, resolved_link) {
@@ -729,8 +740,8 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, RenderedImage), Text(_)) => {
             Stacked(stack, RenderedImage).and_data(data).ok()
         }
-        (Stacked(stack, RenderedImage), End(Image(_, _, _))) => stack.pop().and_data(data).ok(),
-        (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
+        (Stacked(stack, RenderedImage), End(TagEnd::Image)) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, Inline(state, attrs)), End(TagEnd::Image(_, target, title))) => {
             if let InlineLink = state {
                 clear_link(writer)?;
                 stack.pop().and_data(data).ok()
@@ -749,8 +760,8 @@ pub fn write_event<'a, W: Write>(
         }
 
         // Unconditional returns to previous states
-        (Stacked(stack, _), End(BlockQuote)) => stack.pop().and_data(data).ok(),
-        (Stacked(stack, _), End(List(_))) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, _), End(TagEnd::BlockQuote)) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, _), End(TagEnd::List(_))) => stack.pop().and_data(data).ok(),
 
         // Impossible events
         (s, e) => panic!("Event {e:?} impossible in state {s:?}"),
