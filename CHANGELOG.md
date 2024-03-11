@@ -8,6 +8,10 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+
+- Update dependencies to address Rust security advisories.
+
 ## [2.1.1] – 2024-01-15
 
 ### Changed
