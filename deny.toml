@@ -8,7 +8,10 @@ targets = [
 
 [advisories]
 version = 2
-ignore = []
+ignore = [
+  # We don't care about safemem being unmaintained
+  "RUSTSEC-2023-0081"
+]
 
 [licenses]
 version = 2
