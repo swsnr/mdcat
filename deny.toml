@@ -24,7 +24,6 @@ allow = [
     "Unicode-DFS-2016",
     "OpenSSL"
 ]
-confidence-threshold = 0.8
 # We don't care for unused whitelisted licenses
 unused-allowed-license = "allow"
 
