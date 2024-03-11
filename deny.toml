@@ -1,3 +1,4 @@
+[graph]
 targets = [
   { triple = 'x86_64-unknown-linux-musl' },
   { triple = 'x86_64-unknown-linux-gnu' },
@@ -6,14 +7,11 @@ targets = [
 ]
 
 [advisories]
-vulnerability = "deny"
-unmaintained = "deny"
-yanked = "deny"
-notice = "warn"
+version = 2
 ignore = []
 
 [licenses]
-unlicensed = "deny"
+version = 2
 allow = [
     "MIT",
     "Apache-2.0",
@@ -26,11 +24,6 @@ allow = [
     "Unicode-DFS-2016",
     "OpenSSL"
 ]
-deny = []
-# Deny all copyleft license except the ones above.
-copyleft = "deny"
-allow-osi-fsf-free = "neither"
-default = "deny"
 confidence-threshold = 0.8
 # We don't care for unused whitelisted licenses
 unused-allowed-license = "allow"
