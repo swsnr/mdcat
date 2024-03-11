@@ -21,7 +21,7 @@ regex-fancy = ["syntect/regex-fancy"]
 onig = ["syntect/regex-onig"]
 
 [dependencies]
-base64 = { version = "0.21.0", default-features = false, features = ["std"] }
+base64 = { version = "0.22.0", default-features = false, features = ["std"] }
 anstyle = { version = "1.0.0", default-features = false }
 mime = { version = "0.3.17", default-features = false }
 mime_guess = { version = "2.0.4", default-features = false }
@@ -33,10 +33,10 @@ tracing = { version = "0.1.37", default-features = false, features = ["attribute
 url = "2.3.1"
 
 # Optional for svg support
-resvg = { version = "0.39.0", optional = true, default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
+resvg = { version = "0.40.0", optional = true, default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
 # Optional for image processing support; we deliberately build with default
 # features to include all possible image formats
-image = { version = "0.24.6", optional = true }
+image = { version = "0.25.0", optional = true }
 
 [dev-dependencies]
 glob = "0.3.1"

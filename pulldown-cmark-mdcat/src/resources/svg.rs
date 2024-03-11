@@ -19,7 +19,7 @@ mod implementation {
     use std::{error::Error, io::ErrorKind};
 
     use resvg::tiny_skia::{IntSize, Pixmap, Transform};
-    use resvg::usvg::{self, PostProcessingSteps, Tree};
+    use resvg::usvg::{self, Tree};
     use thiserror::Error;
     use usvg::fontdb;
 
@@ -43,24 +43,17 @@ mod implementation {
 
     fn parse_svg(svg: &[u8]) -> Result<Tree, RenderSvgError> {
         let opt = usvg::Options::default();
-        let mut tree = usvg::Tree::from_data(svg, &opt)?;
         let fonts = FONTS.get_or_init(|| {
             let mut fontdb = fontdb::Database::new();
             fontdb.load_system_fonts();
             fontdb
         });
-        tree.postprocess(
-            PostProcessingSteps {
-                convert_text_into_paths: true,
-            },
-            fonts,
-        );
-        Ok(tree)
+        Ok(usvg::Tree::from_data(svg, &opt, fonts)?)
     }
 
     fn render_svg_to_png_with_resvg(svg: &[u8]) -> Result<Vec<u8>, RenderSvgError> {
         let tree = parse_svg(svg)?;
-        let size = tree.size.to_int_size();
+        let size = tree.size().to_int_size();
         let mut pixmap = Pixmap::new(size.width(), size.height())
             .ok_or(RenderSvgError::FailedToCreatePixmap(size))?;
         // We create a pixmap of the appropriate size so the size transform in render cannot fail, so
