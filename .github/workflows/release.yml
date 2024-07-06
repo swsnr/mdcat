@@ -71,7 +71,7 @@ jobs:
             '/^\[[^]]*\]/{print $0}/^## \[[0-9]/ && match($0, /\[[0-9][^]]*\]/){if (r == substr($0, RSTART+1, RLENGTH-2)) { p=1; next } else { p=0 } }p' \
             CHANGELOG.md > ./CHANGELOG-release.md
           cat CHANGELOG-release.md
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         with:
           name: mdcat-${{ steps.version.outputs.version }}
           body_path: ./CHANGELOG-release.md
