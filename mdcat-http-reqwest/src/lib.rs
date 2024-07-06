@@ -335,7 +335,7 @@ mod tests {
         let error = format!("{:#}", result.unwrap_err());
         assert_eq!(
             error,
-            format!("Failed to read from {url}: error decoding response body: operation timed out")
+            format!("Failed to read from {url}: error decoding response body")
         );
     }
 
