@@ -118,9 +118,7 @@ pub fn create_resource_handler(access: ResourceAccess) -> Result<DispatchingReso
         let proxies = system_proxy::env::EnvProxies::from_curl_env();
         let client = mdcat_http_reqwest::build_default_client()
             .user_agent(user_agent)
-            .proxy(Proxy::custom(move |url| {
-                proxies.lookup(url).map(Clone::clone)
-            }))
+            .proxy(Proxy::custom(move |url| proxies.lookup(url).cloned()))
             .build()
             .with_context(|| "Failed to build HTTP client".to_string())?;
         resource_handlers.push(Box::new(HttpResourceHandler::new(
