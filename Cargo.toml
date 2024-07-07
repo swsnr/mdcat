@@ -18,15 +18,15 @@ default = ["mdcat-http-reqwest/native-tls"]
 static = ["mdcat-http-reqwest/rustls-tls-native-roots"]
 
 [dependencies]
-anyhow = { version = "1.0.70", default-features = false, features = ["std"] }
-clap = { version = "4.2.2", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
+anyhow = { version = "1.0.86", default-features = false, features = ["std"] }
+clap = { version = "4.5.8", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 human-panic = { version = "2.0.0", default-features = false, features = ["color"] }
 pulldown-cmark = { version = "0.9.2", default-features = false, features = ['simd'] }
 reqwest = { version = "0.12.5", default-features = false }
 shell-words = { version = "1.1.0", default-features = false, features = ["std"] }
-syntect = { version = "5.0.0", default-features = false, features = ["regex-fancy", "default-syntaxes"] }
-tracing = { version = "0.1.37", default-features = false, features = ["attributes"] }
-tracing-subscriber = { version = "0.3.16", default-features = false, features = ["env-filter", "std", "fmt", "ansi"] }
+syntect = { version = "5.2.0", default-features = false, features = ["regex-fancy", "default-syntaxes"] }
+tracing = { version = "0.1.40", default-features = false, features = ["attributes"] }
+tracing-subscriber = { version = "0.3.18", default-features = false, features = ["env-filter", "std", "fmt", "ansi"] }
 system_proxy = { version = "0.3.2", default-features = false }
 
 # Our own crates; pinned to an exact version because we release all of this repo
@@ -35,15 +35,15 @@ mdcat-http-reqwest = { version = "=2.1.2", path = "mdcat-http-reqwest", default-
 pulldown-cmark-mdcat = { version = "=2.1.2", path = "pulldown-cmark-mdcat" }
 
 [dev-dependencies]
-similar-asserts = "1.4.2"
+similar-asserts = "1.5.0"
 
 [build-dependencies]
 # To generate completions during build
-clap = { version = "4.2.2", features = ["derive"] }
-clap_complete = "4.2.0"
+clap = { version = "4.5.8", features = ["derive"] }
+clap_complete = "4.5.7"
 
 [target.'cfg(windows)'.dependencies]
-anstyle-query = { version = "1.0.0", default-features = false }
+anstyle-query = { version = "1.1.0", default-features = false }
 
 [profile.release]
 # Enable LTO for release builds; makes the binary a lot smaller
