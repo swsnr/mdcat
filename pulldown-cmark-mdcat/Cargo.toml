@@ -31,6 +31,7 @@ textwrap = { version = "0.16.0", default-features = false, features = ["unicode-
 thiserror = { version = "1.0.40", default-features = false }
 tracing = { version = "0.1.37", default-features = false, features = ["attributes"] }
 url = "2.3.1"
+gethostname = "0.5.0"
 
 # Optional for svg support
 resvg = { version = "0.42.0", optional = true, default-features = false, features = ["text", "system-fonts", "memmap-fonts"] }
@@ -54,7 +55,6 @@ rustix = { version = "0.38.15", default-features = false, features = ["std", "te
 
 [target.'cfg(windows)'.dependencies]
 terminal_size = "0.3.0"
-gethostname = "0.4.3"
 
 [package.metadata.release]
 release = true

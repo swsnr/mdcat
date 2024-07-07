@@ -42,10 +42,10 @@
 #![deny(warnings, missing_docs, clippy::all)]
 #![forbid(unsafe_code)]
 
-use std::ffi::OsString;
 use std::io::{Error, ErrorKind, Result, Write};
 use std::path::Path;
 
+use gethostname::gethostname;
 use pulldown_cmark::Event;
 use syntect::parsing::SyntaxSet;
 use tracing::instrument;
@@ -83,18 +83,6 @@ pub struct Environment {
     pub base_url: Url,
     /// The local host name.
     pub hostname: String,
-}
-
-#[cfg(windows)]
-fn gethostname() -> OsString {
-    gethostname::gethostname()
-}
-
-#[cfg(unix)]
-fn gethostname() -> OsString {
-    use std::os::unix::prelude::*;
-
-    OsString::from_vec(rustix::system::uname().nodename().to_bytes().to_vec())
 }
 
 impl Environment {
