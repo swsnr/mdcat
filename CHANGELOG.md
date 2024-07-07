@@ -11,6 +11,9 @@ Use `cargo release` to create a new release.
 ### Changed
 
 - Update a few vulnerable dependencies.
+- Update resvg, which among other things enables colored emoji in SVG files (see [GH-283]).
+
+[Gh-283]: https://github.com/swsnr/mdcat/pull/283
 
 ## [2.1.2] – 2024-03-11
 
