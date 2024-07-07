@@ -153,74 +153,72 @@ mod tests {
     use std::time::Duration;
     use std::{convert::Infallible, net::SocketAddr};
 
-    use hyper::body::Bytes;
-    use hyper::service::{make_service_fn, service_fn};
-    use hyper::{Body, Request, Response, Server};
+    use futures::StreamExt;
+    use http_body_util::combinators::BoxBody;
+    use http_body_util::{BodyExt, Empty, Full, StreamBody};
+    use hyper::body::{Bytes, Frame, Incoming};
+    use hyper::service::service_fn;
+    use hyper::{Request, Response};
+    use hyper_util::rt::TokioIo;
     use pulldown_cmark_mdcat::resources::ResourceUrlHandler;
     use reqwest::Url;
+    use tokio::net::TcpListener;
     use tokio::runtime::Runtime;
     use tokio::sync::oneshot;
     use tokio::task::JoinHandle;
+    use tokio_stream::wrappers::IntervalStream;
 
     use super::HttpResourceHandler;
 
-    async fn mock_service(req: Request<Body>) -> Result<Response<Body>, Infallible> {
+    async fn mock_service(
+        req: Request<Incoming>,
+    ) -> Result<Response<BoxBody<Bytes, Infallible>>, Infallible> {
         let response = match req.uri().path() {
             "/png" => Response::builder()
                 .status(200)
                 .header("content-type", "image/png")
-                .body(Body::from("would-be-a-png-image"))
+                .body(Full::new(Bytes::from("would-be-a-png-image")).boxed())
                 .unwrap(),
-            "/empty-response" => Response::builder().status(201).body(Body::empty()).unwrap(),
+            "/empty-response" => Response::builder()
+                .status(201)
+                .body(Empty::new().boxed())
+                .unwrap(),
             "/drip-very-slow" => {
-                let (mut sender, body) = Body::channel();
-                let size = 30_000;
-                tokio::spawn(async move {
-                    for chunk in std::iter::repeat(Bytes::copy_from_slice(&[b'x'; 1000])).take(size)
-                    {
-                        if sender
-                            .send_data(Bytes::copy_from_slice(&chunk))
-                            .await
-                            .is_err()
-                        {
-                            break;
-                        }
-                        tokio::time::sleep(Duration::from_secs(5)).await;
-                    }
-                });
+                let chunk_count = 30_000;
+                const CHUNK_SIZE: usize = 1000;
+                let data_stream =
+                    IntervalStream::new(tokio::time::interval(Duration::from_secs(5)))
+                        .map(|_| Bytes::copy_from_slice(&[b'x'; CHUNK_SIZE]))
+                        .map(|chunk| Ok(Frame::data(chunk)))
+                        .take(chunk_count);
                 Response::builder()
                     .status(200)
-                    .header("content-length", size * 1000)
+                    .header("content-length", chunk_count * CHUNK_SIZE)
                     .header("content-type", "application/octet-stream")
-                    .body(body)
+                    .body(BoxBody::new(StreamBody::new(data_stream)))
                     .unwrap()
             }
             // Drip-feed a very very large response with a 1kb chunk per 250ms, with content-length
             // set appropriately.
             "/drip-large" => {
-                let (mut sender, body) = Body::channel();
-                let size = 150_000;
-                tokio::spawn(async move {
-                    for chunk in std::iter::repeat(Bytes::copy_from_slice(&[b'x'; 1000])).take(size)
-                    {
-                        if sender
-                            .send_data(Bytes::copy_from_slice(&chunk))
-                            .await
-                            .is_err()
-                        {
-                            break;
-                        }
-                        tokio::time::sleep(Duration::from_millis(250)).await;
-                    }
-                });
+                let chunk_count = 150_000;
+                const CHUNK_SIZE: usize = 1000;
+                let data_stream =
+                    IntervalStream::new(tokio::time::interval(Duration::from_millis(250)))
+                        .map(|_| Bytes::copy_from_slice(&[b'x'; CHUNK_SIZE]))
+                        .map(|chunk| Ok(Frame::data(chunk)))
+                        .take(chunk_count);
                 Response::builder()
                     .status(200)
-                    .header("content-length", size * 1000)
+                    .header("content-length", chunk_count * CHUNK_SIZE)
                     .header("content-type", "application/octet-stream")
-                    .body(body)
+                    .body(BoxBody::new(StreamBody::new(data_stream)))
                     .unwrap()
             }
-            _ => Response::builder().status(404).body(Body::empty()).unwrap(),
+            _ => Response::builder()
+                .status(404)
+                .body(Empty::new().boxed())
+                .unwrap(),
         };
         Ok(response)
     }
@@ -240,18 +238,26 @@ mod tests {
                 .enable_all()
                 .build()
                 .unwrap();
-            let (terminate_sender, terminate_receiver) = oneshot::channel();
+
+            let (terminate_sender, mut terminate_receiver) = oneshot::channel();
             let (addr_sender, addr_receiver) = oneshot::channel();
             let join_handle = runtime.spawn(async move {
-                let make_service = make_service_fn(|_conn| async {
-                    Ok::<_, Infallible>(service_fn(mock_service))
-                });
-                let server = Server::bind(&addr).serve(make_service);
-                addr_sender.send(server.local_addr()).unwrap();
-                let shutdown = server.with_graceful_shutdown(async {
-                    terminate_receiver.await.ok().unwrap_or_default()
-                });
-                let _ = shutdown.await;
+                let listener = TcpListener::bind(addr).await.unwrap();
+                addr_sender.send(listener.local_addr().unwrap()).unwrap();
+                loop {
+                    tokio::select! {
+                        Ok((stream, _)) = listener.accept() => {
+                            let io = TokioIo::new(stream);
+                            tokio::task::spawn(async move {
+                                hyper::server::conn::http1::Builder::new()
+                                    .serve_connection(io, service_fn(mock_service))
+                                    .await
+                                    .unwrap();
+                            });
+                        }
+                        _ = (&mut terminate_receiver) => break,
+                    };
+                }
             });
             let local_addr = runtime.block_on(addr_receiver).unwrap();
             Self {
