@@ -15,7 +15,7 @@ pub fn render_svg_to_png(svg: &[u8]) -> Result<Vec<u8>> {
 
 #[cfg(feature = "svg")]
 mod implementation {
-    use std::sync::OnceLock;
+    use std::sync::{Arc, OnceLock};
     use std::{error::Error, io::ErrorKind};
 
     use resvg::tiny_skia::{IntSize, Pixmap, Transform};
@@ -39,16 +39,19 @@ mod implementation {
         }
     }
 
-    static FONTS: OnceLock<fontdb::Database> = OnceLock::new();
+    static FONTS: OnceLock<Arc<fontdb::Database>> = OnceLock::new();
 
     fn parse_svg(svg: &[u8]) -> Result<Tree, RenderSvgError> {
-        let opt = usvg::Options::default();
         let fonts = FONTS.get_or_init(|| {
             let mut fontdb = fontdb::Database::new();
             fontdb.load_system_fonts();
-            fontdb
+            Arc::new(fontdb)
         });
-        Ok(usvg::Tree::from_data(svg, &opt, fonts)?)
+        let options = usvg::Options {
+            fontdb: fonts.clone(),
+            ..Default::default()
+        };
+        Ok(usvg::Tree::from_data(svg, &options)?)
     }
 
     fn render_svg_to_png_with_resvg(svg: &[u8]) -> Result<Vec<u8>, RenderSvgError> {
