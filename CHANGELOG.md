@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.2.0] – 2024-07-11
+
 ### Changed
 
 - Update a few vulnerable dependencies.
@@ -744,7 +746,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.2...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.2.0...HEAD
+[2.2.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.2...mdcat-2.2.0
 [2.1.2]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.1...mdcat-2.1.2
 [2.1.1]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.0...mdcat-2.1.1
 [2.1.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.0.4...mdcat-2.1.0
