@@ -1,7 +1,5 @@
 # mdcat
 
-**I no longer maintain this tool and its crates.**
-
 Fancy `cat` for Markdown (that is, [CommonMark][]):
 
 ```
