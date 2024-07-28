@@ -20,6 +20,7 @@ static = ["mdcat-http-reqwest/rustls-tls-native-roots"]
 [dependencies]
 anyhow = { version = "1.0.86", default-features = false, features = ["std"] }
 clap = { version = "4.5.8", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
+clap_complete = "4.5.7"
 human-panic = { version = "2.0.0", default-features = false, features = ["color"] }
 pulldown-cmark = { workspace = true, features = ['simd'] }
 reqwest = { workspace = true }
@@ -36,11 +37,6 @@ pulldown-cmark-mdcat = { version = "=2.2.0", path = "pulldown-cmark-mdcat" }
 
 [dev-dependencies]
 similar-asserts = { workspace = true }
-
-[build-dependencies]
-# To generate completions during build
-clap = { version = "4.5.8", features = ["derive"] }
-clap_complete = "4.5.7"
 
 [target.'cfg(windows)'.dependencies]
 anstyle-query = { version = "1.1.0", default-features = false }

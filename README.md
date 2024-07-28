@@ -73,19 +73,35 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 
 Run `cargo build --release`.
 The resulting `mdcat` executable links against the system's SSL library, i.e. openssl on Linux.
+
 To build a self-contained executable use `cargo build --features=static`; the resulting executable uses a pure Rust SSL implementation.
 It still uses the system's CA roots however.
 
-The build process also generates the following additional files in `$OUT_DIR`:
+## Packaging
 
-* Completions for Bash, Zsh, Fish, and Powershell, for both `mdcat` and `mdless`, in `completions` sub-directory.
-* A `mdcat.1` manpage, build from `mdcat.1.adoc` with the `asciidoctor` command from [AsciiDoctor].
-  If `asciidoctor` is not found the build script prints a warning.
+When packaging `mdcat` you may wish to include the following additional artifacts:
 
-These additional artifacts are included in the release builds.
-If you package mdcat you may want to include these files too.
+- A symlink or hardlink from `mdless` to `mdcat` (see above).
+- Shell completions for relevant shells, by invoking `mdcat --completions` after building, e.g.
 
-You may also want to include an `mdless` link to `mdcat` (see above).
+  ```console
+  $ mdcat --completions fish > /usr/share/fish/vendor_completions.d/mdcat.fish
+  $ mdcat --completions bash > /usr/share/bash-completion/completions/mdcat
+  $ mdcat --completions zsh > /usr/share/zsh/site-functions/_mdcat
+  # Same for mdless if you include it
+  $ mdless --completions fish > /usr/share/fish/vendor_completions.d/mdless.fish
+  $ mdless --completions bash > /usr/share/bash-completion/completions/mdless
+  $ mdless --completions zsh > /usr/share/zsh/site-functions/_mdless
+  ```
+
+- A build of the man page `mdcat.1.adoc`, using [AsciiDoctor]:
+
+  ```console
+  $ asciidoctor -b manpage -a reproducible -o /usr/share/man/man1/mdcat.1 mdcat.1.adoc
+  $ gzip /usr/share/man/man1/mdcat.1
+  # If you include a mdless as above, you may also want to support man mdless
+  $ ln -s mdcat.1.gz /usr/share/man/man1/mdless.1.gz
+  ```
 
 [AsciiDoctor]: https://asciidoctor.org/
 

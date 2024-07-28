@@ -9,7 +9,6 @@ set -exuo pipefail
 
 VERSION="$1"
 TARGET="$2"
-OUTDIR="$3"
 
 ARCHIVE_NAME="mdcat-${VERSION}-${TARGET}"
 
@@ -19,8 +18,7 @@ package_windows() {
     mv LICENSE LICENSE.txt
     7z a "${archive_file}" \
         "./target/${TARGET}/release/mdcat.exe" \
-        ./README.md ./CHANGELOG.md ./LICENSE.txt ./mdcat.1.adoc \
-        "${OUTDIR}/completions"
+        ./README.md ./CHANGELOG.md ./LICENSE.txt ./mdcat.1.adoc
     if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
         echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"
         echo "name=${ARCHIVE_NAME}.zip" >>"${GITHUB_OUTPUT}"
@@ -38,7 +36,7 @@ package_unix() {
     cp -r \
         README.md CHANGELOG.md LICENSE \
         "target/${TARGET}/release/mdcat" \
-        "${OUTDIR}/mdcat.1" "${OUTDIR}/completions" \
+        "mdcat.1" \
         "${pkg_dir}/${ARCHIVE_NAME}"
     tar -czf "${PWD}/${archive_file}" -C "${pkg_dir}" "${ARCHIVE_NAME}"
     echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"

@@ -5,6 +5,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use clap::ValueHint;
+use clap_complete::Shell;
 
 fn after_help() -> &'static str {
     "See 'man 1 mdcat' for more information.
@@ -61,7 +62,6 @@ pub enum Command {
 }
 
 impl Command {
-    #[allow(dead_code)]
     pub fn paginate(&self) -> bool {
         match *self {
             // In both cases look at the option indicating the non-default
@@ -107,6 +107,9 @@ pub struct CommonArgs {
     /// Skip terminal detection and only use ANSI formatting.
     #[arg(long = "ansi", conflicts_with = "no_colour")]
     pub ansi_only: bool,
+    /// Generate completions for a shell to standard output and exit.
+    #[arg(long)]
+    pub completions: Option<Shell>,
 }
 
 /// What resources mdcat may access.
