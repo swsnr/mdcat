@@ -73,20 +73,9 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 
 Run `cargo build --release`.
 The resulting `mdcat` executable links against the system's SSL library, i.e. openssl on Linux.
+
 To build a self-contained executable use `cargo build --features=static`; the resulting executable uses a pure Rust SSL implementation.
 It still uses the system's CA roots however.
-
-The build process also generates the following additional files in `$OUT_DIR`:
-
-- A `mdcat.1` manpage, build from `mdcat.1.adoc` with the `asciidoctor` command from [AsciiDoctor].
-  If `asciidoctor` is not found the build script prints a warning.
-
-These additional artifacts are included in the release builds.
-If you package mdcat you may want to include these files too.
-
-You may also want to include an `mdless` link to `mdcat` (see above).
-
-[AsciiDoctor]: https://asciidoctor.org/
 
 ## Packaging
 
@@ -104,6 +93,17 @@ When packaging `mdcat` you may wish to include the following additional artifact
   $ mdless --completions bash > /usr/share/bash-completion/completions/mdless
   $ mdless --completions zsh > /usr/share/zsh/site-functions/_mdless
   ```
+
+- A build of the man page `mdcat.1.adoc`, using [AsciiDoctor]:
+
+  ```console
+  $ asciidoctor -b manpage -a reproducible -o /usr/share/man/man1/mdcat.1 mdcat.1.adoc
+  $ gzip /usr/share/man/man1/mdcat.1
+  # If you include a mdless as above, you may also want to support man mdless
+  $ ln -s mdcat.1.gz /usr/share/man/man1/mdless.1.gz
+  ```
+
+[AsciiDoctor]: https://asciidoctor.org/
 
 ## Troubleshooting
 

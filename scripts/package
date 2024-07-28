@@ -9,7 +9,6 @@ set -exuo pipefail
 
 VERSION="$1"
 TARGET="$2"
-OUTDIR="$3"
 
 ARCHIVE_NAME="mdcat-${VERSION}-${TARGET}"
 
@@ -37,7 +36,7 @@ package_unix() {
     cp -r \
         README.md CHANGELOG.md LICENSE \
         "target/${TARGET}/release/mdcat" \
-        "${OUTDIR}/mdcat.1" \
+        "mdcat.1" \
         "${pkg_dir}/${ARCHIVE_NAME}"
     tar -czf "${PWD}/${archive_file}" -C "${pkg_dir}" "${ARCHIVE_NAME}"
     echo "file=${archive_file}" >>"${GITHUB_OUTPUT}"

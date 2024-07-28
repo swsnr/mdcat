@@ -15,9 +15,14 @@ Use `cargo release` to create a new release.
 - Update dependencies.
 
 ### Removed
-- mdcat now longer builds shell completions during compilation (see [GH-286]).
+- mdcat now longer builds shell completions and man pages during compilation (see [GH-286]).
+  - Packagers now need to build the manpage explicitly during packaging.
 - Release artifacts no longer contain completions; use `mdcat --completions` to generate them instead (see [GH-286]).
 
+### Fixed
+- Restore binary release artifacts (see [GH-284])
+
+[GH-284]: https://github.com/swsnr/mdcat/issues/284
 [GH-286]: https://github.com/swsnr/mdcat/pull/286
 
 ## [2.2.0] – 2024-07-11

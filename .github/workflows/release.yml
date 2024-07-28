@@ -28,12 +28,9 @@ jobs:
         if: ${{ !contains(matrix.target, 'windows') }}
       - run: sudo apt-get install musl-tools
         if: ${{ contains(matrix.target, 'linux-musl') }}
-      - shell: bash
-        id: build
-        run: |
-            OUTDIR="$(cargo build --locked --target '${{ matrix.target }}' ${{ matrix.cargo_opts }} --release --message-format=json-render-diagnostics |
-                jq -r 'select(.out_dir) | select(.package_id | startswith("mdcat ")) | .out_dir')"
-            echo "outdir=$OUTDIR" >>"$GITHUB_OUTPUT"
+      - run: cargo build --locked --target '${{ matrix.target }}' ${{ matrix.cargo_opts }} --release
+      - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
+        if: ${{ !contains(matrix.target, 'windows') }}
       - run: strip 'target/${{ matrix.target }}/release/mdcat'
         if: ${{ !contains(matrix.target, 'windows') }}
       - id: version
@@ -42,7 +39,7 @@ jobs:
           echo "version=$(cargo pkgid | cut -d'#' -f2 | cut -d: -f2)" >>"${GITHUB_OUTPUT}"
       - id: package
         shell: bash
-        run: ./scripts/package '${{ steps.version.outputs.version }}' '${{ matrix.target }}' '${{ steps.build.outputs.outdir }}'
+        run: ./scripts/package '${{ steps.version.outputs.version }}' '${{ matrix.target }}'
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.package.outputs.name }}
