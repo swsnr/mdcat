@@ -22,18 +22,15 @@ anyhow = { version = "1.0.86", default-features = false, features = ["std"] }
 clap = { version = "4.5.8", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 clap_complete = "4.5.7"
 human-panic = { version = "2.0.0", default-features = false, features = ["color"] }
+mdcat-http-reqwest = { workspace = true }
 pulldown-cmark = { workspace = true, features = ['simd'] }
+pulldown-cmark-mdcat = { workspace = true, default-features = true }
 reqwest = { workspace = true }
 shell-words = { version = "1.1.0", default-features = false, features = ["std"] }
 syntect = { workspace = true, features = ["regex-fancy", "default-syntaxes"] }
+system_proxy = { version = "0.3.2", default-features = false }
 tracing = { workspace = true }
 tracing-subscriber = { version = "0.3.18", default-features = false, features = ["env-filter", "std", "fmt", "ansi"] }
-system_proxy = { version = "0.3.2", default-features = false }
-
-# Our own crates; pinned to an exact version because we release all of this repo
-# in a single version. cargo release takes care of updating these.
-mdcat-http-reqwest = { version = "=2.2.0", path = "mdcat-http-reqwest", default-features = false}
-pulldown-cmark-mdcat = { version = "=2.2.0", path = "pulldown-cmark-mdcat" }
 
 [dev-dependencies]
 similar-asserts = { workspace = true }
@@ -80,6 +77,11 @@ reqwest = { version = "0.12.5", default-features = false }
 similar-asserts = "1.5.0"
 syntect = { version = "5.2.0", default-features = false }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes"]  }
+
+# Our own crates; pinned to an exact version because we release all of this repo
+# in a single version. cargo release takes care of updating these.
+pulldown-cmark-mdcat = { version = "=2.2.0", path = "pulldown-cmark-mdcat", default-features = false }
+mdcat-http-reqwest = { version = "=2.2.0", path = "mdcat-http-reqwest", default-features = false}
 
 [workspace.metadata.release]
 allow-branch = ["main"]

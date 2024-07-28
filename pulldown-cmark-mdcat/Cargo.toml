@@ -45,7 +45,7 @@ similar-asserts = { workspace = true }
 syntect = { workspace = true, features = ["default-syntaxes"] }
 temp-env = { version = "0.3.6", default-features = false }
 
-mdcat-http-reqwest = { path = "../mdcat-http-reqwest/", features = ["rustls-tls-native-roots"] }
+mdcat-http-reqwest = { workspace = true, features = ["rustls-tls-native-roots"] }
 
 [build-dependencies]
 syntect = { workspace = true, features = ["plist-load", "dump-create"] }
