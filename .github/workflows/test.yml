@@ -39,9 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Install musl tools for musl target
-      - run: sudo apt-get install musl-tools
-        if: ${{ contains(matrix.target, 'musl') }}
       - uses: dtolnay/rust-toolchain@stable
       # Check our library without any features (we do need to pick a regex
       # engine tho)
