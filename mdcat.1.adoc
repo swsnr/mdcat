@@ -100,9 +100,9 @@ This is the default when run as `mdcat`.
 --ansi::
     Skip terminal detection and only use ANSI formatting.
 
---columns::
+--columns=_COLUMNS_::
     Maximum number of columns to use for text output.
-    Defaults to the size of the underlying terminal.
+    Defaults to the size of the underlying terminal if omitted.
 
 -l::
 --local::
