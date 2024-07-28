@@ -95,17 +95,24 @@ jobs:
       # Test formatting
       - run: cargo fmt --all -- --check
 
+      # Since Windows builds are comparatively slow, we skip quite a few builds on Windows to speed up pipelines
+
       # Test library with no features; however we need to pick a regex engine
       - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+        if: ${{ !contains(matrix.target, 'windows') }}
       - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+        if: ${{ !contains(matrix.target, 'windows') }}
       - run: cargo test -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+        if: ${{ !contains(matrix.target, 'windows') }}
       - run: cargo doc -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+        if: ${{ !contains(matrix.target, 'windows') }}
 
       # Build and test entire workspace in default configuration
       - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
       - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
       - run: cargo test --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
       - run: cargo doc --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+        if: ${{ !contains(matrix.target, 'windows') }}
 
       # Run on our complete example, just to assert that the CLI doesn't crash
       - run: cargo run --target ${{ matrix.target }} ${{ matrix.cargo_opts }} -- sample/common-mark.md
