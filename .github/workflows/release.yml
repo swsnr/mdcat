@@ -25,9 +25,9 @@ jobs:
         with:
           targets: ${{ matrix.target }}
       - run: sudo gem install asciidoctor
-        if: "!contains(matrix.target, 'windows')"
+        if: '!contains(matrix.target, "windows")'
       - run: sudo apt-get install musl-tools
-        if: contains(matrix.target, 'linux-musl')
+        if: 'contains(matrix.target, "linux-musl")'
       - shell: bash
         id: build
         run: |
@@ -35,7 +35,7 @@ jobs:
                 jq -r 'select(.out_dir) | select(.package_id | startswith("mdcat ")) | .out_dir')"
             echo "outdir=$OUTDIR" >>"$GITHUB_OUTPUT"
       - run: strip 'target/${{ matrix.target }}/release/mdcat'
-        if: "!contains(matrix.target, 'windows')"
+        if: '!contains(matrix.target, "windows")'
       - id: version
         shell: bash
         run: |
