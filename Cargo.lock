@@ -1135,7 +1135,7 @@ dependencies = [
 
 [[package]]
 name = "mdcat"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "anstyle-query",
  "anyhow",
@@ -1156,7 +1156,7 @@ dependencies = [
 
 [[package]]
 name = "mdcat-http-reqwest"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "futures",
  "http-body-util",
@@ -1591,7 +1591,7 @@ dependencies = [
 
 [[package]]
 name = "pulldown-cmark-mdcat"
-version = "2.2.0"
+version = "2.3.0"
 dependencies = [
  "anstyle",
  "base64",

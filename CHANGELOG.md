@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.3.0] – 2024-07-28
+
 ### Added
 - mdcat now includes a `--completions` argument to generate shell completions for all major shells (see [GH-286]).
 
@@ -763,7 +765,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.2.0...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.3.0...HEAD
+[2.3.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.2.0...mdcat-2.3.0
 [2.2.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.2...mdcat-2.2.0
 [2.1.2]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.1...mdcat-2.1.2
 [2.1.1]: https://github.com/swsnr/mdcat/compare/mdcat-2.1.0...mdcat-2.1.1

@@ -1,8 +1,8 @@
 = mdcat(1)
 Sebastian Wiesner <sebastian@swsnr.de>
 :doctype: manpage
-:revnumber: 2.2.0
-:revdate: 2024-07-11
+:revnumber: 2.3.0
+:revdate: 2024-07-28
 :mansource: mdcat {revnumber}
 :manmanual: mdcat
 
