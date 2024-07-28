@@ -8,6 +8,9 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- Release builds no longer use fat LTO, which significantly reduces compilation time.
+
 ## [2.3.0] – 2024-07-28
 
 ### Added

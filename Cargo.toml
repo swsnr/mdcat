@@ -38,10 +38,6 @@ similar-asserts = { workspace = true }
 [target.'cfg(windows)'.dependencies]
 anstyle-query = { version = "1.1.0", default-features = false }
 
-[profile.release]
-# Enable LTO for release builds; makes the binary a lot smaller
-lto = true
-
 [package.metadata.release]
 release = true
 pre-release-replacements = [
