@@ -3,3 +3,6 @@
 **/*.rs.bk
 
 /mdcat.1
+
+# VSCode settings
+/.vscode/
