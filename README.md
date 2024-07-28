@@ -78,8 +78,7 @@ It still uses the system's CA roots however.
 
 The build process also generates the following additional files in `$OUT_DIR`:
 
-* Completions for Bash, Zsh, Fish, and Powershell, for both `mdcat` and `mdless`, in `completions` sub-directory.
-* A `mdcat.1` manpage, build from `mdcat.1.adoc` with the `asciidoctor` command from [AsciiDoctor].
+- A `mdcat.1` manpage, build from `mdcat.1.adoc` with the `asciidoctor` command from [AsciiDoctor].
   If `asciidoctor` is not found the build script prints a warning.
 
 These additional artifacts are included in the release builds.
@@ -88,6 +87,23 @@ If you package mdcat you may want to include these files too.
 You may also want to include an `mdless` link to `mdcat` (see above).
 
 [AsciiDoctor]: https://asciidoctor.org/
+
+## Packaging
+
+When packaging `mdcat` you may wish to include the following additional artifacts:
+
+- A symlink or hardlink from `mdless` to `mdcat` (see above).
+- Shell completions for relevant shells, by invoking `mdcat --completions` after building, e.g.
+
+  ```console
+  $ mdcat --completions fish > /usr/share/fish/vendor_completions.d/mdcat.fish
+  $ mdcat --completions bash > /usr/share/bash-completion/completions/mdcat
+  $ mdcat --completions zsh > /usr/share/zsh/site-functions/_mdcat
+  # Same for mdless if you include it
+  $ mdless --completions fish > /usr/share/fish/vendor_completions.d/mdless.fish
+  $ mdless --completions bash > /usr/share/bash-completion/completions/mdless
+  $ mdless --completions zsh > /usr/share/zsh/site-functions/_mdless
+  ```
 
 ## Troubleshooting
 

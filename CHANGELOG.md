@@ -8,8 +8,17 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Added
+- mdcat now includes a `--completions` argument to generate shell completions for all major shells (see [GH-286]).
+
 ### Changed
 - Update dependencies.
+
+### Removed
+- mdcat now longer builds shell completions during compilation (see [GH-286]).
+- Release artifacts no longer contain completions; use `mdcat --completions` to generate them instead (see [GH-286]).
+
+[GH-286]: https://github.com/swsnr/mdcat/pull/286
 
 ## [2.2.0] – 2024-07-11
 

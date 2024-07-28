@@ -9,7 +9,8 @@
 
 //! Show CommonMark documents on TTYs.
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::generate;
 use mdcat::{create_resource_handler, process_file};
 use pulldown_cmark_mdcat::terminal::{TerminalProgram, TerminalSize};
 use pulldown_cmark_mdcat::{Settings, Theme};
@@ -40,6 +41,17 @@ fn main() {
 
     let args = Args::parse().command;
     event!(target: "mdcat::main", Level::TRACE, ?args, "mdcat arguments");
+
+    if let Some(shell) = args.completions {
+        let binary = match args {
+            mdcat::args::Command::Mdcat { .. } => "mdcat",
+            mdcat::args::Command::Mdless { .. } => "mdless",
+        };
+        let mut command = Args::command();
+        let subcommand = command.find_subcommand_mut(binary).unwrap();
+        generate(shell, subcommand, binary, &mut std::io::stdout());
+        std::process::exit(0);
+    }
 
     let terminal = if args.no_colour {
         TerminalProgram::Dumb

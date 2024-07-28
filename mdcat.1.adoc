@@ -115,6 +115,11 @@ This is the default when run as `mdcat`.
 --detect-terminal::
     Detect the terminal program, print its name, and exit.
 
+--completions=_SHELL_::
+    Generate completions for _SHELL_ to standard output and exit.
+
+    _SHELL_ can be one of `bash`, `zsh`, `fish`, `powershell`, or `elvish`.
+
 -h::
 --help::
     Show a help message to the user and exit.

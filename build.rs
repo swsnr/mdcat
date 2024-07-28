@@ -8,28 +8,6 @@ use std::io::{Error, ErrorKind, Result};
 use std::path::Path;
 use std::process::Command;
 
-#[allow(dead_code)]
-mod mdcat {
-    include!("src/args.rs");
-}
-
-fn gen_completions<P: AsRef<Path>>(out_dir: P) -> Result<()> {
-    use clap::CommandFactory;
-    use clap_complete::*;
-
-    let completions = out_dir.as_ref().join("completions");
-    std::fs::create_dir_all(&completions).expect("Failed to create $OUT_DIR/completions");
-    for program in ["mdcat", "mdless"] {
-        for shell in [Shell::Bash, Shell::Zsh, Shell::Fish, Shell::PowerShell] {
-            let mut command = mdcat::Args::command();
-            let subcommand = command.find_subcommand_mut(program).unwrap();
-            generate_to(shell, subcommand, program, &completions)?;
-        }
-    }
-
-    Ok(())
-}
-
 fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
     let target_file = out_dir.as_ref().join("mdcat.1");
 
@@ -60,11 +38,6 @@ fn build_manpage<P: AsRef<Path>>(out_dir: P) -> Result<()> {
 
 fn main() {
     let out_dir = std::env::var_os("OUT_DIR").expect("OUT_DIR not set");
-
-    println!("cargo:rerun-if-changed=src/args.rs");
-    if let Err(error) = gen_completions(&out_dir) {
-        println!("cargo:warning=Failed to build completions: {error}");
-    }
 
     println!("cargo:rerun-if-changed=mdcat.1.adoc");
     if let Err(error) = build_manpage(&out_dir) {
