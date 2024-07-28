@@ -4,7 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::{borrow::Cow, iter::{repeat, zip}};
+use std::{
+    borrow::Cow,
+    iter::{repeat, zip},
+};
 
 use textwrap::core::{display_width, Fragment, Word};
 
@@ -138,19 +141,67 @@ pub struct FragmentLinesBLock<'a> {
     subsequent_line_indent: &'a str,
 }
 
-impl<'a> FragmentLinesBLock<'a> {
-    pub fn render(&self) -> impl Iterator<Item = RenderToken<'a>> {
-        let indentation = [self.first_line_indent]
-            .into_iter()
-            .chain(repeat(self.subsequent_line_indent));
-        zip(indentation, lines).flat_map(|(indentation, line)).
-    }
-}
-
 pub enum RenderToken<'a> {
     Text(&'a str),
-    Style(anstyle::Style),
-    Reset(anstyle::Reset),
-    SetLink(Link<'a>),
+    SetStyle(anstyle::Style),
+    ResetStyle(anstyle::Reset),
+    SetLink(&'a Link<'a>),
     ClearLink,
+}
+
+struct TokenState<'a> {
+    current_link: Option<&'a Link<'a>>,
+    current_style: Option<anstyle::Style>,
+}
+
+fn push_tokens<'a>(
+    line: &[RenderFragment<'a>],
+    token_buffer: &mut Vec<RenderToken<'a>>,
+) -> TokenState<'a> {
+    let mut token_state = TokenState {
+        current_link: None,
+        current_style: None,
+    };
+    for fragment in line {
+        todo!("Turn fragments into tokens here!")
+    }
+    // If we have an ongoing link/style, clear either before finishing the line;
+    // the caller then needs to continue these for the next line if any.
+    if token_state.current_style.is_some() {
+        token_buffer.push(RenderToken::ResetStyle(anstyle::Reset));
+    }
+    if token_state.current_link.is_some() {
+        token_buffer.push(RenderToken::ClearLink);
+    }
+    // Finish the current line
+    token_buffer.push(RenderToken::Text("\n"));
+    token_state
+}
+
+impl<'a> FragmentLinesBLock<'a> {
+    pub fn render(&self) -> Vec<RenderToken<'a>> {
+        match self.lines.split_first() {
+            None => Vec::new(),
+            Some((first_line, rest)) => {
+                use RenderToken::*;
+                // We assume an every amount of ten fragments per line, at a wild guess.
+                let mut buffer = Vec::with_capacity(self.lines.len() * 10);
+                buffer.push(Text(self.first_line_indent));
+
+                let mut token_state = push_tokens(first_line, &mut buffer);
+                for line in rest {
+                    // Continue style & link from previous line if any.
+                    if let Some(link) = token_state.current_link {
+                        buffer.push(SetLink(link));
+                    }
+                    if let Some(style) = token_state.current_style {
+                        buffer.push(SetStyle(style))
+                    }
+                    token_state = push_tokens(line, &mut buffer);
+                }
+
+                buffer
+            }
+        }
+    }
 }
