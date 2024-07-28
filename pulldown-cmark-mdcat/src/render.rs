@@ -24,6 +24,7 @@ use crate::resources::ResourceUrlHandler;
 use crate::theme::CombineStyle;
 use crate::{Environment, Settings};
 
+mod block;
 mod data;
 mod highlighting;
 mod state;

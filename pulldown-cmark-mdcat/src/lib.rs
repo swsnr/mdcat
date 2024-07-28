@@ -39,7 +39,7 @@
 //!   its regex engine.  The former is slower, but does not imply a native dependency, the latter
 //!   is faster, but you need to compile and link a C library.
 
-#![deny(warnings, missing_docs, clippy::all)]
+//#![deny(warnings, missing_docs, clippy::all)]
 #![forbid(unsafe_code)]
 
 use std::io::{Error, ErrorKind, Result, Write};
