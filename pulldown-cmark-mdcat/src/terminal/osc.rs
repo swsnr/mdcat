@@ -65,11 +65,11 @@ pub fn set_link_url<W: Write>(writer: &mut W, mut destination: Url, hostname: &s
 }
 
 /// Clear the current link if any.
-pub fn clear_link<W: Write>(writer: &mut W) -> Result<()> {
+pub fn clear_link(writer: &mut dyn Write) -> Result<()> {
     set_link(writer, "")
 }
 
-fn set_link<W: Write>(writer: &mut W, destination: &str) -> Result<()> {
+fn set_link(writer: &mut dyn Write, destination: &str) -> Result<()> {
     write_osc(writer, &format!("8;;{destination}"))
 }
 
