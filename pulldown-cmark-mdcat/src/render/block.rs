@@ -4,12 +4,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use std::{
-    borrow::Cow,
-    iter::{repeat, zip},
-};
-
+use std::borrow::Cow;
 use textwrap::core::{display_width, Fragment, Word};
+
+use crate::terminal::osc::clear_link;
 
 /// A link on a terminal.
 #[derive(Debug, PartialEq, Eq)]
@@ -149,33 +147,44 @@ pub enum RenderToken<'a> {
     ClearLink,
 }
 
-struct TokenState<'a> {
-    current_link: Option<&'a Link<'a>>,
-    current_style: Option<anstyle::Style>,
-}
-
-fn push_tokens<'a>(
-    line: &[RenderFragment<'a>],
-    token_buffer: &mut Vec<RenderToken<'a>>,
-) -> TokenState<'a> {
-    let mut token_state = TokenState {
-        current_link: None,
-        current_style: None,
-    };
+fn push_tokens<'a>(line: &'a [RenderFragment<'a>], token_buffer: &mut Vec<RenderToken<'a>>) {
+    let mut current_link = None;
+    let mut current_style = None;
+    let mut pending_space = "";
     for fragment in line {
-        todo!("Turn fragments into tokens here!")
+        if current_link != fragment.link.as_ref() {
+            if current_link.is_some() {
+                token_buffer.push(RenderToken::ClearLink);
+            }
+            if let Some(link) = fragment.link.as_ref() {
+                token_buffer.push(RenderToken::SetLink(link))
+            }
+            current_link = fragment.link.as_ref();
+        }
+        if current_style != fragment.style {
+            if current_style.is_some() {
+                token_buffer.push(RenderToken::ResetStyle(anstyle::Reset));
+            }
+            if let Some(style) = fragment.style {
+                token_buffer.push(RenderToken::SetStyle(style));
+            }
+            current_style = fragment.style;
+        }
+        if !pending_space.is_empty() {
+            token_buffer.push(RenderToken::Text(pending_space));
+        }
+        token_buffer.push(RenderToken::Text(fragment.word.word));
+        pending_space = fragment.word.whitespace;
     }
-    // If we have an ongoing link/style, clear either before finishing the line;
-    // the caller then needs to continue these for the next line if any.
-    if token_state.current_style.is_some() {
+    // If we have an ongoing link/style, clear either before finishing the line.
+    if current_style.is_some() {
         token_buffer.push(RenderToken::ResetStyle(anstyle::Reset));
     }
-    if token_state.current_link.is_some() {
+    if current_link.is_some() {
         token_buffer.push(RenderToken::ClearLink);
     }
     // Finish the current line
     token_buffer.push(RenderToken::Text("\n"));
-    token_state
 }
 
 impl<'a> FragmentLinesBLock<'a> {
@@ -188,20 +197,29 @@ impl<'a> FragmentLinesBLock<'a> {
                 let mut buffer = Vec::with_capacity(self.lines.len() * 10);
                 buffer.push(Text(self.first_line_indent));
 
-                let mut token_state = push_tokens(first_line, &mut buffer);
+                push_tokens(first_line, &mut buffer);
                 for line in rest {
-                    // Continue style & link from previous line if any.
-                    if let Some(link) = token_state.current_link {
-                        buffer.push(SetLink(link));
-                    }
-                    if let Some(style) = token_state.current_style {
-                        buffer.push(SetStyle(style))
-                    }
-                    token_state = push_tokens(line, &mut buffer);
+                    buffer.push(Text(self.subsequent_line_indent));
+                    push_tokens(line, &mut buffer);
                 }
-
                 buffer
             }
         }
     }
+}
+
+pub fn write_tokens(
+    sink: &mut dyn std::io::Write,
+    tokens: &[RenderToken<'_>],
+) -> std::io::Result<()> {
+    for token in tokens {
+        match *token {
+            RenderToken::SetStyle(style) => style.write_to(sink)?,
+            RenderToken::Text(text) => write!(sink, "{}", text)?,
+            RenderToken::ResetStyle(reset) => write!(sink, "{}", reset.render())?,
+            RenderToken::SetLink(_) => todo!("Write link with hostname and ID"),
+            RenderToken::ClearLink => clear_link(sink)?,
+        }
+    }
+    Ok(())
 }
