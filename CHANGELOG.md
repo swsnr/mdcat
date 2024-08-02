@@ -11,6 +11,11 @@ Use `cargo release` to create a new release.
 ### Changed
 - Release builds no longer use fat LTO, which significantly reduces compilation time.
 
+### Fixed
+- mdcat no longer panics on markups in descriptions of rendered images (see [GH-287]).
+
+[GH-287]: https://github.com/swsnr/mdcat/pull/287
+
 ## [2.3.0] – 2024-07-28
 
 ### Added

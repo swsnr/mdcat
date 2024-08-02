@@ -726,10 +726,22 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, RenderedImage), Text(_)) => {
-            Stacked(stack, RenderedImage).and_data(data).ok()
-        }
+        // To correctly handle nested images in the image description, we push a dummy rendered
+        // image state so to maintain a correct state stack at the end of image event, where the
+        // tail of the stack gets popped.
+        (Stacked(stack, RenderedImage), Start(Image(_, _, _))) => stack
+            .push(RenderedImage)
+            .current(RenderedImage)
+            .and_data(data)
+            .ok(),
         (Stacked(stack, RenderedImage), End(Image(_, _, _))) => stack.pop().and_data(data).ok(),
+        // Immediately after the start of image event comes the alt text, which we do not support
+        // for rendered images. So we just ignore all events other than image events, which are
+        // handled above.
+        //
+        // See also https://docs.rs/pulldown-cmark/0.9.6/src/pulldown_cmark/html.rs.html#280-290 for
+        // how the upstream handles images.
+        (Stacked(stack, RenderedImage), _) => Stacked(stack, RenderedImage).and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
             if let InlineLink = state {
                 clear_link(writer)?;

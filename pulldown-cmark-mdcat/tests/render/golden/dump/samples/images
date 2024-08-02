@@ -6,9 +6,11 @@ An inline linked image[4][5] with some extra text.
 
 An inline linked image[6][7] with nested formatting.
 
+An inline image with a nested image[8] and markups in description[9].
+
 Or as block:
 
-image[8]
+image[10]
 
 [1]: ./image.png
 [2]: ./image.png
@@ -18,3 +20,5 @@ image[8]
 [6]: ./image.png
 [7]: https://example.com
 [8]: ./image.png
+[9]: ./image.png
+[10]: ./image.png
