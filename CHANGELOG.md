@@ -10,6 +10,7 @@ Use `cargo release` to create a new release.
 
 ### Changed
 - Release builds no longer use fat LTO, which significantly reduces compilation time.
+- Update dependencies.
 
 ### Fixed
 - mdcat no longer panics on markups in descriptions of rendered images (see [GH-287]).
