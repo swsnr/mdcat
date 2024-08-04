@@ -6,6 +6,8 @@ An inline [linked ![image](./image.png)](https://example.com) with some extra te
 
 An inline [**linked ![image](./image.png)**](https://example.com) with nested formatting.
 
+An inline ![image with a nested ![image](./image.png) and *markups* in description](./image.png).
+
 Or as block:
 
 ![image](./image.png)
