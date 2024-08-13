@@ -4,6 +4,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+use std::io::Write;
+
+use super::block::FragmentsBlock;
 use anstyle::Style;
 use pulldown_cmark::CowStr;
 
@@ -52,18 +55,11 @@ pub struct StateData<'a> {
     pub(super) pending_link_definitions: Vec<LinkReferenceDefinition<'a>>,
     /// The reference number for the next link.
     pub(super) next_link: u16,
-    /// The state of the current line for render.md.wrapping.
-    pub(super) current_line: CurrentLine,
+    /// The current block we write to.
+    pub(super) current_block: FragmentsBlock<'a>,
 }
 
 impl<'a> StateData<'a> {
-    pub(crate) fn current_line(self, current_line: CurrentLine) -> Self {
-        Self {
-            current_line,
-            ..self
-        }
-    }
-
     /// Add a pending link to the state data.
     ///
     /// `target` is the link target, and `title` the link title to show after the URL.
@@ -86,6 +82,17 @@ impl<'a> StateData<'a> {
         (self, index)
     }
 
+    pub(crate) fn write_and_flush_block(
+        mut self,
+        writer: &mut dyn Write,
+        columns: f64,
+    ) -> std::io::Result<Self> {
+        let tokens = self.current_block.wrap(columns).render();
+        super::block::write_tokens(writer, &tokens)?;
+        self.current_block = FragmentsBlock::default();
+        Ok(self)
+    }
+
     pub(crate) fn take_links(self) -> (Self, Vec<LinkReferenceDefinition<'a>>) {
         let links = self.pending_link_definitions;
         (
@@ -103,7 +110,7 @@ impl<'a> Default for StateData<'a> {
         StateData {
             pending_link_definitions: Vec::new(),
             next_link: 1,
-            current_line: CurrentLine::empty(),
+            current_block: FragmentsBlock::default(),
         }
     }
 }

@@ -87,6 +87,7 @@ pub struct FragmentsBlock<'a> {
 }
 
 impl<'a> FragmentsBlock<'a> {
+    /// Set indentation for the first line.
     pub fn with_first_line_indent(self, first_line_indent: &'a str) -> Self {
         Self {
             first_line_indent,
@@ -94,6 +95,7 @@ impl<'a> FragmentsBlock<'a> {
         }
     }
 
+    /// Set indentation for subsequent lines.
     pub fn with_subsequent_line_indent(self, subsequent_line_indent: &'a str) -> Self {
         Self {
             subsequent_line_indent,
@@ -101,11 +103,13 @@ impl<'a> FragmentsBlock<'a> {
         }
     }
 
+    /// Add a fragment to this block.
     pub fn add_fragment(mut self, fragment: RenderFragment<'a>) -> Self {
         self.fragments.push(fragment);
         self
     }
 
+    /// Wrap this block into lines of the given width.
     pub fn wrap(&'a self, line_width: f64) -> FragmentLinesBLock<'a> {
         let line_widths = [
             line_width - display_width(self.first_line_indent) as f64,
@@ -121,11 +125,15 @@ impl<'a> FragmentsBlock<'a> {
     }
 }
 
+// TODO: Make rendering and wrapping generic to support more kinds of blocks
+
 /// Any kind of block that we can render.
 #[derive(Debug)]
 pub enum RenderBlock<'a> {
-    /// A block
+    /// A block of fragments which can be wrapped to a given column width.
     Fragments(FragmentsBlock<'a>),
+    /// A single rule in a document.
+    Rule(Rule),
 }
 
 /// A block of fragments in multiple lines.
@@ -139,14 +147,22 @@ pub struct FragmentLinesBLock<'a> {
     subsequent_line_indent: &'a str,
 }
 
+/// A token which we can render to a writer.
+#[derive(Debug)]
 pub enum RenderToken<'a> {
+    /// Text to write literally.
     Text(&'a str),
+    /// Enable the given style.
     SetStyle(anstyle::Style),
+    /// Clear the current style.
     ResetStyle(anstyle::Reset),
+    /// Set the given link for subsequent text.
     SetLink(&'a Link<'a>),
+    /// Clear the current link.
     ClearLink,
 }
 
+/// Convert a line into render tokens and append these to the given buffer.
 fn push_tokens<'a>(line: &'a [RenderFragment<'a>], token_buffer: &mut Vec<RenderToken<'a>>) {
     let mut current_link = None;
     let mut current_style = None;
@@ -188,6 +204,9 @@ fn push_tokens<'a>(line: &'a [RenderFragment<'a>], token_buffer: &mut Vec<Render
 }
 
 impl<'a> FragmentLinesBLock<'a> {
+    /// Convert this block into tokens we can render to a writer.
+    ///
+    /// Return a list of tokens which can be written to any writer using [`write_tokens`].
     pub fn render(&self) -> Vec<RenderToken<'a>> {
         match self.lines.split_first() {
             None => Vec::new(),
@@ -208,6 +227,7 @@ impl<'a> FragmentLinesBLock<'a> {
     }
 }
 
+/// Write render tokens to a writer.
 pub fn write_tokens(
     sink: &mut dyn std::io::Write,
     tokens: &[RenderToken<'_>],

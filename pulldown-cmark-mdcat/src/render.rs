@@ -63,6 +63,7 @@ pub fn write_event<'a, W: Write>(
         // Top level items
         (TopLevel(attrs), Start(Paragraph)) => {
             if attrs.margin_before != NoMargin {
+                // TODO: Handle margins in blocks!
                 writeln!(writer)?;
             }
             State::stack_onto(TopLevelAttrs::margin_before())
@@ -72,6 +73,7 @@ pub fn write_event<'a, W: Write>(
         }
         (TopLevel(attrs), Start(Heading(level, _, _))) => {
             let (data, links) = data.take_links();
+            // TODO: Write links as blocks without wrapping
             write_link_refs(writer, environment, &settings.terminal_capabilities, links)?;
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
@@ -588,16 +590,12 @@ pub fn write_event<'a, W: Write>(
         }
         // Ending inline text
         (Stacked(stack, Inline(_, _)), End(Paragraph)) => {
-            writeln!(writer)?;
-            Ok(stack
-                .pop()
-                .and_data(data.current_line(CurrentLine::empty())))
+            let data = data.write_and_flush_block(writer, settings.terminal_size.columns as f64)?;
+            Ok(stack.pop().and_data(data))
         }
         (Stacked(stack, Inline(_, _)), End(Heading(_, _, _))) => {
-            writeln!(writer)?;
-            Ok(stack
-                .pop()
-                .and_data(data.current_line(CurrentLine::empty())))
+            let data = data.write_and_flush_block(writer, settings.terminal_size.columns as f64)?;
+            Ok(stack.pop().and_data(data))
         }
 
         // Links.
