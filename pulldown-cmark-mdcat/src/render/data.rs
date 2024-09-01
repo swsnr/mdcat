@@ -5,7 +5,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use anstyle::Style;
-use pulldown_cmark::CowStr;
+use pulldown_cmark::{Alignment, CowStr};
 
 /// The definition of a reference link, i.e. a numeric index for a link.
 #[derive(Debug, PartialEq)]
@@ -39,6 +39,94 @@ impl CurrentLine {
     }
 }
 
+/// A cell in the table.
+#[derive(Debug)]
+pub struct TableCell<'a> {
+    // TODO: Support styles of fragments.
+    /// Renderable fragments in a table cell.
+    pub(super) fragments: Vec<CowStr<'a>>,
+}
+
+impl<'a> TableCell<'a> {
+    /// A new empty table cell.
+    pub(super) fn empty() -> Self {
+        Self {
+            fragments: Vec::new(),
+        }
+    }
+}
+
+/// A row in the table.
+#[derive(Debug)]
+pub struct TableRow<'a> {
+    /// Completed cells of the table row.
+    pub(super) cells: Vec<TableCell<'a>>,
+    /// Current incomplete cell of the table row.
+    pub(super) current_cell: TableCell<'a>,
+}
+
+impl<'a> TableRow<'a> {
+    /// A new empty table row.
+    pub(super) fn empty() -> Self {
+        Self {
+            cells: Vec::new(),
+            current_cell: TableCell::empty(),
+        }
+    }
+}
+
+/// The state of the current table.
+#[derive(Debug)]
+pub struct CurrentTable<'a> {
+    /// Head row of the table.
+    pub(super) head: Option<TableRow<'a>>,
+    /// Complete rows of the table.
+    pub(super) rows: Vec<TableRow<'a>>,
+    /// Current incomplete row of the table.
+    pub(super) current_row: TableRow<'a>,
+    /// Alignments of columns.
+    pub(super) alignments: Vec<Alignment>,
+}
+
+impl<'a> CurrentTable<'a> {
+    /// A new empty table.
+    pub(super) fn empty() -> Self {
+        Self {
+            head: None,
+            rows: Vec::new(),
+            current_row: TableRow::empty(),
+            alignments: Vec::new(),
+        }
+    }
+
+    /// Push a fragment to the current cell of the current row.
+    pub(super) fn push_fragment(mut self, fragment: CowStr<'a>) -> Self {
+        self.current_row.current_cell.fragments.push(fragment);
+        self
+    }
+
+    /// Complete the current cell and start a new cell in the current row.
+    pub(super) fn end_cell(mut self) -> Self {
+        self.current_row.cells.push(self.current_row.current_cell);
+        self.current_row.current_cell = TableCell::empty();
+        self
+    }
+
+    /// Complete the head row and start a new row.
+    pub(super) fn end_head(mut self) -> Self {
+        self.head = Some(self.current_row);
+        self.current_row = TableRow::empty();
+        self
+    }
+
+    /// Complete the current row and start a new row.
+    pub(super) fn end_row(mut self) -> Self {
+        self.rows.push(self.current_row);
+        self.current_row = TableRow::empty();
+        self
+    }
+}
+
 /// Data associated with rendering state.
 ///
 /// Unlike state attributes state data represents cross-cutting
@@ -54,6 +142,8 @@ pub struct StateData<'a> {
     pub(super) next_link: u16,
     /// The state of the current line for render.md.wrapping.
     pub(super) current_line: CurrentLine,
+    /// The state of the current table.
+    pub(super) current_table: CurrentTable<'a>,
 }
 
 impl<'a> StateData<'a> {
@@ -104,6 +194,7 @@ impl<'a> Default for StateData<'a> {
             pending_link_definitions: Vec::new(),
             next_link: 1,
             current_line: CurrentLine::empty(),
+            current_table: CurrentTable::empty(),
         }
     }
 }

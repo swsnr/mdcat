@@ -4,17 +4,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+use std::cmp::{max, min};
 use std::io::{Result, Write};
+use std::iter::zip;
 
 use anstyle::Style;
-use pulldown_cmark::{CodeBlockKind, HeadingLevel};
+use pulldown_cmark::{Alignment, CodeBlockKind, HeadingLevel};
 use syntect::highlighting::HighlightState;
 use syntect::parsing::{ParseState, ScopeStack};
 use textwrap::core::{display_width, Word};
 use textwrap::WordSeparator;
 
 use crate::references::*;
-use crate::render::data::{CurrentLine, LinkReferenceDefinition};
+use crate::render::data::{CurrentLine, CurrentTable, LinkReferenceDefinition, TableCell};
 use crate::render::highlighting::highlighter;
 use crate::render::state::*;
 use crate::terminal::capabilities::{MarkCapability, StyleCapability, TerminalCapabilities};
@@ -359,4 +361,91 @@ pub fn write_start_heading<W: Write>(
         InlineState::InlineBlock,
         InlineAttrs { style, indent: 0 },
     ))
+}
+
+fn calculate_column_widths(table: &CurrentTable) -> Option<Vec<usize>> {
+    let first_row = table.head.as_ref().or(table.rows.first())?;
+    let mut widths = vec![0; first_row.cells.len()];
+    let rows = table.head.iter().chain(table.rows.as_slice());
+    for row in rows {
+        let current = row.cells.as_slice().iter().map(|cell| {
+            cell.fragments
+                .as_slice()
+                .iter()
+                .fold(0, |acc, x| acc + x.len())
+        });
+        widths = zip(widths, current).map(|(a, b)| max(a, b)).collect();
+    }
+    Some(widths)
+}
+
+// TODO: Support themes for table rule.
+fn write_table_rule<W: Write>(
+    writer: &mut W,
+    capabilities: &TerminalCapabilities,
+    length: u16,
+) -> Result<()> {
+    let rule = "\u{2500}".repeat(length.into());
+    write_styled(writer, capabilities, &Style::new(), rule)?;
+    writeln!(writer)
+}
+
+fn format_table_cell(cell: TableCell, width: usize, alignment: Alignment) -> String {
+    use Alignment::*;
+    let content = cell.fragments.join("");
+    match alignment {
+        Left | None => format!(" {:<width$} ", content),
+        Center => format!(" {:^width$} ", content),
+        Right => format!(" {:>width$} ", content),
+    }
+}
+
+pub fn write_table<W: Write>(
+    writer: &mut W,
+    capabilities: &TerminalCapabilities,
+    terminal_size: &TerminalSize,
+    table: CurrentTable,
+) -> Result<()> {
+    if let Some(widths) = calculate_column_widths(&table) {
+        // Calculate length of the table rule.
+        let total_width: usize = widths.iter().sum();
+        let rule_length = min(
+            // We use two spaces for padding for each cell in format_table_cell.
+            (total_width + 2 * widths.len())
+                .try_into()
+                .unwrap_or(u16::MAX),
+            terminal_size.columns,
+        );
+        write_table_rule(writer, capabilities, rule_length)?;
+
+        // Write the table head in bold if any.
+        if let Some(head) = table.head {
+            for ((cell, &width), &alignment) in zip(zip(head.cells, &widths), &table.alignments) {
+                write_styled(
+                    writer,
+                    capabilities,
+                    &Style::new().bold(),
+                    format_table_cell(cell, width, alignment),
+                )?;
+            }
+            writeln!(writer)?;
+            write_table_rule(writer, capabilities, rule_length)?;
+        }
+
+        // Write table body.
+        for row in table.rows {
+            for ((cell, &width), &alignment) in zip(zip(row.cells, &widths), &table.alignments) {
+                write_styled(
+                    writer,
+                    capabilities,
+                    &Style::new(),
+                    format_table_cell(cell, width, alignment),
+                )?;
+            }
+            writeln!(writer)?;
+        }
+        write_table_rule(writer, capabilities, rule_length)?;
+    }
+    // Do nothing when there are no rows in the table, which should be impossible.
+    Ok(())
 }

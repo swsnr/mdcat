@@ -19,7 +19,7 @@ use pulldown_cmark_mdcat::{Environment, Settings, Theme};
 fn render_to_string<S: AsRef<str>>(markdown: S, settings: &Settings) -> String {
     let parser = Parser::new_ext(
         markdown.as_ref(),
-        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
+        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TABLES,
     );
     let mut sink = Vec::new();
     let env = Environment {
