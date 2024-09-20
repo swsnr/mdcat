@@ -265,7 +265,7 @@ pub fn write_link_refs<W: Write>(
                 writer,
                 capabilities,
                 &link.style,
-                &format!("[{}]: ", link.index),
+                format!("[{}]: ", link.index),
             )?;
 
             // If we can resolve the link try to write it as inline link to make the URL
