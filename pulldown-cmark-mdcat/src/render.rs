@@ -33,7 +33,7 @@ use crate::references::*;
 use state::*;
 use write::*;
 
-use crate::render::data::CurrentLine;
+use crate::render::data::{CurrentLine, CurrentTable};
 use crate::render::state::MarginControl::{Margin, NoMargin};
 use crate::terminal::capabilities::StyleCapability;
 use crate::terminal::osc::{clear_link, set_link_url};
@@ -142,6 +142,23 @@ pub fn write_event<'a, W: Write>(
 
             State::stack_onto(TopLevelAttrs::margin_before())
                 .current(Inline(ListItem(kind, StartItem), InlineAttrs::default()))
+                .and_data(data)
+                .ok()
+        }
+        (TopLevel(attrs), Start(Table(alignments))) => {
+            if attrs.margin_before != NoMargin {
+                writeln!(writer)?;
+            }
+            let current_table = CurrentTable {
+                alignments,
+                ..data.current_table
+            };
+            let data = StateData {
+                current_table,
+                ..data
+            };
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(TableBlock)
                 .and_data(data)
                 .ok()
         }
@@ -758,6 +775,73 @@ pub fn write_event<'a, W: Write>(
                 )?;
                 stack.pop().and_data(data).ok()
             }
+        }
+
+        // Tables
+        (Stacked(stack, TableBlock), Start(TableHead))
+        | (Stacked(stack, TableBlock), Start(TableRow))
+        | (Stacked(stack, TableBlock), Start(TableCell)) => {
+            Stacked(stack, TableBlock).and_data(data).ok()
+        }
+        (Stacked(stack, TableBlock), End(TableHead)) => {
+            let current_table = data.current_table.end_head();
+            let data = StateData {
+                current_table,
+                ..data
+            };
+            Stacked(stack, TableBlock).and_data(data).ok()
+        }
+        (Stacked(stack, TableBlock), End(TableRow)) => {
+            let current_table = data.current_table.end_row();
+            let data = StateData {
+                current_table,
+                ..data
+            };
+            Stacked(stack, TableBlock).and_data(data).ok()
+        }
+        (Stacked(stack, TableBlock), End(TableCell)) => {
+            let current_table = data.current_table.end_cell();
+            let data = StateData {
+                current_table,
+                ..data
+            };
+            Stacked(stack, TableBlock).and_data(data).ok()
+        }
+        (Stacked(stack, TableBlock), Text(text)) | (Stacked(stack, TableBlock), Code(text)) => {
+            let current_table = data.current_table.push_fragment(text);
+            let data = StateData {
+                current_table,
+                ..data
+            };
+            Stacked(stack, TableBlock).and_data(data).ok()
+        }
+        (Stacked(stack, TableBlock), End(Table(_))) => {
+            write_table(
+                writer,
+                &settings.terminal_capabilities,
+                &settings.terminal_size,
+                data.current_table,
+            )?;
+            let current_table = data::CurrentTable::empty();
+            let data = StateData {
+                current_table,
+                ..data
+            };
+            stack.pop().and_data(data).ok()
+        }
+        // Ignore all inline elements in a table.
+        // TODO: Support those events.
+        (Stacked(stack, TableBlock), Start(Emphasis))
+        | (Stacked(stack, TableBlock), Start(Strong))
+        | (Stacked(stack, TableBlock), Start(Strikethrough))
+        | (Stacked(stack, TableBlock), Start(Link(_, _, _)))
+        | (Stacked(stack, TableBlock), Start(Image(_, _, _)))
+        | (Stacked(stack, TableBlock), End(Emphasis))
+        | (Stacked(stack, TableBlock), End(Strong))
+        | (Stacked(stack, TableBlock), End(Strikethrough))
+        | (Stacked(stack, TableBlock), End(Link(_, _, _)))
+        | (Stacked(stack, TableBlock), End(Image(_, _, _))) => {
+            Stacked(stack, TableBlock).and_data(data).ok()
         }
 
         // Unconditional returns to previous states

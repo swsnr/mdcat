@@ -14,7 +14,7 @@ It supports:
 - Inline images on terminal emulators with either the iTerm2 or the Kitty protocol, as well as on Terminology.
 - Jump marks in iTerm2.
 
-It does not support commonmark table and footnote extension syntax.
+It does not support commonmark footnote extension syntax.
 
 [mdcat]: https://github.com/swsnr/mdcat
 [pulldown-cmark]: https://github.com/raphlinus/pulldown-cmark

@@ -56,7 +56,7 @@ fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> St
     let markdown = std::fs::read_to_string(&markdown_file).unwrap();
     let parser = Parser::new_ext(
         &markdown,
-        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH,
+        Options::ENABLE_TASKLISTS | Options::ENABLE_STRIKETHROUGH | Options::ENABLE_TABLES,
     );
     let abs_path = std::fs::canonicalize(&markdown_file).unwrap();
     let base_dir = abs_path
