@@ -12,6 +12,9 @@ Use `cargo release` to create a new release.
 - Add limited support for tables (see [GH-290]).
   Inline markup is stripped from table cells, and text is not wrapped.
 
+### Changed
+- Update dependencies.
+
 [GH-290]: https://github.com/swsnr/mdcat/pull/290
 
 ## [2.3.1] – 2024-08-04
