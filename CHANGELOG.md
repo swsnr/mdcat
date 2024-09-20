@@ -9,8 +9,8 @@ Use `cargo release` to create a new release.
 ## [Unreleased]
 
 ### Added
-- mdcat now has limited support for tables (see [GH-290]).
-  Inline markups and text wrapping are still unsupported in tables.
+- Add limited support for tables (see [GH-290]).
+  Inline markup is stripped from table cells, and text is not wrapped.
 
 [GH-290]: https://github.com/swsnr/mdcat/pull/290
 

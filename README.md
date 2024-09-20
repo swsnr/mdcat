@@ -45,8 +45,8 @@ Then it
 
 Not supported:
 
-* CommonMark extensions for footnotes.
-* Wrapping and inline markups in tables.
+* CommonMark extension for footnotes.
+* Inline markup and text wrapping in table cells.
 
 [syntect]: https://github.com/trishume/syntect
 [osc8]: https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda

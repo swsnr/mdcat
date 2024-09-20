@@ -219,11 +219,12 @@ See <https://docs.rs/tracing-subscriber/latest/tracing_subscriber/struct.EnvFilt
 
 == Conforming to
 
-=== CommonMark support and extensions
+=== CommonMark support, extensions, and limitations
 
 mdcat supports version 0.30 of the https://spec.commonmark.org/[CommonMark Spec], plus https://github.github.com/gfm/#task-list-items-extension-[Task lists] and https://github.github.com/gfm/#strikethrough-extension-[strikethrough], through https://github.com/raphlinus/pulldown-cmark[pulldown-cmark].
 
-mdcat does **not** yet support footnotes and support for https://github.github.com/gfm/#tables-extension-[tables] is limited (e.g., inline markups in tables are stripped).
+mdcat does not yet support footnotes.
+Support for https://github.github.com/gfm/#tables-extension-[tables] is limited; text wrapping and inline markup in table cells are not yet supported.
 mdcat parses HTML blocks and inline tags but does not apply special rendering; it prints HTML as is.
 
 === Terminal support
