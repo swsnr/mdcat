@@ -59,7 +59,7 @@ members = [
 [workspace.package]
 homepage = "https://github.com/swsnr/mdcat"
 repository = "https://github.com/swsnr/mdcat"
-version = "2.3.1"
+version = "2.4.0"
 categories = ["command-line-utilities", "text-processing"]
 license = "MPL-2.0 AND Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
@@ -76,8 +76,8 @@ tracing = { version = "0.1.40", default-features = false, features = ["attribute
 
 # Our own crates; pinned to an exact version because we release all of this repo
 # in a single version. cargo release takes care of updating these.
-pulldown-cmark-mdcat = { version = "=2.3.1", path = "pulldown-cmark-mdcat", default-features = false }
-mdcat-http-reqwest = { version = "=2.3.1", path = "mdcat-http-reqwest", default-features = false}
+pulldown-cmark-mdcat = { version = "=2.4.0", path = "pulldown-cmark-mdcat", default-features = false }
+mdcat-http-reqwest = { version = "=2.4.0", path = "mdcat-http-reqwest", default-features = false}
 
 [workspace.metadata.release]
 allow-branch = ["main"]
