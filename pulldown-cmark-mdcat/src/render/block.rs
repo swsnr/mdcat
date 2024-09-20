@@ -132,8 +132,6 @@ impl<'a> FragmentsBlock<'a> {
 pub enum RenderBlock<'a> {
     /// A block of fragments which can be wrapped to a given column width.
     Fragments(FragmentsBlock<'a>),
-    /// A single rule in a document.
-    Rule(Rule),
 }
 
 /// A block of fragments in multiple lines.
