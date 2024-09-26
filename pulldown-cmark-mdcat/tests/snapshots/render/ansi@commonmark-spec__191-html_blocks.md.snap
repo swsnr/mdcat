@@ -1,0 +1,18 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/191-html_blocks.md
+---
+[32m<table>
+[0m[32m<tr>
+[0m
+[32m────────────────────[0m
+[33m<td>
+[0m[33m  Hi
+[0m[33m</td>
+[0m[32m────────────────────[0m
+
+[32m</tr>
+[0m[32m</table>
+[0m

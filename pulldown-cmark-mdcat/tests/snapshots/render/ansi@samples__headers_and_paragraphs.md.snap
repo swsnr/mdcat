@@ -1,0 +1,19 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/samples/headers_and_paragraphs.md
+---
+[1m[34m┄[0m[1m[34mThe heading[0m
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
+tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+
+[1m[34m┄┄[0m[1m[34mA sub-heading[0m
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
+tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+
+[1m[34m┄┄[0m[1m[34mAnother heading with [0m[1m[33minline formatting[0m
+
+Bye Bye

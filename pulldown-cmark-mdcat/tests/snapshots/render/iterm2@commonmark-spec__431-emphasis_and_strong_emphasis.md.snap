@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 159
+expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/431-emphasis_and_strong_emphasis.md
+---
+[1mfoo[0m[1m[3m bar[0m[1m[3m baz[0m[1m[3m bim[0m[1m bop[0m

@@ -1,0 +1,14 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/172-html_blocks.md
+---
+[32m<style
+[0m[32m  type="text/css">
+[0m[32mh1 {color:red;}
+[0m[32m
+[0m[32mp {color:blue;}
+[0m[32m</style>
+[0m
+okay

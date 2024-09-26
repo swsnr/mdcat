@@ -1,0 +1,13 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 157
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &dumb_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/wrapping/links.md
+---
+mdcat has some stuff which seriously goes over the 80 character mark here and
+definitely[1] must wrap right before the "definitely"!
+
+If there is a very very long inline link[2] mdcat should join subsequent lines.
+
+[1]: https://example.com/this-link-should-wrap
+[2]: https://example.com/this-is-a-very-long-path-which-should-not-be-taken-into-account-wrt-line-length

@@ -1,0 +1,11 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 157
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &dumb_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/504-links.md
+---
+link[1] link[2] link[3]
+
+[1]: /url title
+[2]: /url title
+[3]: /url title

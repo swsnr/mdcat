@@ -177,184 +177,121 @@ mod tests {
         Ok(String::from_utf8_lossy(&sink).into())
     }
 
+    fn render_string_dumb(markup: &str) -> Result<String> {
+        render_string(
+            markup,
+            &Settings {
+                syntax_set: &SyntaxSet::default(),
+                terminal_capabilities: TerminalProgram::Dumb.capabilities(),
+                terminal_size: TerminalSize::default(),
+                theme: Theme::default(),
+            },
+        )
+    }
+
     mod layout {
-        use similar_asserts::assert_eq;
-        use syntect::parsing::SyntaxSet;
-
-        use crate::terminal::TerminalProgram;
-        use crate::*;
-
-        use super::render_string;
-
-        fn render(markup: &str) -> Result<String> {
-            render_string(
-                markup,
-                &Settings {
-                    syntax_set: &SyntaxSet::default(),
-                    terminal_capabilities: TerminalProgram::Dumb.capabilities(),
-                    terminal_size: TerminalSize::default(),
-                    theme: Theme::default(),
-                },
-            )
-        }
+        use super::render_string_dumb;
+        use insta::assert_snapshot;
 
         #[test]
         #[allow(non_snake_case)]
         fn GH_49_format_no_colour_simple() {
             assert_eq!(
-                render("_lorem_ **ipsum** dolor **sit** _amet_").unwrap(),
+                render_string_dumb("_lorem_ **ipsum** dolor **sit** _amet_").unwrap(),
                 "lorem ipsum dolor sit amet\n",
             )
         }
 
         #[test]
         fn begins_with_rule() {
-            assert_eq!(render("----").unwrap(), "════════════════════════════════════════════════════════════════════════════════\n")
+            assert_snapshot!(render_string_dumb("----").unwrap())
         }
 
         #[test]
         fn begins_with_block_quote() {
-            assert_eq!(render("> Hello World").unwrap(), "    Hello World\n")
+            assert_snapshot!(render_string_dumb("> Hello World").unwrap());
         }
 
         #[test]
         fn rule_in_block_quote() {
-            assert_eq!(
-                render(
-                    "> Hello World
+            assert_snapshot!(render_string_dumb(
+                "> Hello World
 
 > ----"
-                )
-                .unwrap(),
-                "    Hello World
-
-    ════════════════════════════════════════════════════════════════════════════\n"
             )
+            .unwrap());
         }
 
         #[test]
         fn heading_in_block_quote() {
-            assert_eq!(
-                render(
-                    "> Hello World
+            assert_snapshot!(render_string_dumb(
+                "> Hello World
 
 > # Hello World"
-                )
-                .unwrap(),
-                "    Hello World
-
-    ┄Hello World\n"
             )
+            .unwrap())
         }
 
         #[test]
         fn heading_levels() {
-            assert_eq!(
-                render(
-                    "
+            assert_snapshot!(render_string_dumb(
+                "
 # First
 
 ## Second
 
 ### Third"
-                )
-                .unwrap(),
-                "┄First
-
-┄┄Second
-
-┄┄┄Third\n"
             )
+            .unwrap())
         }
 
         #[test]
         fn autolink_creates_no_reference() {
             assert_eq!(
-                render("Hello <http://example.com>").unwrap(),
+                render_string_dumb("Hello <http://example.com>").unwrap(),
                 "Hello http://example.com\n"
             )
         }
 
         #[test]
         fn flush_ref_links_before_toplevel_heading() {
-            assert_eq!(
-                render(
-                    "> Hello [World](http://example.com/world)
+            assert_snapshot!(render_string_dumb(
+                "> Hello [World](http://example.com/world)
 
 > # No refs before this headline
 
 # But before this"
-                )
-                .unwrap(),
-                "    Hello World[1]
-
-    ┄No refs before this headline
-
-[1]: http://example.com/world
-
-┄But before this\n"
             )
+            .unwrap())
         }
 
         #[test]
         fn flush_ref_links_at_end() {
-            assert_eq!(
-                render(
-                    "Hello [World](http://example.com/world)
+            assert_snapshot!(render_string_dumb(
+                "Hello [World](http://example.com/world)
 
 # Headline
 
 Hello [Donald](http://example.com/Donald)"
-                )
-                .unwrap(),
-                "Hello World[1]
-
-[1]: http://example.com/world
-
-┄Headline
-
-Hello Donald[2]
-
-[2]: http://example.com/Donald\n"
             )
+            .unwrap())
         }
     }
 
     mod disabled_features {
-        use similar_asserts::assert_eq;
-        use syntect::parsing::SyntaxSet;
+        use insta::assert_snapshot;
 
-        use crate::terminal::TerminalProgram;
-        use crate::*;
-
-        use super::render_string;
-
-        fn render(markup: &str) -> Result<String> {
-            render_string(
-                markup,
-                &Settings {
-                    syntax_set: &SyntaxSet::default(),
-                    terminal_capabilities: TerminalProgram::Dumb.capabilities(),
-                    terminal_size: TerminalSize::default(),
-                    theme: Theme::default(),
-                },
-            )
-        }
+        use super::render_string_dumb;
 
         #[test]
         #[allow(non_snake_case)]
         fn GH_155_do_not_choke_on_footnotes() {
-            assert_eq!(
-                render(
-                    "A footnote [^1]
-
-[^1: We do not support footnotes."
-                )
-                .unwrap(),
+            assert_snapshot!(render_string_dumb(
                 "A footnote [^1]
 
-[^1: We do not support footnotes.\n"
+[^1: We do not support footnotes."
             )
+            .unwrap())
         }
     }
 }

@@ -1,0 +1,12 @@
+---
+source: pulldown-cmark-mdcat/src/lib.rs
+assertion_line: 258
+expression: "render_string_dumb(\"> Hello [World](http://example.com/world)\n\n> # No refs before this headline\n\n# But before this\").unwrap()"
+---
+    Hello World[1]
+
+    ┄No refs before this headline
+
+[1]: http://example.com/world
+
+┄But before this

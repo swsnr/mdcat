@@ -1,0 +1,8 @@
+---
+source: pulldown-cmark-mdcat/src/lib.rs
+assertion_line: 289
+expression: "render_string_dumb(\"A footnote [^1]\n\n[^1: We do not support footnotes.\").unwrap()"
+---
+A footnote [^1]
+
+[^1: We do not support footnotes.
