@@ -11,6 +11,7 @@ use std::io::Result;
 
 use anstyle::{Effects, Style};
 use pulldown_cmark::Event::*;
+use pulldown_cmark::Tag;
 use pulldown_cmark::Tag::*;
 use pulldown_cmark::TagEnd;
 use pulldown_cmark::{Event, LinkType};
@@ -35,7 +36,7 @@ use state::*;
 use write::*;
 
 use crate::render::data::{CurrentLine, CurrentTable};
-use crate::render::state::MarginControl::{Margin, NoMargin};
+use crate::render::state::MarginControl::NoMargin;
 use crate::terminal::capabilities::StyleCapability;
 use crate::terminal::osc::{clear_link, set_link_url};
 pub use data::StateData;
@@ -67,6 +68,23 @@ pub fn write_event<'a, W: Write>(
             }
             State::stack_onto(TopLevelAttrs::margin_before())
                 .current(Inline(InlineText, InlineAttrs::default()))
+                .and_data(data)
+                .ok()
+        }
+        (TopLevel(attrs), Start(Tag::HtmlBlock)) => {
+            if attrs.margin_before != NoMargin {
+                writeln!(writer)?;
+            }
+            // We render HTML literally
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(
+                    HtmlBlockAttrs {
+                        indent: 0,
+                        initial_indent: 0,
+                        style: settings.theme.html_block_style,
+                    }
+                    .into(),
+                )
                 .and_data(data)
                 .ok()
         }
@@ -163,20 +181,6 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (TopLevel(attrs), Html(html)) => {
-            if attrs.margin_before == Margin {
-                writeln!(writer)?;
-            }
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.html_block_style,
-                html,
-            )?;
-            TopLevel(TopLevelAttrs::no_margin_for_html_only())
-                .and_data(data)
-                .ok()
-        }
 
         // Nested blocks with style, e.g. paragraphs in quotes, etc.
         (Stacked(stack, StyledBlock(attrs)), Start(Paragraph)) => {
@@ -188,6 +192,22 @@ pub fn write_event<'a, W: Write>(
             stack
                 .push(attrs.with_margin_before().into())
                 .current(Inline(InlineText, inline))
+                .and_data(data)
+                .ok()
+        }
+        (Stacked(stack, StyledBlock(attrs)), Start(Tag::HtmlBlock)) => {
+            if attrs.margin_before != NoMargin {
+                writeln!(writer)?;
+            }
+            let state = HtmlBlockAttrs {
+                indent: attrs.indent,
+                initial_indent: attrs.indent,
+                style: settings.theme.html_block_style.on_top_of(&attrs.style),
+            }
+            .into();
+            stack
+                .push(attrs.with_margin_before().into())
+                .current(state)
                 .and_data(data)
                 .ok()
         }
@@ -264,22 +284,6 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, StyledBlock(attrs)), Html(html)) => {
-            if attrs.margin_before == Margin {
-                writeln!(writer)?;
-            }
-            write_indent(writer, attrs.indent)?;
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.html_block_style.on_top_of(&attrs.style),
-                html,
-            )?;
-            stack
-                .current(attrs.without_margin_for_html_only().into())
-                .and_data(data)
-                .ok()
-        }
 
         // Lists
         (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Item)) => {
@@ -320,6 +324,27 @@ pub fn write_event<'a, W: Write>(
             stack
                 .push(Inline(ListItem(kind, ItemBlock), attrs.clone()))
                 .current(Inline(InlineText, attrs))
+                .and_data(data)
+                .ok()
+        }
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Tag::HtmlBlock)) => {
+            let InlineAttrs { indent, style, .. } = attrs;
+            let initial_indent = if state == StartItem {
+                0
+            } else {
+                writeln!(writer)?;
+                indent
+            };
+            stack
+                .push(Inline(ListItem(kind, ItemBlock), attrs))
+                .current(
+                    HtmlBlockAttrs {
+                        style: settings.theme.html_block_style.on_top_of(&style),
+                        indent,
+                        initial_indent,
+                    }
+                    .into(),
+                )
                 .and_data(data)
                 .ok()
         }
@@ -409,7 +434,7 @@ pub fn write_event<'a, W: Write>(
 
         // Literal blocks without highlighting
         (Stacked(stack, LiteralBlock(attrs)), Text(text)) => {
-            let LiteralBlockAttrs { indent, style } = attrs;
+            let LiteralBlockAttrs { indent, style, .. } = attrs;
             for line in LinesWithEndings::from(&text) {
                 write_styled(writer, &settings.terminal_capabilities, &style, line)?;
                 if line.ends_with('\n') {
@@ -426,6 +451,46 @@ pub fn write_event<'a, W: Write>(
                 &settings.terminal_size,
             )?;
             stack.pop().and_data(data).ok()
+        }
+        // HTML and extra text in a literal block, i.e HTML in an HTML block
+        (Stacked(stack, HtmlBlock(attrs)), Text(text)) => {
+            let HtmlBlockAttrs {
+                indent,
+                initial_indent,
+                style,
+            } = attrs;
+            for (n, line) in LinesWithEndings::from(&text).enumerate() {
+                let line_indent = if n == 0 { initial_indent } else { indent };
+                write_indent(writer, line_indent)?;
+                write_styled(writer, &settings.terminal_capabilities, &style, line)?;
+            }
+            stack
+                .current(
+                    HtmlBlockAttrs {
+                        initial_indent: attrs.indent,
+                        indent: attrs.indent,
+                        style: attrs.style,
+                    }
+                    .into(),
+                )
+                .and_data(data)
+                .ok()
+        }
+        (Stacked(stack, HtmlBlock(attrs)), Html(html)) => {
+            write_indent(writer, attrs.initial_indent)?;
+            // TODO: Split html into lines and properly account for initial indent
+            write_styled(writer, &settings.terminal_capabilities, &attrs.style, html)?;
+            stack
+                .current(
+                    HtmlBlockAttrs {
+                        initial_indent: attrs.indent,
+                        indent: attrs.indent,
+                        style: attrs.style,
+                    }
+                    .into(),
+                )
+                .and_data(data)
+                .ok()
         }
 
         // Highlighted code blocks
@@ -498,6 +563,23 @@ pub fn write_event<'a, W: Write>(
                 attrs.indent,
                 data.current_line,
                 code,
+            )?;
+            let data = StateData {
+                current_line,
+                ..data
+            };
+            Ok(stack.current(Inline(state, attrs)).and_data(data))
+        }
+
+        (Stacked(stack, Inline(state, attrs)), InlineHtml(html)) => {
+            let current_line = write_styled_and_wrapped(
+                writer,
+                &settings.terminal_capabilities,
+                &settings.theme.inline_html_style.on_top_of(&attrs.style),
+                settings.terminal_size.columns,
+                attrs.indent,
+                data.current_line,
+                html,
             )?;
             let data = StateData {
                 current_line,
@@ -579,30 +661,6 @@ pub fn write_event<'a, W: Write>(
                 current_line,
                 ..data
             }))
-        }
-        // Inline HTML
-        (Stacked(stack, Inline(ListItem(kind, ItemBlock), attrs)), Html(html)) => {
-            // Fresh text after a new block, so indent again.
-            write_indent(writer, attrs.indent)?;
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.inline_html_style.on_top_of(&attrs.style),
-                html,
-            )?;
-            stack
-                .current(Inline(ListItem(kind, ItemText), attrs))
-                .and_data(data)
-                .ok()
-        }
-        (Stacked(stack, Inline(state, attrs)), Html(html)) => {
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.inline_html_style.on_top_of(&attrs.style),
-                html,
-            )?;
-            stack.current(Inline(state, attrs)).and_data(data).ok()
         }
         // Ending inline text
         (Stacked(stack, Inline(_, _)), End(TagEnd::Paragraph)) => {
@@ -880,8 +938,9 @@ pub fn write_event<'a, W: Write>(
         }
 
         // Unconditional returns to previous states
-        (Stacked(stack, _), End(TagEnd::BlockQuote(_))) => stack.pop().and_data(data).ok(),
-        (Stacked(stack, _), End(TagEnd::List(_))) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, _), End(TagEnd::BlockQuote(_) | TagEnd::List(_) | TagEnd::HtmlBlock)) => {
+            stack.pop().and_data(data).ok()
+        }
 
         // Impossible events
         (s, e) => panic!("Event {e:?} impossible in state {s:?}"),

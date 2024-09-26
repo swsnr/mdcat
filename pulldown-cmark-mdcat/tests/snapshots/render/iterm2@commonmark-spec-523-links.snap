@@ -4,4 +4,4 @@ assertion_line: 124
 expression: "render_to_string(markdown_file, &iterm2_settings)"
 input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/523-links.md
 ---
-[foo[32m<bar attr="](baz)">[0m
+[foo[32m <bar attr="](baz)">[0m
