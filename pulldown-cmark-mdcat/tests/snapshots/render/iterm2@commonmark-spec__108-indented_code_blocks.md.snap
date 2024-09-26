@@ -1,9 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 159
-expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/108-indented_code_blocks.md
----
-• foo
-
-  bar

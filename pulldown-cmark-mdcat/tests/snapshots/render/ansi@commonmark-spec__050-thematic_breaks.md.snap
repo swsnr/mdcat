@@ -1,7 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 158
-expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/050-thematic_breaks.md
----
-[32m════════════════════════════════════════════════════════════════════════════════[0m

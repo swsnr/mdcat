@@ -1,7 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 158
-expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/393-emphasis_and_strong_emphasis.md
----
-[1mGomphocarpus ([0m[1m[3mGomphocarpus physocarpus[0m[1m, syn.[0m[1m[3m Asclepias physocarpa[0m[1m)[0m

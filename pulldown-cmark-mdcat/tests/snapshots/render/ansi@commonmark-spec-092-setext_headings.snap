@@ -1,0 +1,9 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/092-setext_headings.md
+---
+    [3mFoo[0m
+
+[32m════════════════════════════════════════════════════════════════════════════════[0m

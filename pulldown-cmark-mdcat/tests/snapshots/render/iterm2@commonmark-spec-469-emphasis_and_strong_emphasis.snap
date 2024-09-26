@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 124
+expression: "render_to_string(markdown_file, &iterm2_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/469-emphasis_and_strong_emphasis.md
+---
+[3mfoo[0m[1m[3m bar[0m[1m[3m *[0m[1m[3mbaz bim[0m[3m bam[0m

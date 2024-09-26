@@ -1,7 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 159
-expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/010-tabs.md
----
-]1337;SetMark\[1m[34m┄[0m[1m[34mFoo[0m

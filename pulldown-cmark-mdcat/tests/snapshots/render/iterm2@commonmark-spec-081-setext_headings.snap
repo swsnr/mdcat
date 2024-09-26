@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 124
+expression: "render_to_string(markdown_file, &iterm2_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/081-setext_headings.md
+---
+]1337;SetMark\[1m[34m┄[0m[1m[34mFoo [0m[1m[3m[34mbar[0m[1m[3m[34mbaz[0m

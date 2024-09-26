@@ -1,0 +1,10 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/wrapping/links.md
+---
+[33mmdcat[0m has some stuff which seriously goes over the[1m 80 character[0m mark ]8;;https://example.com/this-link-should-wrap\[34mhere and[0m
+[34mdefinitely[0m]8;;\ must wrap right before the "definitely"!
+
+If there is a ]8;;https://example.com/this-is-a-very-long-path-which-should-not-be-taken-into-account-wrt-line-length\[34mvery very long inline link[0m]8;;\ mdcat should join subsequent lines.

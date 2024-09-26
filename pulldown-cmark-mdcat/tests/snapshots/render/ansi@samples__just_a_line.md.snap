@@ -1,7 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 158
-expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/samples/just_a_line.md
----
-This is a single simple line with no special thingythings.

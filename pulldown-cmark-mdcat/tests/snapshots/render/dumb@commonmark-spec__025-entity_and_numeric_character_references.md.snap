@@ -1,7 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 157
-expression: "replace_system_specific_urls(render_to_string(markdown_file, &dumb_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/025-entity_and_numeric_character_references.md
----
-  & © Æ Ď ¾ ℋ ⅆ ∲ ≧̸

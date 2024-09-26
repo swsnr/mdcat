@@ -1,9 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 158
-expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/259-list_items.md
----
-         1. [3mone[0m
-
-            [3mtwo[0m

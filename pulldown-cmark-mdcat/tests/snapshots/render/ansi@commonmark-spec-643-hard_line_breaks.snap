@@ -1,0 +1,8 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/643-hard_line_breaks.md
+---
+[32m<a href="foo\
+bar">[0m

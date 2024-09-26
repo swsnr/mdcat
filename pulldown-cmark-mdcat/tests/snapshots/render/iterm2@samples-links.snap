@@ -1,0 +1,14 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 124
+expression: "render_to_string(markdown_file, &iterm2_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/samples/links.md
+---
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
+tempor invidunt ut labore et dolore magna aliquyam erat (]8;;http://www.example.com/autolink\[34mhttp://[0m
+[34mwww.example.com/autolink[0m]8;;\), sed diam voluptua (]8;;mailto:hello@example.com\[34mhello@example.com[0m]8;;\).
+
+Lorem ipsum dolor sit amet, ]8;;http://www.example.com/inline\[34mconsetetur[0m[34m sadipscing[0m]8;;\ elitr, sed diam nonumy eirmod
+tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At
+vero eos et accusam et ]8;;http://www.example.com/reference\[34mjusto duo dolores[0m]8;;\ et ea rebum. Stet clita kasd gubergren,
+no sea ]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/markdown/samples/showcase.md\[34mtakimata sanctus[0m]8;;\ est Lorem ipsum dolor sit amet.

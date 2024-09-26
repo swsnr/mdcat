@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 124
+expression: "render_to_string(markdown_file, &iterm2_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/032-entity_and_numeric_character_references.md
+---
+]8;;file://HOSTNAME/ROOT/f%C3%B6%C3%B6\[34mfoo[0m]8;;\

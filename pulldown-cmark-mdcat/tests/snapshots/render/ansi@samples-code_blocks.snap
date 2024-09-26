@@ -1,0 +1,31 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/samples/code_blocks.md
+---
+Code blocks without syntax highlighting:
+
+[32m────────────────────[0m
+[33mSome plain
+[0m[33mcode block
+[0m[33m   fooo
+[0m[32m────────────────────[0m
+
+Or with syntax highlighting, eg, Rust:
+
+[32m────────────────────[0m
+[34mfn[0m [33mmain[0m() {
+    [32mprintln![0m("[36mHello world[0m")
+}
+[32m────────────────────[0m
+
+Or Scala:
+
+[32m────────────────────[0m
+[34mobject[0m [33mHelloWorld[0m {
+  [34mdef[0m [33mmain[0m([34margs[0m: [32mArray[0m[[32mString[0m]): [34mUnit[0m = {
+    println("[36mHello, world![0m")
+  }
+}
+[32m────────────────────[0m

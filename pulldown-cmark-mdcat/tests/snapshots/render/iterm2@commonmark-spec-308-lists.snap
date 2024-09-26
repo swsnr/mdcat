@@ -1,0 +1,13 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 124
+expression: "render_to_string(markdown_file, &iterm2_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/308-lists.md
+---
+• foo
+• bar
+
+[32m<!-- -->
+[0m
+• baz
+• bim

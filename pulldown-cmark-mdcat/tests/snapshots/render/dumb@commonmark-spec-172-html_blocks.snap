@@ -1,0 +1,14 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 122
+expression: "render_to_string(markdown_file, &dumb_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/172-html_blocks.md
+---
+<style
+  type="text/css">
+h1 {color:red;}
+
+p {color:blue;}
+</style>
+
+okay

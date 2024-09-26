@@ -1,0 +1,9 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/229-block_quotes.md
+---
+    [1m[3m[34m┄[0m[1m[3m[34mFoo[0m
+
+    [3mbar[0m[3m baz[0m

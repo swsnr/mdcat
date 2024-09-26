@@ -1,0 +1,8 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/159-html_blocks.md
+---
+[32m<div><a href="bar">*foo*</a></div>
+[0m

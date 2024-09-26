@@ -1,7 +1,0 @@
----
-source: pulldown-cmark-mdcat/tests/render.rs
-assertion_line: 158
-expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
-input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/346-code_spans.md
----
-]8;;http://foo.bar.`baz/\[34mhttp://foo.bar.`baz[0m]8;;\`

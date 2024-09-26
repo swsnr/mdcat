@@ -1,0 +1,11 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/173-html_blocks.md
+---
+[32m<style
+[0m[32m  type="text/css">
+[0m[32m
+[0m[32mfoo
+[0m

@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/200-link_reference_definitions.md
+---
+]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/markdown/commonmark-spec/\[34mfoo[0m]8;;\

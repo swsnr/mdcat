@@ -1,0 +1,10 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 123
+expression: "render_to_string(markdown_file, &ansi_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/137-fenced_code_blocks.md
+---
+[32m────────────────────[0m
+[33maaa
+[0m[33m    ```
+[0m[32m────────────────────[0m

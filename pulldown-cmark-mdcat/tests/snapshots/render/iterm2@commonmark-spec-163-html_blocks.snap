@@ -1,0 +1,10 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 124
+expression: "render_to_string(markdown_file, &iterm2_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/163-html_blocks.md
+---
+[32m<Warning>
+[0m[32m*bar*
+[0m[32m</Warning>
+[0m

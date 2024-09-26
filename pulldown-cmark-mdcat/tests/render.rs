@@ -14,7 +14,7 @@
 use std::path::Path;
 use std::sync::OnceLock;
 
-use insta::{assert_snapshot, glob, with_settings};
+use insta::{assert_snapshot, glob};
 use mdcat_http_reqwest::HttpResourceHandler;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
@@ -77,37 +77,51 @@ fn test_render() {
     let mut root_url = cwd_url.join("/").expect("Join root URL");
     root_url.set_host(Some("HOSTNAME")).unwrap();
     cwd_url.set_host(Some("HOSTNAME")).unwrap();
-    with_settings!({
-        snapshot_path => "snapshots/render",
-        prepend_module_to_snapshot => false,
-        filters => vec![
-            (regex::escape(cwd_url.as_str()).as_str(), "file://HOSTNAME/WORKING_DIRECTORY/"),
-            (regex::escape(root_url.as_str()).as_str(), "file://HOSTNAME/ROOT/"),
-        ]
-    },
-    {
-        let dumb_settings = Settings {
-            terminal_capabilities: TerminalProgram::Dumb.capabilities(),
-            terminal_size: TerminalSize::default(),
-            theme: Theme::default(),
-            syntax_set: syntax_set(),
-        };
-        let ansi_settings = Settings {
-            terminal_capabilities: TerminalProgram::Ansi.capabilities(),
-            terminal_size: TerminalSize::default(),
-            theme: Theme::default(),
-            syntax_set: syntax_set(),
-        };
-        let iterm2_settings = Settings {
-            terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
-            terminal_size: TerminalSize::default(),
-            theme: Theme::default(),
-            syntax_set: syntax_set(),
-        };
-        glob!("markdown/**/*.md", |markdown_file| {
-            assert_snapshot!("dumb", render_to_string(markdown_file, &dumb_settings));
-            assert_snapshot!("ansi", render_to_string(markdown_file, &ansi_settings));
-            assert_snapshot!("iterm2", render_to_string(markdown_file, &iterm2_settings));
-        });
+
+    let dumb_settings = Settings {
+        terminal_capabilities: TerminalProgram::Dumb.capabilities(),
+        terminal_size: TerminalSize::default(),
+        theme: Theme::default(),
+        syntax_set: syntax_set(),
+    };
+    let ansi_settings = Settings {
+        terminal_capabilities: TerminalProgram::Ansi.capabilities(),
+        terminal_size: TerminalSize::default(),
+        theme: Theme::default(),
+        syntax_set: syntax_set(),
+    };
+    let iterm2_settings = Settings {
+        terminal_capabilities: TerminalProgram::ITerm2.capabilities(),
+        terminal_size: TerminalSize::default(),
+        theme: Theme::default(),
+        syntax_set: syntax_set(),
+    };
+
+    glob!("markdown/**/*.md", |markdown_file| {
+        let mut settings = insta::Settings::clone_current();
+        settings.set_snapshot_path("snapshots/render");
+        settings.set_prepend_module_to_snapshot(false);
+        settings.add_filter(
+            regex::escape(cwd_url.as_str()).as_str(),
+            "file://HOSTNAME/WORKING_DIRECTORY/",
+        );
+        settings.add_filter(
+            regex::escape(root_url.as_str()).as_str(),
+            "file://HOSTNAME/ROOT/",
+        );
+        let category = markdown_file
+            .parent()
+            .unwrap()
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap();
+        let name = markdown_file.file_stem().unwrap().to_str().unwrap();
+        settings.set_snapshot_suffix(format!("{category}-{name}"));
+        let _guard = settings.bind_to_scope();
+        assert_snapshot!("dumb", render_to_string(markdown_file, &dumb_settings));
+        assert_snapshot!("ansi", render_to_string(markdown_file, &ansi_settings));
+        assert_snapshot!("iterm2", render_to_string(markdown_file, &iterm2_settings));
+        drop(_guard);
     });
 }

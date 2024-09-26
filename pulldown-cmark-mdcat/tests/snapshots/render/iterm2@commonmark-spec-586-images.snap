@@ -1,0 +1,9 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 124
+expression: "render_to_string(markdown_file, &iterm2_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/586-images.md
+---
+[35mfoo[0m[35m[1][0m []
+
+[35m[1]: [0m]8;;file://HOSTNAME/ROOT/url\[35m/url[0m]8;;\[35m title[0m
