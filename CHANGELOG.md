@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.5.0] – 2024-09-26
+
 ### Changed
 - Update to pulldown-cmark 0.12 (see [GH-276]).
   This notably improves whitespace handling for HTML blocks and inline HTML.
@@ -795,7 +797,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.4.0...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.5.0...HEAD
+[2.5.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.4.0...mdcat-2.5.0
 [2.4.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.3.1...mdcat-2.4.0
 [2.3.1]: https://github.com/swsnr/mdcat/compare/mdcat-2.3.0...mdcat-2.3.1
 [2.3.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.2.0...mdcat-2.3.0
