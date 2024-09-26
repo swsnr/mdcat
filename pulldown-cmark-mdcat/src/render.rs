@@ -71,7 +71,7 @@ pub fn write_event<'a, W: Write>(
                 .ok()
         }
         (TopLevel(attrs), Start(Heading { level, .. })) => {
-            let (data, links) = data.take_links();
+            let (data, links) = data.take_link_references();
             write_link_refs(writer, environment, &settings.terminal_capabilities, links)?;
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
@@ -627,6 +627,7 @@ pub fn write_event<'a, W: Write>(
             Start(Link {
                 link_type,
                 dest_url,
+                title,
                 ..
             }),
         ) => {
@@ -644,7 +645,10 @@ pub fn write_event<'a, W: Write>(
                 });
 
             let (link_state, data) = match maybe_link {
-                None => (InlineText, data),
+                None => (
+                    InlineText,
+                    data.push_pending_link(link_type, dest_url, title),
+                ),
                 Some(url) => {
                     let data = match data.current_line.trailing_space.as_ref() {
                         Some(space) => {
@@ -676,31 +680,41 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(InlineLink, _)), End(TagEnd::Link)) => {
-            clear_link(writer)?;
-            stack.pop().and_data(data).ok()
-        }
-        // When closing email or autolinks in inline text just return because link, being identical
-        // to the link text, was already written.
-        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Autolink, _, _))) => {
-            stack.pop().and_data(data).ok()
-        }
-        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Email, _, _))) => {
-            stack.pop().and_data(data).ok()
-        }
-        (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
-            let (data, index) = data.add_link(target, title, settings.theme.link_style);
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.link_style.on_top_of(&attrs.style),
-                format!("[{index}]"),
-            )?;
-            stack.pop().and_data(data).ok()
+        (Stacked(stack, Inline(InlineText, attrs)), End(TagEnd::Link)) => {
+            let (data, link) = data.pop_pending_link();
+            match link.link_type {
+                LinkType::Autolink | LinkType::Email => {
+                    // When closing email or autolinks in inline text just return because link, being identical
+                    // to the link text, was already written.
+                    stack.pop().and_data(data).ok()
+                }
+                _ => {
+                    let (data, index) = data.add_link_reference(
+                        link.dest_url,
+                        link.title,
+                        settings.theme.link_style,
+                    );
+                    write_styled(
+                        writer,
+                        &settings.terminal_capabilities,
+                        &settings.theme.link_style.on_top_of(&attrs.style),
+                        format!("[{index}]"),
+                    )?;
+                    stack.pop().and_data(data).ok()
+                }
+            }
         }
 
         // Images
-        (Stacked(stack, Inline(state, attrs)), Start(Image { dest_url, .. })) => {
+        (
+            Stacked(stack, Inline(state, attrs)),
+            Start(Image {
+                dest_url,
+                title,
+                link_type,
+                ..
+            }),
+        ) => {
             let InlineAttrs { style, indent } = attrs;
             let resolved_link = environment.resolve_reference(&dest_url);
             let image_state = match (settings.terminal_capabilities.image, resolved_link) {
@@ -734,18 +748,27 @@ pub fn write_event<'a, W: Write>(
                         }
                     },
                 (_, None) => None,
-            }
-            .unwrap_or_else(|| {
-                event!(Level::WARN, "Rendering image {} as inline text, without link", dest_url);
-                // Inside an inline link keep the link style; we cannot nest links so we
-                // should clarify that clicking the link follows the link target and not the image.
-                let style = if let InlineLink = state {
-                    style
-                } else {
-                    settings.theme.image_link_style.on_top_of(&style)
-                };
-                Inline(InlineText, InlineAttrs { style, indent })
-            });
+            };
+
+            let (image_state, data) = match image_state {
+                Some(state) => (state, data),
+                None => {
+                    event!(
+                        Level::WARN,
+                        "Rendering image {} as inline text, without link",
+                        dest_url
+                    );
+                    // Inside an inline link keep the link style; we cannot nest links so we
+                    // should clarify that clicking the link follows the link target and not the image.
+                    let style = if let InlineLink = state {
+                        style
+                    } else {
+                        settings.theme.image_link_style.on_top_of(&style)
+                    };
+                    let state = Inline(InlineText, InlineAttrs { style, indent });
+                    (state, data.push_pending_link(link_type, dest_url, title))
+                }
+            };
             stack
                 .push(Inline(state, attrs))
                 .current(image_state)
@@ -768,22 +791,25 @@ pub fn write_event<'a, W: Write>(
         // See also https://docs.rs/pulldown-cmark/0.9.6/src/pulldown_cmark/html.rs.html#280-290 for
         // how the upstream handles images.
         (Stacked(stack, RenderedImage), _) => Stacked(stack, RenderedImage).and_data(data).ok(),
-        (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
-            if let InlineLink = state {
-                clear_link(writer)?;
-                stack.pop().and_data(data).ok()
-            } else {
-                let (data, index) = data.add_link(target, title, settings.theme.image_link_style);
-                write_styled(
-                    writer,
-                    &settings.terminal_capabilities,
-                    // Regardless of text style always colour the reference to make clear it points to
-                    // an image
-                    &settings.theme.image_link_style.on_top_of(&attrs.style),
-                    format!("[{index}]"),
-                )?;
-                stack.pop().and_data(data).ok()
-            }
+        (Stacked(stack, Inline(InlineText, attrs)), End(TagEnd::Image)) => {
+            let (data, link) = data.pop_pending_link();
+            let (data, index) =
+                data.add_link_reference(link.dest_url, link.title, settings.theme.image_link_style);
+            write_styled(
+                writer,
+                &settings.terminal_capabilities,
+                // Regardless of text style always colour the reference to make clear it points to
+                // an image
+                &settings.theme.image_link_style.on_top_of(&attrs.style),
+                format!("[{index}]"),
+            )?;
+            stack.pop().and_data(data).ok()
+        }
+
+        // End any kind of inline link, either a proper link, or an image written out as inline link
+        (Stacked(stack, Inline(InlineLink, _)), End(TagEnd::Link | TagEnd::Image)) => {
+            clear_link(writer)?;
+            stack.pop().and_data(data).ok()
         }
 
         // Tables
