@@ -8,6 +8,12 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- Update to pulldown-cmark 0.12 (see [GH-276]).
+  This brings several fixes and improvements.
+
+[GH-276]: https://github.com/swsnr/mdcat/pull/276
+
 ## [2.4.0] – 2024-09-20
 
 ### Added
