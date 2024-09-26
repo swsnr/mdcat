@@ -4,7 +4,7 @@ assertion_line: 123
 expression: "render_to_string(markdown_file, &ansi_settings)"
 input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/183-html_blocks.md
 ---
-[32m<!-- foo -->
+[32m  [0m[32m<!-- foo -->
 [0m
 [32m────────────────────[0m
 [33m<!-- foo -->

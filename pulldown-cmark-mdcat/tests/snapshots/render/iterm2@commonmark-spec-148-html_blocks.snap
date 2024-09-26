@@ -8,7 +8,7 @@ input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/148-html_blocks.
 [0m[32m<pre>
 [0m[32m**Hello**,
 [0m
-[3mworld[0m.[32m</pre>[0m
+[3mworld[0m.[32m </pre>[0m
 
 [32m</td></tr></table>
 [0m

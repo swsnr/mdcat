@@ -11,7 +11,9 @@ use std::io::Result;
 
 use anstyle::{Effects, Style};
 use pulldown_cmark::Event::*;
+use pulldown_cmark::Tag;
 use pulldown_cmark::Tag::*;
+use pulldown_cmark::TagEnd;
 use pulldown_cmark::{Event, LinkType};
 use syntect::highlighting::HighlightIterator;
 use syntect::util::LinesWithEndings;
@@ -34,7 +36,7 @@ use state::*;
 use write::*;
 
 use crate::render::data::{CurrentLine, CurrentTable};
-use crate::render::state::MarginControl::{Margin, NoMargin};
+use crate::render::state::MarginControl::NoMargin;
 use crate::terminal::capabilities::StyleCapability;
 use crate::terminal::osc::{clear_link, set_link_url};
 pub use data::StateData;
@@ -69,8 +71,25 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (TopLevel(attrs), Start(Heading(level, _, _))) => {
-            let (data, links) = data.take_links();
+        (TopLevel(attrs), Start(Tag::HtmlBlock)) => {
+            if attrs.margin_before != NoMargin {
+                writeln!(writer)?;
+            }
+            // We render HTML literally
+            State::stack_onto(TopLevelAttrs::margin_before())
+                .current(
+                    HtmlBlockAttrs {
+                        indent: 0,
+                        initial_indent: 0,
+                        style: settings.theme.html_block_style,
+                    }
+                    .into(),
+                )
+                .and_data(data)
+                .ok()
+        }
+        (TopLevel(attrs), Start(Heading { level, .. })) => {
+            let (data, links) = data.take_link_references();
             write_link_refs(writer, environment, &settings.terminal_capabilities, links)?;
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
@@ -87,7 +106,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (TopLevel(attrs), Start(BlockQuote)) => {
+        (TopLevel(attrs), Start(BlockQuote(_))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -162,20 +181,6 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (TopLevel(attrs), Html(html)) => {
-            if attrs.margin_before == Margin {
-                writeln!(writer)?;
-            }
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.html_block_style,
-                html,
-            )?;
-            TopLevel(TopLevelAttrs::no_margin_for_html_only())
-                .and_data(data)
-                .ok()
-        }
 
         // Nested blocks with style, e.g. paragraphs in quotes, etc.
         (Stacked(stack, StyledBlock(attrs)), Start(Paragraph)) => {
@@ -190,7 +195,23 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, StyledBlock(attrs)), Start(BlockQuote)) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Tag::HtmlBlock)) => {
+            if attrs.margin_before != NoMargin {
+                writeln!(writer)?;
+            }
+            let state = HtmlBlockAttrs {
+                indent: attrs.indent,
+                initial_indent: attrs.indent,
+                style: settings.theme.html_block_style.on_top_of(&attrs.style),
+            }
+            .into();
+            stack
+                .push(attrs.with_margin_before().into())
+                .current(state)
+                .and_data(data)
+                .ok()
+        }
+        (Stacked(stack, StyledBlock(attrs)), Start(BlockQuote(_))) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -217,7 +238,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, StyledBlock(attrs)), Start(Heading(level, _, _))) => {
+        (Stacked(stack, StyledBlock(attrs)), Start(Heading { level, .. })) => {
             if attrs.margin_before != NoMargin {
                 writeln!(writer)?;
             }
@@ -260,22 +281,6 @@ pub fn write_event<'a, W: Write>(
                 .current(write_start_code_block(
                     writer, settings, indent, style, kind,
                 )?)
-                .and_data(data)
-                .ok()
-        }
-        (Stacked(stack, StyledBlock(attrs)), Html(html)) => {
-            if attrs.margin_before == Margin {
-                writeln!(writer)?;
-            }
-            write_indent(writer, attrs.indent)?;
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.html_block_style.on_top_of(&attrs.style),
-                html,
-            )?;
-            stack
-                .current(attrs.without_margin_for_html_only().into())
                 .and_data(data)
                 .ok()
         }
@@ -322,6 +327,27 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Tag::HtmlBlock)) => {
+            let InlineAttrs { indent, style, .. } = attrs;
+            let initial_indent = if state == StartItem {
+                0
+            } else {
+                writeln!(writer)?;
+                indent
+            };
+            stack
+                .push(Inline(ListItem(kind, ItemBlock), attrs))
+                .current(
+                    HtmlBlockAttrs {
+                        style: settings.theme.html_block_style.on_top_of(&style),
+                        indent,
+                        initial_indent,
+                    }
+                    .into(),
+                )
+                .and_data(data)
+                .ok()
+        }
         (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(CodeBlock(ck))) => {
             writeln!(writer)?;
             let InlineAttrs { indent, style, .. } = attrs;
@@ -346,7 +372,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Heading(level, _, _))) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), Start(Heading { level, .. })) => {
             if state != StartItem {
                 writeln!(writer)?;
                 write_indent(writer, attrs.indent)?;
@@ -375,7 +401,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(BlockQuote)) => {
+        (Stacked(stack, Inline(ListItem(kind, _), attrs)), Start(BlockQuote(_))) => {
             writeln!(writer)?;
             let block_quote = StyledBlockAttrs::from(&attrs)
                 .without_margin_before()
@@ -386,7 +412,7 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), End(Item)) => {
+        (Stacked(stack, Inline(ListItem(kind, state), attrs)), End(TagEnd::Item)) => {
             let InlineAttrs { indent, style, .. } = attrs;
             let data = if state != ItemBlock {
                 // End the inline text of this item
@@ -408,7 +434,7 @@ pub fn write_event<'a, W: Write>(
 
         // Literal blocks without highlighting
         (Stacked(stack, LiteralBlock(attrs)), Text(text)) => {
-            let LiteralBlockAttrs { indent, style } = attrs;
+            let LiteralBlockAttrs { indent, style, .. } = attrs;
             for line in LinesWithEndings::from(&text) {
                 write_styled(writer, &settings.terminal_capabilities, &style, line)?;
                 if line.ends_with('\n') {
@@ -417,7 +443,7 @@ pub fn write_event<'a, W: Write>(
             }
             stack.current(attrs.into()).and_data(data).ok()
         }
-        (Stacked(stack, LiteralBlock(_)), End(CodeBlock(_))) => {
+        (Stacked(stack, LiteralBlock(_)), End(TagEnd::CodeBlock)) => {
             write_code_block_border(
                 writer,
                 &settings.theme,
@@ -425,6 +451,46 @@ pub fn write_event<'a, W: Write>(
                 &settings.terminal_size,
             )?;
             stack.pop().and_data(data).ok()
+        }
+        // HTML and extra text in a literal block, i.e HTML in an HTML block
+        (Stacked(stack, HtmlBlock(attrs)), Text(text)) => {
+            let HtmlBlockAttrs {
+                indent,
+                initial_indent,
+                style,
+            } = attrs;
+            for (n, line) in LinesWithEndings::from(&text).enumerate() {
+                let line_indent = if n == 0 { initial_indent } else { indent };
+                write_indent(writer, line_indent)?;
+                write_styled(writer, &settings.terminal_capabilities, &style, line)?;
+            }
+            stack
+                .current(
+                    HtmlBlockAttrs {
+                        initial_indent: attrs.indent,
+                        indent: attrs.indent,
+                        style: attrs.style,
+                    }
+                    .into(),
+                )
+                .and_data(data)
+                .ok()
+        }
+        (Stacked(stack, HtmlBlock(attrs)), Html(html)) => {
+            write_indent(writer, attrs.initial_indent)?;
+            // TODO: Split html into lines and properly account for initial indent
+            write_styled(writer, &settings.terminal_capabilities, &attrs.style, html)?;
+            stack
+                .current(
+                    HtmlBlockAttrs {
+                        initial_indent: attrs.indent,
+                        indent: attrs.indent,
+                        style: attrs.style,
+                    }
+                    .into(),
+                )
+                .and_data(data)
+                .ok()
         }
 
         // Highlighted code blocks
@@ -444,7 +510,7 @@ pub fn write_event<'a, W: Write>(
             }
             stack.current(attrs.into()).and_data(data).ok()
         }
-        (Stacked(stack, HighlightBlock(_)), End(CodeBlock(_))) => {
+        (Stacked(stack, HighlightBlock(_)), End(TagEnd::CodeBlock)) => {
             write_code_block_border(
                 writer,
                 &settings.theme,
@@ -466,7 +532,6 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(_, _)), End(Emphasis)) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), Start(Strong)) => {
             let InlineAttrs { indent, .. } = attrs;
             let style = attrs.style.bold();
@@ -476,7 +541,6 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(_, _)), End(Strong)) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), Start(Strikethrough)) => {
             let InlineAttrs { indent, .. } = attrs;
             let style = attrs.style.strikethrough();
@@ -486,7 +550,10 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(_, _)), End(Strikethrough)) => stack.pop().and_data(data).ok(),
+        (
+            Stacked(stack, Inline(_, _)),
+            End(TagEnd::Strong | TagEnd::Emphasis | TagEnd::Strikethrough),
+        ) => stack.pop().and_data(data).ok(),
         (Stacked(stack, Inline(state, attrs)), Code(code)) => {
             let current_line = write_styled_and_wrapped(
                 writer,
@@ -496,6 +563,23 @@ pub fn write_event<'a, W: Write>(
                 attrs.indent,
                 data.current_line,
                 code,
+            )?;
+            let data = StateData {
+                current_line,
+                ..data
+            };
+            Ok(stack.current(Inline(state, attrs)).and_data(data))
+        }
+
+        (Stacked(stack, Inline(state, attrs)), InlineHtml(html)) => {
+            let current_line = write_styled_and_wrapped(
+                writer,
+                &settings.terminal_capabilities,
+                &settings.theme.inline_html_style.on_top_of(&attrs.style),
+                settings.terminal_size.columns,
+                attrs.indent,
+                data.current_line,
+                html,
             )?;
             let data = StateData {
                 current_line,
@@ -578,38 +662,14 @@ pub fn write_event<'a, W: Write>(
                 ..data
             }))
         }
-        // Inline HTML
-        (Stacked(stack, Inline(ListItem(kind, ItemBlock), attrs)), Html(html)) => {
-            // Fresh text after a new block, so indent again.
-            write_indent(writer, attrs.indent)?;
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.inline_html_style.on_top_of(&attrs.style),
-                html,
-            )?;
-            stack
-                .current(Inline(ListItem(kind, ItemText), attrs))
-                .and_data(data)
-                .ok()
-        }
-        (Stacked(stack, Inline(state, attrs)), Html(html)) => {
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.inline_html_style.on_top_of(&attrs.style),
-                html,
-            )?;
-            stack.current(Inline(state, attrs)).and_data(data).ok()
-        }
         // Ending inline text
-        (Stacked(stack, Inline(_, _)), End(Paragraph)) => {
+        (Stacked(stack, Inline(_, _)), End(TagEnd::Paragraph)) => {
             writeln!(writer)?;
             Ok(stack
                 .pop()
                 .and_data(data.current_line(CurrentLine::empty())))
         }
-        (Stacked(stack, Inline(_, _)), End(Heading(_, _, _))) => {
+        (Stacked(stack, Inline(_, _)), End(TagEnd::Heading(_))) => {
             writeln!(writer)?;
             Ok(stack
                 .pop()
@@ -620,7 +680,15 @@ pub fn write_event<'a, W: Write>(
         //
         // Links need a bit more work than standard inline markup because we
         // need to keep track of link references if we can't write inline links.
-        (Stacked(stack, Inline(state, attrs)), Start(Link(link_type, target, _))) => {
+        (
+            Stacked(stack, Inline(state, attrs)),
+            Start(Link {
+                link_type,
+                dest_url,
+                title,
+                ..
+            }),
+        ) => {
             let maybe_link = settings
                 .terminal_capabilities
                 .style
@@ -628,14 +696,17 @@ pub fn write_event<'a, W: Write>(
                 .and_then(|_| {
                     if let LinkType::Email = link_type {
                         // Turn email autolinks (i.e. <foo@example.com>) into mailto inline links
-                        Url::parse(&format!("mailto:{target}")).ok()
+                        Url::parse(&format!("mailto:{dest_url}")).ok()
                     } else {
-                        environment.resolve_reference(&target)
+                        environment.resolve_reference(&dest_url)
                     }
                 });
 
             let (link_state, data) = match maybe_link {
-                None => (InlineText, data),
+                None => (
+                    InlineText,
+                    data.push_pending_link(link_type, dest_url, title),
+                ),
                 Some(url) => {
                     let data = match data.current_line.trailing_space.as_ref() {
                         Some(space) => {
@@ -667,33 +738,43 @@ pub fn write_event<'a, W: Write>(
                 .and_data(data)
                 .ok()
         }
-        (Stacked(stack, Inline(InlineLink, _)), End(Link(_, _, _))) => {
-            clear_link(writer)?;
-            stack.pop().and_data(data).ok()
-        }
-        // When closing email or autolinks in inline text just return because link, being identical
-        // to the link text, was already written.
-        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Autolink, _, _))) => {
-            stack.pop().and_data(data).ok()
-        }
-        (Stacked(stack, Inline(InlineText, _)), End(Link(LinkType::Email, _, _))) => {
-            stack.pop().and_data(data).ok()
-        }
-        (Stacked(stack, Inline(InlineText, attrs)), End(Link(_, target, title))) => {
-            let (data, index) = data.add_link(target, title, settings.theme.link_style);
-            write_styled(
-                writer,
-                &settings.terminal_capabilities,
-                &settings.theme.link_style.on_top_of(&attrs.style),
-                format!("[{index}]"),
-            )?;
-            stack.pop().and_data(data).ok()
+        (Stacked(stack, Inline(InlineText, attrs)), End(TagEnd::Link)) => {
+            let (data, link) = data.pop_pending_link();
+            match link.link_type {
+                LinkType::Autolink | LinkType::Email => {
+                    // When closing email or autolinks in inline text just return because link, being identical
+                    // to the link text, was already written.
+                    stack.pop().and_data(data).ok()
+                }
+                _ => {
+                    let (data, index) = data.add_link_reference(
+                        link.dest_url,
+                        link.title,
+                        settings.theme.link_style,
+                    );
+                    write_styled(
+                        writer,
+                        &settings.terminal_capabilities,
+                        &settings.theme.link_style.on_top_of(&attrs.style),
+                        format!("[{index}]"),
+                    )?;
+                    stack.pop().and_data(data).ok()
+                }
+            }
         }
 
         // Images
-        (Stacked(stack, Inline(state, attrs)), Start(Image(_, link, _))) => {
+        (
+            Stacked(stack, Inline(state, attrs)),
+            Start(Image {
+                dest_url,
+                title,
+                link_type,
+                ..
+            }),
+        ) => {
             let InlineAttrs { style, indent } = attrs;
-            let resolved_link = environment.resolve_reference(&link);
+            let resolved_link = environment.resolve_reference(&dest_url);
             let image_state = match (settings.terminal_capabilities.image, resolved_link) {
                 (Some(capability), Some(ref url)) => capability
                     .image_protocol()
@@ -725,18 +806,27 @@ pub fn write_event<'a, W: Write>(
                         }
                     },
                 (_, None) => None,
-            }
-            .unwrap_or_else(|| {
-                event!(Level::WARN, "Rendering image {} as inline text, without link", link);
-                // Inside an inline link keep the link style; we cannot nest links so we
-                // should clarify that clicking the link follows the link target and not the image.
-                let style = if let InlineLink = state {
-                    style
-                } else {
-                    settings.theme.image_link_style.on_top_of(&style)
-                };
-                Inline(InlineText, InlineAttrs { style, indent })
-            });
+            };
+
+            let (image_state, data) = match image_state {
+                Some(state) => (state, data),
+                None => {
+                    event!(
+                        Level::WARN,
+                        "Rendering image {} as inline text, without link",
+                        dest_url
+                    );
+                    // Inside an inline link keep the link style; we cannot nest links so we
+                    // should clarify that clicking the link follows the link target and not the image.
+                    let style = if let InlineLink = state {
+                        style
+                    } else {
+                        settings.theme.image_link_style.on_top_of(&style)
+                    };
+                    let state = Inline(InlineText, InlineAttrs { style, indent });
+                    (state, data.push_pending_link(link_type, dest_url, title))
+                }
+            };
             stack
                 .push(Inline(state, attrs))
                 .current(image_state)
@@ -746,12 +836,12 @@ pub fn write_event<'a, W: Write>(
         // To correctly handle nested images in the image description, we push a dummy rendered
         // image state so to maintain a correct state stack at the end of image event, where the
         // tail of the stack gets popped.
-        (Stacked(stack, RenderedImage), Start(Image(_, _, _))) => stack
+        (Stacked(stack, RenderedImage), Start(Image { .. })) => stack
             .push(RenderedImage)
             .current(RenderedImage)
             .and_data(data)
             .ok(),
-        (Stacked(stack, RenderedImage), End(Image(_, _, _))) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, RenderedImage), End(TagEnd::Image)) => stack.pop().and_data(data).ok(),
         // Immediately after the start of image event comes the alt text, which we do not support
         // for rendered images. So we just ignore all events other than image events, which are
         // handled above.
@@ -759,22 +849,25 @@ pub fn write_event<'a, W: Write>(
         // See also https://docs.rs/pulldown-cmark/0.9.6/src/pulldown_cmark/html.rs.html#280-290 for
         // how the upstream handles images.
         (Stacked(stack, RenderedImage), _) => Stacked(stack, RenderedImage).and_data(data).ok(),
-        (Stacked(stack, Inline(state, attrs)), End(Image(_, target, title))) => {
-            if let InlineLink = state {
-                clear_link(writer)?;
-                stack.pop().and_data(data).ok()
-            } else {
-                let (data, index) = data.add_link(target, title, settings.theme.image_link_style);
-                write_styled(
-                    writer,
-                    &settings.terminal_capabilities,
-                    // Regardless of text style always colour the reference to make clear it points to
-                    // an image
-                    &settings.theme.image_link_style.on_top_of(&attrs.style),
-                    format!("[{index}]"),
-                )?;
-                stack.pop().and_data(data).ok()
-            }
+        (Stacked(stack, Inline(InlineText, attrs)), End(TagEnd::Image)) => {
+            let (data, link) = data.pop_pending_link();
+            let (data, index) =
+                data.add_link_reference(link.dest_url, link.title, settings.theme.image_link_style);
+            write_styled(
+                writer,
+                &settings.terminal_capabilities,
+                // Regardless of text style always colour the reference to make clear it points to
+                // an image
+                &settings.theme.image_link_style.on_top_of(&attrs.style),
+                format!("[{index}]"),
+            )?;
+            stack.pop().and_data(data).ok()
+        }
+
+        // End any kind of inline link, either a proper link, or an image written out as inline link
+        (Stacked(stack, Inline(InlineLink, _)), End(TagEnd::Link | TagEnd::Image)) => {
+            clear_link(writer)?;
+            stack.pop().and_data(data).ok()
         }
 
         // Tables
@@ -783,7 +876,7 @@ pub fn write_event<'a, W: Write>(
         | (Stacked(stack, TableBlock), Start(TableCell)) => {
             Stacked(stack, TableBlock).and_data(data).ok()
         }
-        (Stacked(stack, TableBlock), End(TableHead)) => {
+        (Stacked(stack, TableBlock), End(TagEnd::TableHead)) => {
             let current_table = data.current_table.end_head();
             let data = StateData {
                 current_table,
@@ -791,7 +884,7 @@ pub fn write_event<'a, W: Write>(
             };
             Stacked(stack, TableBlock).and_data(data).ok()
         }
-        (Stacked(stack, TableBlock), End(TableRow)) => {
+        (Stacked(stack, TableBlock), End(TagEnd::TableRow)) => {
             let current_table = data.current_table.end_row();
             let data = StateData {
                 current_table,
@@ -799,7 +892,7 @@ pub fn write_event<'a, W: Write>(
             };
             Stacked(stack, TableBlock).and_data(data).ok()
         }
-        (Stacked(stack, TableBlock), End(TableCell)) => {
+        (Stacked(stack, TableBlock), End(TagEnd::TableCell)) => {
             let current_table = data.current_table.end_cell();
             let data = StateData {
                 current_table,
@@ -815,7 +908,7 @@ pub fn write_event<'a, W: Write>(
             };
             Stacked(stack, TableBlock).and_data(data).ok()
         }
-        (Stacked(stack, TableBlock), End(Table(_))) => {
+        (Stacked(stack, TableBlock), End(TagEnd::Table)) => {
             write_table(
                 writer,
                 &settings.terminal_capabilities,
@@ -834,19 +927,20 @@ pub fn write_event<'a, W: Write>(
         (Stacked(stack, TableBlock), Start(Emphasis))
         | (Stacked(stack, TableBlock), Start(Strong))
         | (Stacked(stack, TableBlock), Start(Strikethrough))
-        | (Stacked(stack, TableBlock), Start(Link(_, _, _)))
-        | (Stacked(stack, TableBlock), Start(Image(_, _, _)))
-        | (Stacked(stack, TableBlock), End(Emphasis))
-        | (Stacked(stack, TableBlock), End(Strong))
-        | (Stacked(stack, TableBlock), End(Strikethrough))
-        | (Stacked(stack, TableBlock), End(Link(_, _, _)))
-        | (Stacked(stack, TableBlock), End(Image(_, _, _))) => {
+        | (Stacked(stack, TableBlock), Start(Link { .. }))
+        | (Stacked(stack, TableBlock), Start(Image { .. }))
+        | (Stacked(stack, TableBlock), End(TagEnd::Emphasis))
+        | (Stacked(stack, TableBlock), End(TagEnd::Strong))
+        | (Stacked(stack, TableBlock), End(TagEnd::Strikethrough))
+        | (Stacked(stack, TableBlock), End(TagEnd::Link))
+        | (Stacked(stack, TableBlock), End(TagEnd::Image)) => {
             Stacked(stack, TableBlock).and_data(data).ok()
         }
 
         // Unconditional returns to previous states
-        (Stacked(stack, _), End(BlockQuote)) => stack.pop().and_data(data).ok(),
-        (Stacked(stack, _), End(List(_))) => stack.pop().and_data(data).ok(),
+        (Stacked(stack, _), End(TagEnd::BlockQuote(_) | TagEnd::List(_) | TagEnd::HtmlBlock)) => {
+            stack.pop().and_data(data).ok()
+        }
 
         // Impossible events
         (s, e) => panic!("Event {e:?} impossible in state {s:?}"),

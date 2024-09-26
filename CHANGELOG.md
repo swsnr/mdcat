@@ -8,6 +8,14 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- Update to pulldown-cmark 0.12 (see [GH-276]).
+  This notably improves whitespace handling for HTML blocks and inline HTML.
+- mdcat now treats inline HTML like inline code, just with different styling (see [GH-276]).
+  Specifically, mdcat now wraps inline HTML.
+
+[GH-276]: https://github.com/swsnr/mdcat/pull/276
+
 ## [2.4.0] – 2024-09-20
 
 ### Added

@@ -8,6 +8,6 @@ input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/148-html_blocks.
 <pre>
 **Hello**,
 
-world.</pre>
+world. </pre>
 
 </td></tr></table>

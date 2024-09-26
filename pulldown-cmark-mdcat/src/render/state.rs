@@ -16,8 +16,6 @@ pub(super) enum MarginControl {
     Margin,
     /// Always add no margin.
     NoMargin,
-    /// Add margin unless the current event is a HTML event.
-    NoMarginForHtmlOnly,
 }
 
 /// State attributes for inline text.
@@ -122,13 +120,6 @@ impl StyledBlockAttrs {
         }
     }
 
-    pub(super) fn without_margin_for_html_only(self) -> Self {
-        StyledBlockAttrs {
-            margin_before: MarginControl::NoMarginForHtmlOnly,
-            ..self
-        }
-    }
-
     pub(super) fn block_quote(self) -> Self {
         StyledBlockAttrs {
             indent: self.indent + 4,
@@ -182,6 +173,16 @@ pub struct LiteralBlockAttrs {
 }
 
 #[derive(Debug, PartialEq)]
+pub struct HtmlBlockAttrs {
+    /// The initial indent for this block.
+    pub(super) initial_indent: u16,
+    /// Indent for the remainder of this block.
+    pub(super) indent: u16,
+    /// The base style for this block.
+    pub(super) style: Style,
+}
+
+#[derive(Debug, PartialEq)]
 pub enum StackedState {
     /// Styled block.
     ///
@@ -191,6 +192,8 @@ pub enum StackedState {
     HighlightBlock(HighlightBlockAttrs),
     /// A literal block without highlighting.
     LiteralBlock(LiteralBlockAttrs),
+    /// A block of HTML contents.
+    HtmlBlock(HtmlBlockAttrs),
     /// A rendered inline image.
     ///
     /// We move to this state when we can render an image directly to the terminal, in order to
@@ -220,6 +223,12 @@ impl From<LiteralBlockAttrs> for StackedState {
     }
 }
 
+impl From<HtmlBlockAttrs> for StackedState {
+    fn from(attrs: HtmlBlockAttrs) -> Self {
+        StackedState::HtmlBlock(attrs)
+    }
+}
+
 /// State attributes for top level.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TopLevelAttrs {
@@ -230,12 +239,6 @@ impl TopLevelAttrs {
     pub(super) fn margin_before() -> Self {
         TopLevelAttrs {
             margin_before: MarginControl::Margin,
-        }
-    }
-
-    pub(super) fn no_margin_for_html_only() -> Self {
-        TopLevelAttrs {
-            margin_before: MarginControl::NoMarginForHtmlOnly,
         }
     }
 }
