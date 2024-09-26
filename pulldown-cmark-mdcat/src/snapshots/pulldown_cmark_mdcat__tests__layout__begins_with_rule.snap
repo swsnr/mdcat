@@ -1,0 +1,6 @@
+---
+source: pulldown-cmark-mdcat/src/lib.rs
+assertion_line: 207
+expression: "render_string_dumb(\"----\").unwrap()"
+---
+════════════════════════════════════════════════════════════════════════════════

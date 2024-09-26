@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/020-backslash_escapes.md
+---
+]8;;http://example.com/?find=\*\[34mhttp://example.com?find=\*[0m]8;;\

@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/356-emphasis_and_strong_emphasis.md
+---
+[3mfoo bar[0m

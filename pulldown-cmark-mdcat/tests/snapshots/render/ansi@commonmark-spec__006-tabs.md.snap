@@ -1,0 +1,9 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/006-tabs.md
+---
+    [32m────────────────────[0m
+    [3m[33m  [0m[3m[33mfoo
+[0m    [32m────────────────────[0m

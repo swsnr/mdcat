@@ -1,0 +1,6 @@
+---
+source: pulldown-cmark-mdcat/src/lib.rs
+assertion_line: 218
+expression: "render_dump(\"> Hello World\").unwrap()"
+---
+    Hello World

@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/596-autolinks.md
+---
+]8;;mailto:FOO@BAR.BAZ\[34mMAILTO:FOO@BAR.BAZ[0m]8;;\

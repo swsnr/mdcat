@@ -1,0 +1,14 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 159
+expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/169-html_blocks.md
+---
+[32m<pre language="haskell"><code>
+[0m[32mimport Text.HTML.TagSoup
+[0m[32m
+[0m[32mmain :: IO ()
+[0m[32mmain = print $ parseTags tags
+[0m[32m</code></pre>
+[0m
+okay

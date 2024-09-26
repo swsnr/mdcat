@@ -1,0 +1,25 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 157
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &dumb_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/samples/block_quote_and_ruler.md
+---
+Block quote without paragraphs:
+
+    Lorem ipsum dolor sit amet.
+
+Block quotes with paragraphs
+
+    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy
+    eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam
+    voluptua.
+
+    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy
+    eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam
+    voluptua.
+
+Before we continue, have a ruler:
+
+════════════════════════════════════════════════════════════════════════════════
+
+Bye bye

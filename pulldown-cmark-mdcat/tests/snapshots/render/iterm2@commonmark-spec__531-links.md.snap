@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 159
+expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/531-links.md
+---
+[foo ]8;;file://HOSTNAME/ROOT/uri\[34mbar[0m]8;;\]]8;;file://HOSTNAME/ROOT/uri\[34mref[0m]8;;\

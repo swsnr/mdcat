@@ -1,0 +1,12 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/152-html_blocks.md
+---
+[32m<DIV CLASS="foo">
+[0m
+[3mMarkdown[0m
+
+[32m</DIV>
+[0m

@@ -1,0 +1,9 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 159
+expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/samples/inline_formatting.md
+---
+Lorem[9m ipsum dolor sit amet[0m, consetetur sadipscing elitr, sed diam[1m nonumy[0m[1m eirmod[0m
+[1mtempor invidunt[0m ut labore et[3m dolore magna aliquyam erat[0m, sed diam voluptua.[33m At[0m
+[33mvero eos et[0m accusam et

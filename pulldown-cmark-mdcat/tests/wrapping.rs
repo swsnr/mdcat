@@ -8,7 +8,7 @@
 
 #![deny(warnings, clippy::all)]
 
-use glob::glob;
+use insta::glob;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 
@@ -33,17 +33,16 @@ fn render_to_string<S: AsRef<str>>(markdown: S, settings: &Settings) -> String {
 
 #[test]
 fn lines_are_below_column_width_of_terminal() {
-    for entry in glob("tests/render/mnd/wrapping/*.md").unwrap() {
-        let markdown_file = entry.unwrap();
-        let markdown = std::fs::read_to_string(&markdown_file).unwrap();
+    glob!("markdown/wrapping/*.md", |markdown_file| {
+        let markdown = std::fs::read_to_string(markdown_file).unwrap();
         let settings = Settings {
             terminal_capabilities: TerminalProgram::Ansi.capabilities(),
             terminal_size: TerminalSize::default(),
             theme: Theme::default(),
             syntax_set: &SyntaxSet::load_defaults_newlines(),
         };
-        let result = render_to_string(markdown, &settings);
-        for line in result.lines() {
+        let rendered = render_to_string(markdown, &settings);
+        for line in rendered.lines() {
             let width = textwrap::core::display_width(line);
             assert!(
                 width <= 80,
@@ -51,11 +50,12 @@ fn lines_are_below_column_width_of_terminal() {
                 line,
                 width,
                 markdown_file
-                    .strip_prefix("tests/render/md")
-                    .unwrap()
                     .with_extension("")
-                    .display()
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
             );
         }
-    }
+    });
 }

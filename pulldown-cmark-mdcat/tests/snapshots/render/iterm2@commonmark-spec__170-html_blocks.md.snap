@@ -1,0 +1,13 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 159
+expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/170-html_blocks.md
+---
+[32m<script type="text/javascript">
+[0m[32m// JavaScript example
+[0m[32m
+[0m[32mdocument.getElementById("demo").innerHTML = "Hello JavaScript!";
+[0m[32m</script>
+[0m
+okay

@@ -1,0 +1,7 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 158
+expression: "replace_system_specific_urls(render_to_string(markdown_file, &ansi_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/206-link_reference_definitions.md
+---
+]8;;file://HOSTNAME/ROOT/%CF%86%CE%BF%CF%85\[34mαγω[0m]8;;\

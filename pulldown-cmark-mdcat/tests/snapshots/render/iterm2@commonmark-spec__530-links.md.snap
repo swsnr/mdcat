@@ -1,0 +1,9 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 159
+expression: "replace_system_specific_urls(render_to_string(markdown_file,\n&iterm2_settings))"
+input_file: pulldown-cmark-mdcat/tests/markdown/commonmark-spec/530-links.md
+---
+]8;;file://HOSTNAME/ROOT/uri\[34mmoon[0m[35m[1][0m]8;;\
+
+[35m[1]: [0m]8;;file://HOSTNAME/WORKING_DIRECTORY/tests/markdown/commonmark-spec/moon.jpg\[35mmoon.jpg[0m]8;;\

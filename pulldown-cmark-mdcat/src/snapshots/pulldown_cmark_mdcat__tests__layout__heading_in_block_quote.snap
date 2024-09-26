@@ -1,0 +1,8 @@
+---
+source: pulldown-cmark-mdcat/src/lib.rs
+assertion_line: 227
+expression: "render_string_dumb(\"> Hello World\n\n> # Hello World\").unwrap()"
+---
+    Hello World
+
+    ┄Hello World
