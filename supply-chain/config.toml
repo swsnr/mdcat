@@ -4,6 +4,9 @@
 [cargo-vet]
 version = "0.10"
 
+[imports.bytecode-alliance]
+url = "https://raw.githubusercontent.com/bytecodealliance/wasmtime/main/supply-chain/audits.toml"
+
 [imports.google]
 url = "https://raw.githubusercontent.com/google/supply-chain/main/audits.toml"
 
@@ -21,10 +24,6 @@ notes = "mdcat is a command line tool and usally not exposed to fully untrusted 
 [policy.pulldown-cmark-mdcat]
 criteria = "safe-to-run"
 notes = "mdcat is a command line tool and usally not exposed to fully untrusted input"
-
-[[exemptions.addr2line]]
-version = "0.24.1"
-criteria = "safe-to-run"
 
 [[exemptions.aligned-vec]]
 version = "0.5.0"
@@ -54,20 +53,12 @@ criteria = "safe-to-run"
 version = "3.0.4"
 criteria = "safe-to-run"
 
-[[exemptions.arbitrary]]
-version = "1.3.2"
-criteria = "safe-to-run"
-
 [[exemptions.arg_enum_proc_macro]]
 version = "0.3.4"
 criteria = "safe-to-run"
 
 [[exemptions.arrayref]]
 version = "0.3.9"
-criteria = "safe-to-run"
-
-[[exemptions.arrayvec]]
-version = "0.7.6"
 criteria = "safe-to-run"
 
 [[exemptions.async-compression]]
@@ -118,10 +109,6 @@ criteria = "safe-to-run"
 version = "0.7.4"
 criteria = "safe-to-run"
 
-[[exemptions.bumpalo]]
-version = "3.16.0"
-criteria = "safe-to-run"
-
 [[exemptions.byteorder-lite]]
 version = "0.1.0"
 criteria = "safe-to-run"
@@ -156,10 +143,6 @@ criteria = "safe-to-run"
 
 [[exemptions.crossbeam-deque]]
 version = "0.8.5"
-criteria = "safe-to-run"
-
-[[exemptions.crossbeam-epoch]]
-version = "0.9.18"
 criteria = "safe-to-run"
 
 [[exemptions.crossbeam-utils]]
@@ -240,10 +223,6 @@ criteria = "safe-to-run"
 
 [[exemptions.gif]]
 version = "0.13.1"
-criteria = "safe-to-run"
-
-[[exemptions.gimli]]
-version = "0.31.0"
 criteria = "safe-to-run"
 
 [[exemptions.globset]]
@@ -342,10 +321,6 @@ criteria = "safe-to-run"
 version = "1.70.1"
 criteria = "safe-to-run"
 
-[[exemptions.itertools]]
-version = "0.12.1"
-criteria = "safe-to-run"
-
 [[exemptions.jobserver]]
 version = "0.1.32"
 criteria = "safe-to-run"
@@ -366,10 +341,6 @@ criteria = "safe-to-run"
 version = "0.5.2"
 criteria = "safe-to-run"
 
-[[exemptions.libc]]
-version = "0.2.158"
-criteria = "safe-to-run"
-
 [[exemptions.libm]]
 version = "0.2.8"
 criteria = "safe-to-run"
@@ -384,10 +355,6 @@ criteria = "safe-to-run"
 
 [[exemptions.loop9]]
 version = "0.1.5"
-criteria = "safe-to-run"
-
-[[exemptions.matchers]]
-version = "0.1.0"
 criteria = "safe-to-run"
 
 [[exemptions.maybe-rayon]]
@@ -430,10 +397,6 @@ criteria = "safe-to-run"
 version = "0.3.0"
 criteria = "safe-to-run"
 
-[[exemptions.nu-ansi-term]]
-version = "0.46.0"
-criteria = "safe-to-run"
-
 [[exemptions.num-bigint]]
 version = "0.4.6"
 criteria = "safe-to-run"
@@ -444,14 +407,6 @@ criteria = "safe-to-run"
 
 [[exemptions.num-rational]]
 version = "0.4.2"
-criteria = "safe-to-run"
-
-[[exemptions.num-traits]]
-version = "0.2.19"
-criteria = "safe-to-run"
-
-[[exemptions.object]]
-version = "0.36.4"
 criteria = "safe-to-run"
 
 [[exemptions.onig]]
@@ -466,20 +421,12 @@ criteria = "safe-to-run"
 version = "0.10.66"
 criteria = "safe-to-run"
 
-[[exemptions.openssl-probe]]
-version = "0.1.5"
-criteria = "safe-to-run"
-
 [[exemptions.openssl-sys]]
 version = "0.9.103"
 criteria = "safe-to-run"
 
 [[exemptions.os_info]]
 version = "3.8.2"
-criteria = "safe-to-run"
-
-[[exemptions.overload]]
-version = "0.1.1"
 criteria = "safe-to-run"
 
 [[exemptions.parking_lot]]
@@ -602,10 +549,6 @@ criteria = "safe-to-run"
 version = "0.20.0"
 criteria = "safe-to-run"
 
-[[exemptions.rustc-hash]]
-version = "2.0.0"
-criteria = "safe-to-run"
-
 [[exemptions.rustix]]
 version = "0.38.37"
 criteria = "safe-to-run"
@@ -694,10 +637,6 @@ criteria = "safe-to-run"
 version = "1.13.2"
 criteria = "safe-to-run"
 
-[[exemptions.socket2]]
-version = "0.5.7"
-criteria = "safe-to-run"
-
 [[exemptions.strict-num]]
 version = "0.1.1"
 criteria = "safe-to-run"
@@ -782,10 +721,6 @@ criteria = "safe-to-run"
 version = "2.4.0"
 criteria = "safe-to-run"
 
-[[exemptions.tokio-native-tls]]
-version = "0.3.1"
-criteria = "safe-to-run"
-
 [[exemptions.tokio-rustls]]
 version = "0.26.0"
 criteria = "safe-to-run"
@@ -838,10 +773,6 @@ criteria = "safe-to-run"
 version = "2.7.0"
 criteria = "safe-to-run"
 
-[[exemptions.unicode-bidi]]
-version = "0.3.15"
-criteria = "safe-to-run"
-
 [[exemptions.unicode-bidi-mirroring]]
 version = "0.3.0"
 criteria = "safe-to-run"
@@ -892,10 +823,6 @@ criteria = "safe-to-run"
 
 [[exemptions.v_frame]]
 version = "0.3.8"
-criteria = "safe-to-run"
-
-[[exemptions.vcpkg]]
-version = "0.2.15"
 criteria = "safe-to-run"
 
 [[exemptions.version-compare]]
