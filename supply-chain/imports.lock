@@ -1,2 +1,201 @@
 
 # cargo-vet imports lock
+
+[[publisher.core-foundation]]
+version = "0.9.3"
+when = "2022-02-07"
+user-id = 5946
+user-login = "jrmuizel"
+user-name = "Jeff Muizelaar"
+
+[[audits.mozilla.wildcard-audits.core-foundation]]
+who = "Bobby Holley <bobbyholley@gmail.com>"
+criteria = "safe-to-deploy"
+user-id = 5946 # Jeff Muizelaar (jrmuizel)
+start = "2019-03-29"
+end = "2023-05-04"
+renew = false
+notes = "I've reviewed every source contribution that was neither authored nor reviewed by Mozilla."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.bit-set]]
+who = "Aria Beingessner <a.beingessner@gmail.com>"
+criteria = "safe-to-deploy"
+version = "0.5.2"
+notes = "Another crate I own via contain-rs that is ancient and maintenance mode, no known issues."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.bit-set]]
+who = "Mike Hommey <mh+mozilla@glandium.org>"
+criteria = "safe-to-deploy"
+delta = "0.5.2 -> 0.5.3"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.bit-vec]]
+who = "Aria Beingessner <a.beingessner@gmail.com>"
+criteria = "safe-to-deploy"
+version = "0.6.3"
+notes = "Another crate I own via contain-rs that is ancient and in maintenance mode but otherwise perfectly fine."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.core-foundation]]
+who = "Teodor Tanasoaia <ttanasoaia@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.9.3 -> 0.9.4"
+notes = "I've reviewed every source contribution that was neither authored nor reviewed by Mozilla."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.core_maths]]
+who = "Makoto Kato <m_kato@ga2.so-net.ne.jp>"
+criteria = "safe-to-deploy"
+version = "0.1.0"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.deranged]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.3.11"
+notes = """
+This crate contains a decent bit of `unsafe` code, however all internal
+unsafety is verified with copious assertions (many are compile-time), and
+otherwise the unsafety is documented and left to the caller to verify.
+"""
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.fnv]]
+who = "Bobby Holley <bobbyholley@gmail.com>"
+criteria = "safe-to-deploy"
+version = "1.0.7"
+notes = "Simple hasher implementation with no unsafe code."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.form_urlencoded]]
+who = "Valentin Gosu <valentin.gosu@gmail.com>"
+criteria = "safe-to-deploy"
+version = "1.2.0"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.form_urlencoded]]
+who = "Valentin Gosu <valentin.gosu@gmail.com>"
+criteria = "safe-to-deploy"
+delta = "1.2.0 -> 1.2.1"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.linked-hash-map]]
+who = "Aria Beingessner <a.beingessner@gmail.com>"
+criteria = "safe-to-deploy"
+version = "0.5.4"
+notes = "I own this crate (I am contain-rs) and 0.5.4 passes miri. This code is very old and used by lots of people, so I'm pretty confident in it, even though it's in maintenance-mode and missing some nice-to-have APIs."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.linked-hash-map]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.5.4 -> 0.5.6"
+notes = "New unsafe code has debug assertions and meets invariants. All other changes are formatting-related."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.num-conv]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.1.0"
+notes = """
+Very straightforward, simple crate. No dependencies, unsafe, extern,
+side-effectful std functions, etc.
+"""
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.num-derive]]
+who = "Josh Stone <jistone@redhat.com>"
+criteria = "safe-to-deploy"
+version = "0.3.3"
+notes = "All code written or reviewed by Josh Stone."
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.num-derive]]
+who = "Mike Hommey <mh+mozilla@glandium.org>"
+criteria = "safe-to-deploy"
+delta = "0.3.3 -> 0.4.0"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.num-derive]]
+who = "Mike Hommey <mh+mozilla@glandium.org>"
+criteria = "safe-to-deploy"
+delta = "0.4.0 -> 0.4.2"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.powerfmt]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.2.0"
+notes = """
+A tiny bit of unsafe code to implement functionality that isn't in stable rust
+yet, but it's all valid. Otherwise it's a pretty simple crate.
+"""
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.textwrap]]
+who = "Jan-Erik Rediger <jrediger@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.15.0"
+aggregated-from = "https://raw.githubusercontent.com/mozilla/glean/main/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.textwrap]]
+who = "Mike Hommey <mh+mozilla@glandium.org>"
+criteria = "safe-to-deploy"
+delta = "0.15.0 -> 0.15.2"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.textwrap]]
+who = "Mike Hommey <mh+mozilla@glandium.org>"
+criteria = "safe-to-deploy"
+delta = "0.15.2 -> 0.16.0"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.textwrap]]
+who = "Jan-Erik Rediger <jrediger@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.16.0 -> 0.16.1"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.time-core]]
+who = "Kershaw Chang <kershaw@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.1.0"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.time-core]]
+who = "Kershaw Chang <kershaw@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.1.0 -> 0.1.1"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.time-core]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.1.1 -> 0.1.2"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.time-macros]]
+who = "Kershaw Chang <kershaw@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.2.6"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.time-macros]]
+who = "Kershaw Chang <kershaw@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.2.6 -> 0.2.10"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.time-macros]]
+who = "Alex Franchuk <afranchuk@mozilla.com>"
+criteria = "safe-to-deploy"
+delta = "0.2.10 -> 0.2.18"
+aggregated-from = "https://hg.mozilla.org/mozilla-central/raw-file/tip/supply-chain/audits.toml"
+
+[[audits.mozilla.audits.unicode-linebreak]]
+who = "Jan-Erik Rediger <jrediger@mozilla.com>"
+criteria = "safe-to-deploy"
+version = "0.1.5"
+aggregated-from = "https://raw.githubusercontent.com/mozilla/glean/main/supply-chain/audits.toml"
