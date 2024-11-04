@@ -1,0 +1,270 @@
+
+# cargo-vet audits file
+
+[audits]
+
+[[trusted.anstream]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2023-03-16"
+end = "2025-11-04"
+notes = "swsnr trusts epage"
+
+[[trusted.anstyle-parse]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2023-03-08"
+end = "2025-11-04"
+notes = "swsnr trusts epage"
+
+[[trusted.anstyle-query]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2023-04-13"
+end = "2025-11-04"
+notes = "swsnr trusts epage"
+
+[[trusted.anstyle-wincon]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2023-03-08"
+end = "2025-11-04"
+notes = "swsnr trusts epage"
+
+[[trusted.clap_complete]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2021-12-31"
+end = "2025-11-04"
+notes = "swsnr trusts epage"
+
+[[trusted.colorchoice]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2023-04-13"
+end = "2025-11-04"
+notes = "swsnr trusts epage"
+
+[[trusted.errno]]
+criteria = "safe-to-run"
+user-id = 6825 # Dan Gohman (sunfishcode)
+start = "2023-08-29"
+end = "2025-11-04"
+notes = "swsnr trusts sunfishcode"
+
+[[trusted.globset]]
+criteria = "safe-to-run"
+user-id = 189 # Andrew Gallant (BurntSushi)
+start = "2019-04-15"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.h2]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-03-13"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.http]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-04-05"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.http-body-util]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2022-10-25"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.httparse]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-07-03"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.hyper]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-03-01"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.hyper-tls]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-03-19"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.hyper-util]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2022-01-15"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.is_terminal_polyfill]]
+criteria = "safe-to-run"
+user-id = 6743 # Ed Page (epage)
+start = "2024-05-02"
+end = "2025-11-04"
+notes = "swsnr trusts epage"
+
+[[trusted.js-sys]]
+criteria = "safe-to-run"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2025-11-04"
+notes = "Trusted by Mozilla and Bytecode Alliance"
+
+[[trusted.linux-raw-sys]]
+criteria = "safe-to-run"
+user-id = 6825 # Dan Gohman (sunfishcode)
+start = "2021-06-12"
+end = "2025-11-04"
+notes = "swsnr trusts sunfishcode"
+
+[[trusted.memchr]]
+criteria = "safe-to-run"
+user-id = 189 # Andrew Gallant (BurntSushi)
+start = "2019-07-07"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.mime]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-09-09"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.paste]]
+criteria = "safe-to-run"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-03-19"
+end = "2025-11-04"
+notes = "swsnr trusts dtolnay"
+
+[[trusted.regex-automata]]
+criteria = "safe-to-run"
+user-id = 189 # Andrew Gallant (BurntSushi)
+start = "2019-02-25"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.regex-syntax]]
+criteria = "safe-to-run"
+user-id = 189 # Andrew Gallant (BurntSushi)
+start = "2019-03-30"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.reqwest]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-03-04"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.rustix]]
+criteria = "safe-to-run"
+user-id = 6825 # Dan Gohman (sunfishcode)
+start = "2021-10-29"
+end = "2025-11-04"
+notes = "swsnr trusts sunfishcode"
+
+[[trusted.ryu]]
+criteria = "safe-to-run"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-05-02"
+end = "2025-11-04"
+notes = "swsnr trusts dtolnay"
+
+[[trusted.slab]]
+criteria = "safe-to-run"
+user-id = 6741 # Alice Ryhl (Darksonn)
+start = "2021-10-13"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.thiserror]]
+criteria = "safe-to-run"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-10-09"
+end = "2025-11-04"
+notes = "swsnr trusts dtolnay"
+
+[[trusted.thiserror-impl]]
+criteria = "safe-to-run"
+user-id = 3618 # David Tolnay (dtolnay)
+start = "2019-10-09"
+end = "2025-11-04"
+notes = "swsnr trusts dtolnay"
+
+[[trusted.tokio]]
+criteria = "safe-to-run"
+user-id = 6741 # Alice Ryhl (Darksonn)
+start = "2020-12-25"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.tokio-util]]
+criteria = "safe-to-run"
+user-id = 6741 # Alice Ryhl (Darksonn)
+start = "2021-01-12"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.try-lock]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2020-07-10"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.unicase]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-03-05"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.walkdir]]
+criteria = "safe-to-run"
+user-id = 189 # Andrew Gallant (BurntSushi)
+start = "2019-06-09"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
+
+[[trusted.want]]
+criteria = "safe-to-run"
+user-id = 359 # Sean McArthur (seanmonstar)
+start = "2019-03-19"
+end = "2025-11-04"
+notes = "Trusted by mozilla"
+
+[[trusted.wasm-bindgen]]
+criteria = "safe-to-run"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2025-11-04"
+notes = "Trusted by Mozilla and Bytecode Alliance"
+
+[[trusted.web-sys]]
+criteria = "safe-to-run"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-04"
+end = "2025-11-04"
+notes = "Trusted by Mozilla and Bytecode Alliance"
+
+[[trusted.windows-sys]]
+criteria = "safe-to-run"
+user-id = 64539 # Kenny Kerr (kennykerr)
+start = "2021-11-15"
+end = "2025-11-04"
+notes = "Trusted by mozilla and bytecode-alliance"
