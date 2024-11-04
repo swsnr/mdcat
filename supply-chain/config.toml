@@ -13,6 +13,9 @@ url = "https://raw.githubusercontent.com/google/supply-chain/main/audits.toml"
 [imports.mozilla]
 url = "https://raw.githubusercontent.com/mozilla/supply-chain/main/audits.toml"
 
+[imports.swsnr]
+url = "https://raw.githubusercontent.com/swsnr/rust-supply-chain/refs/heads/main/audits.toml"
+
 [policy.mdcat]
 criteria = "safe-to-run"
 notes = "mdcat is a command line tool and usally not exposed to fully untrusted input"
@@ -143,10 +146,6 @@ criteria = "safe-to-run"
 
 [[exemptions.crossbeam-deque]]
 version = "0.8.5"
-criteria = "safe-to-run"
-
-[[exemptions.crossbeam-utils]]
-version = "0.8.20"
 criteria = "safe-to-run"
 
 [[exemptions.crunchy]]
@@ -453,10 +452,6 @@ criteria = "safe-to-run"
 version = "1.1.5"
 criteria = "safe-to-run"
 
-[[exemptions.pkg-config]]
-version = "0.3.30"
-criteria = "safe-to-run"
-
 [[exemptions.plist]]
 version = "1.7.0"
 criteria = "safe-to-run"
@@ -707,10 +702,6 @@ criteria = "safe-to-run"
 
 [[exemptions.tiny-skia-path]]
 version = "0.11.4"
-criteria = "safe-to-run"
-
-[[exemptions.tinyvec_macros]]
-version = "0.1.1"
 criteria = "safe-to-run"
 
 [[exemptions.tokio]]
