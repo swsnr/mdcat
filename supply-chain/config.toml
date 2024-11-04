@@ -40,22 +40,6 @@ criteria = "safe-to-run"
 version = "0.2.2"
 criteria = "safe-to-run"
 
-[[exemptions.anstream]]
-version = "0.6.15"
-criteria = "safe-to-run"
-
-[[exemptions.anstyle-parse]]
-version = "0.2.5"
-criteria = "safe-to-run"
-
-[[exemptions.anstyle-query]]
-version = "1.1.1"
-criteria = "safe-to-run"
-
-[[exemptions.anstyle-wincon]]
-version = "3.0.4"
-criteria = "safe-to-run"
-
 [[exemptions.arg_enum_proc_macro]]
 version = "0.3.4"
 criteria = "safe-to-run"
@@ -124,16 +108,8 @@ criteria = "safe-to-run"
 version = "0.15.8"
 criteria = "safe-to-run"
 
-[[exemptions.clap_complete]]
-version = "4.5.28"
-criteria = "safe-to-run"
-
 [[exemptions.clap_derive]]
 version = "4.5.13"
-criteria = "safe-to-run"
-
-[[exemptions.colorchoice]]
-version = "1.0.2"
 criteria = "safe-to-run"
 
 [[exemptions.console]]
@@ -158,10 +134,6 @@ criteria = "safe-to-run"
 
 [[exemptions.encode_unicode]]
 version = "0.3.6"
-criteria = "safe-to-run"
-
-[[exemptions.errno]]
-version = "0.3.9"
 criteria = "safe-to-run"
 
 [[exemptions.exr]]
@@ -224,14 +196,6 @@ criteria = "safe-to-run"
 version = "0.13.1"
 criteria = "safe-to-run"
 
-[[exemptions.globset]]
-version = "0.4.15"
-criteria = "safe-to-run"
-
-[[exemptions.h2]]
-version = "0.4.6"
-criteria = "safe-to-run"
-
 [[exemptions.half]]
 version = "2.4.1"
 criteria = "safe-to-run"
@@ -244,40 +208,16 @@ criteria = "safe-to-run"
 version = "0.3.9"
 criteria = "safe-to-run"
 
-[[exemptions.http]]
-version = "1.1.0"
-criteria = "safe-to-run"
-
 [[exemptions.http-body]]
 version = "1.0.1"
-criteria = "safe-to-run"
-
-[[exemptions.http-body-util]]
-version = "0.1.2"
-criteria = "safe-to-run"
-
-[[exemptions.httparse]]
-version = "1.9.4"
 criteria = "safe-to-run"
 
 [[exemptions.human-panic]]
 version = "2.0.1"
 criteria = "safe-to-run"
 
-[[exemptions.hyper]]
-version = "1.4.1"
-criteria = "safe-to-run"
-
 [[exemptions.hyper-rustls]]
 version = "0.27.3"
-criteria = "safe-to-run"
-
-[[exemptions.hyper-tls]]
-version = "0.6.0"
-criteria = "safe-to-run"
-
-[[exemptions.hyper-util]]
-version = "0.1.8"
 criteria = "safe-to-run"
 
 [[exemptions.idna]]
@@ -316,20 +256,12 @@ criteria = "safe-to-run"
 version = "2.10.0"
 criteria = "safe-to-run"
 
-[[exemptions.is_terminal_polyfill]]
-version = "1.70.1"
-criteria = "safe-to-run"
-
 [[exemptions.jobserver]]
 version = "0.1.32"
 criteria = "safe-to-run"
 
 [[exemptions.jpeg-decoder]]
 version = "0.3.1"
-criteria = "safe-to-run"
-
-[[exemptions.js-sys]]
-version = "0.3.70"
 criteria = "safe-to-run"
 
 [[exemptions.kurbo]]
@@ -344,10 +276,6 @@ criteria = "safe-to-run"
 version = "0.2.8"
 criteria = "safe-to-run"
 
-[[exemptions.linux-raw-sys]]
-version = "0.4.14"
-criteria = "safe-to-run"
-
 [[exemptions.lock_api]]
 version = "0.4.12"
 criteria = "safe-to-run"
@@ -360,16 +288,8 @@ criteria = "safe-to-run"
 version = "0.1.1"
 criteria = "safe-to-run"
 
-[[exemptions.memchr]]
-version = "2.7.4"
-criteria = "safe-to-run"
-
 [[exemptions.memmap2]]
 version = "0.9.5"
-criteria = "safe-to-run"
-
-[[exemptions.mime]]
-version = "0.3.17"
 criteria = "safe-to-run"
 
 [[exemptions.mime_guess]]
@@ -434,10 +354,6 @@ criteria = "safe-to-run"
 
 [[exemptions.parking_lot_core]]
 version = "0.9.10"
-criteria = "safe-to-run"
-
-[[exemptions.paste]]
-version = "1.0.15"
 criteria = "safe-to-run"
 
 [[exemptions.pico-args]]
@@ -516,18 +432,6 @@ criteria = "safe-to-run"
 version = "0.5.4"
 criteria = "safe-to-run"
 
-[[exemptions.regex-automata]]
-version = "0.1.10"
-criteria = "safe-to-run"
-
-[[exemptions.regex-syntax]]
-version = "0.6.29"
-criteria = "safe-to-run"
-
-[[exemptions.reqwest]]
-version = "0.12.7"
-criteria = "safe-to-run"
-
 [[exemptions.resvg]]
 version = "0.43.0"
 criteria = "safe-to-run"
@@ -542,10 +446,6 @@ criteria = "safe-to-run"
 
 [[exemptions.roxmltree]]
 version = "0.20.0"
-criteria = "safe-to-run"
-
-[[exemptions.rustix]]
-version = "0.38.37"
 criteria = "safe-to-run"
 
 [[exemptions.rustls]]
@@ -574,10 +474,6 @@ criteria = "safe-to-run"
 
 [[exemptions.rustybuzz]]
 version = "0.18.0"
-criteria = "safe-to-run"
-
-[[exemptions.ryu]]
-version = "1.0.18"
 criteria = "safe-to-run"
 
 [[exemptions.schannel]]
@@ -618,10 +514,6 @@ criteria = "safe-to-run"
 
 [[exemptions.siphasher]]
 version = "1.0.1"
-criteria = "safe-to-run"
-
-[[exemptions.slab]]
-version = "0.4.9"
 criteria = "safe-to-run"
 
 [[exemptions.slotmap]]
@@ -676,14 +568,6 @@ criteria = "safe-to-run"
 version = "0.3.0"
 criteria = "safe-to-run"
 
-[[exemptions.thiserror]]
-version = "1.0.63"
-criteria = "safe-to-run"
-
-[[exemptions.thiserror-impl]]
-version = "1.0.63"
-criteria = "safe-to-run"
-
 [[exemptions.thread_local]]
 version = "1.1.8"
 criteria = "safe-to-run"
@@ -704,10 +588,6 @@ criteria = "safe-to-run"
 version = "0.11.4"
 criteria = "safe-to-run"
 
-[[exemptions.tokio]]
-version = "1.40.0"
-criteria = "safe-to-run"
-
 [[exemptions.tokio-macros]]
 version = "2.4.0"
 criteria = "safe-to-run"
@@ -718,10 +598,6 @@ criteria = "safe-to-run"
 
 [[exemptions.tokio-stream]]
 version = "0.1.16"
-criteria = "safe-to-run"
-
-[[exemptions.tokio-util]]
-version = "0.7.12"
 criteria = "safe-to-run"
 
 [[exemptions.toml_edit]]
@@ -752,16 +628,8 @@ criteria = "safe-to-run"
 version = "0.3.18"
 criteria = "safe-to-run"
 
-[[exemptions.try-lock]]
-version = "0.2.5"
-criteria = "safe-to-run"
-
 [[exemptions.ttf-parser]]
 version = "0.24.1"
-criteria = "safe-to-run"
-
-[[exemptions.unicase]]
-version = "2.7.0"
 criteria = "safe-to-run"
 
 [[exemptions.unicode-bidi-mirroring]]
@@ -824,20 +692,8 @@ criteria = "safe-to-run"
 version = "0.9.5"
 criteria = "safe-to-run"
 
-[[exemptions.walkdir]]
-version = "2.5.0"
-criteria = "safe-to-run"
-
-[[exemptions.want]]
-version = "0.3.1"
-criteria = "safe-to-run"
-
 [[exemptions.wasi]]
 version = "0.11.0+wasi-snapshot-preview1"
-criteria = "safe-to-run"
-
-[[exemptions.wasm-bindgen]]
-version = "0.2.93"
 criteria = "safe-to-run"
 
 [[exemptions.wasm-bindgen-backend]]
@@ -858,10 +714,6 @@ criteria = "safe-to-run"
 
 [[exemptions.wasm-bindgen-shared]]
 version = "0.2.93"
-criteria = "safe-to-run"
-
-[[exemptions.web-sys]]
-version = "0.3.70"
 criteria = "safe-to-run"
 
 [[exemptions.weezl]]
@@ -886,18 +738,6 @@ criteria = "safe-to-run"
 
 [[exemptions.windows-strings]]
 version = "0.1.0"
-criteria = "safe-to-run"
-
-[[exemptions.windows-sys]]
-version = "0.48.0"
-criteria = "safe-to-run"
-
-[[exemptions.windows-sys]]
-version = "0.52.0"
-criteria = "safe-to-run"
-
-[[exemptions.windows-sys]]
-version = "0.59.0"
 criteria = "safe-to-run"
 
 [[exemptions.windows-targets]]
