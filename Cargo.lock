@@ -1211,7 +1211,6 @@ dependencies = [
  "shell-words",
  "similar-asserts",
  "syntect",
- "system_proxy",
  "tracing",
  "tracing-subscriber",
 ]
@@ -2321,12 +2320,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
 name = "strict-num"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2403,17 +2396,6 @@ dependencies = [
  "pkg-config",
  "toml",
  "version-compare",
-]
-
-[[package]]
-name = "system_proxy"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b59c11fb98bd1a42633c99d977d3674d9e8a3a298659693ad0370d24d51bbec8"
-dependencies = [
- "log",
- "static_assertions",
- "url",
 ]
 
 [[package]]
