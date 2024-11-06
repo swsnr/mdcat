@@ -163,10 +163,6 @@ criteria = "safe-to-run"
 version = "0.21.0"
 criteria = "safe-to-run"
 
-[[exemptions.futures]]
-version = "0.3.30"
-criteria = "safe-to-run"
-
 [[exemptions.futures-channel]]
 version = "0.3.30"
 criteria = "safe-to-run"
