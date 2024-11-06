@@ -9,8 +9,9 @@ Use `cargo release` to create a new release.
 ## [Unreleased]
 
 ### Removed
-- Remove a few dependencies: `mime_guess`, `system_proxy` (see [GH-297]).
+- Remove a few dependencies: `mime_guess` and `system_proxy` (see [GH-297]).
 - mdcat no longer supports building against the `onig` regex library (see [GH-297]).
+- mdcat no longer supports a static build against musl (see [GH-297]).
 
 [GH-297]: https://github.com/swsnr/mdcat/pull/297
 

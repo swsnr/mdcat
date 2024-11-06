@@ -1,6 +1,5 @@
 [graph]
 targets = [
-  { triple = 'x86_64-unknown-linux-musl' },
   { triple = 'x86_64-unknown-linux-gnu' },
   { triple = 'x86_64-apple-darwin' },
   { triple = 'x86_64-pc-windows-msvc' },
@@ -22,13 +21,4 @@ allow = [
     "ISC",
     "Zlib",
     "Unicode-DFS-2016",
-    "OpenSSL"
-]
-
-# Ring's licensing is… complicated
-[[licenses.clarify]]
-name = "ring"
-expression = "MIT AND ISC AND OpenSSL"
-license-files = [
-    { path = "LICENSE", hash = 0xbd0eed23 }
 ]

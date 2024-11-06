@@ -68,14 +68,6 @@ jobs:
       # Test mdcat in its default configuration (this implicitly checks the
       # default configuration of our libraries)
       - uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          # Need to pass an empty arg list explicitly, because otherwise the
-          # action passes --all-features
-          arguments: ""
-      # Test the static build for our release artifacts
-      - uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          arguments: "--no-default-features --features static"
 
   # Test mdcat itself
   test:
@@ -85,8 +77,6 @@ jobs:
         target:
           # Default linux build
           - x86_64-unknown-linux-gnu
-          # Statically linked linux builds
-          - x86_64-unknown-linux-musl
           # macOS
           - x86_64-apple-darwin
           # Windows
@@ -94,18 +84,12 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-          - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
-            cargo_opts: "--no-default-features --features static"
           - target: x86_64-apple-darwin
             os: macOS-latest
           - target: x86_64-pc-windows-msvc
             os: windows-latest
     steps:
       - uses: actions/checkout@v4
-      # Install musl tools for musl target
-      - run: sudo apt-get install musl-tools
-        if: ${{ contains(matrix.target, 'musl') }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -127,11 +111,11 @@ jobs:
         if: ${{ !contains(matrix.target, 'windows') }}
 
       # Build and test entire workspace in default configuration
-      - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo test --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo doc --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }}
+      - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }}
+      - run: cargo test --workspace --locked --target ${{ matrix.target }}
+      - run: cargo doc --workspace --locked --target ${{ matrix.target }}
         if: ${{ !contains(matrix.target, 'windows') }}
 
       # Run on our complete example, just to assert that the CLI doesn't crash
-      - run: cargo run --target ${{ matrix.target }} ${{ matrix.cargo_opts }} -- sample/common-mark.md
+      - run: cargo run --target ${{ matrix.target }} -- sample/common-mark.md

@@ -7,14 +7,13 @@ on:
 
 jobs:
   build-binaries:
-    runs-on: '${{ matrix.os }}'
+    runs-on: "${{ matrix.os }}"
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            cargo_opts: "--no-default-features --features static"
+            target: x86_64-unknown-linux-gnu
           - os: macOS-latest
             target: x86_64-apple-darwin
           - os: windows-latest
@@ -26,9 +25,7 @@ jobs:
           targets: ${{ matrix.target }}
       - run: sudo gem install asciidoctor
         if: ${{ !contains(matrix.target, 'windows') }}
-      - run: sudo apt-get install musl-tools
-        if: ${{ contains(matrix.target, 'linux-musl') }}
-      - run: cargo build --locked --target '${{ matrix.target }}' ${{ matrix.cargo_opts }} --release
+      - run: cargo build --locked --target '${{ matrix.target }}' --release
       - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
         if: ${{ !contains(matrix.target, 'windows') }}
       - run: strip 'target/${{ matrix.target }}/release/mdcat'

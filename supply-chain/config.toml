@@ -171,14 +171,6 @@ criteria = "safe-to-run"
 version = "0.3.30"
 criteria = "safe-to-run"
 
-[[exemptions.futures-io]]
-version = "0.3.30"
-criteria = "safe-to-run"
-
-[[exemptions.futures-sink]]
-version = "0.3.30"
-criteria = "safe-to-run"
-
 [[exemptions.futures-task]]
 version = "0.3.30"
 criteria = "safe-to-run"
@@ -387,18 +379,6 @@ criteria = "safe-to-run"
 version = "0.32.0"
 criteria = "safe-to-run"
 
-[[exemptions.quinn]]
-version = "0.11.5"
-criteria = "safe-to-run"
-
-[[exemptions.quinn-proto]]
-version = "0.11.8"
-criteria = "safe-to-run"
-
-[[exemptions.quinn-udp]]
-version = "0.5.5"
-criteria = "safe-to-run"
-
 [[exemptions.rav1e]]
 version = "0.7.1"
 criteria = "safe-to-run"
@@ -437,14 +417,6 @@ criteria = "safe-to-run"
 
 [[exemptions.rustls]]
 version = "0.23.13"
-criteria = "safe-to-run"
-
-[[exemptions.rustls-native-certs]]
-version = "0.7.3"
-criteria = "safe-to-run"
-
-[[exemptions.rustls-native-certs]]
-version = "0.8.0"
 criteria = "safe-to-run"
 
 [[exemptions.rustls-pemfile]]

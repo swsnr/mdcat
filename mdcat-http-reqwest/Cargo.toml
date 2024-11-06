@@ -13,15 +13,12 @@ edition.workspace = true
 rust-version.workspace = true
 
 [features]
-native-tls = ["reqwest/native-tls"]
-rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
-
 # Only use for building documentation, to bring in all dependencies to get syntect to compile
 doc = ["dep:syntect"]
 
 [dependencies]
 mime = { workspace = true }
-reqwest = { workspace = true, features = ["gzip", "brotli", "blocking", "http2"] }
+reqwest = { workspace = true }
 tracing = { workspace = true }
 
 # Our own crates; pinned to an exact version because we release all of this repo
