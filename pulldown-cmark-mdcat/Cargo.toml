@@ -24,7 +24,6 @@ onig = ["syntect/regex-onig"]
 base64 = { version = "0.22.1", default-features = false, features = ["std"] }
 anstyle = { version = "1.0.7", default-features = false }
 mime = { workspace = true }
-mime_guess = { version = "2.0.5", default-features = false }
 pulldown-cmark = { workspace = true }
 syntect = { workspace = true, features = ["parsing"] }
 textwrap = { version = "0.16.1", default-features = false, features = ["unicode-linebreak", "unicode-width"] }

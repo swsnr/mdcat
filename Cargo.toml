@@ -28,6 +28,7 @@ pulldown-cmark-mdcat = { workspace = true, default-features = true }
 reqwest = { workspace = true }
 shell-words = { version = "1.1.0", default-features = false, features = ["std"] }
 syntect = { workspace = true, features = ["regex-fancy", "default-syntaxes"] }
+# TODO: Drop system_proxy
 system_proxy = { version = "0.3.2", default-features = false }
 tracing = { workspace = true }
 tracing-subscriber = { version = "0.3.18", default-features = false, features = ["env-filter", "std", "fmt", "ansi"] }

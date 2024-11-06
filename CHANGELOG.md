@@ -8,6 +8,11 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Removed
+- Remove a few dependencies: `mime_guess` (see [GH-297]).
+
+[GH-297]: https://github.com/swsnr/mdcat/pull/297
+
 ## [2.5.0] – 2024-09-26
 
 ### Changed
