@@ -28,8 +28,9 @@ jobs:
       - run: ./shfmt -i 4 -l -d scripts/*
       - run: shellcheck -S style -o all scripts/*
       # Test manpage
-      - run: sudo gem install asciidoctor
-      - run: asciidoctor -b manpage -a reproducible --warnings mdcat.1.adoc
+      - uses: docker://asciidoctor/docker-asciidoctor
+        with:
+          args: asciidoctor -b manpage -a reproducible --warnings mdcat.1.adoc
       - run: man -l --warnings=w --pager=cat mdcat.1
         env:
           MANWIDTH: 80

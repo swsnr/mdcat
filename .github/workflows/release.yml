@@ -23,10 +23,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - run: sudo gem install asciidoctor
-        if: ${{ !contains(matrix.target, 'windows') }}
       - run: cargo build --locked --target '${{ matrix.target }}' --release
-      - run: asciidoctor -b manpage -a reproducible mdcat.1.adoc
+      - uses: docker://asciidoctor/docker-asciidoctor
+        with:
+          args: asciidoctor -b manpage -a reproducible mdcat.1.adoc
         if: ${{ !contains(matrix.target, 'windows') }}
       - run: strip 'target/${{ matrix.target }}/release/mdcat'
         if: ${{ !contains(matrix.target, 'windows') }}
