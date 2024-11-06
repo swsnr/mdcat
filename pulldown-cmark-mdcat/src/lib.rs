@@ -14,7 +14,7 @@
 //!
 //! ## Features
 //!
-//! - `default` enables `svg`, `regex-fancy`, and `image-processing`.
+//! - `default` enables `svg` and `image-processing`.
 //!
 //! - `svg` includes support for rendering SVG images to PNG for terminals which do not support SVG
 //!   images natively.  This feature adds a dependency on `resvg`.
@@ -33,11 +33,6 @@
 //!
 //!   Please **do not report bugs** about inline image rendering with this feature disabled, unless
 //!   the issue can also be reproduced if the feature is enabled.
-//!
-//! - `regex-fancy` and `regex-onig` enable the corresponding features of the [`syntect`] crate,
-//!   i.e. determine whether syntect uses the regex-fancy Rust crate or the Oniguruma C library as
-//!   its regex engine.  The former is slower, but does not imply a native dependency, the latter
-//!   is faster, but you need to compile and link a C library.
 
 #![deny(warnings, missing_docs, clippy::all)]
 #![forbid(unsafe_code)]

@@ -10,6 +10,7 @@ Use `cargo release` to create a new release.
 
 ### Removed
 - Remove a few dependencies: `mime_guess` (see [GH-297]).
+- mdcat no longer supports building against the `onig` regex library (see [GH-297]).
 
 [GH-297]: https://github.com/swsnr/mdcat/pull/297
 

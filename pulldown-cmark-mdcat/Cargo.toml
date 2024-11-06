@@ -14,18 +14,16 @@ edition.workspace = true
 rust-version.workspace = true
 
 [features]
-default = ["svg", "regex-fancy", "image-processing"]
+default = ["svg", "image-processing"]
 svg = ["dep:resvg"]
 image-processing = ["dep:image"]
-regex-fancy = ["syntect/regex-fancy"]
-onig = ["syntect/regex-onig"]
 
 [dependencies]
 base64 = { version = "0.22.1", default-features = false, features = ["std"] }
 anstyle = { version = "1.0.7", default-features = false }
 mime = { workspace = true }
 pulldown-cmark = { workspace = true }
-syntect = { workspace = true, features = ["parsing"] }
+syntect = { workspace = true, features = ["parsing", "regex-fancy"] }
 textwrap = { version = "0.16.1", default-features = false, features = ["unicode-linebreak", "unicode-width"] }
 thiserror = { version = "1.0.61", default-features = false }
 tracing = { workspace = true }

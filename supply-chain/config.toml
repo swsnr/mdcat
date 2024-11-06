@@ -327,14 +327,6 @@ criteria = "safe-to-run"
 version = "0.4.2"
 criteria = "safe-to-run"
 
-[[exemptions.onig]]
-version = "6.4.0"
-criteria = "safe-to-run"
-
-[[exemptions.onig_sys]]
-version = "69.8.1"
-criteria = "safe-to-run"
-
 [[exemptions.openssl]]
 version = "0.10.66"
 criteria = "safe-to-run"

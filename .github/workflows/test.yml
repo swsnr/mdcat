@@ -60,11 +60,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      # Check our library without any features (we do need to pick a regex
-      # engine tho)
+      # Check our library without any features
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
-          arguments: "--no-default-features --features regex-fancy"
+          arguments: "--no-default-features"
           manifest-path: "./pulldown-cmark-mdcat/Cargo.toml"
       # Test mdcat in its default configuration (this implicitly checks the
       # default configuration of our libraries)
@@ -117,14 +116,14 @@ jobs:
 
       # Since Windows builds are comparatively slow, we skip quite a few builds on Windows to speed up pipelines
 
-      # Test library with no features; however we need to pick a regex engine
-      - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+      # Test library with no features
+      - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
-      - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+      - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
-      - run: cargo test -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+      - run: cargo test -p pulldown-cmark-mdcat --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
-      - run: cargo doc -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+      - run: cargo doc -p pulldown-cmark-mdcat --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
 
       # Build and test entire workspace in default configuration
