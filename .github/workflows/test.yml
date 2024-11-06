@@ -17,23 +17,6 @@ on:
   pull_request:
 
 jobs:
-  scripts_and_manage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      # Test scripts
-      - run: |
-          curl -fsSL -o ./shfmt https://github.com/mvdan/sh/releases/download/v3.6.0/shfmt_v3.6.0_linux_amd64
-          chmod 700 ./shfmt
-      - run: ./shfmt -i 4 -l -d scripts/*
-      - run: shellcheck -S style -o all scripts/*
-      # Test manpage
-      - run: sudo gem install asciidoctor
-      - run: asciidoctor -b manpage -a reproducible --warnings mdcat.1.adoc
-      - run: man -l --warnings=w --pager=cat mdcat.1
-        env:
-          MANWIDTH: 80
-
   # See https://mozilla.github.io/cargo-vet/configuring-ci.html
   cargo-vet:
     runs-on: ubuntu-latest
@@ -54,29 +37,41 @@ jobs:
       - name: Invoke cargo-vet
         run: cargo vet --locked
 
-  # Check dependency policies
-  deny:
+  # Lint things which are independent from the build target
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Scripts
+      - uses: docker://mvdan/shfmt
+        with:
+          args: -i 4 -l -d scripts/combine-screenshots scripts/package scripts/screenshot-windows
+      - uses: docker://koalaman/shellcheck:stable
+        with:
+          args: -S style -o all scripts/combine-screenshots scripts/package scripts/screenshot-windows
+
       - uses: dtolnay/rust-toolchain@stable
-      # Check our library without any features (we do need to pick a regex
-      # engine tho)
+        with:
+          components: rustfmt
+
+      # Test formatting
+      - run: cargo fmt --all -- --check
+
+      # Dependency policies
+      - uses: EmbarkStudios/cargo-deny-action@v2
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
-          arguments: "--no-default-features --features regex-fancy"
+          arguments: "--no-default-features"
           manifest-path: "./pulldown-cmark-mdcat/Cargo.toml"
-      # Test mdcat in its default configuration (this implicitly checks the
-      # default configuration of our libraries)
-      - uses: EmbarkStudios/cargo-deny-action@v2
+
+      # Manpage
+      - uses: docker://asciidoctor/docker-asciidoctor
         with:
-          # Need to pass an empty arg list explicitly, because otherwise the
-          # action passes --all-features
-          arguments: ""
-      # Test the static build for our release artifacts
-      - uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          arguments: "--no-default-features --features static"
+          args: asciidoctor -b manpage -a reproducible --warnings mdcat.1.adoc
+      - run: man -l --warnings=w --pager=cat mdcat.1
+        env:
+          MANWIDTH: 80
 
   # Test mdcat itself
   test:
@@ -86,8 +81,6 @@ jobs:
         target:
           # Default linux build
           - x86_64-unknown-linux-gnu
-          # Statically linked linux builds
-          - x86_64-unknown-linux-musl
           # macOS
           - x86_64-apple-darwin
           # Windows
@@ -95,44 +88,35 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-          - target: x86_64-unknown-linux-musl
-            os: ubuntu-latest
-            cargo_opts: "--no-default-features --features static"
           - target: x86_64-apple-darwin
             os: macOS-latest
           - target: x86_64-pc-windows-msvc
             os: windows-latest
     steps:
       - uses: actions/checkout@v4
-      # Install musl tools for musl target
-      - run: sudo apt-get install musl-tools
-        if: ${{ contains(matrix.target, 'musl') }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-          components: clippy,rustfmt
-
-      # Test formatting
-      - run: cargo fmt --all -- --check
+          components: clippy
 
       # Since Windows builds are comparatively slow, we skip quite a few builds on Windows to speed up pipelines
 
-      # Test library with no features; however we need to pick a regex engine
-      - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+      # Test library with no features
+      - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
-      - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked --no-default-features --features regex-fancy
+      - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
-      - run: cargo test -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+      - run: cargo test -p pulldown-cmark-mdcat --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
-      - run: cargo doc -p pulldown-cmark-mdcat --locked --no-default-features --features regex-fancy
+      - run: cargo doc -p pulldown-cmark-mdcat --locked --no-default-features
         if: ${{ !contains(matrix.target, 'windows') }}
 
       # Build and test entire workspace in default configuration
-      - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo test --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
-      - run: cargo doc --workspace --locked --target ${{ matrix.target }} ${{ matrix.cargo_opts }}
+      - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }}
+      - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }}
+      - run: cargo test --workspace --locked --target ${{ matrix.target }}
+      - run: cargo doc --workspace --locked --target ${{ matrix.target }}
         if: ${{ !contains(matrix.target, 'windows') }}
 
       # Run on our complete example, just to assert that the CLI doesn't crash
-      - run: cargo run --target ${{ matrix.target }} ${{ matrix.cargo_opts }} -- sample/common-mark.md
+      - run: cargo run --target ${{ matrix.target }} -- sample/common-mark.md

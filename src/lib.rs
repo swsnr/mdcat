@@ -24,7 +24,6 @@ use pulldown_cmark_mdcat::resources::{
     DispatchingResourceHandler, FileResourceHandler, ResourceUrlHandler,
 };
 use pulldown_cmark_mdcat::{Environment, Settings};
-use reqwest::Proxy;
 use tracing::{event, instrument, Level};
 
 use args::ResourceAccess;
@@ -115,10 +114,8 @@ pub fn create_resource_handler(access: ResourceAccess) -> Result<DispatchingReso
             "Remote resource access permitted, creating HTTP client with user agent {}",
             user_agent
         );
-        let proxies = system_proxy::env::EnvProxies::from_curl_env();
         let client = mdcat_http_reqwest::build_default_client()
             .user_agent(user_agent)
-            .proxy(Proxy::custom(move |url| proxies.lookup(url).cloned()))
             .build()
             .with_context(|| "Failed to build HTTP client".to_string())?;
         resource_handlers.push(Box::new(HttpResourceHandler::new(

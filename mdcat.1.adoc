@@ -210,7 +210,9 @@ no_proxy::
 NO_PROXY::
     A comma-separated list of host/domain names or IP address not to use a proxy for.
 +
-Matches partial hostnames (e.g. `example.org` also disables proxy for `www.example.org`), but always at name boundaries.
+IP addresses may include a subnet mask to match whole networks.
+The special entry `*` matches all hostnames.
+Any other entry is interpreted as domain name, which matches the domain itself and all its subdomains.
 
 MDCAT_LOG::
     Directives to configure output of tracing information.

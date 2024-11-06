@@ -13,15 +13,12 @@ edition.workspace = true
 rust-version.workspace = true
 
 [features]
-native-tls = ["reqwest/native-tls"]
-rustls-tls-native-roots = ["reqwest/rustls-tls-native-roots"]
-
 # Only use for building documentation, to bring in all dependencies to get syntect to compile
 doc = ["dep:syntect"]
 
 [dependencies]
 mime = { workspace = true }
-reqwest = { workspace = true, features = ["gzip", "brotli", "blocking", "http2"] }
+reqwest = { workspace = true }
 tracing = { workspace = true }
 
 # Our own crates; pinned to an exact version because we release all of this repo
@@ -30,14 +27,14 @@ pulldown-cmark-mdcat = { workspace = true, default-features = false }
 
 # To build our docs we need to provide a regex backend for syntect, so we have a optional dependency on syntect with the
 # appropriate feature enabled, which we only bring in when "doc" is enabled, a
-syntect = { workspace = true, features = ["regex-fancy", "default-syntaxes"], optional = true }
+syntect = { workspace = true, features = ["default-syntaxes"], optional = true }
 
 [dev-dependencies]
 hyper = { version="1.4.0", default-features = false, features = ["server", "http1"] }
 hyper-util = { version = "0.1.6", default-features = false, features = ["server", "server-graceful", "tokio", "http1", "service"] }
 http-body-util = { version = "0.1.2", default-features = false }
-futures = { version = "0.3.30", default-features = false, features = ["std"] }
-syntect = { workspace = true, features = ["regex-fancy", "default-syntaxes"] }
+futures-util = { version = "0.3.30", default-features = false, features = ["std"] }
+syntect = { workspace = true, features = ["default-syntaxes"] }
 tokio = { version = "1.38.0", default-features = false, features = ["time", "rt-multi-thread", "macros"] }
 tokio-stream = { version = "0.1.15", default-features = false, features = ["time"] }
 

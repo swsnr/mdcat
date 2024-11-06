@@ -17,14 +17,17 @@ url = "https://raw.githubusercontent.com/mozilla/supply-chain/main/audits.toml"
 url = "https://raw.githubusercontent.com/swsnr/rust-supply-chain/refs/heads/main/audits.toml"
 
 [policy.mdcat]
+audit-as-crates-io = false
 criteria = "safe-to-run"
 notes = "mdcat is a command line tool and usally not exposed to fully untrusted input"
 
 [policy.mdcat-http-reqwest]
+audit-as-crates-io = false
 criteria = "safe-to-run"
 notes = "mdcat is a command line tool and usally not exposed to fully untrusted input"
 
 [policy.pulldown-cmark-mdcat]
+audit-as-crates-io = false
 criteria = "safe-to-run"
 notes = "mdcat is a command line tool and usally not exposed to fully untrusted input"
 
@@ -160,23 +163,11 @@ criteria = "safe-to-run"
 version = "0.21.0"
 criteria = "safe-to-run"
 
-[[exemptions.futures]]
-version = "0.3.30"
-criteria = "safe-to-run"
-
 [[exemptions.futures-channel]]
 version = "0.3.30"
 criteria = "safe-to-run"
 
 [[exemptions.futures-core]]
-version = "0.3.30"
-criteria = "safe-to-run"
-
-[[exemptions.futures-io]]
-version = "0.3.30"
-criteria = "safe-to-run"
-
-[[exemptions.futures-sink]]
 version = "0.3.30"
 criteria = "safe-to-run"
 
@@ -292,10 +283,6 @@ criteria = "safe-to-run"
 version = "0.9.5"
 criteria = "safe-to-run"
 
-[[exemptions.mime_guess]]
-version = "2.0.5"
-criteria = "safe-to-run"
-
 [[exemptions.minimal-lexical]]
 version = "0.2.1"
 criteria = "safe-to-run"
@@ -326,14 +313,6 @@ criteria = "safe-to-run"
 
 [[exemptions.num-rational]]
 version = "0.4.2"
-criteria = "safe-to-run"
-
-[[exemptions.onig]]
-version = "6.4.0"
-criteria = "safe-to-run"
-
-[[exemptions.onig_sys]]
-version = "69.8.1"
 criteria = "safe-to-run"
 
 [[exemptions.openssl]]
@@ -400,18 +379,6 @@ criteria = "safe-to-run"
 version = "0.32.0"
 criteria = "safe-to-run"
 
-[[exemptions.quinn]]
-version = "0.11.5"
-criteria = "safe-to-run"
-
-[[exemptions.quinn-proto]]
-version = "0.11.8"
-criteria = "safe-to-run"
-
-[[exemptions.quinn-udp]]
-version = "0.5.5"
-criteria = "safe-to-run"
-
 [[exemptions.rav1e]]
 version = "0.7.1"
 criteria = "safe-to-run"
@@ -450,14 +417,6 @@ criteria = "safe-to-run"
 
 [[exemptions.rustls]]
 version = "0.23.13"
-criteria = "safe-to-run"
-
-[[exemptions.rustls-native-certs]]
-version = "0.7.3"
-criteria = "safe-to-run"
-
-[[exemptions.rustls-native-certs]]
-version = "0.8.0"
 criteria = "safe-to-run"
 
 [[exemptions.rustls-pemfile]]
@@ -546,10 +505,6 @@ criteria = "safe-to-run"
 
 [[exemptions.system-deps]]
 version = "6.2.2"
-criteria = "safe-to-run"
-
-[[exemptions.system_proxy]]
-version = "0.3.2"
 criteria = "safe-to-run"
 
 [[exemptions.target-lexicon]]

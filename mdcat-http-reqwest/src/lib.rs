@@ -153,7 +153,7 @@ mod tests {
     use std::time::Duration;
     use std::{convert::Infallible, net::SocketAddr};
 
-    use futures::StreamExt;
+    use futures_util::StreamExt;
     use http_body_util::combinators::BoxBody;
     use http_body_util::{BodyExt, Empty, Full, StreamBody};
     use hyper::body::{Bytes, Frame, Incoming};
