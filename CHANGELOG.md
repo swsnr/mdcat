@@ -8,6 +8,9 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Added
+- Added support for images in Ghostty terminal (See [GH-300]).
+
 ### Removed
 - Remove a few dependencies: `mime_guess` and `system_proxy` (see [GH-297]).
 - mdcat no longer supports building against the `onig` regex library (see [GH-297]).

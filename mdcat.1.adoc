@@ -145,6 +145,7 @@ It understands the following values.
 +
     * `wezterm`: WezTerm.  Note that WezTerm sets `$TERM` to `xterm-256color` by default, and only uses `wezterm` for `$TERM` if explicitly configured to do so.
     * `xterm-kitty`: kitty
+    * `xterm-ghostty`: Ghostty
 +
 For all other values `mdcat` proceeds to check `$TERM_PROGRAM`.
 
@@ -155,6 +156,7 @@ TERM_PROGRAM::
     * `iTerm.app`: iTerm2
     * `WezTerm`: WezTerm
     * `vscode`: VSCode integrated terminal, but only if `$TERM_PROGRAM_VERSION` indicates a sufficient version to support all required features..
+    * `ghostty`: Ghostty
 +
 For all other values `mdcat` proceeds to check `$TERMINOLOGY`.
 
