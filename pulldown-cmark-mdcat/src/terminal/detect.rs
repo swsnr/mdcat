@@ -46,6 +46,10 @@ pub enum TerminalProgram {
     ///
     /// Since version 1.80 it supports images with the iTerm2 protocol.
     VSCode,
+    /// Ghostty.
+    ///
+    /// See <https://mitchellh.com/ghostty> for more information.
+    Ghostty,
 }
 
 impl Display for TerminalProgram {
@@ -58,6 +62,7 @@ impl Display for TerminalProgram {
             TerminalProgram::Kitty => "kitty",
             TerminalProgram::WezTerm => "WezTerm",
             TerminalProgram::VSCode => "vscode",
+            TerminalProgram::Ghostty => "ghostty",
         };
         write!(f, "{name}")
     }
@@ -80,6 +85,7 @@ impl TerminalProgram {
         match std::env::var("TERM").ok().as_deref() {
             Some("wezterm") => Some(Self::WezTerm),
             Some("xterm-kitty") => Some(Self::Kitty),
+            Some("xterm-ghostty") => Some(Self::Ghostty),
             _ => None,
         }
     }
@@ -88,6 +94,7 @@ impl TerminalProgram {
         match std::env::var("TERM_PROGRAM").ok().as_deref() {
             Some("WezTerm") => Some(Self::WezTerm),
             Some("iTerm.app") => Some(Self::ITerm2),
+            Some("ghostty") => Some(Self::Ghostty),
             Some("vscode")
                 if get_term_program_major_minor_version()
                     .map_or(false, |version| (1, 80) <= version) =>
@@ -121,6 +128,8 @@ impl TerminalProgram {
     /// - [`TerminalProgram::WezTerm`] if `$TERM` is `wezterm`.
     /// - [`TerminalProgram::WezTerm`] if `$TERM_PROGRAM` is `WezTerm`.
     /// - [`TerminalProgram::ITerm2`] if `$TERM_PROGRAM` is `iTerm.app`.
+    /// - [`TerminalProgram::Ghostty`] if `$TERM` is `xterm-ghostty`.
+    /// - [`TerminalProgram::Ghostty`] if `$TERM_PROGRAM` is `ghostty`.
     /// - [`TerminalProgram::Terminology`] if `$TERMINOLOGY` is `1`.
     /// - [`TerminalProgram::Ansi`] otherwise.
     pub fn detect() -> Self {
@@ -156,6 +165,8 @@ impl TerminalProgram {
             TerminalProgram::VSCode => {
                 ansi.with_image_capability(ImageCapability::ITerm2(ITerm2Protocol))
             }
+            TerminalProgram::Ghostty => ansi
+                .with_image_capability(ImageCapability::Kitty(self::kitty::KittyGraphicsProtocol)),
         }
     }
 }
@@ -220,6 +231,24 @@ mod tests {
             ],
             || assert_eq!(TerminalProgram::detect(), TerminalProgram::Ansi),
         );
+    }
+
+    #[test]
+    pub fn detect_term_ghostty() {
+        with_vars(vec![("TERM", Some("xterm-ghostty"))], || {
+            assert_eq!(TerminalProgram::detect(), TerminalProgram::Ghostty)
+        })
+    }
+
+    #[test]
+    pub fn detect_term_program_ghostty() {
+        with_vars(
+            vec![
+                ("TERM", Some("xterm-256color")),
+                ("TERM_PROGRAM", Some("ghostty")),
+            ],
+            || assert_eq!(TerminalProgram::detect(), TerminalProgram::Ghostty),
+        )
     }
 
     #[test]
