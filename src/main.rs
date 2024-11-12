@@ -24,7 +24,13 @@ use mdcat::output::Output;
 
 fn main() {
     // Setup human-readable panic handling for release builds
-    human_panic::setup_panic!();
+    human_panic::setup_panic!(
+        human_panic::Metadata::new(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
+        .homepage(env!("CARGO_PKG_HOMEPAGE"))
+        .support(
+            "Please open an issue at https://github.com/swsnr/mdcat/issues/new?labels=bug\nPlease include the source document which caused this crash.",
+        )
+    );
 
     // Setup tracing
     let filter = EnvFilter::builder()
