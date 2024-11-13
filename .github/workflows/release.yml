@@ -6,8 +6,21 @@ on:
       - mdcat-*
 
 jobs:
+  build-manpage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker://asciidoctor/docker-asciidoctor
+        with:
+          args: asciidoctor -b manpage -a reproducible mdcat.1.adoc
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mdcat.1
+          path: mdcat.1
+
   build-binaries:
     runs-on: "${{ matrix.os }}"
+    needs: build-manpage
     strategy:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
@@ -23,11 +36,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - run: cargo build --locked --target '${{ matrix.target }}' --release
-      - uses: docker://asciidoctor/docker-asciidoctor
+      - uses: actions/download-artifact@v4
         with:
-          args: asciidoctor -b manpage -a reproducible mdcat.1.adoc
-        if: ${{ !contains(matrix.target, 'windows') }}
+          path: ./artifacts
+      - run: mv artifacts/mdcat.1 .
+      - run: cargo build --locked --target '${{ matrix.target }}' --release
       - run: strip 'target/${{ matrix.target }}/release/mdcat'
         if: ${{ !contains(matrix.target, 'windows') }}
       - id: version

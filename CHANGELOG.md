@@ -8,6 +8,9 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Fixed
+- Fix release workflow to restore binary assets.
+
 ## [2.6.0] – 2024-11-13
 
 ### Added
