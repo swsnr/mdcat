@@ -9,7 +9,9 @@ Use `cargo release` to create a new release.
 ## [Unreleased]
 
 ### Added
-- Added support for images in Ghostty terminal (See [GH-300]).
+- Add support for images in Ghostty terminal (see [GH-300]).
+
+[GH-300]: https://github.com/swsnr/mdcat/pull/300
 
 ### Removed
 - Remove a few dependencies: `mime_guess` and `system_proxy` (see [GH-297]).
