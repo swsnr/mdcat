@@ -52,7 +52,7 @@ members = ["pulldown-cmark-mdcat"]
 [workspace.package]
 homepage = "https://github.com/swsnr/mdcat"
 repository = "https://github.com/swsnr/mdcat"
-version = "2.6.2"
+version = "2.7.0"
 categories = ["command-line-utilities", "text-processing"]
 license = "MPL-2.0 AND Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
@@ -70,7 +70,7 @@ url = "2.5.2"
 
 # Our own crates; pinned to an exact version because we release all of this repo
 # in a single version. cargo release takes care of updating these.
-pulldown-cmark-mdcat = { version = "=2.6.2", path = "pulldown-cmark-mdcat", default-features = false }
+pulldown-cmark-mdcat = { version = "=2.7.0", path = "pulldown-cmark-mdcat", default-features = false }
 
 [workspace.metadata.release]
 allow-branch = ["main"]
