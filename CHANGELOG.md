@@ -8,6 +8,11 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Fixed
+- Do not crash when rendering task lists with paragraphs (see [GH-302]).
+
+[GH-302]: https://github.com/swsnr/mdcat/issues/302
+
 ## [2.6.1] – 2024-11-13
 
 ### Fixed

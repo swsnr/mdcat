@@ -587,7 +587,7 @@ pub fn write_event<'a, W: Write>(
             };
             Ok(stack.current(Inline(state, attrs)).and_data(data))
         }
-        (Stacked(stack, Inline(ListItem(kind, state), attrs)), TaskListMarker(checked)) => {
+        (Stacked(stack, Inline(inline, attrs)), TaskListMarker(checked)) => {
             let marker = if checked { "\u{2611}" } else { "\u{2610}" };
             write_styled(
                 writer,
@@ -597,7 +597,7 @@ pub fn write_event<'a, W: Write>(
             )?;
             let length = data.current_line.length + display_width(marker) as u16;
             Ok(stack
-                .current(Inline(ListItem(kind, state), attrs))
+                .current(Inline(inline, attrs))
                 .and_data(data.current_line(CurrentLine {
                     length,
                     trailing_space: Some(" ".to_owned()),
