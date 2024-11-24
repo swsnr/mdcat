@@ -32,6 +32,9 @@ fn main() {
         )
     );
 
+    // Initialize curl for remote resources
+    curl::init();
+
     // Setup tracing
     let filter = EnvFilter::builder()
         // Disable all logging by default, to avoid interfering with regular output at all cost.

@@ -202,19 +202,11 @@ https_proxy::
 HTTPS_PROXY::
 all_proxy::
 ALL_PROXY::
-    Proxies for HTTP, HTTPS, or both protocols, to use when fetching images.
-+
-Each variable provides the proxy for the corresponding protocol as URL, e.g. ``http://proxy.example.com:3128``.
-+
-The lowercase name takes precedence; note that `$http_proxy` deliberately has no uppercase variant.
-
 no_proxy::
 NO_PROXY::
-    A comma-separated list of host/domain names or IP address not to use a proxy for.
+    Proxies settings for HTTP requests made by mdcat to retrieve remote resources.
 +
-IP addresses may include a subnet mask to match whole networks.
-The special entry `*` matches all hostnames.
-Any other entry is interpreted as domain name, which matches the domain itself and all its subdomains.
+mdcat uses curl for its network transfers, hence see `curl(1)` for these variables.
 
 MDCAT_LOG::
     Directives to configure output of tracing information.

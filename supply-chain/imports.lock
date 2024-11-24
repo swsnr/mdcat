@@ -57,6 +57,20 @@ user-id = 5946
 user-login = "jrmuizel"
 user-name = "Jeff Muizelaar"
 
+[[publisher.curl]]
+version = "0.4.47"
+when = "2024-09-30"
+user-id = 1
+user-login = "alexcrichton"
+user-name = "Alex Crichton"
+
+[[publisher.curl-sys]]
+version = "0.4.78+curl-8.11.0"
+when = "2024-11-06"
+user-id = 1
+user-login = "alexcrichton"
+user-name = "Alex Crichton"
+
 [[publisher.errno]]
 version = "0.3.9"
 when = "2024-05-08"

@@ -18,12 +18,12 @@ use std::io::{prelude::*, BufWriter};
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
-use mdcat_http_reqwest::HttpResourceHandler;
 use pulldown_cmark::{Options, Parser};
 use pulldown_cmark_mdcat::resources::{
     DispatchingResourceHandler, FileResourceHandler, ResourceUrlHandler,
 };
 use pulldown_cmark_mdcat::{Environment, Settings};
+use resources::CurlResourceHandler;
 use tracing::{event, instrument, Level};
 
 use args::ResourceAccess;
@@ -34,6 +34,8 @@ use output::Output;
 pub mod args;
 /// Output handling for mdcat.
 pub mod output;
+/// Resource handling for mdca.
+pub mod resources;
 
 /// Default read size limit for resources.
 pub static DEFAULT_RESOURCE_READ_LIMIT: u64 = 104_857_600;
@@ -114,14 +116,9 @@ pub fn create_resource_handler(access: ResourceAccess) -> Result<DispatchingReso
             "Remote resource access permitted, creating HTTP client with user agent {}",
             user_agent
         );
-        let client = mdcat_http_reqwest::build_default_client()
-            .user_agent(user_agent)
-            .build()
+        let client = CurlResourceHandler::create(DEFAULT_RESOURCE_READ_LIMIT, user_agent)
             .with_context(|| "Failed to build HTTP client".to_string())?;
-        resource_handlers.push(Box::new(HttpResourceHandler::new(
-            DEFAULT_RESOURCE_READ_LIMIT,
-            client,
-        )));
+        resource_handlers.push(Box::new(client));
     }
     Ok(DispatchingResourceHandler::new(resource_handlers))
 }

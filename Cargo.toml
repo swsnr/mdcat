@@ -17,14 +17,16 @@ rust-version.workspace = true
 anyhow = { version = "1.0.89", default-features = false, features = ["std"] }
 clap = { version = "4.5.17", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 clap_complete = "4.5.28"
+curl = "0.4.47"
 human-panic = { version = "2.0.0", default-features = false, features = ["color"] }
-mdcat-http-reqwest = { workspace = true }
+mime = { workspace = true}
 pulldown-cmark = { workspace = true, features = ['simd'] }
 pulldown-cmark-mdcat = { workspace = true, default-features = true }
 shell-words = { version = "1.1.0", default-features = false, features = ["std"] }
 syntect = { workspace = true, features = ["default-syntaxes"] }
 tracing = { workspace = true }
 tracing-subscriber = { version = "0.3.18", default-features = false, features = ["env-filter", "std", "fmt", "ansi"] }
+url = { workspace = true }
 
 [dev-dependencies]
 similar-asserts = { workspace = true }
@@ -47,7 +49,7 @@ pre-release-replacements = [
 [workspace]
 members = [
   "pulldown-cmark-mdcat",
-  "mdcat-http-reqwest"
+  "mdcat-http-reqwest",
 ]
 
 [workspace.package]
@@ -68,6 +70,7 @@ similar-asserts = "1.6.0"
 syntect = { version = "5.2.0", default-features = false, features = ["regex-fancy"] }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes"]  }
 insta = { version = "1.40.0", features = ["glob", "filters"] }
+url = "2.5.2"
 
 # Our own crates; pinned to an exact version because we release all of this repo
 # in a single version. cargo release takes care of updating these.

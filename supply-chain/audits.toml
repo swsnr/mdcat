@@ -45,6 +45,20 @@ start = "2023-04-13"
 end = "2025-11-04"
 notes = "swsnr trusts epage"
 
+[[trusted.curl]]
+criteria = "safe-to-run"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-12"
+end = "2025-11-24"
+notes = "Trusted by Mozilla and Bytecode Alliance"
+
+[[trusted.curl-sys]]
+criteria = "safe-to-run"
+user-id = 1 # Alex Crichton (alexcrichton)
+start = "2019-03-12"
+end = "2025-11-24"
+notes = "Trusted by Mozilla and Bytecode Alliance"
+
 [[trusted.errno]]
 criteria = "safe-to-run"
 user-id = 6825 # Dan Gohman (sunfishcode)
@@ -120,6 +134,13 @@ criteria = "safe-to-run"
 user-id = 1 # Alex Crichton (alexcrichton)
 start = "2019-03-04"
 end = "2025-11-04"
+notes = "Trusted by Mozilla and Bytecode Alliance"
+
+[[trusted.libz-sys]]
+criteria = "safe-to-run"
+user-id = 4333
+start = "2020-08-14"
+end = "2025-11-24"
 notes = "Trusted by Mozilla and Bytecode Alliance"
 
 [[trusted.linux-raw-sys]]

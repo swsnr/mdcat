@@ -27,7 +27,7 @@ syntect = { workspace = true, features = ["parsing", "regex-fancy"] }
 textwrap = { version = "0.16.1", default-features = false, features = ["unicode-linebreak", "unicode-width"] }
 thiserror = { version = "1.0.61", default-features = false }
 tracing = { workspace = true }
-url = "2.5.2"
+url = { workspace = true }
 gethostname = "0.5.0"
 
 # Optional for svg support

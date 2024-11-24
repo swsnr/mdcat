@@ -287,6 +287,10 @@ criteria = "safe-to-run"
 version = "0.2.11"
 criteria = "safe-to-run"
 
+[[exemptions.libz-sys]]
+version = "1.1.20"
+criteria = "safe-to-run"
+
 [[exemptions.litemap]]
 version = "0.7.4"
 criteria = "safe-to-run"

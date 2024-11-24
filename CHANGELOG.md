@@ -8,6 +8,12 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- `mdcat` now uses curl for remote resources (see [GH-304]).
+  As a result, mdcat now also supports remote images from FTP, and uses standard curl environment variables for proxy configuration.
+
+[GH-304]: https://github.com/swsnr/mdcat/issues/304
+
 ## [2.6.2] – 2024-11-24
 
 ### Fixed
