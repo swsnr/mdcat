@@ -67,8 +67,6 @@ jobs:
     needs: build-binaries
     permissions:
       contents: write
-    # Only create the final release if we actually pushed a tag
-    if: ${{ startsWith(github.ref, 'refs/tags/mdcat-') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
