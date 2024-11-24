@@ -33,16 +33,16 @@ Then it
 | Basic ANSI¹                | ✓             | ✓                   |        |            |
 | Windows 10 console         | ✓             | ✓                   |        |            |
 | [Terminology]              | ✓             | ✓                   | ✓      |            |
-| [iTerm2]                   | ✓             | ✓                   | ✓³     | ✓          |
-| [kitty]                    | ✓             | ✓                   | ✓³     |            |
-| [WezTerm]                  | ✓             | ✓                   | ✓³     |            |
-| [VSCode]                   | ✓             | ✓                   | ✓³     |            |
-| [Ghostty]                  | ✓             | ✓                   | ✓³     |            |
+| [iTerm2]                   | ✓             | ✓                   | ✓²     | ✓          |
+| [kitty]                    | ✓             | ✓                   | ✓²     |            |
+| [WezTerm]                  | ✓             | ✓                   | ✓²     |            |
+| [VSCode]                   | ✓             | ✓                   | ✓²     |            |
+| [Ghostty]                  | ✓             | ✓                   | ✓²     |            |
 
 1) mdcat requires that the terminal supports strikethrough formatting and [inline links][osc8].
-    It will not render strikethrough text and links correctly on terminals that don't support these (e.g. the Linux text console)
-2) VTE is Gnome’s terminal emulation library used by many popular terminal emulators on Linux, including Gnome Terminal, Xfce Terminal, Tilix, etc.
-3) SVG images are rendered with [resvg], see [SVG support].
+    This includes most modern terminal emulators, such as Windows Terminal, KDE Konsole, or anything based on VTE, GNOME's terminal emulation library.
+    But mdcat likely won't work well on old terminals that lack these features (e.g. the Linux text console).
+2) SVG images are rendered with [resvg], see [SVG support].
 
 Not supported:
 
