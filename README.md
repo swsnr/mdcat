@@ -76,10 +76,8 @@ Try `mdcat --help` or read the [mdcat(1)](./mdcat.1.adoc) manpage.
 ## Building
 
 Run `cargo build --release`.
-The resulting `mdcat` executable links against the system's SSL library, i.e. openssl on Linux.
 
-To build a self-contained executable use `cargo build --features=static`; the resulting executable uses a pure Rust SSL implementation.
-It still uses the system's CA roots however.
+Building requires `libcurl`.
 
 ## Packaging
 
