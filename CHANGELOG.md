@@ -11,6 +11,7 @@ Use `cargo release` to create a new release.
 ### Changed
 - `mdcat` now uses curl for remote resources (see [GH-304]).
   As a result, mdcat now also supports remote images from FTP, and uses standard curl environment variables for proxy configuration.
+  - Consequently, `mdcat` now depends on `libcurl`.
 
 ### Removed
 - The `mdcat-http-reqwest` crate was removed, as consequence of moving to `curl` (see [GH-304]).
