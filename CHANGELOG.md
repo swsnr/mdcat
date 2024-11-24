@@ -8,6 +8,8 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+## [2.6.2] – 2024-11-24
+
 ### Fixed
 - Do not crash when rendering task lists with paragraphs (see [GH-302]).
 
@@ -821,7 +823,8 @@ Use `cargo release` to create a new release.
 - Support ordered and unordered lists, with nest.
 - Show links, with references grouped by section.
 
-[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.6.1...HEAD
+[Unreleased]: https://github.com/swsnr/mdcat/compare/mdcat-2.6.2...HEAD
+[2.6.2]: https://github.com/swsnr/mdcat/compare/mdcat-2.6.1...mdcat-2.6.2
 [2.6.1]: https://github.com/swsnr/mdcat/compare/mdcat-2.6.0...mdcat-2.6.1
 [2.6.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.5.0...mdcat-2.6.0
 [2.5.0]: https://github.com/swsnr/mdcat/compare/mdcat-2.4.0...mdcat-2.5.0
