@@ -8,6 +8,17 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- `mdcat` now uses curl for remote resources (see [GH-304]).
+  As a result, mdcat now also supports remote images from FTP, and uses standard curl environment variables for proxy configuration.
+
+### Removed
+- The `mdcat-http-reqwest` crate was removed, as consequence of moving to `curl` (see [GH-304]).
+  There is no replacement; users of `pulldown-cmark-mdcat` need to impement remote resource support themselves should they require it.
+  All versions of this crate on crates.io have been yanked.
+
+[GH-304]: https://github.com/swsnr/mdcat/issues/304
+
 ## [2.6.2] – 2024-11-24
 
 ### Fixed

@@ -15,7 +15,6 @@ use std::path::Path;
 use std::sync::OnceLock;
 
 use insta::{assert_snapshot, glob};
-use mdcat_http_reqwest::HttpResourceHandler;
 use pulldown_cmark::{Options, Parser};
 use syntect::parsing::SyntaxSet;
 use url::Url;
@@ -34,16 +33,8 @@ fn syntax_set() -> &'static SyntaxSet {
 }
 
 fn resource_handler() -> DispatchingResourceHandler {
-    let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
-        Box::new(FileResourceHandler::new(TEST_READ_LIMIT)),
-        Box::new(
-            HttpResourceHandler::with_user_agent(
-                TEST_READ_LIMIT,
-                concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
-            )
-            .unwrap(),
-        ),
-    ];
+    let handlers: Vec<Box<dyn ResourceUrlHandler>> =
+        vec![Box::new(FileResourceHandler::new(TEST_READ_LIMIT))];
     DispatchingResourceHandler::new(handlers)
 }
 

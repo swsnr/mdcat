@@ -39,14 +39,6 @@ criteria = "safe-to-run"
 version = "0.5.0"
 criteria = "safe-to-run"
 
-[[exemptions.alloc-no-stdlib]]
-version = "2.0.4"
-criteria = "safe-to-run"
-
-[[exemptions.alloc-stdlib]]
-version = "0.2.2"
-criteria = "safe-to-run"
-
 [[exemptions.arbitrary]]
 version = "1.4.1"
 criteria = "safe-to-run"
@@ -57,14 +49,6 @@ criteria = "safe-to-run"
 
 [[exemptions.arrayref]]
 version = "0.3.9"
-criteria = "safe-to-run"
-
-[[exemptions.async-compression]]
-version = "0.4.18"
-criteria = "safe-to-run"
-
-[[exemptions.atomic-waker]]
-version = "1.1.2"
 criteria = "safe-to-run"
 
 [[exemptions.autocfg]]
@@ -95,14 +79,6 @@ criteria = "safe-to-run"
 version = "2.6.0"
 criteria = "safe-to-run"
 
-[[exemptions.brotli]]
-version = "7.0.0"
-criteria = "safe-to-run"
-
-[[exemptions.brotli-decompressor]]
-version = "4.0.1"
-criteria = "safe-to-run"
-
 [[exemptions.built]]
 version = "0.7.5"
 criteria = "safe-to-run"
@@ -129,10 +105,6 @@ criteria = "safe-to-run"
 
 [[exemptions.console]]
 version = "0.15.8"
-criteria = "safe-to-run"
-
-[[exemptions.core-foundation-sys]]
-version = "0.8.7"
 criteria = "safe-to-run"
 
 [[exemptions.crossbeam-deque]]
@@ -163,10 +135,6 @@ criteria = "safe-to-run"
 version = "0.11.0"
 criteria = "safe-to-run"
 
-[[exemptions.fastrand]]
-version = "2.2.0"
-criteria = "safe-to-run"
-
 [[exemptions.fontconfig-parser]]
 version = "0.5.7"
 criteria = "safe-to-run"
@@ -195,20 +163,8 @@ criteria = "safe-to-run"
 version = "0.15.1"
 criteria = "safe-to-run"
 
-[[exemptions.hermit-abi]]
-version = "0.3.9"
-criteria = "safe-to-run"
-
-[[exemptions.http-body]]
-version = "1.0.1"
-criteria = "safe-to-run"
-
 [[exemptions.human-panic]]
 version = "2.0.2"
-criteria = "safe-to-run"
-
-[[exemptions.hyper-rustls]]
-version = "0.27.3"
 criteria = "safe-to-run"
 
 [[exemptions.icu_properties]]
@@ -251,10 +207,6 @@ criteria = "safe-to-run"
 version = "0.2.4"
 criteria = "safe-to-run"
 
-[[exemptions.ipnet]]
-version = "2.10.1"
-criteria = "safe-to-run"
-
 [[exemptions.itoa]]
 version = "1.0.13"
 criteria = "safe-to-run"
@@ -287,6 +239,10 @@ criteria = "safe-to-run"
 version = "0.2.11"
 criteria = "safe-to-run"
 
+[[exemptions.libz-sys]]
+version = "1.1.20"
+criteria = "safe-to-run"
+
 [[exemptions.litemap]]
 version = "0.7.4"
 criteria = "safe-to-run"
@@ -309,14 +265,6 @@ criteria = "safe-to-run"
 
 [[exemptions.minimal-lexical]]
 version = "0.2.1"
-criteria = "safe-to-run"
-
-[[exemptions.mio]]
-version = "1.0.2"
-criteria = "safe-to-run"
-
-[[exemptions.native-tls]]
-version = "0.2.12"
 criteria = "safe-to-run"
 
 [[exemptions.new_debug_unreachable]]
@@ -345,10 +293,6 @@ criteria = "safe-to-run"
 
 [[exemptions.once_cell]]
 version = "1.20.1"
-criteria = "safe-to-run"
-
-[[exemptions.openssl]]
-version = "0.10.68"
 criteria = "safe-to-run"
 
 [[exemptions.openssl-sys]]
@@ -439,28 +383,8 @@ criteria = "safe-to-run"
 version = "0.8.50"
 criteria = "safe-to-run"
 
-[[exemptions.ring]]
-version = "0.17.8"
-criteria = "safe-to-run"
-
 [[exemptions.roxmltree]]
 version = "0.20.0"
-criteria = "safe-to-run"
-
-[[exemptions.rustls]]
-version = "0.23.18"
-criteria = "safe-to-run"
-
-[[exemptions.rustls-pemfile]]
-version = "2.2.0"
-criteria = "safe-to-run"
-
-[[exemptions.rustls-pki-types]]
-version = "1.10.0"
-criteria = "safe-to-run"
-
-[[exemptions.rustls-webpki]]
-version = "0.102.8"
 criteria = "safe-to-run"
 
 [[exemptions.rustybuzz]]
@@ -473,14 +397,6 @@ criteria = "safe-to-run"
 
 [[exemptions.scopeguard]]
 version = "1.2.0"
-criteria = "safe-to-run"
-
-[[exemptions.security-framework]]
-version = "2.11.1"
-criteria = "safe-to-run"
-
-[[exemptions.security-framework-sys]]
-version = "2.12.1"
 criteria = "safe-to-run"
 
 [[exemptions.serde_spanned]]
@@ -523,20 +439,12 @@ criteria = "safe-to-run"
 version = "0.1.1"
 criteria = "safe-to-run"
 
-[[exemptions.subtle]]
-version = "2.6.1"
-criteria = "safe-to-run"
-
 [[exemptions.svgtypes]]
 version = "0.15.2"
 criteria = "safe-to-run"
 
 [[exemptions.syn]]
 version = "2.0.89"
-criteria = "safe-to-run"
-
-[[exemptions.sync_wrapper]]
-version = "1.0.2"
 criteria = "safe-to-run"
 
 [[exemptions.syntect]]
@@ -553,10 +461,6 @@ criteria = "safe-to-run"
 
 [[exemptions.temp-env]]
 version = "0.3.6"
-criteria = "safe-to-run"
-
-[[exemptions.tempfile]]
-version = "3.14.0"
 criteria = "safe-to-run"
 
 [[exemptions.terminal_size]]
@@ -583,24 +487,8 @@ criteria = "safe-to-run"
 version = "0.11.4"
 criteria = "safe-to-run"
 
-[[exemptions.tokio-macros]]
-version = "2.4.0"
-criteria = "safe-to-run"
-
-[[exemptions.tokio-rustls]]
-version = "0.26.0"
-criteria = "safe-to-run"
-
-[[exemptions.tokio-stream]]
-version = "0.1.16"
-criteria = "safe-to-run"
-
 [[exemptions.toml_edit]]
 version = "0.22.22"
-criteria = "safe-to-run"
-
-[[exemptions.tower-service]]
-version = "0.3.3"
 criteria = "safe-to-run"
 
 [[exemptions.tracing]]
@@ -655,10 +543,6 @@ criteria = "safe-to-run"
 version = "0.1.0"
 criteria = "safe-to-run"
 
-[[exemptions.untrusted]]
-version = "0.9.0"
-criteria = "safe-to-run"
-
 [[exemptions.url]]
 version = "2.5.4"
 criteria = "safe-to-run"
@@ -695,10 +579,6 @@ criteria = "safe-to-run"
 version = "0.2.95"
 criteria = "safe-to-run"
 
-[[exemptions.wasm-bindgen-futures]]
-version = "0.4.45"
-criteria = "safe-to-run"
-
 [[exemptions.wasm-bindgen-macro]]
 version = "0.2.95"
 criteria = "safe-to-run"
@@ -721,18 +601,6 @@ criteria = "safe-to-run"
 
 [[exemptions.winapi-x86_64-pc-windows-gnu]]
 version = "0.4.0"
-criteria = "safe-to-run"
-
-[[exemptions.windows-registry]]
-version = "0.2.0"
-criteria = "safe-to-run"
-
-[[exemptions.windows-result]]
-version = "0.2.0"
-criteria = "safe-to-run"
-
-[[exemptions.windows-strings]]
-version = "0.1.0"
 criteria = "safe-to-run"
 
 [[exemptions.windows-targets]]
@@ -833,10 +701,6 @@ criteria = "safe-to-run"
 
 [[exemptions.zerofrom-derive]]
 version = "0.1.5"
-criteria = "safe-to-run"
-
-[[exemptions.zeroize]]
-version = "1.8.1"
 criteria = "safe-to-run"
 
 [[exemptions.zerovec-derive]]

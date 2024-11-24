@@ -44,8 +44,8 @@ impl MimeData {
 /// to a list of handlers, and [`FileResourceHandler`] for a resource handler for
 /// local files.
 ///
-/// For remote URLs, see e.g. [mdcat-http-reqwest](https://docs.rs/mdcat-http-reqwest)
-/// for an implementation which fetches HTTP resources with the `reqwest` library.
+/// For remote URLs implement this handler on top of a suitable crate for network
+/// requests, e.q. [`reqwest`](https://docs.rs/reqwest) or [`curl`](https://docs.rs/curl).
 pub trait ResourceUrlHandler {
     /// Read a resource.
     ///
