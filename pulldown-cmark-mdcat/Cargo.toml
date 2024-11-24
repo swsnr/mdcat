@@ -42,7 +42,6 @@ similar-asserts = { workspace = true }
 syntect = { workspace = true, features = ["default-syntaxes"] }
 temp-env = { version = "0.3.6", default-features = false }
 insta = { workspace = true }
-mdcat-http-reqwest = { workspace = true }
 regex = { version = "1.10.6", default-features = false }
 
 [build-dependencies]

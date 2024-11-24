@@ -47,10 +47,7 @@ pre-release-replacements = [
 ]
 
 [workspace]
-members = [
-  "pulldown-cmark-mdcat",
-  "mdcat-http-reqwest",
-]
+members = ["pulldown-cmark-mdcat"]
 
 [workspace.package]
 homepage = "https://github.com/swsnr/mdcat"
@@ -65,7 +62,6 @@ rust-version = "1.76"
 [workspace.dependencies]
 mime = { version = "0.3.17", default-features = false }
 pulldown-cmark = { version = "0.12.1", default-features = false }
-reqwest = { version = "0.12.7", default-features = false, features = ["gzip", "brotli", "blocking", "http2", "native-tls"]}
 similar-asserts = "1.6.0"
 syntect = { version = "5.2.0", default-features = false, features = ["regex-fancy"] }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes"]  }
@@ -75,7 +71,6 @@ url = "2.5.2"
 # Our own crates; pinned to an exact version because we release all of this repo
 # in a single version. cargo release takes care of updating these.
 pulldown-cmark-mdcat = { version = "=2.6.2", path = "pulldown-cmark-mdcat", default-features = false }
-mdcat-http-reqwest = { version = "=2.6.2", path = "mdcat-http-reqwest" }
 
 [workspace.metadata.release]
 allow-branch = ["main"]

@@ -208,7 +208,7 @@ notes = "swsnr trusts dtolnay"
 
 [[trusted.slab]]
 criteria = "safe-to-run"
-user-id = 6741 # Alice Ryhl (Darksonn)
+user-id = 6741
 start = "2021-10-13"
 end = "2025-11-04"
 notes = "Trusted by mozilla and bytecode-alliance"
@@ -229,14 +229,14 @@ notes = "swsnr trusts dtolnay"
 
 [[trusted.tokio]]
 criteria = "safe-to-run"
-user-id = 6741 # Alice Ryhl (Darksonn)
+user-id = 6741
 start = "2020-12-25"
 end = "2025-11-04"
 notes = "Trusted by mozilla and bytecode-alliance"
 
 [[trusted.tokio-util]]
 criteria = "safe-to-run"
-user-id = 6741 # Alice Ryhl (Darksonn)
+user-id = 6741
 start = "2021-01-12"
 end = "2025-11-04"
 notes = "Trusted by mozilla and bytecode-alliance"
