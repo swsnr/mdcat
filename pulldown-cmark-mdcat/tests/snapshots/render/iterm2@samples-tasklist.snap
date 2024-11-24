@@ -4,5 +4,12 @@ assertion_line: 124
 expression: "render_to_string(markdown_file, &iterm2_settings)"
 input_file: pulldown-cmark-mdcat/tests/markdown/samples/tasklist.md
 ---
-• ☐ A TODO
-• ☑ This one's done.
+• ☑ foo
+
+  • ☐ bar
+  • ☑ baz
+
+• ☐ test
+
+  • ☐ test1
+  • ☐ test2
