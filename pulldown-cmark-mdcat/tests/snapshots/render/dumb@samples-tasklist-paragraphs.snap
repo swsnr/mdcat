@@ -1,0 +1,15 @@
+---
+source: pulldown-cmark-mdcat/tests/render.rs
+assertion_line: 122
+expression: "render_to_string(markdown_file, &dumb_settings)"
+input_file: pulldown-cmark-mdcat/tests/markdown/samples/tasklist-paragraphs.md
+---
+• ☑ foo
+
+  • ☐ bar
+  • ☑ baz
+
+• ☐ test
+
+  • ☐ test1
+  • ☐ test2
