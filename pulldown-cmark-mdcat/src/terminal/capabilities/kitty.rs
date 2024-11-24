@@ -307,7 +307,7 @@ impl KittyGraphicsProtocol {
 /// See <https://sw.kovidgoyal.net/kitty/graphics-protocol.html#control-data-reference>
 /// for reference.
 impl InlineImageProtocol for KittyGraphicsProtocol {
-    #[instrument(skip(self, writer, terminal_size))]
+    #[instrument(skip(self, writer, resource_handler, terminal_size))]
     fn write_inline_image(
         &self,
         writer: &mut dyn Write,

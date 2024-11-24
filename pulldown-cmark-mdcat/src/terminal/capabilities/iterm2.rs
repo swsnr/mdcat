@@ -40,7 +40,7 @@ impl ITerm2Protocol {
 /// supported by macOS, this may yield false positives, i.e. this implementation might not return
 /// an error even though iTerm2 cannot actually display the image.
 impl InlineImageProtocol for ITerm2Protocol {
-    #[instrument(skip(self, writer, _terminal_size), fields(url = %url))]
+    #[instrument(skip(self, writer, _terminal_size, resource_handler), fields(url = %url))]
     fn write_inline_image(
         &self,
         writer: &mut dyn Write,

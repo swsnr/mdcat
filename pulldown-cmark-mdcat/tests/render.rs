@@ -33,22 +33,18 @@ fn syntax_set() -> &'static SyntaxSet {
     SYNTAX_SET.get_or_init(SyntaxSet::load_defaults_newlines)
 }
 
-static RESOURCE_HANDLER: OnceLock<DispatchingResourceHandler> = OnceLock::new();
-
-fn resource_handler() -> &'static DispatchingResourceHandler {
-    RESOURCE_HANDLER.get_or_init(|| {
-        let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
-            Box::new(FileResourceHandler::new(TEST_READ_LIMIT)),
-            Box::new(
-                HttpResourceHandler::with_user_agent(
-                    TEST_READ_LIMIT,
-                    concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
-                )
-                .unwrap(),
-            ),
-        ];
-        DispatchingResourceHandler::new(handlers)
-    })
+fn resource_handler() -> DispatchingResourceHandler {
+    let handlers: Vec<Box<dyn ResourceUrlHandler>> = vec![
+        Box::new(FileResourceHandler::new(TEST_READ_LIMIT)),
+        Box::new(
+            HttpResourceHandler::with_user_agent(
+                TEST_READ_LIMIT,
+                concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
+            )
+            .unwrap(),
+        ),
+    ];
+    DispatchingResourceHandler::new(handlers)
 }
 
 fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> String {
@@ -66,7 +62,7 @@ fn render_to_string<P: AsRef<Path>>(markdown_file: P, settings: &Settings) -> St
         hostname: "HOSTNAME".to_string(),
         ..Environment::for_local_directory(&base_dir).unwrap()
     };
-    pulldown_cmark_mdcat::push_tty(settings, &env, resource_handler(), &mut sink, parser).unwrap();
+    pulldown_cmark_mdcat::push_tty(settings, &env, &resource_handler(), &mut sink, parser).unwrap();
     String::from_utf8(sink).unwrap()
 }
 

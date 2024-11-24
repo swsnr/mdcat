@@ -46,7 +46,7 @@ impl MimeData {
 ///
 /// For remote URLs, see e.g. [mdcat-http-reqwest](https://docs.rs/mdcat-http-reqwest)
 /// for an implementation which fetches HTTP resources with the `reqwest` library.
-pub trait ResourceUrlHandler: Send + Sync + Debug {
+pub trait ResourceUrlHandler {
     /// Read a resource.
     ///
     /// Read data from the given `url`, and return the data and its associated mime type if known,
@@ -80,7 +80,6 @@ pub fn filter_schemes<'a>(schemes: &[&str], url: &'a Url) -> Result<&'a Url> {
 }
 
 /// A resource handler which dispatches reading among a list of inner handlers.
-#[derive(Debug)]
 pub struct DispatchingResourceHandler {
     /// Inner handlers.
     handlers: Vec<Box<dyn ResourceUrlHandler>>,
