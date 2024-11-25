@@ -74,45 +74,31 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        target:
-          # Default linux build
-          - x86_64-unknown-linux-gnu
-          # macOS
-          - x86_64-apple-darwin
-          # Windows
-          - x86_64-pc-windows-msvc
-        include:
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-          - target: x86_64-apple-darwin
-            os: macOS-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
           components: clippy
 
       # Since Windows builds are comparatively slow, we skip quite a few builds on Windows to speed up pipelines
 
       # Test library with no features
       - run: cargo build -p pulldown-cmark-mdcat --all-targets --locked --no-default-features
-        if: ${{ !contains(matrix.target, 'windows') }}
+        if: ${{ !contains(matrix.os, 'windows') }}
       - run: cargo clippy -p pulldown-cmark-mdcat --all-targets --locked --no-default-features
-        if: ${{ !contains(matrix.target, 'windows') }}
+        if: ${{ !contains(matrix.os, 'windows') }}
       - run: cargo test -p pulldown-cmark-mdcat --locked --no-default-features
-        if: ${{ !contains(matrix.target, 'windows') }}
+        if: ${{ !contains(matrix.os, 'windows') }}
       - run: cargo doc -p pulldown-cmark-mdcat --locked --no-default-features
-        if: ${{ !contains(matrix.target, 'windows') }}
+        if: ${{ !contains(matrix.os, 'windows') }}
 
       # Build and test entire workspace in default configuration
-      - run: cargo build --workspace --all-targets --locked --target ${{ matrix.target }}
-      - run: cargo clippy --workspace --all-targets --locked --target ${{ matrix.target }}
-      - run: cargo test --workspace --locked --target ${{ matrix.target }}
-      - run: cargo doc --workspace --locked --target ${{ matrix.target }}
+      - run: cargo build --workspace --all-targets --locked
+      - run: cargo clippy --workspace --all-targets --locked
+      - run: cargo test --workspace --locked
+      - run: cargo doc --workspace --locked
         if: ${{ !contains(matrix.target, 'windows') }}
 
       # Run on our complete example, just to assert that the CLI doesn't crash
-      - run: cargo run --target ${{ matrix.target }} -- sample/common-mark.md
+      - run: cargo run -- sample/common-mark.md

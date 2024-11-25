@@ -8,6 +8,9 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
+### Changed
+- Drop macOS release builds.  Use homebrew to obtain macOS binaries of `mdcat`.
+
 ## [2.7.0] – 2024-11-24
 
 ### Changed
