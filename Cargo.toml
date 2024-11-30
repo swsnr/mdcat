@@ -56,7 +56,7 @@ categories = ["command-line-utilities", "text-processing"]
 license = "MPL-2.0 AND Apache-2.0"
 authors = ["Sebastian Wiesner <sebastian@swsnr.de>"]
 edition = "2021"
-rust-version = "1.76"
+rust-version = "1.83"
 
 [workspace.dependencies]
 mime = { version = "0.3.17", default-features = false }
