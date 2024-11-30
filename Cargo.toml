@@ -18,7 +18,6 @@ anyhow = { version = "1.0.89", default-features = false, features = ["std"] }
 clap = { version = "4.5.17", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 clap_complete = "4.5.28"
 curl = "0.4.47"
-human-panic = { version = "2.0.0", default-features = false, features = ["color"] }
 mime = { workspace = true}
 pulldown-cmark = { workspace = true, features = ['simd'] }
 pulldown-cmark-mdcat = { workspace = true, default-features = true }

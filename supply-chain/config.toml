@@ -31,10 +31,6 @@ audit-as-crates-io = false
 criteria = "safe-to-run"
 notes = "mdcat is a command line tool and usally not exposed to fully untrusted input"
 
-[[exemptions.addr2line]]
-version = "0.24.2"
-criteria = "safe-to-run"
-
 [[exemptions.aligned-vec]]
 version = "0.5.0"
 criteria = "safe-to-run"
@@ -61,10 +57,6 @@ criteria = "safe-to-run"
 
 [[exemptions.avif-serialize]]
 version = "0.8.2"
-criteria = "safe-to-run"
-
-[[exemptions.backtrace]]
-version = "0.3.74"
 criteria = "safe-to-run"
 
 [[exemptions.base64]]
@@ -151,10 +143,6 @@ criteria = "safe-to-run"
 version = "0.13.1"
 criteria = "safe-to-run"
 
-[[exemptions.gimli]]
-version = "0.31.1"
-criteria = "safe-to-run"
-
 [[exemptions.half]]
 version = "2.4.1"
 criteria = "safe-to-run"
@@ -163,20 +151,12 @@ criteria = "safe-to-run"
 version = "0.15.1"
 criteria = "safe-to-run"
 
-[[exemptions.human-panic]]
-version = "2.0.2"
-criteria = "safe-to-run"
-
 [[exemptions.icu_properties]]
 version = "1.5.1"
 criteria = "safe-to-run"
 
 [[exemptions.idna]]
 version = "1.0.3"
-criteria = "safe-to-run"
-
-[[exemptions.idna_adapter]]
-version = "1.2.0"
 criteria = "safe-to-run"
 
 [[exemptions.image]]
@@ -287,20 +267,12 @@ criteria = "safe-to-run"
 version = "0.4.2"
 criteria = "safe-to-run"
 
-[[exemptions.object]]
-version = "0.36.5"
-criteria = "safe-to-run"
-
 [[exemptions.once_cell]]
 version = "1.20.1"
 criteria = "safe-to-run"
 
 [[exemptions.openssl-sys]]
 version = "0.9.104"
-criteria = "safe-to-run"
-
-[[exemptions.os_info]]
-version = "3.8.2"
 criteria = "safe-to-run"
 
 [[exemptions.parking_lot]]
@@ -313,10 +285,6 @@ criteria = "safe-to-run"
 
 [[exemptions.pico-args]]
 version = "0.5.0"
-criteria = "safe-to-run"
-
-[[exemptions.pkg-config]]
-version = "0.3.31"
 criteria = "safe-to-run"
 
 [[exemptions.plist]]
@@ -543,20 +511,8 @@ criteria = "safe-to-run"
 version = "0.1.0"
 criteria = "safe-to-run"
 
-[[exemptions.url]]
-version = "2.5.4"
-criteria = "safe-to-run"
-
 [[exemptions.usvg]]
 version = "0.43.0"
-criteria = "safe-to-run"
-
-[[exemptions.utf8parse]]
-version = "0.2.2"
-criteria = "safe-to-run"
-
-[[exemptions.uuid]]
-version = "1.11.0"
 criteria = "safe-to-run"
 
 [[exemptions.v_frame]]
@@ -701,10 +657,6 @@ criteria = "safe-to-run"
 
 [[exemptions.zerofrom-derive]]
 version = "0.1.5"
-criteria = "safe-to-run"
-
-[[exemptions.zerovec-derive]]
-version = "0.10.3"
 criteria = "safe-to-run"
 
 [[exemptions.zune-core]]

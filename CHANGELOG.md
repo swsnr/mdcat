@@ -8,8 +8,9 @@ Use `cargo release` to create a new release.
 
 ## [Unreleased]
 
-### Changed
+### Removed
 - Drop macOS release builds.  Use homebrew to obtain macOS binaries of `mdcat`.
+- Remove simplified panic message; `mdcat` now uses the default panic handler.
 
 ## [2.7.0] – 2024-11-24
 
