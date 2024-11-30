@@ -72,8 +72,7 @@ impl ResourceUrlHandler for FileResourceHandler {
 
                     if self.read_limit < buffer.len() as u64 {
                         Err(Error::new(
-                            ErrorKind::InvalidData,
-                            // TODO: Use ErrorKind::FileTooLarge once stabilized
+                            ErrorKind::FileTooLarge,
                             format!("Contents of {url} exceeded {} bytes", self.read_limit),
                         ))
                     } else {
