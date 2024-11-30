@@ -58,7 +58,7 @@ pub trait ResourceUrlHandler {
     fn read_resource(&self, url: &Url) -> Result<MimeData>;
 }
 
-impl<'a, R: ResourceUrlHandler + ?Sized> ResourceUrlHandler for &'a R {
+impl<R: ResourceUrlHandler + ?Sized> ResourceUrlHandler for &'_ R {
     fn read_resource(&self, url: &Url) -> Result<MimeData> {
         (*self).read_resource(url)
     }

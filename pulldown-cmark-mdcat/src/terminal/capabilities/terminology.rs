@@ -67,7 +67,7 @@ fn get_image_dimensions(_url: &Url) -> Option<(u32, u32)> {
 }
 
 /// The terminology image protocol
-
+///
 /// Terminology escape sequences work like this: Set texture to path, then draw a rectangle of a
 /// chosen character which Terminology will then replace with the texture
 ///

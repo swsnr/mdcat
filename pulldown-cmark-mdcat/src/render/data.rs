@@ -58,7 +58,7 @@ pub struct TableCell<'a> {
     pub(super) fragments: Vec<CowStr<'a>>,
 }
 
-impl<'a> TableCell<'a> {
+impl TableCell<'_> {
     /// A new empty table cell.
     pub(super) fn empty() -> Self {
         Self {
@@ -76,7 +76,7 @@ pub struct TableRow<'a> {
     pub(super) current_cell: TableCell<'a>,
 }
 
-impl<'a> TableRow<'a> {
+impl TableRow<'_> {
     /// A new empty table row.
     pub(super) fn empty() -> Self {
         Self {
@@ -226,7 +226,7 @@ impl<'a> StateData<'a> {
     }
 }
 
-impl<'a> Default for StateData<'a> {
+impl Default for StateData<'_> {
     fn default() -> Self {
         StateData {
             pending_links: Vec::new(),
