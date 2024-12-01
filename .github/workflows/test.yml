@@ -98,7 +98,7 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked
       - run: cargo test --workspace --locked
       - run: cargo doc --workspace --locked
-        if: ${{ !contains(matrix.target, 'windows') }}
+        if: ${{ !contains(matrix.os, 'windows') }}
 
       # Run on our complete example, just to assert that the CLI doesn't crash
       - run: cargo run -- sample/common-mark.md
