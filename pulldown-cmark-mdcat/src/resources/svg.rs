@@ -15,27 +15,54 @@ pub fn render_svg_to_png(svg: &[u8]) -> Result<Vec<u8>> {
 
 #[cfg(feature = "svg")]
 mod implementation {
+    use std::fmt::Display;
     use std::sync::{Arc, OnceLock};
     use std::{error::Error, io::ErrorKind};
 
     use resvg::tiny_skia::{IntSize, Pixmap, Transform};
     use resvg::usvg::{self, Tree};
-    use thiserror::Error;
     use usvg::fontdb;
 
-    #[derive(Debug, Error)]
+    #[derive(Debug)]
     pub enum RenderSvgError {
-        #[error("Failed to parse SVG: {0}")]
-        ParseError(#[from] usvg::Error),
-        #[error("Failed to create pixmap of size {0:?}")]
+        ParseError(usvg::Error),
         FailedToCreatePixmap(IntSize),
-        #[error("Failed to encode pixmap to PNG image: {0}")]
         EncodePngError(Box<dyn Error + Send + Sync>),
+    }
+
+    impl Display for RenderSvgError {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                RenderSvgError::ParseError(error) => write!(f, "Failed to parse SVG: {error}"),
+                RenderSvgError::FailedToCreatePixmap(int_size) => {
+                    write!(f, "Failed to create pixmap of size {int_size:?}")
+                }
+                RenderSvgError::EncodePngError(error) => {
+                    write!(f, "Failed to encode pixmap to PNG image: {error}")
+                }
+            }
+        }
+    }
+
+    impl std::error::Error for RenderSvgError {
+        fn source(&self) -> Option<&(dyn Error + 'static)> {
+            match self {
+                RenderSvgError::ParseError(error) => Some(error),
+                RenderSvgError::FailedToCreatePixmap(_) => None,
+                RenderSvgError::EncodePngError(error) => Some(error.as_ref()),
+            }
+        }
     }
 
     impl From<RenderSvgError> for std::io::Error {
         fn from(value: RenderSvgError) -> Self {
             std::io::Error::new(ErrorKind::Other, value)
+        }
+    }
+
+    impl From<usvg::Error> for RenderSvgError {
+        fn from(value: usvg::Error) -> Self {
+            Self::ParseError(value)
         }
     }
 
