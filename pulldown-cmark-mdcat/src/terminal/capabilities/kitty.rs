@@ -14,12 +14,12 @@
 // limitations under the License.
 
 //! Kitty terminal extensions.
+use std::fmt::Display;
 use std::io::{Error, ErrorKind, Write};
 use std::str;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
-use thiserror::Error;
 use tracing::{event, instrument, Level};
 
 use crate::resources::image::*;
@@ -27,20 +27,53 @@ use crate::resources::MimeData;
 use crate::terminal::size::{PixelSize, TerminalSize};
 
 /// An error which occurred while rendering or writing an image with the Kitty image protocol.
-#[derive(Debug, Error)]
+#[derive(Debug)]
 pub enum KittyImageError {
     /// A general IO error.
-    #[error("Failed to render kitty image: {0}")]
-    IoError(#[from] std::io::Error),
+    IoError(std::io::Error),
     /// Processing a pixel image, e.g. for format conversion, failed
-    #[error("Failed to process pixel image: {0}")]
     #[cfg(feature = "image-processing")]
-    ImageError(#[from] image::ImageError),
+    ImageError(image::ImageError),
+}
+
+impl Display for KittyImageError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            KittyImageError::IoError(error) => write!(f, "Failed to render kitty image: {error}"),
+            #[cfg(feature = "image-processing")]
+            KittyImageError::ImageError(image_error) => {
+                write!(f, "Failed to process pixel image: {image_error}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for KittyImageError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            KittyImageError::IoError(error) => Some(error),
+            #[cfg(feature = "image-processing")]
+            KittyImageError::ImageError(image_error) => Some(image_error),
+        }
+    }
 }
 
 impl From<KittyImageError> for std::io::Error {
     fn from(value: KittyImageError) -> Self {
         std::io::Error::new(ErrorKind::Other, value)
+    }
+}
+
+impl From<std::io::Error> for KittyImageError {
+    fn from(value: std::io::Error) -> Self {
+        Self::IoError(value)
+    }
+}
+
+#[cfg(feature = "image-processing")]
+impl From<image::ImageError> for KittyImageError {
+    fn from(value: image::ImageError) -> Self {
+        Self::ImageError(value)
     }
 }
 
