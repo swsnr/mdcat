@@ -933,7 +933,8 @@ pub fn write_event<'a, W: Write>(
         | (Stacked(stack, TableBlock), End(TagEnd::Strong))
         | (Stacked(stack, TableBlock), End(TagEnd::Strikethrough))
         | (Stacked(stack, TableBlock), End(TagEnd::Link))
-        | (Stacked(stack, TableBlock), End(TagEnd::Image)) => {
+        | (Stacked(stack, TableBlock), End(TagEnd::Image))
+        | (Stacked(stack, TableBlock), InlineHtml(_)) => {
             Stacked(stack, TableBlock).and_data(data).ok()
         }
 

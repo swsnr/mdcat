@@ -12,6 +12,11 @@ Use `cargo release` to create a new release.
 - Drop macOS release builds.  Use homebrew to obtain macOS binaries of `mdcat`.
 - Remove simplified panic message; `mdcat` now uses the default panic handler.
 
+### Fixed
+- Do not crash on inline HTML elements in a table cell (see [GH-310]).
+
+[GH-310]: https://github.com/swsnr/mdcat/pull/310
+
 ## [2.7.0] – 2024-11-24
 
 ### Changed
