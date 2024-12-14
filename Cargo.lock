@@ -952,7 +952,7 @@ dependencies = [
 
 [[package]]
 name = "mdcat"
-version = "2.7.0"
+version = "2.7.1"
 dependencies = [
  "anstyle-query",
  "anyhow",
@@ -1267,7 +1267,7 @@ checksum = "007d8adb5ddab6f8e3f491ac63566a7d5002cc7ed73901f72057943fa71ae1ae"
 
 [[package]]
 name = "pulldown-cmark-mdcat"
-version = "2.7.0"
+version = "2.7.1"
 dependencies = [
  "anstyle",
  "base64",
