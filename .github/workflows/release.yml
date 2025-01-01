@@ -52,7 +52,7 @@ jobs:
       - id: package
         shell: bash
         run: ./scripts/package '${{ steps.version.outputs.version }}' '${{ matrix.target }}'
-      - uses: actions/attest-build-provenance@v1
+      - uses: actions/attest-build-provenance@v2
         with:
           subject-path: ${{ steps.package.outputs.file }}
       - uses: actions/upload-artifact@v4
