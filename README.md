@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> No longer maintained.  If you wish to take over, send a mail to <sebastian@swsnr.de>.
+
 # mdcat
 
 Fancy `cat` for Markdown (that is, [CommonMark][]):
