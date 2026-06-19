@@ -38,7 +38,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: ./artifacts
       - run: mv artifacts/mdcat.1 .
@@ -67,7 +67,7 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: ./artifacts
       - run: mkdir ./assets
