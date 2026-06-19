@@ -61,7 +61,7 @@ rust-version = "1.83"
 [workspace.dependencies]
 mime = { version = "0.3.17", default-features = false }
 pulldown-cmark = { version = "0.12.1", default-features = false }
-similar-asserts = "1.6.0"
+similar-asserts = "2.0.0"
 syntect = { version = "5.2.0", default-features = false, features = ["regex-fancy"] }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes"]  }
 insta = { version = "1.40.0", features = ["glob", "filters"] }
